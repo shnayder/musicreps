@@ -63,7 +63,7 @@
   --neutral-0: #fff;
   --neutral-50: hsl(var(--hue-neutral), 40%, 97%);
   --neutral-75: hsl(var(--hue-neutral), 40%, 95.5%);
-  --neutral-100: hsl(var(--hue-neutral), 40%, 94%);
+  --neutral-100: hsl(var(--hue-neutral), 28%, 94%);
   --neutral-150: hsl(var(--hue-neutral), 22%, 91%);
   --neutral-200: hsl(var(--hue-neutral), 18%, 89%);
   --neutral-250: hsl(var(--hue-neutral), 15%, 87%);
@@ -93,10 +93,14 @@
   --success-600: #2d4c3b;
   --success-800: hsl(var(--hue-success), 30%, 16%);
 
-  /* Error scale — derived from --hue-error */
-  --error-100: hsl(var(--hue-error), 100%, 96%);
-  --error-500: hsl(var(--hue-error), 90%, 58%);
-  --error-800: hsl(var(--hue-error), 66%, 47%);
+  /* Error scale — derived from --hue-error
+     Desaturated mid-tones so errors inform without screaming. */
+  --error-100: hsl(var(--hue-error), 60%, 95%);
+  --error-200: hsl(var(--hue-error), 55%, 88%);
+  --error-300: hsl(var(--hue-error), 50%, 72%);
+  --error-500: hsl(var(--hue-error), 55%, 58%);
+  --error-600: hsl(var(--hue-error), 50%, 50%);
+  --error-800: hsl(var(--hue-error), 50%, 35%);
 
   /* Notice scale — warm amber, anchored on #D97706 */
   --notice-100: hsl(var(--hue-notice), 60%, 95%);
@@ -124,9 +128,9 @@
   --color-success-reveal: var(--success-300);
   --color-success-text: var(--success-800);
   /* Error */
-  --color-error: var(--error-500);
+  --color-error: var(--error-600);
   --color-error-bg: var(--error-100);
-  --color-error-border: var(--error-500);
+  --color-error-border: var(--error-300);
   --color-error-text: var(--error-800);
   --color-tap-selected: var(--color-accent);
   /* On-fill text (flips in dark mode) */
@@ -527,7 +531,11 @@ body {
 
 /* --- Main content patterns --- */
 
-/* QuizStage: 60/40 prompt/response split, centered within each zone */
+/* QuizStage: content-first layout with 60/40 extra-space distribution.
+   Each zone first claims its natural content height (flex-basis: auto),
+   then remaining space is distributed 3:2 (~60/40).  This gives
+   response-heavy modes (chord spelling, speed tap) the room they need
+   while keeping text-only prompts visually centered. */
 .quiz-stage {
   display: flex;
   flex-direction: column;
@@ -535,7 +543,7 @@ body {
   min-height: 0;
 }
 .quiz-stage-prompt {
-  flex: 3;
+  flex: 3 2 auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -557,11 +565,21 @@ body {
   flex-direction: column;
 }
 .quiz-stage-response {
-  flex: 2;
+  flex: 2 1 auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
   min-height: 0;
+}
+/* When the prompt contains a fretboard, let it claim remaining space
+   and shrink the response zone to its natural height. */
+.quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-prompt {
+  flex: 1;
+  justify-content: flex-start;
+}
+.quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-response {
+  flex: none;
+  padding-top: var(--gap-group);
 }
 
 /* CenteredContent: vertically centered info/instruction screens */
@@ -870,13 +888,23 @@ body {
   text-align: center;
 }
 .all-skills-hint {
-  font-size: var(--type-status-size);
-  font-weight: var(--type-status-weight);
-  line-height: var(--type-status-leading);
-  color: var(--color-text-light);
-  font-style: italic;
   margin: 0 0 var(--gap-related);
   text-align: center;
+}
+/* --- Home About tab --- */
+.home-about-brand {
+  text-align: center;
+}
+.home-about-list {
+  margin: 0;
+  padding-left: 1.25em;
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
+}
+.home-about-list li + li {
+  margin-top: var(--gap-related);
 }
 /* Shared pill/badge component */
 .pill {
@@ -1322,6 +1350,13 @@ body {
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
   color: var(--color-text-muted);
+}
+.about-tab-tip {
+  margin: var(--gap-section) 0 0;
+  text-align: center;
+}
+.about-tab-tip-icon {
+  vertical-align: -0.15em;
 }
 .about-columns {
   display: grid;
@@ -2875,6 +2910,19 @@ button {
 .stats-container {
   text-align: center;
 }
+/* Fretboard heatmap in the progress tab: the quiz-stage flex chain
+   isn't present, so reset the height-filling rules and let the SVG
+   scale naturally within a capped container. */
+.stats-container .fretboard-wrapper {
+  flex: unset;
+}
+.stats-container .fretboard-container {
+  height: auto;
+}
+.stats-container .fretboard {
+  max-height: 600px;
+  width: auto;
+}
 .stats-table {
   border-collapse: collapse;
   margin: var(--gap-group) auto;
@@ -2969,6 +3017,21 @@ button {
   gap: var(--gap-group);
   margin: var(--pad-component) 0;
   min-height: 2.5rem;
+}
+/* Card container — wraps slots + correction row in all phases */
+.seq-card {
+  background: var(--color-well);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-md);
+  padding: var(--gap-group) var(--pad-component);
+  min-width: 20rem;
+  max-width: 24rem;
+  margin: 0 auto var(--gap-group);
+}
+/* Dotted placeholder showing where the next note will appear */
+.seq-placeholder {
+  border-bottom-style: dashed !important;
+  border-bottom-color: var(--color-text-light) !important;
 }
 /* --- Component tokens: SequentialSlot --- */
 .seq-slot {

@@ -77,7 +77,7 @@
   --neutral-0: #fff;
   --neutral-50: hsl(var(--hue-neutral), 40%, 97%);
   --neutral-75: hsl(var(--hue-neutral), 40%, 95.5%);
-  --neutral-100: hsl(var(--hue-neutral), 40%, 94%);
+  --neutral-100: hsl(var(--hue-neutral), 28%, 94%);
   --neutral-150: hsl(var(--hue-neutral), 22%, 91%);
   --neutral-200: hsl(var(--hue-neutral), 18%, 89%);
   --neutral-250: hsl(var(--hue-neutral), 15%, 87%);
@@ -107,10 +107,14 @@
   --success-600: #2d4c3b;
   --success-800: hsl(var(--hue-success), 30%, 16%);
 
-  /* Error scale — derived from --hue-error */
-  --error-100: hsl(var(--hue-error), 100%, 96%);
-  --error-500: hsl(var(--hue-error), 90%, 58%);
-  --error-800: hsl(var(--hue-error), 66%, 47%);
+  /* Error scale — derived from --hue-error
+     Desaturated mid-tones so errors inform without screaming. */
+  --error-100: hsl(var(--hue-error), 60%, 95%);
+  --error-200: hsl(var(--hue-error), 55%, 88%);
+  --error-300: hsl(var(--hue-error), 50%, 72%);
+  --error-500: hsl(var(--hue-error), 55%, 58%);
+  --error-600: hsl(var(--hue-error), 50%, 50%);
+  --error-800: hsl(var(--hue-error), 50%, 35%);
 
   /* Notice scale — warm amber, anchored on #D97706 */
   --notice-100: hsl(var(--hue-notice), 60%, 95%);
@@ -138,9 +142,9 @@
   --color-success-reveal: var(--success-300);
   --color-success-text: var(--success-800);
   /* Error */
-  --color-error: var(--error-500);
+  --color-error: var(--error-600);
   --color-error-bg: var(--error-100);
-  --color-error-border: var(--error-500);
+  --color-error-border: var(--error-300);
   --color-error-text: var(--error-800);
   --color-tap-selected: var(--color-accent);
   /* On-fill text (flips in dark mode) */
@@ -541,7 +545,11 @@ body {
 
 /* --- Main content patterns --- */
 
-/* QuizStage: 60/40 prompt/response split, centered within each zone */
+/* QuizStage: content-first layout with 60/40 extra-space distribution.
+   Each zone first claims its natural content height (flex-basis: auto),
+   then remaining space is distributed 3:2 (~60/40).  This gives
+   response-heavy modes (chord spelling, speed tap) the room they need
+   while keeping text-only prompts visually centered. */
 .quiz-stage {
   display: flex;
   flex-direction: column;
@@ -549,7 +557,7 @@ body {
   min-height: 0;
 }
 .quiz-stage-prompt {
-  flex: 3;
+  flex: 3 2 auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -571,11 +579,21 @@ body {
   flex-direction: column;
 }
 .quiz-stage-response {
-  flex: 2;
+  flex: 2 1 auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
   min-height: 0;
+}
+/* When the prompt contains a fretboard, let it claim remaining space
+   and shrink the response zone to its natural height. */
+.quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-prompt {
+  flex: 1;
+  justify-content: flex-start;
+}
+.quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-response {
+  flex: none;
+  padding-top: var(--gap-group);
 }
 
 /* CenteredContent: vertically centered info/instruction screens */
@@ -884,13 +902,23 @@ body {
   text-align: center;
 }
 .all-skills-hint {
-  font-size: var(--type-status-size);
-  font-weight: var(--type-status-weight);
-  line-height: var(--type-status-leading);
-  color: var(--color-text-light);
-  font-style: italic;
   margin: 0 0 var(--gap-related);
   text-align: center;
+}
+/* --- Home About tab --- */
+.home-about-brand {
+  text-align: center;
+}
+.home-about-list {
+  margin: 0;
+  padding-left: 1.25em;
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
+}
+.home-about-list li + li {
+  margin-top: var(--gap-related);
 }
 /* Shared pill/badge component */
 .pill {
@@ -1336,6 +1364,13 @@ body {
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
   color: var(--color-text-muted);
+}
+.about-tab-tip {
+  margin: var(--gap-section) 0 0;
+  text-align: center;
+}
+.about-tab-tip-icon {
+  vertical-align: -0.15em;
 }
 .about-columns {
   display: grid;
@@ -2889,6 +2924,19 @@ button {
 .stats-container {
   text-align: center;
 }
+/* Fretboard heatmap in the progress tab: the quiz-stage flex chain
+   isn't present, so reset the height-filling rules and let the SVG
+   scale naturally within a capped container. */
+.stats-container .fretboard-wrapper {
+  flex: unset;
+}
+.stats-container .fretboard-container {
+  height: auto;
+}
+.stats-container .fretboard {
+  max-height: 600px;
+  width: auto;
+}
 .stats-table {
   border-collapse: collapse;
   margin: var(--gap-group) auto;
@@ -2983,6 +3031,21 @@ button {
   gap: var(--gap-group);
   margin: var(--pad-component) 0;
   min-height: 2.5rem;
+}
+/* Card container — wraps slots + correction row in all phases */
+.seq-card {
+  background: var(--color-well);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-md);
+  padding: var(--gap-group) var(--pad-component);
+  min-width: 20rem;
+  max-width: 24rem;
+  margin: 0 auto var(--gap-group);
+}
+/* Dotted placeholder showing where the next note will appear */
+.seq-placeholder {
+  border-bottom-style: dashed !important;
+  border-bottom-color: var(--color-text-light) !important;
 }
 /* --- Component tokens: SequentialSlot --- */
 .seq-slot {
@@ -3155,7 +3218,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="4804d4 fix-skill-recommendations-cache-HWcaP"></div>
+  <div class="home-screen" id="home-screen" data-version="3d2b01 fix-skill-recommendations-cache-HWcaP"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -5949,129 +6012,81 @@ body.native-app {
       }
       return items;
     }
+    function getItemIdsForFretRange(startFret, endFret, noteFilter, stringCount) {
+      const lo = Math.max(0, startFret);
+      const hi = Math.min(endFret, fretCount - 1);
+      const items = [];
+      for (let s3 = 0; s3 < stringCount; s3++) {
+        for (let f4 = lo; f4 <= hi; f4++) {
+          const note = getNoteAtPosition2(s3, f4);
+          if (notePassesFilter(note, noteFilter)) {
+            items.push(s3 + "-" + f4);
+          }
+        }
+      }
+      return items;
+    }
     return {
       fretCount,
       getNoteAtPosition: getNoteAtPosition2,
       parseFretboardItem,
       checkFretboardAnswer,
       getFretboardEnabledItems,
-      getItemIdsForString
+      getItemIdsForString,
+      getItemIdsForFretRange
     };
   }
 
   // src/modes/fretboard/logic.ts
-  var GUITAR_GROUPS = [
-    // Naturals by string (E and e combined since same notes)
+  function fretLabel(start, end) {
+    return "Frets " + start + "\u2013" + end;
+  }
+  var FRET_GROUPS = [
     {
-      id: "e-natural",
-      label: () => displayNote("E") + " strings",
-      longLabel: () => "High & low " + displayNote("E") + " strings",
-      strings: [5, 0],
+      id: "frets-0-3-natural",
+      label: () => fretLabel(0, 3),
+      longLabel: () => fretLabel(0, 3) + ", naturals",
+      frets: [0, 3],
       noteFilter: "natural"
     },
     {
-      id: "a-natural",
-      label: () => displayNote("A") + " string",
-      longLabel: () => displayNote("A") + " string",
-      strings: [4],
-      noteFilter: "natural"
-    },
-    {
-      id: "d-natural",
-      label: () => displayNote("D") + " string",
-      longLabel: () => displayNote("D") + " string",
-      strings: [3],
-      noteFilter: "natural"
-    },
-    {
-      id: "g-natural",
-      label: () => displayNote("G") + " string",
-      longLabel: () => displayNote("G") + " string",
-      strings: [2],
-      noteFilter: "natural"
-    },
-    {
-      id: "b-natural",
-      label: () => displayNote("B") + " string",
-      longLabel: () => displayNote("B") + " string",
-      strings: [1],
-      noteFilter: "natural"
-    },
-    // Accidentals by string pair
-    {
-      id: "e-sharps",
-      label: () => displayNote("E") + " \u266F/\u266D",
-      longLabel: () => displayNote("E") + " strings \u266F/\u266D",
-      strings: [5, 0],
+      id: "frets-0-3-sharps",
+      label: () => fretLabel(0, 3) + " \u266F/\u266D",
+      longLabel: () => fretLabel(0, 3) + " \u266F/\u266D",
+      frets: [0, 3],
       noteFilter: "sharps-flats"
     },
     {
-      id: "ad-sharps",
-      label: () => displayNote("A") + " " + displayNote("D") + " \u266F/\u266D",
-      longLabel: () => displayNote("A") + " & " + displayNote("D") + " strings \u266F/\u266D",
-      strings: [4, 3],
+      id: "frets-4-8-natural",
+      label: () => fretLabel(4, 8),
+      longLabel: () => fretLabel(4, 8) + ", naturals",
+      frets: [4, 8],
+      noteFilter: "natural"
+    },
+    {
+      id: "frets-4-8-sharps",
+      label: () => fretLabel(4, 8) + " \u266F/\u266D",
+      longLabel: () => fretLabel(4, 8) + " \u266F/\u266D",
+      frets: [4, 8],
       noteFilter: "sharps-flats"
     },
     {
-      id: "gb-sharps",
-      label: () => displayNote("G") + " " + displayNote("B") + " \u266F/\u266D",
-      longLabel: () => displayNote("G") + " & " + displayNote("B") + " strings \u266F/\u266D",
-      strings: [2, 1],
+      id: "frets-9-12-natural",
+      label: () => fretLabel(9, 12),
+      longLabel: () => fretLabel(9, 12) + ", naturals",
+      frets: [9, 12],
+      noteFilter: "natural"
+    },
+    {
+      id: "frets-9-12-sharps",
+      label: () => fretLabel(9, 12) + " \u266F/\u266D",
+      longLabel: () => fretLabel(9, 12) + " \u266F/\u266D",
+      frets: [9, 12],
       noteFilter: "sharps-flats"
     }
   ];
-  var UKULELE_GROUPS = [
-    // Naturals by string
-    {
-      id: "g-natural",
-      label: () => displayNote("G") + " string",
-      longLabel: () => displayNote("G") + " string",
-      strings: [3],
-      noteFilter: "natural"
-    },
-    {
-      id: "c-natural",
-      label: () => displayNote("C") + " string",
-      longLabel: () => displayNote("C") + " string",
-      strings: [2],
-      noteFilter: "natural"
-    },
-    {
-      id: "e-natural",
-      label: () => displayNote("E") + " string",
-      longLabel: () => displayNote("E") + " string",
-      strings: [1],
-      noteFilter: "natural"
-    },
-    {
-      id: "a-natural",
-      label: () => displayNote("A") + " string",
-      longLabel: () => displayNote("A") + " string",
-      strings: [0],
-      noteFilter: "natural"
-    },
-    // Accidentals by string pair
-    {
-      id: "gc-sharps",
-      label: () => displayNote("G") + " " + displayNote("C") + " \u266F/\u266D",
-      longLabel: () => displayNote("G") + " & " + displayNote("C") + " strings \u266F/\u266D",
-      strings: [3, 2],
-      noteFilter: "sharps-flats"
-    },
-    {
-      id: "ea-sharps",
-      label: () => displayNote("E") + " " + displayNote("A") + " \u266F/\u266D",
-      longLabel: () => displayNote("E") + " & " + displayNote("A") + " strings \u266F/\u266D",
-      strings: [1, 0],
-      noteFilter: "sharps-flats"
-    }
-  ];
-  var GROUPS_BY_INSTRUMENT = {
-    fretboard: GUITAR_GROUPS,
-    ukulele: UKULELE_GROUPS
-  };
-  function getGroups(instrument) {
-    return GROUPS_BY_INSTRUMENT[instrument.id] ?? GUITAR_GROUPS;
+  function getGroups(_instrument) {
+    return FRET_GROUPS;
   }
   var helpersCache = /* @__PURE__ */ new Map();
   function getHelpers(instrument) {
@@ -6093,11 +6108,12 @@ body.native-app {
     const group = groups.find((g2) => g2.id === groupId);
     if (!group) return [];
     const fb = getHelpers(instrument);
-    const items = [];
-    for (const s3 of group.strings) {
-      items.push(...fb.getItemIdsForString(s3, group.noteFilter));
-    }
-    return items;
+    return fb.getItemIdsForFretRange(
+      group.frets[0],
+      group.frets[1],
+      group.noteFilter,
+      instrument.stringCount
+    );
   }
   function getAllItems(instrument) {
     const items = [];
@@ -7381,7 +7397,6 @@ body.native-app {
   // src/ui/home-screen.tsx
   var STARRED_KEY = "starredSkills";
   var ACCORDION_KEY = "trackAccordionState";
-  var TAB_KEY = "homeTab";
   function loadStarredSkills() {
     const allModeIds = new Set(TRACKS.flatMap((t3) => t3.skills));
     try {
@@ -7427,13 +7442,15 @@ body.native-app {
     }
   }
   function cleanupLegacyKeys() {
-    try {
-      storage.removeItem("selectedTracks");
-    } catch (_3) {
-    }
-    try {
-      globalThis.localStorage?.removeItem("selectedTracks");
-    } catch (_3) {
+    for (const key of ["selectedTracks", "homeTab"]) {
+      try {
+        storage.removeItem(key);
+      } catch (_3) {
+      }
+      try {
+        globalThis.localStorage?.removeItem(key);
+      } catch (_3) {
+      }
     }
   }
   function TrackPill({ trackId, label }) {
@@ -7762,7 +7779,7 @@ body.native-app {
   function AllSkillsList({ accordion, starred, onToggleExpand, onToggleStar, onSelectMode, progress }) {
     return /* @__PURE__ */ u3("div", { class: "home-modes", children: [
       /* @__PURE__ */ u3("h2", { class: "tab-panel-title", children: "All Skills" }),
-      /* @__PURE__ */ u3("p", { class: "all-skills-hint", children: [
+      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "status-empty all-skills-hint", children: [
         "Tap the \u2606 on a skill to add it to your ",
         /* @__PURE__ */ u3("strong", { children: "Active" }),
         " ",
@@ -7792,16 +7809,6 @@ body.native-app {
       ))
     ] });
   }
-  function loadInitialTab() {
-    try {
-      const saved = storage.getItem(TAB_KEY);
-      if (saved === "active" || saved === "all" || saved === "settings") {
-        return saved;
-      }
-    } catch (_3) {
-    }
-    return loadStarredSkills().size > 0 ? "active" : "all";
-  }
   function HomeHeader({ isNativeApp, repsToday, totalReps, daysActive }) {
     return /* @__PURE__ */ u3("div", { class: `home-header${isNativeApp ? " native" : ""}`, children: [
       !isNativeApp && /* @__PURE__ */ u3(k, { children: [
@@ -7829,6 +7836,82 @@ body.native-app {
       ] })
     ] });
   }
+  function HomeAboutTab({ isNativeApp }) {
+    return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
+      isNativeApp && /* @__PURE__ */ u3("div", { class: "home-about-brand", children: [
+        /* @__PURE__ */ u3("h1", { class: "home-title", children: [
+          /* @__PURE__ */ u3(RepeatMark, { size: 28, class: "home-logo-mark" }),
+          "Music Reps"
+        ] }),
+        /* @__PURE__ */ u3("p", { class: "home-tagline", children: "Make music fundamentals automatic so you can focus on playing." })
+      ] }),
+      /* @__PURE__ */ u3("section", { class: "settings-section", children: [
+        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "What is Music Reps?" }),
+        /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", children: "Music Reps trains instant recall of music fundamentals, letting you play with confidence, improvise more freely, learn songs faster, and be a better musician overall." }),
+        /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", children: [
+          "There are likely many musical skills you know, but only with some hesitation and mental effort: perhaps locating the G on the B string of your guitar, or figuring out what key has 4 flats, or listing the notes in an Em7 chord. Music Reps closes the gap between",
+          " ",
+          /* @__PURE__ */ u3("em", { children: "give me a second, I know this" }),
+          " and ",
+          /* @__PURE__ */ u3("em", { children: "already moving on" }),
+          "."
+        ] })
+      ] }),
+      /* @__PURE__ */ u3("section", { class: "settings-section", children: [
+        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "How it works" }),
+        /* @__PURE__ */ u3("ul", { class: "home-about-list", children: [
+          /* @__PURE__ */ u3("li", { children: [
+            /* @__PURE__ */ u3("strong", { children: "Fast drills, many reps." }),
+            " ",
+            "Each skill asks rapid-fire questions to make the knowledge you already have automatic."
+          ] }),
+          /* @__PURE__ */ u3("li", { children: [
+            /* @__PURE__ */ u3("strong", { children: "Speed is the goal." }),
+            " ",
+            "When your response time drops from eight seconds to under one, you\u2019ve stopped counting and started knowing."
+          ] }),
+          /* @__PURE__ */ u3("li", { children: [
+            /* @__PURE__ */ u3("strong", { children: "Spaced repetition." }),
+            " ",
+            "The app focuses on what you haven\u2019t mastered and brings back material before you forget it."
+          ] }),
+          /* @__PURE__ */ u3("li", { children: [
+            /* @__PURE__ */ u3("strong", { children: "No instrument needed." }),
+            " ",
+            "Use commuting, waiting, or any other spare minutes to advance your playing."
+          ] }),
+          /* @__PURE__ */ u3("li", { children: [
+            /* @__PURE__ */ u3("strong", { children: "A few minutes at a time." }),
+            " ",
+            "Designed for short sessions \u2014 two to five minutes, a few times a day, over months and years."
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ u3("section", { class: "settings-section", children: [
+        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "Getting started" }),
+        /* @__PURE__ */ u3("ul", { class: "home-about-list", children: [
+          /* @__PURE__ */ u3("li", { children: [
+            "Browse ",
+            /* @__PURE__ */ u3("strong", { children: "All Skills" }),
+            " ",
+            "to see what\u2019s available. Star the ones you want to work on."
+          ] }),
+          /* @__PURE__ */ u3("li", { children: [
+            "Your starred skills appear on the ",
+            /* @__PURE__ */ u3("strong", { children: "Active" }),
+            " ",
+            "tab with recommendations for what to practice next."
+          ] }),
+          /* @__PURE__ */ u3("li", { children: [
+            "Track your speed and coverage in each skill\u2019s",
+            " ",
+            /* @__PURE__ */ u3("strong", { children: "Progress" }),
+            " tab."
+          ] })
+        ] })
+      ] })
+    ] });
+  }
   function useHomeTabs({
     starred,
     accordion,
@@ -7842,7 +7925,8 @@ body.native-app {
     onSelectMode,
     onToggleStar,
     onToggleExpand,
-    onOpenDev
+    onOpenDev,
+    isNativeApp
   }) {
     return [
       {
@@ -7875,6 +7959,11 @@ body.native-app {
         ) })
       },
       {
+        id: "about",
+        label: /* @__PURE__ */ u3(TabIcon, { icon: "about", text: "About" }),
+        content: /* @__PURE__ */ u3(HomeAboutTab, { isNativeApp })
+      },
+      {
         id: "settings",
         label: /* @__PURE__ */ u3(TabIcon, { icon: "settings", text: "Settings" }),
         content: /* @__PURE__ */ u3(
@@ -7897,7 +7986,9 @@ body.native-app {
     const [accordion, setAccordion] = d2(loadAccordionState);
     const [showDev, setShowDev] = d2(false);
     const [useSolfege, setUseSolfege2] = d2(() => settings.getUseSolfege());
-    const [tab, setTab] = d2(loadInitialTab);
+    const [tab, setTab] = d2(
+      () => starred.size > 0 ? "active" : "all"
+    );
     const globalEffort = T2(getGlobalEffort, [progress]);
     const prefix = useTabsPrefix();
     const handleToggleStar = q2((modeId) => {
@@ -7911,10 +8002,6 @@ body.native-app {
     const handleChangeTab = q2((t3) => {
       setTab(t3);
       if (t3 === "settings") setUseSolfege2(settings.getUseSolfege());
-      try {
-        storage.setItem(TAB_KEY, t3);
-      } catch (_3) {
-      }
     }, [settings]);
     const handleToggleExpand = q2((trackId) => {
       setAccordion((prev) => {
@@ -7936,7 +8023,8 @@ body.native-app {
       onSelectMode,
       onToggleStar: handleToggleStar,
       onToggleExpand: handleToggleExpand,
-      onOpenDev: showDevLink ? () => setShowDev(true) : void 0
+      onOpenDev: showDevLink ? () => setShowDev(true) : void 0,
+      isNativeApp
     });
     if (showDev) {
       return /* @__PURE__ */ u3(DevPage, { onClose: () => setShowDev(false) });
@@ -9044,19 +9132,20 @@ body.native-app {
   }
 
   // src/hooks/use-mode-lifecycle.ts
-  function useModeLifecycle(onMount, engine, learner, onDeactivate) {
+  function useModeLifecycle(onMount, engine, learner, onDeactivate, onActivate) {
     _2(() => {
       onMount({
         activate() {
           learner.syncBaseline();
           engine.updateIdleMessage();
+          onActivate?.();
         },
         deactivate() {
           if (engine.state.phase !== "idle") engine.stop();
           onDeactivate?.();
         }
       });
-    }, [onMount, engine, learner, onDeactivate]);
+    }, [onMount, engine, learner, onDeactivate, onActivate]);
   }
 
   // src/hooks/use-round-summary.ts
@@ -9065,7 +9154,7 @@ body.native-app {
       getStats: (id) => selector.getStats(id),
       getSpeedScore: (id) => selector.getSpeedScore(id),
       getFreshness: (id) => selector.getFreshness(id)
-    }), [selector, enginePhase]);
+    }), [selector, selector.version, enginePhase]);
   }
   function useRoundSummary(engine) {
     const roundCorrect = T2(() => {
@@ -9085,6 +9174,18 @@ body.native-app {
   // src/hooks/use-practice-summary.ts
   function usePracticeSummary(opts) {
     const [activeTab, setActiveTab] = d2("practice");
+    const resetTabForActivation = q2(() => {
+      const key = `${opts.modeId}_visited`;
+      if (!storage.getItem(key)) {
+        storage.setItem(key, "1");
+        const { seen } = opts.selector.getLevelSpeed(opts.allItems);
+        if (seen === 0) {
+          setActiveTab("about");
+          return;
+        }
+      }
+      setActiveTab((prev) => prev === "about" ? "practice" : prev);
+    }, [opts.modeId, opts.selector, opts.allItems]);
     const summary = T2(
       () => computePracticeSummary({
         allItemIds: opts.allItems,
@@ -9097,6 +9198,7 @@ body.native-app {
       }),
       [
         opts.selector,
+        opts.selector.version,
         opts.recommendation,
         opts.recommendationText,
         opts.engine.state.masteryText,
@@ -9114,6 +9216,7 @@ body.native-app {
       summary,
       activeTab,
       setActiveTab,
+      resetTabForActivation,
       statsSel
     };
   }
@@ -9412,20 +9515,43 @@ body.native-app {
   function SequentialSlots({ entries, evaluated, correctTones }) {
     const anyWrong = evaluated?.some((e3) => !e3.correct) ?? false;
     const countMismatch = !!(evaluated && correctTones && entries.length !== correctTones.length);
-    return /* @__PURE__ */ u3("div", { class: "seq-slots-container", children: [
-      /* @__PURE__ */ u3("div", { class: "seq-slots", children: entries.map((entry, i3) => {
-        let cls = "seq-slot";
-        let content;
-        if (evaluated && i3 < evaluated.length) {
-          content = evaluated[i3].display;
-          cls += evaluated[i3].correct ? " correct" : " wrong";
-        } else {
-          content = entry.display;
-          cls += " filled";
+    const showCorrection = (anyWrong || countMismatch) && !!correctTones;
+    const tones = correctTones ?? [];
+    const correctionCount = showCorrection ? Math.max(entries.length, tones.length) : 0;
+    const missingCount = showCorrection ? Math.max(0, tones.length - entries.length) : 0;
+    return /* @__PURE__ */ u3("div", { class: "seq-slots-container seq-card", children: [
+      /* @__PURE__ */ u3("div", { class: "seq-slots", children: [
+        entries.map((entry, i3) => {
+          let cls = "seq-slot";
+          let content;
+          if (evaluated && i3 < evaluated.length) {
+            content = evaluated[i3].display;
+            cls += evaluated[i3].correct ? " correct" : " wrong";
+          } else {
+            content = entry.display;
+            cls += " filled";
+          }
+          return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
+        }),
+        Array.from(
+          { length: missingCount },
+          (_3, i3) => /* @__PURE__ */ u3("span", { class: "seq-slot", children: "\xA0" }, `m${i3}`)
+        ),
+        !evaluated && /* @__PURE__ */ u3("span", { class: "seq-slot seq-placeholder" })
+      ] }),
+      showCorrection ? /* @__PURE__ */ u3("div", { class: "seq-correct-row", children: Array.from({ length: correctionCount }, (_3, i3) => {
+        const tone = tones[i3];
+        const wasCorrect = evaluated && i3 < evaluated.length && evaluated[i3].correct;
+        return !tone || wasCorrect ? /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: "\xA0" }, i3) : /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: tone }, i3);
+      }) }) : /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "seq-correct-row",
+          "aria-hidden": "true",
+          style: "visibility:hidden",
+          children: /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: "\xA0" })
         }
-        return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
-      }) }),
-      (anyWrong || countMismatch) && correctTones && /* @__PURE__ */ u3("div", { class: "seq-correct-row", children: correctTones.map((t3, i3) => /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: t3 }, i3)) })
+      )
     ] });
   }
 
@@ -9775,9 +9901,21 @@ body.native-app {
     );
     if (circle) circle.style.fill = color;
   }
+  function setCircleRing(root, posKey, color) {
+    const [s3, f4] = posKey.split("-");
+    const circle = root.querySelector(
+      'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
+    );
+    if (!circle) return;
+    circle.style.fill = "none";
+    circle.style.stroke = color;
+    circle.style.strokeWidth = "3";
+  }
   function clearAllCircles(root) {
     root.querySelectorAll(".fb-pos").forEach((c3) => {
       c3.style.fill = "";
+      c3.style.stroke = "";
+      c3.style.strokeWidth = "";
     });
   }
   var MUTE_MARKER_CLASS = "fb-mute-marker";
@@ -9853,11 +9991,11 @@ body.native-app {
         const colorMissed = readCSSColor("--color-success-reveal", "#66bb6a");
         const tappedSet = new Set(evaluated.perEntry.map((e3) => e3.positionKey));
         for (const entry of evaluated.perEntry) {
-          setCircleFill(
-            root,
-            entry.positionKey,
-            entry.correct ? colorOk : colorBad
-          );
+          if (entry.correct) {
+            setCircleFill(root, entry.positionKey, colorOk);
+          } else {
+            setCircleRing(root, entry.positionKey, colorBad);
+          }
         }
         for (const missed of evaluated.missed) {
           if (!tappedSet.has(missed)) {
@@ -10497,6 +10635,7 @@ body.native-app {
     useFlats,
     narrowing,
     hideAccidentalsOverride,
+    columnsOverride,
     feedback,
     answered
   }) {
@@ -10510,7 +10649,7 @@ body.native-app {
             hideAccidentals: hideAccidentalsOverride,
             narrowing,
             feedback,
-            columns: buttonsDef.columns
+            columns: columnsOverride ?? buttonsDef.columns
           }
         );
       case "split-note":
@@ -10583,7 +10722,9 @@ body.native-app {
       {
         prompt: /* @__PURE__ */ u3(k, { children: [
           instruction && /* @__PURE__ */ u3("div", { class: "quiz-instruction", children: instruction }),
-          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: promptText }),
+          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: promptText })
+        ] }),
+        response: /* @__PURE__ */ u3(k, { children: [
           /* @__PURE__ */ u3(
             SequentialSlots,
             {
@@ -10591,9 +10732,7 @@ body.native-app {
               evaluated: seq.evaluated,
               correctTones: seq.correctAnswer ? seq.correctAnswer.split(" ") : null
             }
-          )
-        ] }),
-        response: /* @__PURE__ */ u3(k, { children: [
+          ),
           /* @__PURE__ */ u3(
             ResponseButtons,
             {
@@ -10664,6 +10803,7 @@ body.native-app {
               useFlats,
               narrowing: ctrl.narrowing,
               hideAccidentalsOverride: ctrl.hideAccidentals,
+              columnsOverride: ctrl.buttonColumns,
               feedback: engine.state.feedbackCorrect !== null && lastAnswerRef.current ? {
                 correct: engine.state.feedbackCorrect,
                 userInput: toButtonValue(
@@ -10953,7 +11093,13 @@ body.native-app {
           /* @__PURE__ */ u3("p", { class: "about-col-text", children: after })
         ] })
       ] }),
-      /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "about-description", children: description })
+      /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "about-description", children: description }),
+      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "status-empty about-tab-tip", children: [
+        "Start practicing on the",
+        " ",
+        /* @__PURE__ */ u3(RepeatMark, { size: 16, class: "about-tab-tip-icon" }),
+        " tab below."
+      ] })
     ] });
   }
   var EMPTY_GROUPS = /* @__PURE__ */ new Set();
@@ -11054,6 +11200,7 @@ body.native-app {
     usePhaseClass(container, presentationPhase, PHASE_FOCUS_TARGETS);
     const round = useRoundSummary(engine);
     const ps = usePracticeSummary({
+      modeId: def.id,
       allItems: def.allItems,
       selector: learner.selector,
       engine,
@@ -11061,7 +11208,13 @@ body.native-app {
       recommendation: groupScopeResult?.recommendation ?? null,
       recommendationText: groupScopeResult?.recommendationText ?? ""
     });
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
+    useModeLifecycle(
+      onMount,
+      engine,
+      learner,
+      deactivateCleanup,
+      ps.resetTabForActivation
+    );
     const handleSubmit = q2((input) => {
       if (def.validateInput && currentQRef.current && !def.validateInput(currentQRef.current, input)) return false;
       engine.submitAnswer(input);
@@ -11119,7 +11272,7 @@ body.native-app {
         kind: "items",
         itemIds: def.allItems
       });
-    }, [def, learner.selector, _phase, skippedGroups]);
+    }, [def, learner.selector, learner.selector.version, _phase, skippedGroups]);
   }
   function useLevelBars(def, learner, _phase, groupScopeResult) {
     const enabledGroups = groupScopeResult?.enabledGroups;
@@ -11139,7 +11292,7 @@ body.native-app {
       }
       const colors = progressBarColors(learner.selector, def.allItems);
       return colors.length > 0 ? [{ id: "_all", label: "", colors }] : [];
-    }, [def, learner.selector, _phase, enabledGroups]);
+    }, [def, learner.selector, learner.selector.version, _phase, enabledGroups]);
   }
   function ModeHeader({ def, isIdle, progressColors, totalReps, navigateHome }) {
     if (isIdle) {
@@ -11189,7 +11342,7 @@ body.native-app {
         if (s3) sum += s3.sampleCount;
       }
       return sum;
-    }, [def.allItems, learner.selector, phase]);
+    }, [def.allItems, learner.selector, learner.selector.version, phase]);
     if (isIdle) {
       return /* @__PURE__ */ u3(ScreenLayout, { children: [
         /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
@@ -11801,7 +11954,8 @@ body.native-app {
       },
       deactivateCleanup: () => noteHandler.reset(),
       narrowing,
-      hideAccidentals: !hasAccidentals
+      hideAccidentals: !hasAccidentals,
+      buttonColumns: hasAccidentals ? void 0 : 4
     };
   }
 
@@ -11884,8 +12038,8 @@ body.native-app {
     itemNoun: "notes",
     allItems: ALL_ITEMS9,
     getQuestion: parseItem2,
-    getPromptText: (q3) => "Tap all " + q3.displayName,
-    quizInstruction: "Find all positions",
+    getPromptText: (q3) => q3.displayName,
+    quizInstruction: "Tap all note positions",
     multiTap: {
       getTargets: (q3) => q3.positions.map(positionKey),
       evaluate: evaluate2
@@ -12109,7 +12263,7 @@ body.native-app {
       itemNoun: "chords",
       allItems: items,
       getQuestion: (itemId2) => parseItem3(instrument, itemId2),
-      getPromptText: (q3) => "Tap the " + q3.displayName + " chord",
+      getPromptText: (q3) => q3.displayName,
       quizInstruction: "Tap all played positions",
       multiTap: {
         getTargets: (q3) => q3.playedPositions,
