@@ -5,6 +5,10 @@ import Foundation
 /// the bundled web content or a previously downloaded update, with
 /// crash protection via a health-check state machine.
 ///
+/// Paths are stored as relative (e.g. "ota/current") and resolved
+/// against the current Library directory at runtime, so they survive
+/// app container UUID changes (Xcode reinstalls, iOS updates).
+///
 /// State machine (UserDefaults):
 ///   none → ready      (JS calls setUpdatePath after downloading)
 ///   ready → pending   (load() switches to update, increments attempts)
@@ -22,60 +26,71 @@ public class OTAUpdatePlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     private let defaults = UserDefaults.standard
-    private let kPath = "ota_bundle_path"
+    private let kRelPath = "ota_rel_path"   // relative to Library/, e.g. "ota/current"
     private let kStatus = "ota_status"
     private let kVersion = "ota_version"
     private let kAttempts = "ota_attempts"
     private let maxAttempts = 2
 
+    /// Resolve a relative path against the current Library directory.
+    private func resolveAbsPath(_ relPath: String) -> String? {
+        guard let libDir = FileManager.default.urls(
+            for: .libraryDirectory, in: .userDomainMask
+        ).first else { return nil }
+        return libDir.appendingPathComponent(relPath).path
+    }
+
+    /// Get the absolute path for the stored update, if it exists.
+    private func currentUpdatePath() -> String? {
+        guard let relPath = defaults.string(forKey: kRelPath) else { return nil }
+        guard let absPath = resolveAbsPath(relPath) else { return nil }
+        guard FileManager.default.fileExists(atPath: absPath + "/index.html") else { return nil }
+        return absPath
+    }
+
     override public func load() {
         let status = defaults.string(forKey: kStatus) ?? "none"
-        let path = defaults.string(forKey: kPath)
+        let relPath = defaults.string(forKey: kRelPath)
 
-        print("[OTA] load() status=\(status) path=\(path ?? "nil")")
+        print("[OTA] load() status=\(status) relPath=\(relPath ?? "nil")")
 
         switch status {
         case "ready":
-            // A new update is ready — try loading it
-            guard let path = path, FileManager.default.fileExists(atPath: path + "/index.html") else {
-                print("[OTA] ready but path missing, resetting")
+            guard let absPath = currentUpdatePath() else {
+                print("[OTA] ready but update files missing, resetting")
                 resetState()
                 return
             }
             defaults.set("pending", forKey: kStatus)
             defaults.set(1, forKey: kAttempts)
-            print("[OTA] switching to update at \(path)")
-            bridge?.setServerBasePath(path)
+            print("[OTA] switching to update at \(absPath)")
+            bridge?.setServerBasePath(absPath)
 
         case "pending":
-            // Previous boot from this update didn't call reportHealthy
             let attempts = defaults.integer(forKey: kAttempts)
-            guard let path = path, attempts < maxAttempts,
-                  FileManager.default.fileExists(atPath: path + "/index.html") else {
+            guard let absPath = currentUpdatePath(), attempts < maxAttempts else {
                 print("[OTA] update failed after \(attempts) attempts, reverting to bundled")
-                cleanupUpdateFiles(path)
+                if let relPath = relPath, let absPath = resolveAbsPath(relPath) {
+                    cleanupUpdateFiles(absPath)
+                }
                 resetState()
                 return
             }
-            // Try again
             defaults.set(attempts + 1, forKey: kAttempts)
-            print("[OTA] retry attempt \(attempts + 1) from \(path)")
-            bridge?.setServerBasePath(path)
+            print("[OTA] retry attempt \(attempts + 1) from \(absPath)")
+            bridge?.setServerBasePath(absPath)
 
         case "healthy":
-            // Previous update booted successfully — keep using it
-            guard let path = path, FileManager.default.fileExists(atPath: path + "/index.html") else {
-                print("[OTA] healthy but path missing, resetting")
+            guard let absPath = currentUpdatePath() else {
+                print("[OTA] healthy but update files missing, resetting")
                 resetState()
                 return
             }
-            // Set pending for this boot (will be marked healthy again if boot succeeds)
             defaults.set("pending", forKey: kStatus)
             defaults.set(1, forKey: kAttempts)
-            bridge?.setServerBasePath(path)
+            bridge?.setServerBasePath(absPath)
 
         default:
-            // "none" or unknown — use bundled content (default behavior)
             print("[OTA] using bundled content")
         }
     }
@@ -92,9 +107,9 @@ public class OTAUpdatePlugin: CAPPlugin, CAPBridgedPlugin {
     }
 
     /// Called by JS after downloading a new update.
-    /// `path` is the absolute filesystem path to the directory containing index.html.
+    /// `path` is the relative path under Library/ (e.g. "ota/current").
     @objc func setUpdatePath(_ call: CAPPluginCall) {
-        guard let path = call.getString("path") else {
+        guard let relPath = call.getString("path") else {
             call.reject("Must provide path")
             return
         }
@@ -102,15 +117,17 @@ public class OTAUpdatePlugin: CAPPlugin, CAPBridgedPlugin {
             call.reject("Must provide version")
             return
         }
-        guard FileManager.default.fileExists(atPath: path + "/index.html") else {
-            call.reject("No index.html at path: \(path)")
+        // Verify the file exists at the resolved path
+        guard let absPath = resolveAbsPath(relPath),
+              FileManager.default.fileExists(atPath: absPath + "/index.html") else {
+            call.reject("No index.html at resolved path for: \(relPath)")
             return
         }
-        defaults.set(path, forKey: kPath)
+        defaults.set(relPath, forKey: kRelPath)
         defaults.set(version, forKey: kVersion)
         defaults.set("ready", forKey: kStatus)
         defaults.set(0, forKey: kAttempts)
-        print("[OTA] update registered: v\(version) at \(path)")
+        print("[OTA] update registered: v\(version) relPath=\(relPath) absPath=\(absPath)")
         call.resolve(["status": "ready", "version": version])
     }
 
@@ -119,29 +136,30 @@ public class OTAUpdatePlugin: CAPPlugin, CAPBridgedPlugin {
         call.resolve([
             "status": defaults.string(forKey: kStatus) ?? "none",
             "version": defaults.string(forKey: kVersion) ?? "",
-            "path": defaults.string(forKey: kPath) ?? "",
+            "path": defaults.string(forKey: kRelPath) ?? "",
             "attempts": defaults.integer(forKey: kAttempts),
         ])
     }
 
     /// Clears all OTA state, reverts to bundled on next launch.
     @objc func reset(_ call: CAPPluginCall) {
-        let path = defaults.string(forKey: kPath)
-        cleanupUpdateFiles(path)
+        if let relPath = defaults.string(forKey: kRelPath),
+           let absPath = resolveAbsPath(relPath) {
+            cleanupUpdateFiles(absPath)
+        }
         resetState()
         print("[OTA] reset to bundled")
         call.resolve(["status": "none"])
     }
 
     private func resetState() {
-        defaults.removeObject(forKey: kPath)
+        defaults.removeObject(forKey: kRelPath)
         defaults.removeObject(forKey: kVersion)
         defaults.set("none", forKey: kStatus)
         defaults.set(0, forKey: kAttempts)
     }
 
-    private func cleanupUpdateFiles(_ path: String?) {
-        guard let path = path else { return }
-        try? FileManager.default.removeItem(atPath: path)
+    private func cleanupUpdateFiles(_ absPath: String) {
+        try? FileManager.default.removeItem(atPath: absPath)
     }
 }

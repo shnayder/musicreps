@@ -142,12 +142,9 @@ async function checkForUpdate(): Promise<void> {
     });
     console.log('[OTA] wrote update to filesystem');
 
-    // 6. Get the absolute path and register with native plugin
-    const stat = await fs.stat({ path: dir, directory: 'LIBRARY' });
-    const absPath = stat.uri.replace('file://', '');
-
+    // 6. Register with native plugin using relative path (under Library/)
     await plugin.setUpdatePath({
-      path: absPath,
+      path: dir, // e.g. "ota/current" — plugin resolves against Library/
       version: manifest.version,
     });
     console.log('[OTA] update registered, will apply on next restart');
@@ -188,4 +185,11 @@ export function scheduleUpdateCheck(): void {
       checkForUpdate();
     }
   });
+
+  // Debug hook: window.__otaForceCheck() bypasses throttle
+  // deno-lint-ignore no-explicit-any
+  (window as any).__otaForceCheck = () => {
+    lastCheckTime = 0;
+    return checkForUpdate();
+  };
 }
