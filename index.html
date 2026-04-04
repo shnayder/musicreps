@@ -898,13 +898,23 @@ body {
   text-align: center;
 }
 .all-skills-hint {
-  font-size: var(--type-status-size);
-  font-weight: var(--type-status-weight);
-  line-height: var(--type-status-leading);
-  color: var(--color-text-light);
-  font-style: italic;
   margin: 0 0 var(--gap-related);
   text-align: center;
+}
+/* --- Home About tab --- */
+.home-about-brand {
+  text-align: center;
+}
+.home-about-list {
+  margin: 0;
+  padding-left: 1.25em;
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--type-body-secondary-color);
+}
+.home-about-list li + li {
+  margin-top: var(--gap-related);
 }
 /* Shared pill/badge component */
 .pill {
@@ -1350,6 +1360,13 @@ body {
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
   color: var(--color-text-muted);
+}
+.about-tab-tip {
+  margin: var(--gap-section) 0 0;
+  text-align: center;
+}
+.about-tab-tip-icon {
+  vertical-align: -0.15em;
 }
 .about-columns {
   display: grid;
@@ -3197,7 +3214,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1206"></div>
+  <div class="home-screen" id="home-screen" data-version="#1214"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -7418,7 +7435,6 @@ body.native-app {
   // src/ui/home-screen.tsx
   var STARRED_KEY = "starredSkills";
   var ACCORDION_KEY = "trackAccordionState";
-  var TAB_KEY = "homeTab";
   function loadStarredSkills() {
     const allModeIds = new Set(TRACKS.flatMap((t3) => t3.skills));
     try {
@@ -7464,13 +7480,15 @@ body.native-app {
     }
   }
   function cleanupLegacyKeys() {
-    try {
-      storage.removeItem("selectedTracks");
-    } catch (_3) {
-    }
-    try {
-      globalThis.localStorage?.removeItem("selectedTracks");
-    } catch (_3) {
+    for (const key of ["selectedTracks", "homeTab"]) {
+      try {
+        storage.removeItem(key);
+      } catch (_3) {
+      }
+      try {
+        globalThis.localStorage?.removeItem(key);
+      } catch (_3) {
+      }
     }
   }
   function TrackPill({ trackId, label }) {
@@ -7799,7 +7817,7 @@ body.native-app {
   function AllSkillsList({ accordion, starred, onToggleExpand, onToggleStar, onSelectMode, progress }) {
     return /* @__PURE__ */ u3("div", { class: "home-modes", children: [
       /* @__PURE__ */ u3("h2", { class: "tab-panel-title", children: "All Skills" }),
-      /* @__PURE__ */ u3("p", { class: "all-skills-hint", children: [
+      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "status-empty all-skills-hint", children: [
         "Tap the \u2606 on a skill to add it to your ",
         /* @__PURE__ */ u3("strong", { children: "Active" }),
         " ",
@@ -7829,16 +7847,6 @@ body.native-app {
       ))
     ] });
   }
-  function loadInitialTab() {
-    try {
-      const saved = storage.getItem(TAB_KEY);
-      if (saved === "active" || saved === "all" || saved === "settings") {
-        return saved;
-      }
-    } catch (_3) {
-    }
-    return loadStarredSkills().size > 0 ? "active" : "all";
-  }
   function HomeHeader({ isNativeApp, repsToday, totalReps, daysActive }) {
     return /* @__PURE__ */ u3("div", { class: `home-header${isNativeApp ? " native" : ""}`, children: [
       !isNativeApp && /* @__PURE__ */ u3(k, { children: [
@@ -7866,6 +7874,82 @@ body.native-app {
       ] })
     ] });
   }
+  function HomeAboutTab({ isNativeApp }) {
+    return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
+      isNativeApp && /* @__PURE__ */ u3("div", { class: "home-about-brand", children: [
+        /* @__PURE__ */ u3("h1", { class: "home-title", children: [
+          /* @__PURE__ */ u3(RepeatMark, { size: 28, class: "home-logo-mark" }),
+          "Music Reps"
+        ] }),
+        /* @__PURE__ */ u3("p", { class: "home-tagline", children: "Make music fundamentals automatic so you can focus on playing." })
+      ] }),
+      /* @__PURE__ */ u3("section", { class: "settings-section", children: [
+        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "What is Music Reps?" }),
+        /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", children: "Music Reps trains instant recall of music fundamentals, letting you play with confidence, improvise more freely, learn songs faster, and be a better musician overall." }),
+        /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", children: [
+          "There are likely many musical skills you know, but only with some hesitation and mental effort: perhaps locating the G on the B string of your guitar, or figuring out what key has 4 flats, or listing the notes in an Em7 chord. Music Reps closes the gap between",
+          " ",
+          /* @__PURE__ */ u3("em", { children: "give me a second, I know this" }),
+          " and ",
+          /* @__PURE__ */ u3("em", { children: "already moving on" }),
+          "."
+        ] })
+      ] }),
+      /* @__PURE__ */ u3("section", { class: "settings-section", children: [
+        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "How it works" }),
+        /* @__PURE__ */ u3("ul", { class: "home-about-list", children: [
+          /* @__PURE__ */ u3("li", { children: [
+            /* @__PURE__ */ u3("strong", { children: "Fast drills, many reps." }),
+            " ",
+            "Each skill asks rapid-fire questions to make the knowledge you already have automatic."
+          ] }),
+          /* @__PURE__ */ u3("li", { children: [
+            /* @__PURE__ */ u3("strong", { children: "Speed is the goal." }),
+            " ",
+            "When your response time drops from eight seconds to under one, you\u2019ve stopped counting and started knowing."
+          ] }),
+          /* @__PURE__ */ u3("li", { children: [
+            /* @__PURE__ */ u3("strong", { children: "Spaced repetition." }),
+            " ",
+            "The app focuses on what you haven\u2019t mastered and brings back material before you forget it."
+          ] }),
+          /* @__PURE__ */ u3("li", { children: [
+            /* @__PURE__ */ u3("strong", { children: "No instrument needed." }),
+            " ",
+            "Use commuting, waiting, or any other spare minutes to advance your playing."
+          ] }),
+          /* @__PURE__ */ u3("li", { children: [
+            /* @__PURE__ */ u3("strong", { children: "A few minutes at a time." }),
+            " ",
+            "Designed for short sessions \u2014 two to five minutes, a few times a day, over months and years."
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ u3("section", { class: "settings-section", children: [
+        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "Getting started" }),
+        /* @__PURE__ */ u3("ul", { class: "home-about-list", children: [
+          /* @__PURE__ */ u3("li", { children: [
+            "Browse ",
+            /* @__PURE__ */ u3("strong", { children: "All Skills" }),
+            " ",
+            "to see what\u2019s available. Star the ones you want to work on."
+          ] }),
+          /* @__PURE__ */ u3("li", { children: [
+            "Your starred skills appear on the ",
+            /* @__PURE__ */ u3("strong", { children: "Active" }),
+            " ",
+            "tab with recommendations for what to practice next."
+          ] }),
+          /* @__PURE__ */ u3("li", { children: [
+            "Track your speed and coverage in each skill\u2019s",
+            " ",
+            /* @__PURE__ */ u3("strong", { children: "Progress" }),
+            " tab."
+          ] })
+        ] })
+      ] })
+    ] });
+  }
   function useHomeTabs({
     starred,
     accordion,
@@ -7879,7 +7963,8 @@ body.native-app {
     onSelectMode,
     onToggleStar,
     onToggleExpand,
-    onOpenDev
+    onOpenDev,
+    isNativeApp
   }) {
     return [
       {
@@ -7912,6 +7997,11 @@ body.native-app {
         ) })
       },
       {
+        id: "about",
+        label: /* @__PURE__ */ u3(TabIcon, { icon: "about", text: "About" }),
+        content: /* @__PURE__ */ u3(HomeAboutTab, { isNativeApp })
+      },
+      {
         id: "settings",
         label: /* @__PURE__ */ u3(TabIcon, { icon: "settings", text: "Settings" }),
         content: /* @__PURE__ */ u3(
@@ -7934,7 +8024,9 @@ body.native-app {
     const [accordion, setAccordion] = d2(loadAccordionState);
     const [showDev, setShowDev] = d2(false);
     const [useSolfege, setUseSolfege2] = d2(() => settings.getUseSolfege());
-    const [tab, setTab] = d2(loadInitialTab);
+    const [tab, setTab] = d2(
+      () => starred.size > 0 ? "active" : "all"
+    );
     const globalEffort = T2(getGlobalEffort, [progress]);
     const prefix = useTabsPrefix();
     const handleToggleStar = q2((modeId) => {
@@ -7948,10 +8040,6 @@ body.native-app {
     const handleChangeTab = q2((t3) => {
       setTab(t3);
       if (t3 === "settings") setUseSolfege2(settings.getUseSolfege());
-      try {
-        storage.setItem(TAB_KEY, t3);
-      } catch (_3) {
-      }
     }, [settings]);
     const handleToggleExpand = q2((trackId) => {
       setAccordion((prev) => {
@@ -7973,7 +8061,8 @@ body.native-app {
       onSelectMode,
       onToggleStar: handleToggleStar,
       onToggleExpand: handleToggleExpand,
-      onOpenDev: showDevLink ? () => setShowDev(true) : void 0
+      onOpenDev: showDevLink ? () => setShowDev(true) : void 0,
+      isNativeApp
     });
     if (showDev) {
       return /* @__PURE__ */ u3(DevPage, { onClose: () => setShowDev(false) });
@@ -9075,19 +9164,20 @@ body.native-app {
   }
 
   // src/hooks/use-mode-lifecycle.ts
-  function useModeLifecycle(onMount, engine, learner, onDeactivate) {
+  function useModeLifecycle(onMount, engine, learner, onDeactivate, onActivate) {
     _2(() => {
       onMount({
         activate() {
           learner.syncBaseline();
           engine.updateIdleMessage();
+          onActivate?.();
         },
         deactivate() {
           if (engine.state.phase !== "idle") engine.stop();
           onDeactivate?.();
         }
       });
-    }, [onMount, engine, learner, onDeactivate]);
+    }, [onMount, engine, learner, onDeactivate, onActivate]);
   }
 
   // src/hooks/use-round-summary.ts
@@ -9116,6 +9206,18 @@ body.native-app {
   // src/hooks/use-practice-summary.ts
   function usePracticeSummary(opts) {
     const [activeTab, setActiveTab] = d2("practice");
+    const resetTabForActivation = q2(() => {
+      const key = `${opts.modeId}_visited`;
+      if (!storage.getItem(key)) {
+        storage.setItem(key, "1");
+        const { seen } = opts.selector.getLevelSpeed(opts.allItems);
+        if (seen === 0) {
+          setActiveTab("about");
+          return;
+        }
+      }
+      setActiveTab((prev) => prev === "about" ? "practice" : prev);
+    }, [opts.modeId, opts.selector, opts.allItems]);
     const summary = T2(
       () => computePracticeSummary({
         allItemIds: opts.allItems,
@@ -9145,6 +9247,7 @@ body.native-app {
       summary,
       activeTab,
       setActiveTab,
+      resetTabForActivation,
       statsSel
     };
   }
@@ -11021,7 +11124,13 @@ body.native-app {
           /* @__PURE__ */ u3("p", { class: "about-col-text", children: after })
         ] })
       ] }),
-      /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "about-description", children: description })
+      /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "about-description", children: description }),
+      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "status-empty about-tab-tip", children: [
+        "Start practicing on the",
+        " ",
+        /* @__PURE__ */ u3(RepeatMark, { size: 16, class: "about-tab-tip-icon" }),
+        " tab below."
+      ] })
     ] });
   }
   var EMPTY_GROUPS = /* @__PURE__ */ new Set();
@@ -11122,6 +11231,7 @@ body.native-app {
     usePhaseClass(container, presentationPhase, PHASE_FOCUS_TARGETS);
     const round = useRoundSummary(engine);
     const ps = usePracticeSummary({
+      modeId: def.id,
       allItems: def.allItems,
       selector: learner.selector,
       engine,
@@ -11129,7 +11239,13 @@ body.native-app {
       recommendation: groupScopeResult?.recommendation ?? null,
       recommendationText: groupScopeResult?.recommendationText ?? ""
     });
-    useModeLifecycle(onMount, engine, learner, deactivateCleanup);
+    useModeLifecycle(
+      onMount,
+      engine,
+      learner,
+      deactivateCleanup,
+      ps.resetTabForActivation
+    );
     const handleSubmit = q2((input) => {
       if (def.validateInput && currentQRef.current && !def.validateInput(currentQRef.current, input)) return false;
       engine.submitAnswer(input);
