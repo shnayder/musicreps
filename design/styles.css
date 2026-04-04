@@ -531,7 +531,11 @@ body {
 
 /* --- Main content patterns --- */
 
-/* QuizStage: 60/40 prompt/response split, centered within each zone */
+/* QuizStage: content-first layout with 60/40 extra-space distribution.
+   Each zone first claims its natural content height (flex-basis: auto),
+   then remaining space is distributed 3:2 (~60/40).  This gives
+   response-heavy modes (chord spelling, speed tap) the room they need
+   while keeping text-only prompts visually centered. */
 .quiz-stage {
   display: flex;
   flex-direction: column;
@@ -539,7 +543,7 @@ body {
   min-height: 0;
 }
 .quiz-stage-prompt {
-  flex: 3;
+  flex: 3 2 auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -561,7 +565,7 @@ body {
   flex-direction: column;
 }
 .quiz-stage-response {
-  flex: 2;
+  flex: 2 1 auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
