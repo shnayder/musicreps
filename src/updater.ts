@@ -32,7 +32,7 @@ function getFilesystemPlugin(): any {
 // SHA-256 verification
 // ---------------------------------------------------------------------------
 
-async function sha256Hex(text: string): Promise<string> {
+export async function sha256Hex(text: string): Promise<string> {
   const data = new TextEncoder().encode(text);
   const hash = await crypto.subtle.digest('SHA-256', data);
   return Array.from(new Uint8Array(hash))
@@ -41,13 +41,106 @@ async function sha256Hex(text: string): Promise<string> {
 }
 
 // ---------------------------------------------------------------------------
-// Core update logic
+// Core update logic — injectable deps for testability
 // ---------------------------------------------------------------------------
 
-interface VersionManifest {
+export interface VersionManifest {
   version: string;
   sha256: string;
   timestamp: string;
+}
+
+export interface OTAState {
+  status: string;
+  version: string;
+  path: string;
+  attempts: number;
+}
+
+/** Dependencies injected for testing. Production uses real implementations. */
+export interface UpdateDeps {
+  fetchManifest: () => Promise<VersionManifest | null>;
+  fetchHtml: () => Promise<string | null>;
+  getState: () => Promise<OTAState>;
+  getRunningVersion: () => string;
+  writeUpdate: (html: string, dir: string) => Promise<void>;
+  registerUpdate: (dir: string, version: string) => Promise<void>;
+}
+
+/**
+ * Core update check logic. Returns a description of what happened for testing.
+ * Exported for tests; production code calls checkForUpdate() instead.
+ */
+export async function checkForUpdateCore(
+  deps: UpdateDeps,
+): Promise<string> {
+  // 1. Fetch version manifest
+  const manifest = await deps.fetchManifest();
+  if (!manifest) return 'fetch-failed';
+
+  // 2. Compare to current version (including already-downloaded-but-not-applied)
+  const state = await deps.getState();
+  const knownVersion = state.version || deps.getRunningVersion();
+
+  if (manifest.version === knownVersion) return 'up-to-date';
+
+  // 3. Download index.html
+  const html = await deps.fetchHtml();
+  if (!html) return 'download-failed';
+
+  // 4. Verify SHA-256
+  const hash = await sha256Hex(html);
+  if (hash !== manifest.sha256) return 'hash-mismatch';
+
+  // 5. Write to filesystem
+  const dir = 'ota/current';
+  await deps.writeUpdate(html, dir);
+
+  // 6. Register with native plugin
+  await deps.registerUpdate(dir, manifest.version);
+  return 'update-registered';
+}
+
+// ---------------------------------------------------------------------------
+// Production wiring
+// ---------------------------------------------------------------------------
+
+function productionDeps(): UpdateDeps | null {
+  const plugin = getOTAPlugin();
+  const fs = getFilesystemPlugin();
+  if (!plugin || !fs) return null;
+
+  const base = getReleaseBase();
+  return {
+    fetchManifest: async () => {
+      const resp = await fetch(`${base}/version.json`, { cache: 'no-store' });
+      if (!resp.ok) return null;
+      return resp.json();
+    },
+    fetchHtml: async () => {
+      const resp = await fetch(`${base}/index.html`, { cache: 'no-store' });
+      if (!resp.ok) return null;
+      return resp.text();
+    },
+    getState: () => plugin.getState(),
+    getRunningVersion: () => {
+      const el = document.getElementById('home-screen');
+      return el?.dataset.version ?? '';
+    },
+    writeUpdate: async (html: string, dir: string) => {
+      try {
+        await fs.mkdir({ path: dir, directory: 'LIBRARY', recursive: true });
+      } catch { /* may already exist */ }
+      await fs.writeFile({
+        path: `${dir}/index.html`,
+        data: html,
+        directory: 'LIBRARY',
+        encoding: 'utf8',
+      });
+    },
+    registerUpdate: (dir: string, version: string) =>
+      plugin.setUpdatePath({ path: dir, version }),
+  };
 }
 
 async function checkForUpdate(): Promise<void> {
@@ -55,94 +148,23 @@ async function checkForUpdate(): Promise<void> {
   if (now - lastCheckTime < CHECK_INTERVAL_MS) return;
   lastCheckTime = now;
 
-  const plugin = getOTAPlugin();
-  if (!plugin) {
+  const deps = productionDeps();
+  if (!deps) {
     console.log('[OTA] plugin not available, skipping');
     return;
   }
 
   try {
-    // 1. Fetch version manifest
-    const resp = await fetch(`${getReleaseBase()}/version.json`, {
-      cache: 'no-store',
-    });
-    if (!resp.ok) {
-      console.log('[OTA] version.json fetch failed:', resp.status);
-      return;
-    }
-    const manifest: VersionManifest = await resp.json();
-
-    // 2. Compare to current version (including already-downloaded-but-not-applied)
-    const state = await plugin.getState();
-    const knownVersion = state.version || getRunningVersion();
-
-    if (manifest.version === knownVersion) {
-      console.log('[OTA] up to date:', manifest.version);
-      return;
-    }
-    console.log(
-      '[OTA] new version available:',
-      manifest.version,
-      '(current:',
-      knownVersion + ')',
-    );
-
-    // 3. Download index.html
-    const htmlResp = await fetch(`${getReleaseBase()}/index.html`, {
-      cache: 'no-store',
-    });
-    if (!htmlResp.ok) {
-      console.log('[OTA] index.html fetch failed:', htmlResp.status);
-      return;
-    }
-    const html = await htmlResp.text();
-
-    // 4. Verify SHA-256
-    const hash = await sha256Hex(html);
-    if (hash !== manifest.sha256) {
-      console.error(
-        '[OTA] hash mismatch! expected:',
-        manifest.sha256,
-        'got:',
-        hash,
-      );
-      return;
-    }
-    console.log('[OTA] hash verified');
-
-    // 5. Write to filesystem
-    const fs = getFilesystemPlugin();
-    if (!fs) {
-      console.log('[OTA] Filesystem plugin not available');
-      return;
-    }
-
-    const dir = 'ota/current';
-    // Ensure directory exists
-    try {
-      await fs.mkdir({
-        path: dir,
-        directory: 'LIBRARY',
-        recursive: true,
-      });
-    } catch {
-      // directory may already exist
-    }
-
-    await fs.writeFile({
-      path: `${dir}/index.html`,
-      data: html,
-      directory: 'LIBRARY',
-      encoding: 'utf8',
-    });
-    console.log('[OTA] wrote update to filesystem');
-
-    // 6. Register with native plugin using relative path (under Library/)
-    await plugin.setUpdatePath({
-      path: dir, // e.g. "ota/current" — plugin resolves against Library/
-      version: manifest.version,
-    });
-    console.log('[OTA] update registered, will apply on next restart');
+    const result = await checkForUpdateCore(deps);
+    const messages: Record<string, string> = {
+      'fetch-failed': '[OTA] version.json fetch failed',
+      'up-to-date': '[OTA] up to date',
+      'download-failed': '[OTA] index.html download failed',
+      'hash-mismatch': '[OTA] hash mismatch, discarding',
+      'update-registered':
+        '[OTA] update registered, will apply on next restart',
+    };
+    console.log(messages[result] || `[OTA] ${result}`);
   } catch (err) {
     console.error('[OTA] update check failed:', err);
   }
@@ -151,12 +173,6 @@ async function checkForUpdate(): Promise<void> {
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
-
-/** Get the version string from the running HTML's data-version attribute. */
-function getRunningVersion(): string {
-  const el = document.getElementById('home-screen');
-  return el?.dataset.version ?? '';
-}
 
 /** Tell the native plugin this boot was successful. */
 export async function reportHealthy(): Promise<void> {
@@ -182,7 +198,6 @@ export function scheduleUpdateCheck(): void {
   });
 
   // Debug hook: window.__otaForceCheck() bypasses throttle
-  // deno-lint-ignore no-explicit-any
   (window as any).__otaForceCheck = () => {
     lastCheckTime = 0;
     return checkForUpdate();
