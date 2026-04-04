@@ -357,26 +357,6 @@ ${previewJs}
 }
 
 // ---------------------------------------------------------------------------
-// Design page copying
-// ---------------------------------------------------------------------------
-
-async function copyDesignPages(css: string): Promise<void> {
-  const designSrc = resolve('./guides/design');
-  const designDst = resolve('./docs/design');
-  await Deno.mkdir(designDst, { recursive: true });
-  await Deno.writeTextFile(`${designDst}/styles.css`, css);
-  for await (const entry of Deno.readDir(designSrc)) {
-    if (entry.isFile && entry.name.endsWith('.html')) {
-      const content = await Deno.readTextFile(`${designSrc}/${entry.name}`);
-      await Deno.writeTextFile(
-        `${designDst}/${entry.name}`,
-        content.replace('href="../../src/styles.css"', 'href="styles.css"'),
-      );
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Exports
 // ---------------------------------------------------------------------------
 
@@ -455,18 +435,7 @@ if (import.meta.main) {
     });
     await Deno.writeTextFile(`${docsDir}/version.json`, versionJson);
 
-    // Component preview page (Preact)
-    const previewJs = await bundleJS('./src/ui/preview.tsx');
-    const previewHtml = assemblePreviewHTML(css, previewJs);
-    await Deno.writeTextFile(
-      resolve('./guides/design/components-preview.html'),
-      previewHtml,
-    );
-
-    // Design pages → docs/design/
-    await copyDesignPages(css);
-
-    console.log('Built to docs/index.html + docs/sw.js + docs/design/');
+    console.log('Built to docs/index.html + docs/sw.js');
   } else {
     const portArg = Deno.args.find((a) => a.startsWith('--port='));
     let startPort = 8001;
