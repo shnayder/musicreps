@@ -38,7 +38,7 @@ export function buildMotorBaseline(
  */
 export function buildEnabledGroups(
   storageKey: string,
-  groups: number[],
+  groups: (string | number)[],
 ): Record<string, string> {
   return {
     [storageKey]: JSON.stringify(groups),

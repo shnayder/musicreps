@@ -49,7 +49,7 @@ async function setupMode(
   modeId: string,
   storageData: Record<string, string>,
   enabledGroupsKey: string,
-  enabledGroups: number[],
+  enabledGroups: (string | number)[],
 ): Promise<Page> {
   const ctx = await browser.newContext({
     viewport: { width: 402, height: 873 },
@@ -231,16 +231,44 @@ describe('skip/unskip — semitone math (E2E)', () => {
 // Test: Guitar Fretboard (synthetic data)
 // ---------------------------------------------------------------------------
 
-// 8 guitar fretboard groups with mixed progress.
+// 6 fret-based guitar groups with mixed progress.
 const GUITAR_STATS = {
-  0: { automaticCount: 5, workingCount: 9, unseenCount: 2, totalCount: 16 },
-  1: { automaticCount: 7, workingCount: 1, unseenCount: 0, totalCount: 8 },
-  2: { automaticCount: 7, workingCount: 1, unseenCount: 0, totalCount: 8 },
-  3: { automaticCount: 7, workingCount: 1, unseenCount: 0, totalCount: 8 },
-  4: { automaticCount: 7, workingCount: 1, unseenCount: 0, totalCount: 8 },
-  5: { automaticCount: 9, workingCount: 1, unseenCount: 0, totalCount: 10 },
-  6: { automaticCount: 3, workingCount: 5, unseenCount: 2, totalCount: 10 },
-  7: { automaticCount: 3, workingCount: 5, unseenCount: 2, totalCount: 10 },
+  'frets-0-3-natural': {
+    automaticCount: 10,
+    workingCount: 5,
+    unseenCount: 2,
+    totalCount: 17,
+  },
+  'frets-0-3-sharps': {
+    automaticCount: 5,
+    workingCount: 2,
+    unseenCount: 0,
+    totalCount: 7,
+  },
+  'frets-4-8-natural': {
+    automaticCount: 12,
+    workingCount: 3,
+    unseenCount: 2,
+    totalCount: 17,
+  },
+  'frets-4-8-sharps': {
+    automaticCount: 5,
+    workingCount: 5,
+    unseenCount: 3,
+    totalCount: 13,
+  },
+  'frets-9-12-natural': {
+    automaticCount: 10,
+    workingCount: 3,
+    unseenCount: 1,
+    totalCount: 14,
+  },
+  'frets-9-12-sharps': {
+    automaticCount: 3,
+    workingCount: 5,
+    unseenCount: 2,
+    totalCount: 10,
+  },
 };
 
 describe('skip/unskip — guitar fretboard synthetic (E2E)', () => {
@@ -251,13 +279,14 @@ describe('skip/unskip — guitar fretboard synthetic (E2E)', () => {
       'fretboard',
       GUITAR_STATS,
       Date.now(),
-      (idx: number) => guitarGetItemIds(GUITAR, idx),
+      (groupId: string) => guitarGetItemIds(GUITAR, groupId),
     );
+    const allGroupIds = Object.keys(GUITAR_STATS);
     page = await setupMode(
       'fretboard',
       storageData,
       'fretboard_enabledGroups',
-      [0, 1, 2, 3, 4, 5, 6, 7],
+      allGroupIds,
     );
   });
 
@@ -312,14 +341,21 @@ describe('skip/unskip — guitar fretboard real data (E2E)', () => {
 
   before(async () => {
     const storageData: Record<string, string> = { ...REAL_FRETBOARD_DATA };
-    storageData['fretboard_enabledGroups'] = JSON.stringify([0, 2, 1, 3, 4]);
+    const enabledIds = [
+      'frets-0-3-natural',
+      'frets-4-8-natural',
+      'frets-0-3-sharps',
+      'frets-4-8-sharps',
+      'frets-9-12-natural',
+    ];
+    storageData['fretboard_enabledGroups'] = JSON.stringify(enabledIds);
     storageData['fretboard_enabledGroups_skipped'] = JSON.stringify([]);
 
     page = await setupMode(
       'fretboard',
       storageData,
       'fretboard_enabledGroups',
-      [0, 2, 1, 3, 4],
+      enabledIds,
     );
   });
 

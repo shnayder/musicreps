@@ -55,8 +55,8 @@ describe('MODE_PROGRESS_MANIFEST', () => {
 
   it('expected group counts per mode', () => {
     const expected: Record<string, number> = {
-      fretboard: 8, // 5 natural + 3 accidental groups for guitar
-      ukulele: 6, // 4 natural + 2 accidental groups for ukulele
+      fretboard: 6, // 3 fret ranges × natural/accidental
+      ukulele: 6, // 3 fret ranges × natural/accidental
       noteSemitones: 1, // single-group mode
       intervalSemitones: 1, // single-group mode
       semitoneMath: 5, // distance groups
