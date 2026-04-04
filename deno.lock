@@ -3,6 +3,7 @@
   "specifiers": {
     "npm:@capacitor/cli@^8.1.0": "8.1.0",
     "npm:@capacitor/core@^8.1.0": "8.1.0",
+    "npm:@capacitor/filesystem@^8.1.2": "8.1.2_@capacitor+core@8.1.0",
     "npm:@capacitor/ios@^8.1.0": "8.1.0_@capacitor+core@8.1.0",
     "npm:@capacitor/preferences@^8.0.1": "8.0.1_@capacitor+core@8.1.0",
     "npm:@types/node@^25.3.0": "25.3.0",
@@ -43,6 +44,13 @@
         "tslib"
       ]
     },
+    "@capacitor/filesystem@8.1.2_@capacitor+core@8.1.0": {
+      "integrity": "sha512-doaaMfGoFR2hWU6aV6u83I+5ZsGyJVq+Gz4r9lMpJzUKMm1eMu0hLnFdV1aXZlU9FlK/RndFrVD8oRZfNOqWgQ==",
+      "dependencies": [
+        "@capacitor/core",
+        "@capacitor/synapse"
+      ]
+    },
     "@capacitor/ios@8.1.0_@capacitor+core@8.1.0": {
       "integrity": "sha512-wPaQ8ayL0UY+SxydZbrmfzPs8TryZVEB6hrL/XBnXxQtb6rpEmIy/3GIltPwM+/T4m/IuaSDZOToWK65ruC00g==",
       "dependencies": [
@@ -54,6 +62,9 @@
       "dependencies": [
         "@capacitor/core"
       ]
+    },
+    "@capacitor/synapse@1.0.4": {
+      "integrity": "sha512-/C1FUo8/OkKuAT4nCIu/34ny9siNHr9qtFezu4kxm6GY1wNFxrCFWjfYx5C1tUhVGz3fxBABegupkpjXvjCHrw=="
     },
     "@esbuild/aix-ppc64@0.27.3": {
       "integrity": "sha512-9fJMTNFTWZMh5qwrBItuziu834eOCUcEqymSH7pY+zoMVEZg3gcPuBNxH1EvfVYe9h0x/Ptw8KBzv7qxb7l8dg==",
@@ -736,6 +747,7 @@
       "dependencies": [
         "npm:@capacitor/cli@^8.1.0",
         "npm:@capacitor/core@^8.1.0",
+        "npm:@capacitor/filesystem@^8.1.2",
         "npm:@capacitor/ios@^8.1.0",
         "npm:@capacitor/preferences@^8.0.1",
         "npm:@types/node@^25.3.0",

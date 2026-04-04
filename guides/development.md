@@ -566,26 +566,25 @@ xcodebuild -project ios/App/App.xcodeproj \
 | `ios/App/App/Assets.xcassets/`  | App icon and launch images       |
 | `ios/App/App/public/`           | Web content (copied, gitignored) |
 
-### Content source
+### Content source and OTA updates
 
-By default the iOS app loads from GitHub Pages (`https://shnayder.github.io/musicreps/`)
-so you can test the latest deployed build without rebuilding locally. Environment
-variables on `npx cap copy ios` control this:
+The app boots from bundled local files (`ios/App/App/public/`). A background
+updater checks for newer releases at
+`https://shnayder.github.io/musicreps/release/` and downloads them for the next
+app restart. See [releases.md](releases.md) for the full OTA system.
 
-| Command                                 | Loads from                        |
-| --------------------------------------- | --------------------------------- |
-| `npx cap copy ios`                      | GitHub Pages (remote, default)    |
-| `CAP_LOCAL=1 npx cap copy ios`          | Bundled local files (`docs/`)     |
-| `CAP_DEV_PORT=8002 npx cap copy ios`    | Local dev server (`localhost:N`)  |
+For local development, `CAP_DEV_PORT` points the app at a local dev server:
 
-`CAP_DEV_HOST` overrides the hostname for the dev server (default `localhost`).
-On iOS, non-HTTPS loads to non-`localhost` hosts are blocked by App Transport
-Security unless you add an `NSAppTransportSecurity` exception in
-`ios/App/App/Info.plist`. Without that, `CAP_DEV_HOST` is effectively limited
-to `localhost` (simulator).
+```bash
+CAP_DEV_PORT=8002 npx cap copy ios    # then rebuild in Xcode
+```
 
-After changing the content source you need to rebuild in Xcode — the URL is baked
-into `ios/App/App/capacitor.config.json` at copy time.
+`CAP_DEV_HOST` overrides the hostname (default `localhost`). On iOS,
+non-`localhost` hosts require an `NSAppTransportSecurity` exception in
+`ios/App/App/Info.plist`.
+
+The `OTAUpdatePlugin` is registered via `AppViewController.capacitorDidLoad()`,
+not via `packageClassList`, so `npx cap sync ios` won't affect it.
 
 ## Code Review & PR
 

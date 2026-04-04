@@ -227,6 +227,7 @@ Bidirectional modes track each direction as a separate item.
 | Guide                                                         | Contents                                                                   |
 | ------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | [development.md](guides/development.md)                       | Commands, testing, versioning, branching, deployment, GitHub API           |
+| [releases.md](guides/releases.md)                             | OTA update system, deploying releases, rollback, crash protection          |
 | [feature-process.md](guides/feature-process.md)               | When/how to write plans, design spec + implementation plan templates       |
 | [visual-design-spec.md](guides/visual-design-spec.md)         | Template for visual design work (layout, styling, design system alignment) |
 | [tech-debt-tracker.md](plans/exec-plans/tech-debt-tracker.md) | Technical debt tracking                                                    |

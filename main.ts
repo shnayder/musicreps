@@ -442,6 +442,19 @@ if (import.meta.main) {
     await Deno.writeTextFile(`${docsDir}/index.html`, html);
     await Deno.writeTextFile(`${docsDir}/sw.js`, SERVICE_WORKER);
 
+    // version.json — used by OTA updater to detect new releases
+    const htmlBytes = new TextEncoder().encode(html);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', htmlBytes);
+    const sha256 = Array.from(new Uint8Array(hashBuffer))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+    const versionJson = JSON.stringify({
+      version,
+      sha256,
+      timestamp: new Date().toISOString(),
+    });
+    await Deno.writeTextFile(`${docsDir}/version.json`, versionJson);
+
     // Component preview page (Preact)
     const previewJs = await bundleJS('./src/ui/preview.tsx');
     const previewHtml = assemblePreviewHTML(css, previewJs);

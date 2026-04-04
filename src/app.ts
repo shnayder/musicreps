@@ -17,6 +17,7 @@ import { cleanupLegacyKeys, HomeScreen } from './ui/home-screen.tsx';
 import { APP_CONFIG } from './app-config.ts';
 import { registerModeForEffort } from './effort.ts';
 import { initStorage, migrateFromLocalStorage } from './storage.ts';
+import { reportHealthy, scheduleUpdateCheck } from './updater.ts';
 
 // Declarative mode definitions + GenericMode
 import { GenericMode } from './declarative/generic-mode.tsx';
@@ -149,9 +150,15 @@ async function boot() {
   );
 
   // Register service worker for cache busting on iOS home screen
-  // Skip in Capacitor — app runs from local files, no SW needed
+  // Skip in Capacitor — native OTA plugin handles updates instead
   if ('serviceWorker' in navigator && !isNativeApp) {
     navigator.serviceWorker.register('sw.js');
+  }
+
+  // OTA updates: mark this boot as healthy, schedule background checks
+  if (isNativeApp) {
+    reportHealthy();
+    scheduleUpdateCheck();
   }
 }
 
