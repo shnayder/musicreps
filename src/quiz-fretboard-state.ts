@@ -94,9 +94,11 @@ export function createFretboardHelpers(musicData: {
     noteFilter: string,
     stringCount: number,
   ): string[] {
-    const items = [];
+    const lo = Math.max(0, startFret);
+    const hi = Math.min(endFret, fretCount - 1);
+    const items: string[] = [];
     for (let s = 0; s < stringCount; s++) {
-      for (let f = startFret; f <= endFret; f++) {
+      for (let f = lo; f <= hi; f++) {
         const note = getNoteAtPosition(s, f);
         if (notePassesFilter(note, noteFilter)) {
           items.push(s + '-' + f);
