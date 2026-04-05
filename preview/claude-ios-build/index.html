@@ -3218,7 +3218,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="bd2bc8 ios-build"></div>
+  <div class="home-screen" id="home-screen" data-version="5e00a6 ios-build"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -13109,7 +13109,14 @@ body.native-app {
       el.textContent = "";
       const msg = document.createElement("div");
       msg.style.cssText = "padding:2rem;text-align:center;font-family:system-ui;color:#c00";
-      msg.innerHTML = `<h2>Failed to start</h2><p>${err?.message || err}</p><p style="color:#666;font-size:0.85em">Try force-quitting and reopening the app.</p>`;
+      const title = document.createElement("h2");
+      title.textContent = "Failed to start";
+      const details = document.createElement("p");
+      details.textContent = String(err?.message || err);
+      const help = document.createElement("p");
+      help.style.cssText = "color:#666;font-size:0.85em";
+      help.textContent = "Try force-quitting and reopening the app.";
+      msg.append(title, details, help);
       el.appendChild(msg);
     }
   });
