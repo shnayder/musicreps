@@ -265,7 +265,9 @@ function ActiveSkillCard(
               <span class='skill-rec-hint'>
                 <strong>{rec!.cueLabel}</strong>
                 {rec!.detail !== rec!.cueLabel &&
-                  ` ${rec!.detail.slice(rec!.cueLabel.length).trimStart()}`}
+                  (rec!.detail.startsWith(rec!.cueLabel)
+                    ? ` ${rec!.detail.slice(rec!.cueLabel.length).trimStart()}`
+                    : ` \u2014 ${rec!.detail}`)}
               </span>
             )}
           </span>
