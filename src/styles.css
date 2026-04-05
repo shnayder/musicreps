@@ -132,7 +132,7 @@
   --color-notice-border: var(--notice-300);
   --color-notice-bg-hover: var(--notice-400);
   --color-notice-bg-pressed: var(--notice-450);
-  --color-notice-text: var(--notice-800);
+  --color-notice-text: var(--notice-600);
   --color-highlight: var(--notice-600);
   /* UI accents — unified with brand (one accent, not five) */
   --color-accent: var(--brand-600);
@@ -169,11 +169,6 @@
   /* Overlay */
   --color-overlay: rgba(0, 0, 0, 0.35);
 
-  /* Track colors (independent hues) */
-  --color-track-core: var(--brand-600); /* hsl(307, 55%, 32%); */
-  --color-track-reading: var(--brand-600); /* hsl(260, 55%, 54%); */
-  --color-track-guitar: var(--brand-600); /* hsl(25, 55%, 45%); */
-  --color-track-ukulele: var(--brand-600); /* hsl(185, 55%, 38%); */
   /* Star */
   --color-star: var(--notice-700);
 
@@ -210,6 +205,7 @@
   --leading-tight: 1.2;
   --leading-snug: 1.4;
   --leading-normal: 1.5;
+  --leading-spacy: 1.7;
 
   /* Font families */
   --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -305,7 +301,7 @@
   --type-heading-page-family: var(--font-display);
 
   --type-heading-section-size: var(--text-lg);
-  --type-heading-section-weight: var(--font-semibold);
+  --type-heading-section-weight: var(--font-medium);
   --type-heading-section-leading: var(--leading-tight);
   --type-heading-section-color: var(--color-tertiary);
   --type-heading-section-family: var(--font-display);
@@ -324,7 +320,7 @@
 
   --type-body-secondary-size: var(--text-sm);
   --type-body-secondary-weight: var(--font-normal);
-  --type-body-secondary-leading: var(--leading-snug);
+  --type-body-secondary-leading: var(--leading-normal);
   --type-body-secondary-color: var(--color-text-muted);
 
   /* -- Label: short functional identifiers -- */
@@ -741,18 +737,6 @@ body {
   margin-top: var(--gap-section);
   margin-bottom: var(--gap-related);
 }
-.track-group-core {
-  color: var(--color-track-core);
-}
-.track-group-reading {
-  color: var(--color-track-reading);
-}
-.track-group-guitar {
-  color: var(--color-track-guitar);
-}
-.track-group-ukulele {
-  color: var(--color-track-ukulele);
-}
 .home-group-label::after {
   content: '';
   flex: 1;
@@ -800,7 +784,7 @@ body {
   font-size: var(--type-heading-subsection-size);
   font-weight: var(--type-heading-subsection-weight);
   line-height: var(--type-heading-subsection-leading);
-  color: var(--type-heading-subsection-color);
+  color: var(--color-brand);
   cursor: pointer;
   text-align: left;
 }
@@ -902,27 +886,15 @@ body {
   border-radius: 999px;
   white-space: nowrap;
 }
+.pill-track {
+  color: var(--color-brand);
+  background: var(--color-brand-bg);
+}
 .pill-notice {
-  background: var(--color-notice-bg);
   color: var(--color-notice-text);
+  background: var(--color-notice-bg);
 }
-.pill-core {
-  color: var(--color-track-core);
-  background: var(--color-brand-bg);
-}
-.pill-reading {
-  color: var(--color-track-reading);
-  background: var(--color-brand-bg);
-}
-.pill-guitar {
-  color: var(--color-track-guitar);
-  background: var(--color-brand-bg);
-}
-.pill-ukulele {
-  color: var(--color-track-ukulele);
-  background: var(--color-brand-bg);
-}
-/* Active skill card: no padding on outer — banner and body handle their own. */
+/* Active skill card: zero outer padding — body handles its own. */
 .active-skill-card {
   padding: 0;
 }
@@ -933,25 +905,17 @@ body {
   padding: var(--pad-component);
   padding-right: 3rem;
 }
-/* Recommendation banner inside active skill card. */
-.skill-rec-banner {
-  background: var(--notice-600);
-  padding: var(--gap-related) var(--gap-group);
-  border-radius: var(--radius-md) var(--radius-md) 0 0;
+/* Inline recommendation hint inside active skill card. */
+.skill-rec-hint {
+  font-size: var(--type-body-secondary-size);
+  font-weight: var(--type-body-secondary-weight);
+  line-height: var(--type-body-secondary-leading);
+  color: var(--color-text);
+  margin-top: var(--gap-group);
+  margin-bottom: var(--gap-related);
 }
-.skill-rec-header {
-  font-size: var(--type-label-tag-size);
-  font-weight: var(--type-label-tag-weight);
-  line-height: var(--type-label-tag-leading);
-  color: var(--color-on-brand);
-}
-
-/* Banner reacts with card on hover/active. */
-.home-mode-btn:hover > .skill-rec-banner {
-  opacity: 0.9;
-}
-.home-mode-btn:active > .skill-rec-banner {
-  opacity: 0.8;
+.skill-rec-hint > strong {
+  color: var(--color-notice-text);
 }
 .active-skills-done {
   font-size: var(--type-status-size);
@@ -982,25 +946,17 @@ body {
   align-self: flex-start;
   margin-bottom: 1px;
 }
+.active-skill-card .skill-card-header-text > .pill {
+  margin-bottom: 0;
+  margin-top: 2px;
+}
 .skill-icon {
   flex-shrink: 0;
-  color: var(--_accent);
+  color: var(--color-brand);
 }
-.skill-card[data-track='core'] {
-  --_accent: var(--color-track-core);
-  border-left-color: var(--color-track-core);
-}
-.skill-card[data-track='reading'] {
-  --_accent: var(--color-track-reading);
-  border-left-color: var(--color-track-reading);
-}
-.skill-card[data-track='guitar'] {
-  --_accent: var(--color-track-guitar);
-  border-left-color: var(--color-track-guitar);
-}
-.skill-card[data-track='ukulele'] {
-  --_accent: var(--color-track-ukulele);
-  border-left-color: var(--color-track-ukulele);
+/* Left border swaps to notice color when card has a recommendation. */
+.skill-card.has-rec {
+  border-left-color: var(--color-notice);
 }
 .skill-card-ba {
   display: grid;

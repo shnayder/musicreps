@@ -43,7 +43,6 @@ function FlowIdleSection(
       <Section title='Home — Skill Card' tabId={tabId}>
         <SkillCard
           modeId='semitoneMath'
-          trackId='core'
           isStarred={false}
           onToggleStar={() => {}}
           onSelectMode={() => {}}
