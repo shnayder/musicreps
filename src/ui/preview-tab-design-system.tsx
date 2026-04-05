@@ -44,23 +44,22 @@ function SkillCardHeaderSection({ tabId }: { tabId: string }) {
         <Section title='SkillCardHeader — with pill' tabId={tabId}>
           <SkillCardHeader
             modeId='semitoneMath'
-            trackId='core'
             trackLabel='Core'
           />
         </Section>
         <Section title='Pill variants' tabId={tabId}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div>
-              <TrackPill trackId='core' label='Core' />
+              <TrackPill label='Core' />
             </div>
             <div>
-              <TrackPill trackId='reading' label='Reading' />
+              <TrackPill label='Reading' />
             </div>
             <div>
-              <TrackPill trackId='guitar' label='Guitar' />
+              <TrackPill label='Guitar' />
             </div>
             <div>
-              <TrackPill trackId='ukulele' label='Ukulele' />
+              <TrackPill label='Ukulele' />
             </div>
             <div>
               <Pill variant='notice'>Review soon</Pill>
@@ -82,7 +81,6 @@ function TrackSectionPreview({ tabId }: { tabId: string }) {
       <PreviewGrid>
         <Section title='TrackSection — expanded' tabId={tabId}>
           <TrackSection
-            trackId='core'
             label='Core'
             isExpanded
             onToggle={() => {}}
@@ -94,7 +92,6 @@ function TrackSectionPreview({ tabId }: { tabId: string }) {
         </Section>
         <Section title='TrackSection — collapsed' tabId={tabId}>
           <TrackSection
-            trackId='guitar'
             label='Guitar'
             isExpanded={false}
             onToggle={() => {}}
@@ -103,21 +100,6 @@ function TrackSectionPreview({ tabId }: { tabId: string }) {
               Skills go here
             </div>
           </TrackSection>
-        </Section>
-        <Section title='All track colors' tabId={tabId}>
-          <div>
-            {(['core', 'reading', 'guitar', 'ukulele'] as const).map((id) => (
-              <TrackSection
-                key={id}
-                trackId={id}
-                label={id.charAt(0).toUpperCase() + id.slice(1)}
-                isExpanded={false}
-                onToggle={() => {}}
-              >
-                {''}
-              </TrackSection>
-            ))}
-          </div>
         </Section>
       </PreviewGrid>
     </>

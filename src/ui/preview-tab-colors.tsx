@@ -498,16 +498,6 @@ const COMPONENT_TOKENS: TokenMapping[] = [
       },
     ],
   },
-  {
-    component: 'SkillCard (.skill-card)',
-    tokens: ['--_accent'],
-    states: [
-      { state: 'core', values: { '--_accent': '--color-track-core' } },
-      { state: 'reading', values: { '--_accent': '--color-track-reading' } },
-      { state: 'guitar', values: { '--_accent': '--color-track-guitar' } },
-      { state: 'ukulele', values: { '--_accent': '--color-track-ukulele' } },
-    ],
-  },
 ];
 
 function ComponentTokenTable(

@@ -104,9 +104,9 @@ export function cleanupLegacyKeys(): void {
 // ---------------------------------------------------------------------------
 
 export function TrackPill(
-  { trackId, label }: { trackId: string; label: string },
+  { label }: { label: string },
 ) {
-  return <Pill variant={trackId}>{label}</Pill>;
+  return <Pill variant='track'>{label}</Pill>;
 }
 
 // ---------------------------------------------------------------------------
@@ -114,9 +114,8 @@ export function TrackPill(
 // ---------------------------------------------------------------------------
 
 export function SkillCardHeader(
-  { modeId, trackId, trackLabel }: {
+  { modeId, trackLabel }: {
     modeId: string;
-    trackId?: string;
     trackLabel?: string;
   },
 ) {
@@ -126,9 +125,7 @@ export function SkillCardHeader(
     <span class='skill-card-header'>
       <SkillIcon modeId={modeId} />
       <span class='skill-card-header-text'>
-        {trackId && trackLabel && (
-          <TrackPill trackId={trackId} label={trackLabel} />
-        )}
+        {trackLabel && <TrackPill label={trackLabel} />}
         <span class='home-mode-name'>{name}</span>
         <span class='home-mode-desc'>{desc}</span>
       </span>
@@ -150,9 +147,8 @@ export {
 // ---------------------------------------------------------------------------
 
 export function SkillCard(
-  { modeId, trackId, isStarred, onToggleStar, onSelectMode, progress }: {
+  { modeId, isStarred, onToggleStar, onSelectMode, progress }: {
     modeId: string;
-    trackId: string;
     isStarred: boolean;
     onToggleStar: (modeId: string) => void;
     onSelectMode: (modeId: string) => void;
@@ -175,7 +171,6 @@ export function SkillCard(
     <div
       class='home-mode-btn skill-card'
       data-mode={modeId}
-      data-track={trackId}
       role='button'
       tabIndex={0}
       onClick={() => onSelectMode(modeId)}
@@ -221,12 +216,10 @@ function ActiveSkillCard(
     onToggleStar: (modeId: string) => void;
     onSelectMode: (modeId: string) => void;
     progress?: ModeProgress;
-    rec?: { detail: string };
+    rec?: { cueLabel: string; detail: string };
   },
 ) {
   const name = MODE_NAMES[modeId] || modeId;
-  const track = TRACKS.find((t) => t.skills.includes(modeId));
-  const trackId = track?.id || 'core';
   const hasRec = !!rec?.detail;
 
   const handleKeyDown = useCallback(
@@ -241,19 +234,15 @@ function ActiveSkillCard(
 
   return (
     <div
-      class='home-mode-btn skill-card active-skill-card'
+      class={`home-mode-btn skill-card active-skill-card${
+        hasRec ? ' has-rec' : ''
+      }`}
       data-mode={modeId}
-      data-track={trackId}
       role='button'
       tabIndex={0}
       onClick={() => onSelectMode(modeId)}
       onKeyDown={handleKeyDown}
     >
-      {hasRec && (
-        <div class={`skill-rec-banner track-accent-${trackId}`}>
-          <div class='skill-rec-header'>{rec!.detail}</div>
-        </div>
-      )}
       <div class='skill-card-body'>
         <button
           type='button'
@@ -267,11 +256,20 @@ function ActiveSkillCard(
         >
           {'\u2605'}
         </button>
-        <SkillCardHeader
-          modeId={modeId}
-          trackId={trackId}
-          trackLabel={trackLabel}
-        />
+        <span class='skill-card-header'>
+          <SkillIcon modeId={modeId} />
+          <span class='skill-card-header-text'>
+            <span class='home-mode-name'>{name}</span>
+            <TrackPill label={trackLabel} />
+            {hasRec && (
+              <span class='skill-rec-hint'>
+                <strong>{rec!.cueLabel}</strong>
+                {rec!.detail !== rec!.cueLabel &&
+                  ` ${rec!.detail.slice(rec!.cueLabel.length).trimStart()}`}
+              </span>
+            )}
+          </span>
+        </span>
         {progress && progress.groupColors.length > 0 && (
           <div class='skill-card-progress'>
             <GroupProgressBar colors={progress.groupColors} />
@@ -370,7 +368,9 @@ function ActiveSkillsList(
           onToggleStar={onToggleStar}
           onSelectMode={onSelectMode}
           progress={progress.get(modeId)}
-          rec={rec?.detail ? { detail: rec.detail } : undefined}
+          rec={rec?.detail
+            ? { cueLabel: rec.cueLabel, detail: rec.detail }
+            : undefined}
         />
       ))}
     </div>
@@ -382,8 +382,7 @@ function ActiveSkillsList(
 // ---------------------------------------------------------------------------
 
 export function TrackSection(
-  { trackId, label, isExpanded, onToggle, children }: {
-    trackId: string;
+  { label, isExpanded, onToggle, children }: {
     label: string;
     isExpanded: boolean;
     onToggle: () => void;
@@ -394,7 +393,7 @@ export function TrackSection(
     <div class='track-accordion'>
       <button
         type='button'
-        class={`track-accordion-header track-group-${trackId}`}
+        class='track-accordion-header'
         aria-expanded={isExpanded}
         onClick={onToggle}
       >
@@ -629,7 +628,6 @@ function AllSkillsList(
       {TRACKS.map((track) => (
         <TrackSection
           key={track.id}
-          trackId={track.id}
           label={track.label}
           isExpanded={accordion[track.id] !== false}
           onToggle={() => onToggleExpand(track.id)}
@@ -638,7 +636,6 @@ function AllSkillsList(
             <SkillCard
               key={modeId}
               modeId={modeId}
-              trackId={track.id}
               isStarred={starred.has(modeId)}
               onToggleStar={onToggleStar}
               onSelectMode={onSelectMode}
