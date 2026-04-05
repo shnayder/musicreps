@@ -6,6 +6,56 @@ import { describe, it } from 'node:test';
 import * as assert from 'node:assert/strict';
 import { initStorage, storage } from './storage.ts';
 
+// isNative() checks window.Capacitor — in Deno, window is undefined,
+// so we must create it on globalThis to exercise the native path.
+// deno-lint-ignore no-explicit-any
+const g = globalThis as any;
+
+function mockNative() {
+  if (typeof window === 'undefined') g.window = g;
+  g.window.Capacitor = { isNativePlatform: () => true };
+}
+function unmockNative() {
+  delete g.window.Capacitor;
+}
+
+describe('initStorage (native path)', () => {
+  it('throws when called on native without Preferences plugin', async () => {
+    mockNative();
+    try {
+      await assert.rejects(
+        () => initStorage(),
+        (err: Error) => {
+          assert.match(err.message, /without Preferences plugin/);
+          return true;
+        },
+      );
+    } finally {
+      unmockNative();
+    }
+  });
+
+  it('initializes with a mock Preferences plugin', async () => {
+    const data = new Map([['test_key', 'test_val']]);
+    const mock = {
+      keys: () => Promise.resolve({ keys: [...data.keys()] }),
+      get: (o: { key: string }) =>
+        Promise.resolve({ value: data.get(o.key) ?? null }),
+      set: () => Promise.resolve(),
+      remove: () => Promise.resolve(),
+    };
+    mockNative();
+    try {
+      await initStorage(mock);
+      assert.equal(storage.getItem('test_key'), 'test_val');
+    } finally {
+      unmockNative();
+      // Re-init as web to restore module state for subsequent tests.
+      await initStorage();
+    }
+  });
+});
+
 describe('storage (web backend)', () => {
   it('getItem returns null for unknown keys', () => {
     assert.equal(storage.getItem('__test_nonexistent__'), null);
