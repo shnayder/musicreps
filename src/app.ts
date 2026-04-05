@@ -17,6 +17,7 @@ import { cleanupLegacyKeys, HomeScreen } from './ui/home-screen.tsx';
 import { APP_CONFIG } from './app-config.ts';
 import { registerModeForEffort } from './effort.ts';
 import { initStorage, migrateFromLocalStorage } from './storage.ts';
+import { Preferences } from '@capacitor/preferences';
 import { reportHealthy, scheduleUpdateCheck } from './updater.ts';
 
 // Declarative mode definitions + GenericMode
@@ -85,7 +86,7 @@ async function boot() {
   // Initialize storage backend before anything reads persisted data.
   // On web this is instant (localStorage). On native (Capacitor) it
   // bulk-loads Preferences into an in-memory cache.
-  await initStorage();
+  await initStorage(Preferences);
 
   const isNativeApp = !!window.Capacitor;
 
@@ -164,4 +165,22 @@ async function boot() {
 
 boot().catch((err) => {
   console.error('Boot failed:', err);
+  // Show a visible error — especially important for storage init failures
+  // where silently continuing would lose user data.
+  const el = document.getElementById('home-screen');
+  if (el) {
+    el.textContent = '';
+    const msg = document.createElement('div');
+    msg.style.cssText =
+      'padding:2rem;text-align:center;font-family:system-ui;color:#c00';
+    const title = document.createElement('h2');
+    title.textContent = 'Failed to start';
+    const details = document.createElement('p');
+    details.textContent = String(err?.message || err);
+    const help = document.createElement('p');
+    help.style.cssText = 'color:#666;font-size:0.85em';
+    help.textContent = 'Try force-quitting and reopening the app.';
+    msg.append(title, details, help);
+    el.appendChild(msg);
+  }
 });

@@ -124,33 +124,34 @@ function isNative(): boolean {
 
 /**
  * Initialize the storage backend.  Must be called (and awaited) before
- * rendering.  On web this is a no-op.  On native it loads all Preferences
- * keys into the in-memory cache so subsequent reads are synchronous.
+ * rendering.  On web this is a no-op.  On native, pass the Capacitor
+ * Preferences plugin (statically imported by the esbuild entry point)
+ * so it's properly bundled.  Throws if Preferences is missing on native.
  */
-export async function initStorage(): Promise<void> {
+export async function initStorage(
+  preferences?: PreferencesPlugin,
+): Promise<void> {
   if (!isNative()) return; // web — localStorage is already ready
 
-  try {
-    // Dynamic import hidden from Deno's static analyzer (resolved at
-    // runtime by Capacitor's bundled JS in the native WebView).
-    const mod = '@capac' + 'itor/preferences';
-    const { Preferences } = await import(/* @vite-ignore */ mod);
-    _preferences = Preferences;
-
-    // Bulk-load every key into the cache.
-    const { keys } = await Preferences.keys();
-    const cache = new Map<string, string>();
-    const reads = keys.map(async (key: string) => {
-      const { value } = await Preferences.get({ key });
-      if (value !== null) cache.set(key, value);
-    });
-    await Promise.all(reads);
-
-    _nativeCache = cache;
-    _storage = createNativeStorage(Preferences, cache);
-  } catch (_) {
-    // Preferences plugin unavailable — fall back to localStorage.
+  if (!preferences) {
+    throw new Error(
+      'initStorage() called on native without Preferences plugin. ' +
+        'Pass the Capacitor Preferences instance from app.ts.',
+    );
   }
+
+  // Bulk-load every key into the cache.
+  const { keys } = await preferences.keys();
+  const cache = new Map<string, string>();
+  const reads = keys.map(async (key: string) => {
+    const { value } = await preferences.get({ key });
+    if (value !== null) cache.set(key, value);
+  });
+  await Promise.all(reads);
+
+  _preferences = preferences;
+  _nativeCache = cache;
+  _storage = createNativeStorage(preferences, cache);
 }
 
 /**
