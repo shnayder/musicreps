@@ -21,8 +21,9 @@ async function getVersion(): Promise<string> {
       gitText('rev-parse', '--abbrev-ref', 'HEAD'),
       gitText('rev-parse', '--short=6', 'HEAD'),
     ]);
-    if (branch === 'main') {
+    if (branch === 'main' || branch === 'HEAD') {
       // CI sets BUILD_NUMBER via GitHub API — no full history needed.
+      // branch === 'HEAD' happens on detached-HEAD checkouts (e.g. tag builds).
       const envCount = Deno.env.get('BUILD_NUMBER');
       if (envCount) return `#${envCount}`;
       return hash;
