@@ -3174,7 +3174,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="70e0d4 active-skills-cleanup"></div>
+  <div class="home-screen" id="home-screen" data-version="c690c2 active-skills-cleanup"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -7516,7 +7516,7 @@ body.native-app {
               /* @__PURE__ */ u3(TrackPill, { label: trackLabel }),
               hasRec && /* @__PURE__ */ u3("span", { class: "skill-rec-hint", children: [
                 /* @__PURE__ */ u3("strong", { children: rec.cueLabel }),
-                rec.detail !== rec.cueLabel && ` ${rec.detail.slice(rec.cueLabel.length).trimStart()}`
+                rec.detail !== rec.cueLabel && (rec.detail.startsWith(rec.cueLabel) ? ` ${rec.detail.slice(rec.cueLabel.length).trimStart()}` : ` \u2014 ${rec.detail}`)
               ] })
             ] })
           ] }),
