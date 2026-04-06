@@ -3174,7 +3174,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="929961 show-skill-progress-bars-9JGBm"></div>
+  <div class="home-screen" id="home-screen" data-version="729c50 show-skill-progress-bars-9JGBm"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -5988,6 +5988,412 @@ body.native-app {
     );
   }
 
+  // src/mode-utils.ts
+  function buildBidirectionalIds(keys) {
+    const ids = [];
+    for (let i3 = 0; i3 < keys.length; i3++) {
+      ids.push(keys[i3] + ":fwd", keys[i3] + ":rev");
+    }
+    return ids;
+  }
+  function buildMathIds(notes, values) {
+    const ids = [];
+    for (let i3 = 0; i3 < notes.length; i3++) {
+      for (let j3 = 0; j3 < values.length; j3++) {
+        ids.push(notes[i3] + "+" + values[j3], notes[i3] + "-" + values[j3]);
+      }
+    }
+    return ids;
+  }
+  function parseMathId(id) {
+    const match = id.match(/^([A-Ga-g][#b]?)([+-])(.+)$/);
+    if (!match) {
+      return { note: id, op: "+", value: "" };
+    }
+    return {
+      note: match[1],
+      op: match[2],
+      value: match[3]
+    };
+  }
+
+  // src/modes/note-semitones/logic.ts
+  var ALL_ITEMS = buildBidirectionalIds(NOTES.map((n2) => n2.name));
+  function getQuestion(itemId2) {
+    const [noteName, dir] = itemId2.split(":");
+    const note = NOTES.find((n2) => n2.name === noteName);
+    return {
+      noteName: note.name,
+      noteNum: note.num,
+      dir,
+      accidentalChoice: pickRandomAccidental(note.displayName)
+    };
+  }
+  function getStatsRows() {
+    return NOTES.map((note) => ({
+      label: displayNote(note.name),
+      sublabel: String(note.num),
+      _colHeader: "Note",
+      fwdItemId: note.name + ":fwd",
+      revItemId: note.name + ":rev"
+    }));
+  }
+
+  // src/modes/note-semitones/definition.ts
+  var NOTE_SEMITONES_DEF = {
+    id: "noteSemitones",
+    name: "Note \u2194 Semitones",
+    namespace: "noteSemitones",
+    description: MODE_DESCRIPTIONS.noteSemitones,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.noteSemitones,
+    beforeAfter: MODE_BEFORE_AFTER.noteSemitones,
+    itemNoun: "items",
+    allItems: ALL_ITEMS,
+    getQuestion,
+    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.accidentalChoice) : String(q3.noteNum),
+    quizInstruction: (q3) => q3.dir === "fwd" ? "What number?" : "What note?",
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => String(q3.noteNum),
+        comparison: "integer"
+      },
+      rev: {
+        getExpectedValue: (q3) => q3.noteName,
+        comparison: "note-enharmonic",
+        getDisplayAnswer: (q3) => displayNote(q3.accidentalChoice)
+      }
+    },
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 0, 11) : isValidNoteInput(input),
+    getDirection: (q3) => q3.dir,
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "0\u201311" : "Note name",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "number", start: 0, end: 11 },
+      rev: { kind: "note" }
+    },
+    scope: { kind: "none" },
+    stats: {
+      kind: "table",
+      getRows: getStatsRows,
+      fwdHeader: "N\u2192#",
+      revHeader: "#\u2192N"
+    }
+  };
+
+  // src/modes/interval-semitones/logic.ts
+  var ALL_ITEMS2 = buildBidirectionalIds(
+    INTERVALS.map((i3) => i3.abbrev)
+  );
+  function getQuestion2(itemId2) {
+    const [abbrev, dir] = itemId2.split(":");
+    const interval = INTERVALS.find((i3) => i3.abbrev === abbrev);
+    return {
+      abbrev: interval.abbrev,
+      name: interval.name,
+      num: interval.num,
+      dir
+    };
+  }
+  function getStatsRows2() {
+    return INTERVALS.map((interval) => ({
+      label: interval.abbrev,
+      sublabel: String(interval.num),
+      _colHeader: "Interval",
+      fwdItemId: interval.abbrev + ":fwd",
+      revItemId: interval.abbrev + ":rev"
+    }));
+  }
+
+  // src/modes/interval-semitones/definition.ts
+  var INTERVAL_SEMITONES_DEF = {
+    id: "intervalSemitones",
+    name: "Interval \u2194 Semitones",
+    namespace: "intervalSemitones",
+    description: MODE_DESCRIPTIONS.intervalSemitones,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.intervalSemitones,
+    beforeAfter: MODE_BEFORE_AFTER.intervalSemitones,
+    itemNoun: "items",
+    allItems: ALL_ITEMS2,
+    getQuestion: getQuestion2,
+    getPromptText: (q3) => q3.dir === "fwd" ? q3.name : String(q3.num),
+    quizInstruction: (q3) => q3.dir === "fwd" ? "How many semitones?" : "What interval?",
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => String(q3.num),
+        comparison: "integer"
+      },
+      rev: {
+        getExpectedValue: (q3) => q3.abbrev,
+        comparison: "interval"
+      }
+    },
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 1, 12) : isValidIntervalInput(input),
+    getDirection: (q3) => q3.dir,
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "1\u201312" : "Interval (e.g. P5)",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "number", start: 1, end: 12 },
+      rev: { kind: "interval" }
+    },
+    scope: { kind: "none" },
+    stats: {
+      kind: "table",
+      getRows: getStatsRows2,
+      fwdHeader: "I\u2192#",
+      revHeader: "#\u2192I"
+    }
+  };
+
+  // src/modes/semitone-math/logic.ts
+  var DISTANCE_GROUPS = [
+    {
+      id: "dist-1-2",
+      distances: [1, 2],
+      label: "\xB11\u20132",
+      longLabel: "1\u20132 semitones apart"
+    },
+    {
+      id: "dist-3-4",
+      distances: [3, 4],
+      label: "\xB13\u20134",
+      longLabel: "3\u20134 semitones apart"
+    },
+    {
+      id: "dist-5-6",
+      distances: [5, 6],
+      label: "\xB15\u20136",
+      longLabel: "5\u20136 semitones apart"
+    },
+    {
+      id: "dist-7-8",
+      distances: [7, 8],
+      label: "\xB17\u20138",
+      longLabel: "7\u20138 semitones apart"
+    },
+    {
+      id: "dist-9-11",
+      distances: [9, 10, 11],
+      label: "\xB19\u201311",
+      longLabel: "9\u201311 semitones apart"
+    }
+  ];
+  function getItemIdsForGroup(groupId) {
+    const group = DISTANCE_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
+    const items = [];
+    for (const note of NOTES) {
+      for (const d4 of group.distances) {
+        items.push(note.name + "+" + d4);
+        items.push(note.name + "-" + d4);
+      }
+    }
+    return items;
+  }
+  var ALL_ITEMS3 = buildMathIds(
+    NOTES.map((n2) => n2.name),
+    Array.from({ length: 11 }, (_3, i3) => i3 + 1)
+  );
+  var ALL_GROUP_IDS = DISTANCE_GROUPS.map((g2) => g2.id);
+  function getQuestion3(itemId2) {
+    const parsed = parseMathId(itemId2);
+    const noteName = parsed.note;
+    const op = parsed.op;
+    const semitones = parseInt(parsed.value);
+    const note = NOTES.find((n2) => n2.name === noteName);
+    const answer = op === "+" ? noteAdd(note.num, semitones) : noteSub(note.num, semitones);
+    const useFlats = op === "-";
+    const promptNoteName = displayNote(
+      pickAccidentalName(note.displayName, useFlats)
+    );
+    return {
+      note,
+      op,
+      semitones,
+      answer,
+      useFlats,
+      promptText: promptNoteName + " " + op + " " + semitones
+    };
+  }
+  var GRID_COL_LABELS = Array.from(
+    { length: 11 },
+    (_3, i3) => String(i3 + 1)
+  );
+  function getGridItemId(noteName, colIdx) {
+    const n2 = colIdx + 1;
+    return [noteName + "+" + n2, noteName + "-" + n2];
+  }
+
+  // src/modes/semitone-math/definition.ts
+  var SEMITONE_MATH_DEF = {
+    id: "semitoneMath",
+    name: "Semitone Math",
+    namespace: "semitoneMath",
+    description: MODE_DESCRIPTIONS.semitoneMath,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.semitoneMath,
+    beforeAfter: MODE_BEFORE_AFTER.semitoneMath,
+    itemNoun: "items",
+    allItems: ALL_ITEMS3,
+    getQuestion: getQuestion3,
+    getPromptText: (q3) => q3.promptText,
+    quizInstruction: "What note?",
+    answer: {
+      getExpectedValue: (q3) => q3.answer.name,
+      comparison: "note-enharmonic",
+      getDisplayAnswer: (q3) => displayNote(pickAccidentalName(q3.answer.displayName, q3.useFlats))
+    },
+    validateInput: (_q, input) => isValidNoteInput(input),
+    getUseFlats: (q3) => q3.useFlats,
+    inputPlaceholder: "Note name",
+    buttons: { kind: "note" },
+    scope: {
+      kind: "groups",
+      groups: DISTANCE_GROUPS,
+      getItemIdsForGroup,
+      allGroupIds: ALL_GROUP_IDS,
+      storageKey: "semitoneMath_enabledGroups",
+      scopeLabel: "Distances",
+      defaultEnabled: [ALL_GROUP_IDS[0]],
+      formatLabel: (groups) => {
+        if (groups.size === DISTANCE_GROUPS.length) return "all distances";
+        const labels = DISTANCE_GROUPS.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
+        return labels.join(", ") + " semitones";
+      }
+    },
+    stats: {
+      kind: "grid",
+      colLabels: GRID_COL_LABELS,
+      getItemId: getGridItemId
+    }
+  };
+
+  // src/modes/interval-math/logic.ts
+  var MATH_INTERVALS = INTERVALS.filter(
+    (i3) => i3.num >= 1 && i3.num <= 11
+  );
+  var DISTANCE_GROUPS2 = [
+    {
+      id: "seconds",
+      distances: [1, 2],
+      label: "m2 M2",
+      longLabel: "Seconds (m2, M2)"
+    },
+    {
+      id: "thirds",
+      distances: [3, 4],
+      label: "m3 M3",
+      longLabel: "Thirds (m3, M3)"
+    },
+    {
+      id: "fourth-tritone",
+      distances: [5, 6],
+      label: "P4 TT",
+      longLabel: "Fourth & tritone (P4, TT)"
+    },
+    {
+      id: "fifth-sixth",
+      distances: [7, 8],
+      label: "P5 m6",
+      longLabel: "Fifth & minor 6th (P5, m6)"
+    },
+    {
+      id: "sixths-sevenths",
+      distances: [9, 10, 11],
+      label: "M6 m7 M7",
+      longLabel: "Sixths & sevenths (M6, m7, M7)"
+    }
+  ];
+  function getItemIdsForGroup2(groupId) {
+    const group = DISTANCE_GROUPS2.find((g2) => g2.id === groupId);
+    if (!group) return [];
+    const intervals = MATH_INTERVALS.filter(
+      (i3) => group.distances.includes(i3.num)
+    );
+    const items = [];
+    for (const note of NOTES) {
+      for (const interval of intervals) {
+        items.push(note.name + "+" + interval.abbrev);
+        items.push(note.name + "-" + interval.abbrev);
+      }
+    }
+    return items;
+  }
+  var ALL_ITEMS4 = buildMathIds(
+    NOTES.map((n2) => n2.name),
+    MATH_INTERVALS.map((i3) => i3.abbrev)
+  );
+  var ALL_GROUP_IDS2 = DISTANCE_GROUPS2.map((g2) => g2.id);
+  function getQuestion4(itemId2) {
+    const parsed = parseMathId(itemId2);
+    const noteName = parsed.note;
+    const op = parsed.op;
+    const abbrev = parsed.value;
+    const note = NOTES.find((n2) => n2.name === noteName);
+    const interval = MATH_INTERVALS.find((i3) => i3.abbrev === abbrev);
+    const answer = op === "+" ? noteAdd(note.num, interval.num) : noteSub(note.num, interval.num);
+    const useFlats = op === "-";
+    const promptNoteName = displayNote(
+      pickAccidentalName(note.displayName, useFlats)
+    );
+    return {
+      note,
+      op,
+      interval,
+      answer,
+      useFlats,
+      promptText: promptNoteName + " " + op + " " + interval.abbrev
+    };
+  }
+  var GRID_COL_LABELS2 = MATH_INTERVALS.map((i3) => i3.abbrev);
+  function getGridItemId2(noteName, colIdx) {
+    const abbrev = MATH_INTERVALS[colIdx].abbrev;
+    return [noteName + "+" + abbrev, noteName + "-" + abbrev];
+  }
+
+  // src/modes/interval-math/definition.ts
+  var INTERVAL_MATH_DEF = {
+    id: "intervalMath",
+    name: "Interval Math",
+    namespace: "intervalMath",
+    description: MODE_DESCRIPTIONS.intervalMath,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.intervalMath,
+    beforeAfter: MODE_BEFORE_AFTER.intervalMath,
+    itemNoun: "items",
+    allItems: ALL_ITEMS4,
+    getQuestion: getQuestion4,
+    getPromptText: (q3) => q3.promptText,
+    quizInstruction: "What note?",
+    answer: {
+      getExpectedValue: (q3) => q3.answer.name,
+      comparison: "note-enharmonic",
+      getDisplayAnswer: (q3) => displayNote(pickAccidentalName(q3.answer.displayName, q3.useFlats))
+    },
+    validateInput: (_q, input) => isValidNoteInput(input),
+    getUseFlats: (q3) => q3.useFlats,
+    inputPlaceholder: "Note name",
+    buttons: { kind: "note" },
+    scope: {
+      kind: "groups",
+      groups: DISTANCE_GROUPS2,
+      getItemIdsForGroup: getItemIdsForGroup2,
+      allGroupIds: ALL_GROUP_IDS2,
+      storageKey: "intervalMath_enabledGroups",
+      scopeLabel: "Intervals",
+      defaultEnabled: [ALL_GROUP_IDS2[0]],
+      formatLabel: (groups) => {
+        if (groups.size === DISTANCE_GROUPS2.length) return "all intervals";
+        const labels = DISTANCE_GROUPS2.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
+        return labels.join(", ") + " intervals";
+      }
+    },
+    stats: {
+      kind: "grid",
+      colLabels: GRID_COL_LABELS2,
+      getItemId: getGridItemId2
+    }
+  };
+
   // src/modes/key-signatures/logic.ts
   var KEY_GROUPS = [
     {
@@ -6035,7 +6441,7 @@ body.native-app {
     )
   ];
   var ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
-  function getItemIdsForGroup(groupId) {
+  function getItemIdsForGroup3(groupId) {
     const group = ALL_KEY_GROUPS.find((g2) => g2.id === groupId);
     if (!group) return [];
     const items = [];
@@ -6045,17 +6451,17 @@ body.native-app {
     }
     return items;
   }
-  var ALL_ITEMS = [];
+  var ALL_ITEMS5 = [];
   for (const key of MAJOR_KEYS) {
-    ALL_ITEMS.push(key.root + ":fwd");
-    ALL_ITEMS.push(key.root + ":rev");
+    ALL_ITEMS5.push(key.root + ":fwd");
+    ALL_ITEMS5.push(key.root + ":rev");
   }
   for (const minorRoot of MINOR_ROOTS) {
-    ALL_ITEMS.push(minorRoot + "m:fwd");
-    ALL_ITEMS.push(minorRoot + "m:rev");
+    ALL_ITEMS5.push(minorRoot + "m:fwd");
+    ALL_ITEMS5.push(minorRoot + "m:rev");
   }
-  var ALL_GROUP_IDS = ALL_KEY_GROUPS.map((g2) => g2.id);
-  function getQuestion(itemId2) {
+  var ALL_GROUP_IDS3 = ALL_KEY_GROUPS.map((g2) => g2.id);
+  function getQuestion5(itemId2) {
     const [rootPart, dir] = itemId2.split(":");
     const isMinor = rootPart.endsWith("m") && rootPart.length > 1 && MINOR_ROOT_TO_MAJOR.has(rootPart.slice(0, -1));
     if (isMinor) {
@@ -6076,7 +6482,7 @@ body.native-app {
       quality: "major"
     };
   }
-  function getStatsRows() {
+  function getStatsRows3() {
     const majorRows = MAJOR_KEYS.map((key) => ({
       label: displayNote(key.root) + " major",
       sublabel: keySignatureLabel(key),
@@ -6096,6 +6502,61 @@ body.native-app {
     });
     return [...majorRows, ...minorRows];
   }
+
+  // src/modes/key-signatures/definition.ts
+  var KEY_SIGNATURES_DEF = {
+    id: "keySignatures",
+    name: "Key Signatures",
+    namespace: "keySignatures",
+    description: MODE_DESCRIPTIONS.keySignatures,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.keySignatures,
+    beforeAfter: MODE_BEFORE_AFTER.keySignatures,
+    itemNoun: "items",
+    allItems: ALL_ITEMS5,
+    getQuestion: getQuestion5,
+    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.root) + " " + q3.quality : q3.sigLabel + " " + q3.quality,
+    quizInstruction: (q3) => q3.dir === "fwd" ? "What key signature?" : "What key?",
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => q3.sigLabel,
+        comparison: "exact"
+      },
+      rev: {
+        getExpectedValue: (q3) => q3.root,
+        comparison: "note-enharmonic"
+      }
+    },
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidKeysigInput(input) : isValidNoteInput(input),
+    getDirection: (q3) => q3.dir,
+    getUseFlats: (q3) => rootUsesFlats(q3.root),
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Signature (e.g. 2#)" : "Note name",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "split-keysig" },
+      rev: { kind: "note" }
+    },
+    scope: {
+      kind: "groups",
+      groups: ALL_KEY_GROUPS,
+      getItemIdsForGroup: getItemIdsForGroup3,
+      allGroupIds: ALL_GROUP_IDS3,
+      storageKey: "keySignatures_enabledGroups",
+      scopeLabel: "Keys",
+      defaultEnabled: [ALL_GROUP_IDS3[0]],
+      formatLabel: (groups) => {
+        if (groups.size === ALL_KEY_GROUPS.length) return "all keys";
+        const keys = ALL_KEY_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.keys).map((k3) => displayNote(k3));
+        return keys.join(", ");
+      }
+    },
+    stats: {
+      kind: "table",
+      getRows: getStatsRows3,
+      fwdHeader: "Key\u2192Sig",
+      revHeader: "Sig\u2192Key"
+    }
+  };
 
   // src/modes/scale-degrees/logic.ts
   var DEGREE_LABELS2 = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th"];
@@ -6120,7 +6581,7 @@ body.native-app {
       longLabel: "2nd & 6th degrees"
     }
   ];
-  function getItemIdsForGroup2(groupId) {
+  function getItemIdsForGroup4(groupId) {
     const group = DEGREE_GROUPS.find((g2) => g2.id === groupId);
     if (!group) return [];
     const items = [];
@@ -6132,19 +6593,19 @@ body.native-app {
     }
     return items;
   }
-  var ALL_ITEMS2 = [];
+  var ALL_ITEMS6 = [];
   for (const key of MAJOR_KEYS) {
     for (const d4 of ACTIVE_DEGREES) {
-      ALL_ITEMS2.push(key.root + ":" + d4 + ":fwd");
-      ALL_ITEMS2.push(key.root + ":" + d4 + ":rev");
+      ALL_ITEMS6.push(key.root + ":" + d4 + ":fwd");
+      ALL_ITEMS6.push(key.root + ":" + d4 + ":rev");
     }
   }
-  var ALL_GROUP_IDS2 = DEGREE_GROUPS.map((g2) => g2.id);
+  var ALL_GROUP_IDS4 = DEGREE_GROUPS.map((g2) => g2.id);
   var GRID_NOTES = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
     displayName: k3.root
   }));
-  function getQuestion2(itemId2) {
+  function getQuestion6(itemId2) {
     const parts = itemId2.split(":");
     const keyRoot = parts[0];
     const degree = parseInt(parts[1]);
@@ -6152,10 +6613,66 @@ body.native-app {
     const noteName = getScaleDegreeNote(keyRoot, degree);
     return { keyRoot, degree, dir, noteName };
   }
-  function getGridItemId(keyRoot, colIdx) {
+  function getGridItemId3(keyRoot, colIdx) {
     const d4 = ACTIVE_DEGREES[colIdx];
     return [keyRoot + ":" + d4 + ":fwd", keyRoot + ":" + d4 + ":rev"];
   }
+
+  // src/modes/scale-degrees/definition.ts
+  var SCALE_DEGREES_DEF = {
+    id: "scaleDegrees",
+    name: "Scale Degrees",
+    namespace: "scaleDegrees",
+    description: MODE_DESCRIPTIONS.scaleDegrees,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.scaleDegrees,
+    beforeAfter: MODE_BEFORE_AFTER.scaleDegrees,
+    itemNoun: "items",
+    allItems: ALL_ITEMS6,
+    getQuestion: getQuestion6,
+    getPromptText: (q3) => q3.dir === "fwd" ? DEGREE_LABELS2[q3.degree - 1] + " of " + displayNote(q3.keyRoot) + " major" : displayNote(q3.keyRoot) + " major: " + displayNote(q3.noteName),
+    quizInstruction: (q3) => q3.dir === "fwd" ? "What note?" : "What degree?",
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => q3.noteName,
+        comparison: "note-enharmonic"
+      },
+      rev: {
+        getExpectedValue: (q3) => String(q3.degree),
+        comparison: "exact",
+        getDisplayAnswer: (q3) => DEGREE_LABELS2[q3.degree - 1]
+      }
+    },
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : /^[2-7]$/.test(input),
+    getDirection: (q3) => q3.dir,
+    getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Degree (2\u20137)",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "note" },
+      rev: { kind: "degree" }
+    },
+    scope: {
+      kind: "groups",
+      groups: DEGREE_GROUPS,
+      getItemIdsForGroup: getItemIdsForGroup4,
+      allGroupIds: ALL_GROUP_IDS4,
+      storageKey: "scaleDegrees_enabledGroups",
+      scopeLabel: "Degrees",
+      defaultEnabled: [ALL_GROUP_IDS4[0]],
+      formatLabel: (groups) => {
+        if (groups.size === DEGREE_GROUPS.length) return "all degrees";
+        const degrees = DEGREE_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.degrees).sort((a3, b) => a3 - b);
+        return degrees.map((d4) => DEGREE_LABELS2[d4 - 1]).join(", ") + " degrees";
+      }
+    },
+    stats: {
+      kind: "grid",
+      colLabels: ACTIVE_DEGREES.map((d4) => DEGREE_LABELS2[d4 - 1]),
+      getItemId: getGridItemId3,
+      notes: GRID_NOTES
+    }
+  };
 
   // src/modes/diatonic-chords/logic.ts
   var CHORD_GROUPS = [
@@ -6179,7 +6696,7 @@ body.native-app {
       longLabel: "Tertiary chords (iii, vii\xB0)"
     }
   ];
-  function getItemIdsForGroup3(groupId) {
+  function getItemIdsForGroup5(groupId) {
     const group = CHORD_GROUPS.find((g2) => g2.id === groupId);
     if (!group) return [];
     const items = [];
@@ -6191,19 +6708,19 @@ body.native-app {
     }
     return items;
   }
-  var ALL_ITEMS3 = [];
+  var ALL_ITEMS7 = [];
   for (const key of MAJOR_KEYS) {
     for (let d4 = 1; d4 <= 7; d4++) {
-      ALL_ITEMS3.push(key.root + ":" + d4 + ":fwd");
-      ALL_ITEMS3.push(key.root + ":" + d4 + ":rev");
+      ALL_ITEMS7.push(key.root + ":" + d4 + ":fwd");
+      ALL_ITEMS7.push(key.root + ":" + d4 + ":rev");
     }
   }
-  var ALL_GROUP_IDS3 = CHORD_GROUPS.map((g2) => g2.id);
+  var ALL_GROUP_IDS5 = CHORD_GROUPS.map((g2) => g2.id);
   var GRID_NOTES2 = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
     displayName: k3.root
   }));
-  function getQuestion3(itemId2) {
+  function getQuestion7(itemId2) {
     const parts = itemId2.split(":");
     const keyRoot = parts[0];
     const degree = parseInt(parts[1]);
@@ -6218,829 +6735,67 @@ body.native-app {
     if (input === "vii") return "vii\xB0";
     return input;
   }
-  function getGridItemId2(keyRoot, colIdx) {
+  function getGridItemId4(keyRoot, colIdx) {
     const d4 = colIdx + 1;
     return [keyRoot + ":" + d4 + ":fwd", keyRoot + ":" + d4 + ":rev"];
   }
 
-  // src/mode-utils.ts
-  function buildBidirectionalIds(keys) {
-    const ids = [];
-    for (let i3 = 0; i3 < keys.length; i3++) {
-      ids.push(keys[i3] + ":fwd", keys[i3] + ":rev");
-    }
-    return ids;
-  }
-  function buildMathIds(notes, values) {
-    const ids = [];
-    for (let i3 = 0; i3 < notes.length; i3++) {
-      for (let j3 = 0; j3 < values.length; j3++) {
-        ids.push(notes[i3] + "+" + values[j3], notes[i3] + "-" + values[j3]);
+  // src/modes/diatonic-chords/definition.ts
+  var DIATONIC_CHORDS_DEF = {
+    id: "diatonicChords",
+    name: "Diatonic Chords",
+    namespace: "diatonicChords",
+    description: MODE_DESCRIPTIONS.diatonicChords,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.diatonicChords,
+    beforeAfter: MODE_BEFORE_AFTER.diatonicChords,
+    itemNoun: "items",
+    allItems: ALL_ITEMS7,
+    getQuestion: getQuestion7,
+    getPromptText: (q3) => q3.dir === "fwd" ? q3.chord.numeral + " in " + displayNote(q3.keyRoot) + " major" : displayNote(q3.rootNote) + q3.chord.qualityLabel + " in " + displayNote(q3.keyRoot) + " major",
+    quizInstruction: (q3) => q3.dir === "fwd" ? "What chord root?" : "What numeral?",
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => q3.rootNote,
+        comparison: "note-enharmonic",
+        getDisplayAnswer: (q3) => displayNote(q3.rootNote) + " " + q3.chord.quality
+      },
+      rev: {
+        getExpectedValue: (q3) => q3.chord.numeral,
+        comparison: "exact",
+        normalizeInput: normalizeNumeralInput
       }
-    }
-    return ids;
-  }
-  function parseMathId(id) {
-    const match = id.match(/^([A-Ga-g][#b]?)([+-])(.+)$/);
-    if (!match) {
-      return { note: id, op: "+", value: "" };
-    }
-    return {
-      note: match[1],
-      op: match[2],
-      value: match[3]
-    };
-  }
-
-  // src/modes/semitone-math/logic.ts
-  var DISTANCE_GROUPS = [
-    {
-      id: "dist-1-2",
-      distances: [1, 2],
-      label: "\xB11\u20132",
-      longLabel: "1\u20132 semitones apart"
     },
-    {
-      id: "dist-3-4",
-      distances: [3, 4],
-      label: "\xB13\u20134",
-      longLabel: "3\u20134 semitones apart"
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : isValidNumeralInput(input) || /^[1-7]$/.test(input) || input === "vii",
+    getDirection: (q3) => q3.dir,
+    getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Numeral (e.g. IV)",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "note" },
+      rev: { kind: "numeral" }
     },
-    {
-      id: "dist-5-6",
-      distances: [5, 6],
-      label: "\xB15\u20136",
-      longLabel: "5\u20136 semitones apart"
-    },
-    {
-      id: "dist-7-8",
-      distances: [7, 8],
-      label: "\xB17\u20138",
-      longLabel: "7\u20138 semitones apart"
-    },
-    {
-      id: "dist-9-11",
-      distances: [9, 10, 11],
-      label: "\xB19\u201311",
-      longLabel: "9\u201311 semitones apart"
-    }
-  ];
-  function getItemIdsForGroup4(groupId) {
-    const group = DISTANCE_GROUPS.find((g2) => g2.id === groupId);
-    if (!group) return [];
-    const items = [];
-    for (const note of NOTES) {
-      for (const d4 of group.distances) {
-        items.push(note.name + "+" + d4);
-        items.push(note.name + "-" + d4);
+    scope: {
+      kind: "groups",
+      groups: CHORD_GROUPS,
+      getItemIdsForGroup: getItemIdsForGroup5,
+      allGroupIds: ALL_GROUP_IDS5,
+      storageKey: "diatonicChords_enabledGroups",
+      scopeLabel: "Chords",
+      defaultEnabled: [ALL_GROUP_IDS5[0]],
+      formatLabel: (groups) => {
+        if (groups.size === CHORD_GROUPS.length) return "all chords";
+        const numerals = CHORD_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.degrees).sort((a3, b) => a3 - b).map((d4) => ROMAN_NUMERALS[d4 - 1]);
+        return numerals.join(", ") + " chords";
       }
+    },
+    stats: {
+      kind: "grid",
+      colLabels: ROMAN_NUMERALS,
+      getItemId: getGridItemId4,
+      notes: GRID_NOTES2
     }
-    return items;
-  }
-  var ALL_ITEMS4 = buildMathIds(
-    NOTES.map((n2) => n2.name),
-    Array.from({ length: 11 }, (_3, i3) => i3 + 1)
-  );
-  var ALL_GROUP_IDS4 = DISTANCE_GROUPS.map((g2) => g2.id);
-  function getQuestion4(itemId2) {
-    const parsed = parseMathId(itemId2);
-    const noteName = parsed.note;
-    const op = parsed.op;
-    const semitones = parseInt(parsed.value);
-    const note = NOTES.find((n2) => n2.name === noteName);
-    const answer = op === "+" ? noteAdd(note.num, semitones) : noteSub(note.num, semitones);
-    const useFlats = op === "-";
-    const promptNoteName = displayNote(
-      pickAccidentalName(note.displayName, useFlats)
-    );
-    return {
-      note,
-      op,
-      semitones,
-      answer,
-      useFlats,
-      promptText: promptNoteName + " " + op + " " + semitones
-    };
-  }
-  var GRID_COL_LABELS = Array.from(
-    { length: 11 },
-    (_3, i3) => String(i3 + 1)
-  );
-  function getGridItemId3(noteName, colIdx) {
-    const n2 = colIdx + 1;
-    return [noteName + "+" + n2, noteName + "-" + n2];
-  }
-
-  // src/modes/interval-math/logic.ts
-  var MATH_INTERVALS = INTERVALS.filter(
-    (i3) => i3.num >= 1 && i3.num <= 11
-  );
-  var DISTANCE_GROUPS2 = [
-    {
-      id: "seconds",
-      distances: [1, 2],
-      label: "m2 M2",
-      longLabel: "Seconds (m2, M2)"
-    },
-    {
-      id: "thirds",
-      distances: [3, 4],
-      label: "m3 M3",
-      longLabel: "Thirds (m3, M3)"
-    },
-    {
-      id: "fourth-tritone",
-      distances: [5, 6],
-      label: "P4 TT",
-      longLabel: "Fourth & tritone (P4, TT)"
-    },
-    {
-      id: "fifth-sixth",
-      distances: [7, 8],
-      label: "P5 m6",
-      longLabel: "Fifth & minor 6th (P5, m6)"
-    },
-    {
-      id: "sixths-sevenths",
-      distances: [9, 10, 11],
-      label: "M6 m7 M7",
-      longLabel: "Sixths & sevenths (M6, m7, M7)"
-    }
-  ];
-  function getItemIdsForGroup5(groupId) {
-    const group = DISTANCE_GROUPS2.find((g2) => g2.id === groupId);
-    if (!group) return [];
-    const intervals = MATH_INTERVALS.filter(
-      (i3) => group.distances.includes(i3.num)
-    );
-    const items = [];
-    for (const note of NOTES) {
-      for (const interval of intervals) {
-        items.push(note.name + "+" + interval.abbrev);
-        items.push(note.name + "-" + interval.abbrev);
-      }
-    }
-    return items;
-  }
-  var ALL_ITEMS5 = buildMathIds(
-    NOTES.map((n2) => n2.name),
-    MATH_INTERVALS.map((i3) => i3.abbrev)
-  );
-  var ALL_GROUP_IDS5 = DISTANCE_GROUPS2.map((g2) => g2.id);
-  function getQuestion5(itemId2) {
-    const parsed = parseMathId(itemId2);
-    const noteName = parsed.note;
-    const op = parsed.op;
-    const abbrev = parsed.value;
-    const note = NOTES.find((n2) => n2.name === noteName);
-    const interval = MATH_INTERVALS.find((i3) => i3.abbrev === abbrev);
-    const answer = op === "+" ? noteAdd(note.num, interval.num) : noteSub(note.num, interval.num);
-    const useFlats = op === "-";
-    const promptNoteName = displayNote(
-      pickAccidentalName(note.displayName, useFlats)
-    );
-    return {
-      note,
-      op,
-      interval,
-      answer,
-      useFlats,
-      promptText: promptNoteName + " " + op + " " + interval.abbrev
-    };
-  }
-  var GRID_COL_LABELS2 = MATH_INTERVALS.map((i3) => i3.abbrev);
-  function getGridItemId4(noteName, colIdx) {
-    const abbrev = MATH_INTERVALS[colIdx].abbrev;
-    return [noteName + "+" + abbrev, noteName + "-" + abbrev];
-  }
-
-  // src/modes/chord-spelling/logic.ts
-  var GROUP_LONG_LABELS = {
-    0: "Major triads",
-    1: "Minor triads",
-    2: "Dominant 7th",
-    3: "Major 7th",
-    4: "Minor 7th",
-    5: "Diminished, augmented & half-dim",
-    6: "Suspended & 6th chords"
   };
-  var GROUP_IDS = {
-    0: "triads-major",
-    1: "triads-minor",
-    2: "dom-7th",
-    3: "maj-7th",
-    4: "min-7th",
-    5: "dim-aug-hdim",
-    6: "sus-6th"
-  };
-  function buildGroups() {
-    let maxGroup = 0;
-    for (const ct of CHORD_TYPES) {
-      if (ct.group > maxGroup) maxGroup = ct.group;
-    }
-    const result = [];
-    for (let g2 = 0; g2 <= maxGroup; g2++) {
-      const types = CHORD_TYPES.filter((t3) => t3.group === g2);
-      const label = types.map((t3) => t3.symbol || "maj").join(", ");
-      const longLabel = GROUP_LONG_LABELS[g2] ?? label;
-      const id = GROUP_IDS[g2] ?? String(g2);
-      result.push({ id, types, label, longLabel });
-    }
-    return result;
-  }
-  var SPELLING_GROUPS = buildGroups();
-  function getItemIdsForGroup6(groupId) {
-    const group = SPELLING_GROUPS.find((g2) => g2.id === groupId);
-    if (!group) return [];
-    const items = [];
-    for (const root of CHORD_ROOTS) {
-      for (const type of group.types) {
-        items.push(root + ":" + type.name);
-      }
-    }
-    return items;
-  }
-  var ALL_ITEMS6 = [];
-  for (const root of CHORD_ROOTS) {
-    for (const type of CHORD_TYPES) {
-      ALL_ITEMS6.push(root + ":" + type.name);
-    }
-  }
-  var ALL_GROUP_IDS6 = SPELLING_GROUPS.map((g2) => g2.id);
-  var GRID_NOTES3 = CHORD_ROOTS.map((r3) => ({
-    name: r3,
-    displayName: r3
-  }));
-  var GRID_COL_LABELS3 = CHORD_TYPES.map((t3) => t3.symbol || "maj");
-  function parseItem(itemId2) {
-    const colonIdx = itemId2.indexOf(":");
-    const rootName = itemId2.substring(0, colonIdx);
-    const typeName = itemId2.substring(colonIdx + 1);
-    const chordType = CHORD_TYPES.find((t3) => t3.name === typeName);
-    const tones = getChordTones(rootName, chordType);
-    return { rootName, chordType, tones };
-  }
-  function evaluate(q3, inputs) {
-    const perEntry = inputs.map((input, i3) => {
-      const expected = q3.tones[i3];
-      const isCorrect = expected !== void 0 && spelledNoteMatchesInput(expected, input);
-      return {
-        display: isCorrect ? displayNote(expected) : displayNote(input),
-        correct: isCorrect
-      };
-    });
-    return {
-      correct: inputs.length === q3.tones.length && perEntry.every((e3) => e3.correct),
-      correctAnswer: q3.tones.map(displayNote).join(" "),
-      perEntry
-    };
-  }
-  function parseChordInput(text) {
-    return text.trim().split(/\s+/).filter(Boolean).map((token) => {
-      if (token.length === 0) return "";
-      const letter = token[0].toUpperCase();
-      if (!"CDEFGAB".includes(letter)) return token;
-      let suffix = "";
-      for (let i3 = 1; i3 < token.length; i3++) {
-        const ch = token[i3];
-        if (ch === "s" || ch === "S") suffix += "#";
-        else suffix += ch;
-      }
-      return letter + suffix;
-    });
-  }
-  function getGridItemId5(rootName, colIdx) {
-    return rootName + ":" + CHORD_TYPES[colIdx].name;
-  }
-
-  // src/quiz-fretboard-state.ts
-  function createFretboardHelpers(musicData) {
-    const noteNames2 = musicData.notes.map((n2) => n2.name);
-    const fretCount = musicData.fretCount || 13;
-    function getNoteAtPosition2(string, fret) {
-      const offset = musicData.stringOffsets[string];
-      return noteNames2[(offset + fret) % 12];
-    }
-    function parseFretboardItem(itemId2) {
-      const [s3, f4] = itemId2.split("-").map(Number);
-      return {
-        currentString: s3,
-        currentFret: f4,
-        currentNote: getNoteAtPosition2(s3, f4)
-      };
-    }
-    function checkFretboardAnswer(currentNote, input) {
-      const note = musicData.notes.find((n2) => n2.name === currentNote);
-      const correct = !!(note && musicData.noteMatchesInput(note, input));
-      return {
-        correct,
-        correctAnswer: displayNote(currentNote)
-      };
-    }
-    function notePassesFilter(note, noteFilter) {
-      if (noteFilter === "none") return false;
-      if (noteFilter === "all") return true;
-      const isNatural = musicData.naturalNotes.includes(note);
-      return noteFilter === "natural" ? isNatural : !isNatural;
-    }
-    function getFretboardEnabledItems(enabledStrings, noteFilter) {
-      const items = [];
-      for (const s3 of enabledStrings) {
-        for (let f4 = 0; f4 < fretCount; f4++) {
-          const note = getNoteAtPosition2(s3, f4);
-          if (notePassesFilter(note, noteFilter)) {
-            items.push(s3 + "-" + f4);
-          }
-        }
-      }
-      return items;
-    }
-    function getItemIdsForString(string, noteFilter) {
-      const items = [];
-      for (let f4 = 0; f4 < fretCount; f4++) {
-        const note = getNoteAtPosition2(string, f4);
-        if (notePassesFilter(note, noteFilter)) {
-          items.push(string + "-" + f4);
-        }
-      }
-      return items;
-    }
-    function getItemIdsForFretRange(startFret, endFret, noteFilter, stringCount) {
-      const lo = Math.max(0, startFret);
-      const hi = Math.min(endFret, fretCount - 1);
-      const items = [];
-      for (let s3 = 0; s3 < stringCount; s3++) {
-        for (let f4 = lo; f4 <= hi; f4++) {
-          const note = getNoteAtPosition2(s3, f4);
-          if (notePassesFilter(note, noteFilter)) {
-            items.push(s3 + "-" + f4);
-          }
-        }
-      }
-      return items;
-    }
-    return {
-      fretCount,
-      getNoteAtPosition: getNoteAtPosition2,
-      parseFretboardItem,
-      checkFretboardAnswer,
-      getFretboardEnabledItems,
-      getItemIdsForString,
-      getItemIdsForFretRange
-    };
-  }
-
-  // src/modes/fretboard/logic.ts
-  function fretLabel(start, end) {
-    return "Frets " + start + "\u2013" + end;
-  }
-  var FRET_GROUPS = [
-    {
-      id: "frets-0-3-natural",
-      label: () => fretLabel(0, 3),
-      longLabel: () => fretLabel(0, 3) + ", naturals",
-      frets: [0, 3],
-      noteFilter: "natural"
-    },
-    {
-      id: "frets-0-3-sharps",
-      label: () => fretLabel(0, 3) + " \u266F/\u266D",
-      longLabel: () => fretLabel(0, 3) + " \u266F/\u266D",
-      frets: [0, 3],
-      noteFilter: "sharps-flats"
-    },
-    {
-      id: "frets-4-8-natural",
-      label: () => fretLabel(4, 8),
-      longLabel: () => fretLabel(4, 8) + ", naturals",
-      frets: [4, 8],
-      noteFilter: "natural"
-    },
-    {
-      id: "frets-4-8-sharps",
-      label: () => fretLabel(4, 8) + " \u266F/\u266D",
-      longLabel: () => fretLabel(4, 8) + " \u266F/\u266D",
-      frets: [4, 8],
-      noteFilter: "sharps-flats"
-    },
-    {
-      id: "frets-9-12-natural",
-      label: () => fretLabel(9, 12),
-      longLabel: () => fretLabel(9, 12) + ", naturals",
-      frets: [9, 12],
-      noteFilter: "natural"
-    },
-    {
-      id: "frets-9-12-sharps",
-      label: () => fretLabel(9, 12) + " \u266F/\u266D",
-      longLabel: () => fretLabel(9, 12) + " \u266F/\u266D",
-      frets: [9, 12],
-      noteFilter: "sharps-flats"
-    }
-  ];
-  function getGroups(_instrument) {
-    return FRET_GROUPS;
-  }
-  var helpersCache = /* @__PURE__ */ new Map();
-  function getHelpers(instrument) {
-    let h3 = helpersCache.get(instrument.id);
-    if (!h3) {
-      h3 = createFretboardHelpers({
-        notes: NOTES,
-        naturalNotes: NATURAL_NOTES,
-        stringOffsets: instrument.stringOffsets,
-        fretCount: instrument.fretCount,
-        noteMatchesInput
-      });
-      helpersCache.set(instrument.id, h3);
-    }
-    return h3;
-  }
-  function getItemIdsForGroup7(instrument, groupId) {
-    const groups = getGroups(instrument);
-    const group = groups.find((g2) => g2.id === groupId);
-    if (!group) return [];
-    const fb = getHelpers(instrument);
-    return fb.getItemIdsForFretRange(
-      group.frets[0],
-      group.frets[1],
-      group.noteFilter,
-      instrument.stringCount
-    );
-  }
-  function getAllItems(instrument) {
-    const items = [];
-    for (let s3 = 0; s3 < instrument.stringCount; s3++) {
-      for (let f4 = 0; f4 < instrument.fretCount; f4++) {
-        items.push(s3 + "-" + f4);
-      }
-    }
-    return items;
-  }
-  function getAllGroupIds(instrument) {
-    return getGroups(instrument).map((g2) => g2.id);
-  }
-  function getQuestion6(instrument, itemId2) {
-    const fb = getHelpers(instrument);
-    return fb.parseFretboardItem(itemId2);
-  }
-  function formatLabel(instrument, enabledGroups) {
-    const groups = getGroups(instrument);
-    if (enabledGroups.size === groups.length) return "all groups";
-    const labels = groups.filter((g2) => enabledGroups.has(g2.id)).map((g2) => g2.label());
-    return labels.join(", ");
-  }
-
-  // src/modes/note-semitones/logic.ts
-  var ALL_ITEMS7 = buildBidirectionalIds(NOTES.map((n2) => n2.name));
-  function getQuestion7(itemId2) {
-    const [noteName, dir] = itemId2.split(":");
-    const note = NOTES.find((n2) => n2.name === noteName);
-    return {
-      noteName: note.name,
-      noteNum: note.num,
-      dir,
-      accidentalChoice: pickRandomAccidental(note.displayName)
-    };
-  }
-  function getStatsRows2() {
-    return NOTES.map((note) => ({
-      label: displayNote(note.name),
-      sublabel: String(note.num),
-      _colHeader: "Note",
-      fwdItemId: note.name + ":fwd",
-      revItemId: note.name + ":rev"
-    }));
-  }
-
-  // src/modes/interval-semitones/logic.ts
-  var ALL_ITEMS8 = buildBidirectionalIds(
-    INTERVALS.map((i3) => i3.abbrev)
-  );
-  function getQuestion8(itemId2) {
-    const [abbrev, dir] = itemId2.split(":");
-    const interval = INTERVALS.find((i3) => i3.abbrev === abbrev);
-    return {
-      abbrev: interval.abbrev,
-      name: interval.name,
-      num: interval.num,
-      dir
-    };
-  }
-  function getStatsRows3() {
-    return INTERVALS.map((interval) => ({
-      label: interval.abbrev,
-      sublabel: String(interval.num),
-      _colHeader: "Interval",
-      fwdItemId: interval.abbrev + ":fwd",
-      revItemId: interval.abbrev + ":rev"
-    }));
-  }
-
-  // src/modes/speed-tap/logic.ts
-  var noteNames = NOTES.map((n2) => n2.name);
-  var ALL_ITEMS9 = NOTES.map((n2) => n2.name);
-  function getNoteAtPosition(string, fret) {
-    const offset = STRING_OFFSETS[string];
-    return noteNames[(offset + fret) % 12];
-  }
-  function getPositionsForNote(noteName) {
-    const positions = [];
-    for (let s3 = 0; s3 < 6; s3++) {
-      for (let f4 = 0; f4 <= 12; f4++) {
-        if (getNoteAtPosition(s3, f4) === noteName) {
-          positions.push({ string: s3, fret: f4 });
-        }
-      }
-    }
-    return positions;
-  }
-  function parseItem2(itemId2) {
-    const noteData = NOTES.find((n2) => n2.name === itemId2);
-    const name = noteData ? displayNote(pickRandomAccidental(noteData.displayName)) : displayNote(itemId2);
-    return {
-      note: itemId2,
-      displayName: name,
-      positions: getPositionsForNote(itemId2)
-    };
-  }
-  function positionKey(pos) {
-    return pos.string + "-" + pos.fret;
-  }
-  function evaluate2(q3, tapped) {
-    const targetSet = new Set(q3.positions.map(positionKey));
-    const tappedSet = new Set(tapped);
-    const perEntry = tapped.map((pos) => ({
-      positionKey: pos,
-      correct: targetSet.has(pos)
-    }));
-    const missed = [...targetSet].filter((t3) => !tappedSet.has(t3));
-    const correct = perEntry.every((e3) => e3.correct) && missed.length === 0;
-    return {
-      correct,
-      correctAnswer: displayNote(q3.note),
-      perEntry,
-      missed
-    };
-  }
-  var ACCIDENTAL_NOTES = NOTES.filter((n2) => !NATURAL_NOTES.includes(n2.name)).map((n2) => n2.name);
-  var NOTE_GROUPS = [
-    { id: "naturals", label: "Naturals", longLabel: "Natural notes" },
-    { id: "sharps-flats", label: "\u266F/\u266D", longLabel: "Sharps & flats" }
-  ];
-  var ALL_GROUP_IDS7 = NOTE_GROUPS.map((g2) => g2.id);
-  function getItemIdsForGroup8(groupId) {
-    return groupId === "naturals" ? NATURAL_NOTES.slice() : ACCIDENTAL_NOTES.slice();
-  }
-  function formatGroupLabel(enabledGroups) {
-    if (enabledGroups.size === 2) return "all notes";
-    if (enabledGroups.has("sharps-flats")) return "sharps & flats";
-    return "natural notes";
-  }
-
-  // src/modes/chord-shapes/voicings.ts
-  var GUITAR_VOICINGS = [
-    // --- Major ---
-    { root: "C", quality: "major", symbol: "", strings: [0, 1, 0, 2, 3, "x"] },
-    { root: "A", quality: "major", symbol: "", strings: [0, 2, 2, 2, 0, "x"] },
-    { root: "G", quality: "major", symbol: "", strings: [3, 0, 0, 0, 2, 3] },
-    { root: "E", quality: "major", symbol: "", strings: [0, 0, 1, 2, 2, 0] },
-    { root: "D", quality: "major", symbol: "", strings: [2, 3, 2, 0, "x", "x"] },
-    { root: "F", quality: "major", symbol: "", strings: [1, 1, 2, 3, 3, 1] },
-    // --- Minor ---
-    { root: "A", quality: "minor", symbol: "m", strings: [0, 1, 2, 2, 0, "x"] },
-    { root: "E", quality: "minor", symbol: "m", strings: [0, 0, 0, 2, 2, 0] },
-    { root: "D", quality: "minor", symbol: "m", strings: [1, 3, 2, 0, "x", "x"] },
-    // --- Dominant 7th ---
-    { root: "A", quality: "dom7", symbol: "7", strings: [0, 2, 0, 2, 0, "x"] },
-    { root: "B", quality: "dom7", symbol: "7", strings: [2, 0, 2, 1, 2, "x"] },
-    { root: "C", quality: "dom7", symbol: "7", strings: [0, 1, 3, 2, 3, "x"] },
-    { root: "D", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0, "x", "x"] },
-    { root: "E", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0, 2, 0] },
-    { root: "G", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0, 2, 3] }
-  ];
-  var UKULELE_VOICINGS = [
-    // --- Major ---                          // Chart (G C E A)
-    { root: "C", quality: "major", symbol: "", strings: [3, 0, 0, 0] },
-    // 0003
-    { root: "F", quality: "major", symbol: "", strings: [0, 1, 0, 2] },
-    // 2010
-    { root: "G", quality: "major", symbol: "", strings: [2, 3, 2, 0] },
-    // 0232
-    { root: "A", quality: "major", symbol: "", strings: [0, 0, 1, 2] },
-    // 2100
-    { root: "D", quality: "major", symbol: "", strings: [0, 2, 2, 2] },
-    // 2220
-    { root: "Bb", quality: "major", symbol: "", strings: [1, 1, 2, 3] },
-    // 3211
-    // --- Minor ---
-    { root: "A", quality: "minor", symbol: "m", strings: [0, 0, 0, 2] },
-    // 2000
-    { root: "D", quality: "minor", symbol: "m", strings: [0, 1, 2, 2] },
-    // 2210
-    { root: "E", quality: "minor", symbol: "m", strings: [2, 3, 4, 0] },
-    // 0432
-    // --- Dominant 7th ---
-    { root: "C", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0] },
-    { root: "G", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0] },
-    { root: "A", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0] },
-    { root: "D", quality: "dom7", symbol: "7", strings: [3, 2, 2, 2] }
-  ];
-  function getVoicings(instrument) {
-    return instrument === "guitar" ? GUITAR_VOICINGS : UKULELE_VOICINGS;
-  }
-
-  // src/modes/chord-shapes/logic.ts
-  function positionKey2(string, fret) {
-    return string + "-" + fret;
-  }
-  function getPlayedPositions(v3) {
-    const positions = [];
-    for (let s3 = 0; s3 < v3.strings.length; s3++) {
-      const fret = v3.strings[s3];
-      if (fret !== "x") {
-        positions.push(positionKey2(s3, fret));
-      }
-    }
-    return positions;
-  }
-  function getMutedStrings(v3) {
-    const muted = [];
-    for (let s3 = 0; s3 < v3.strings.length; s3++) {
-      if (v3.strings[s3] === "x") muted.push(s3);
-    }
-    return muted;
-  }
-  function itemId(v3) {
-    return v3.root + ":" + v3.quality;
-  }
-  function parseItem3(instrument, id) {
-    const voicing = findVoicing(instrument, id);
-    return buildQuestion(voicing);
-  }
-  function findVoicing(instrument, id) {
-    const voicings = getVoicings(instrument);
-    const v3 = voicings.find((v4) => itemId(v4) === id);
-    if (!v3) throw new Error("Unknown chord voicing: " + id);
-    return v3;
-  }
-  function buildQuestion(v3) {
-    return {
-      root: v3.root,
-      quality: v3.quality,
-      displayName: chordDisplayName(v3),
-      voicing: v3,
-      playedPositions: getPlayedPositions(v3),
-      mutedStrings: getMutedStrings(v3)
-    };
-  }
-  function chordDisplayName(v3) {
-    return displayNote(v3.root) + v3.symbol;
-  }
-  function allItems(instrument) {
-    return getVoicings(instrument).map(itemId);
-  }
-  function evaluate3(q3, tapped) {
-    const targetSet = new Set(q3.playedPositions);
-    const tappedSet = new Set(tapped);
-    const perEntry = tapped.map((pos) => ({
-      positionKey: pos,
-      correct: targetSet.has(pos)
-    }));
-    const missed = [...targetSet].filter((t3) => !tappedSet.has(t3));
-    const correct = perEntry.every((e3) => e3.correct) && missed.length === 0;
-    return {
-      correct,
-      correctAnswer: q3.displayName,
-      perEntry,
-      missed
-    };
-  }
-  var QUALITY_GROUPS = [
-    { id: "major", label: "Major", longLabel: "Major chords" },
-    { id: "minor", label: "Minor", longLabel: "Minor chords" },
-    { id: "dom7", label: "7th", longLabel: "Dominant 7th chords" }
-  ];
-  var ALL_GROUP_IDS8 = QUALITY_GROUPS.map((g2) => g2.id);
-  function getItemIdsForGroup9(instrument, groupId) {
-    return getVoicings(instrument).filter((v3) => v3.quality === groupId).map(itemId);
-  }
-  function formatGroupLabel2(enabledGroups) {
-    if (enabledGroups.size === 3) return "all chords";
-    const labels = [];
-    if (enabledGroups.has("major")) labels.push("major");
-    if (enabledGroups.has("minor")) labels.push("minor");
-    if (enabledGroups.has("dom7")) labels.push("7th");
-    return labels.join(" & ");
-  }
-
-  // src/mode-progress-manifest.ts
-  function buildGroupEntries(groups, getIds) {
-    return groups.map((g2) => ({
-      id: g2.id,
-      label: g2.label,
-      longLabel: g2.longLabel,
-      getItemIds: () => getIds(g2.id)
-    }));
-  }
-  var guitarGroups = getGroups(GUITAR);
-  var ukuleleGroups = getGroups(UKULELE);
-  var MODE_PROGRESS_MANIFEST = [
-    {
-      modeId: "fretboard",
-      namespace: "fretboard",
-      groups: guitarGroups.map((g2) => ({
-        id: g2.id,
-        label: g2.label,
-        longLabel: g2.longLabel,
-        getItemIds: () => getItemIdsForGroup7(GUITAR, g2.id)
-      })),
-      allItemIds: () => getAllItems(GUITAR)
-    },
-    {
-      modeId: "ukulele",
-      namespace: "ukulele",
-      groups: ukuleleGroups.map((g2) => ({
-        id: g2.id,
-        label: g2.label,
-        longLabel: g2.longLabel,
-        getItemIds: () => getItemIdsForGroup7(UKULELE, g2.id)
-      })),
-      allItemIds: () => getAllItems(UKULELE)
-    },
-    {
-      modeId: "noteSemitones",
-      namespace: "noteSemitones",
-      groups: [{ id: "all", label: "All", getItemIds: () => ALL_ITEMS7 }],
-      allItemIds: () => ALL_ITEMS7
-    },
-    {
-      modeId: "intervalSemitones",
-      namespace: "intervalSemitones",
-      groups: [{ id: "all", label: "All", getItemIds: () => ALL_ITEMS8 }],
-      allItemIds: () => ALL_ITEMS8
-    },
-    {
-      modeId: "semitoneMath",
-      namespace: "semitoneMath",
-      groups: buildGroupEntries(DISTANCE_GROUPS, getItemIdsForGroup4),
-      allItemIds: () => ALL_ITEMS4
-    },
-    {
-      modeId: "intervalMath",
-      namespace: "intervalMath",
-      groups: buildGroupEntries(DISTANCE_GROUPS2, getItemIdsForGroup5),
-      allItemIds: () => ALL_ITEMS5
-    },
-    {
-      modeId: "keySignatures",
-      namespace: "keySignatures",
-      groups: buildGroupEntries(ALL_KEY_GROUPS, getItemIdsForGroup),
-      allItemIds: () => ALL_ITEMS
-    },
-    {
-      modeId: "scaleDegrees",
-      namespace: "scaleDegrees",
-      groups: buildGroupEntries(DEGREE_GROUPS, getItemIdsForGroup2),
-      allItemIds: () => ALL_ITEMS2
-    },
-    {
-      modeId: "diatonicChords",
-      namespace: "diatonicChords",
-      groups: buildGroupEntries(CHORD_GROUPS, getItemIdsForGroup3),
-      allItemIds: () => ALL_ITEMS3
-    },
-    {
-      modeId: "chordSpelling",
-      namespace: "chordSpelling",
-      groups: buildGroupEntries(SPELLING_GROUPS, getItemIdsForGroup6),
-      allItemIds: () => ALL_ITEMS6
-    },
-    {
-      modeId: "speedTap",
-      namespace: "speedTap",
-      groups: [{ id: "all", label: "All", getItemIds: () => ALL_ITEMS9 }],
-      allItemIds: () => ALL_ITEMS9
-    },
-    {
-      modeId: "guitarChordShapes",
-      namespace: "guitarChordShapes",
-      groups: buildGroupEntries(
-        QUALITY_GROUPS,
-        (id) => getItemIdsForGroup9("guitar", id)
-      ),
-      allItemIds: () => allItems("guitar")
-    },
-    {
-      modeId: "ukuleleChordShapes",
-      namespace: "ukuleleChordShapes",
-      groups: buildGroupEntries(
-        QUALITY_GROUPS,
-        (id) => getItemIdsForGroup9("ukulele", id)
-      ),
-      allItemIds: () => allItems("ukulele")
-    }
-  ];
 
   // src/stats-display.ts
   var _heatmapColors = null;
@@ -7243,6 +6998,977 @@ body.native-app {
     html += "</div>";
     return html;
   }
+
+  // src/fretboard.ts
+  var fretPositions = [
+    0,
+    56,
+    110,
+    163,
+    214,
+    264,
+    311,
+    358,
+    402,
+    445,
+    486,
+    526,
+    564,
+    600
+  ];
+  var MAX_FRET_COUNT = fretPositions.length - 1;
+  var PAD_X = 18;
+  var STRING_GAP = 50;
+  function stringX(stringIndex, stringCount) {
+    return PAD_X + (stringCount - 1 - stringIndex) * STRING_GAP;
+  }
+  function noteY(fret) {
+    return fret === 0 ? (fretPositions[0] + fretPositions[1]) / 2 : (fretPositions[fret] + fretPositions[fret + 1]) / 2;
+  }
+  function svgWidth(stringCount) {
+    return (stringCount - 1) * STRING_GAP + PAD_X * 2;
+  }
+  var SVG_HEIGHT = fretPositions[fretPositions.length - 1];
+  function fretLines(width) {
+    return fretPositions.slice(2).map(
+      (y3) => `<line class="fb-fret" x1="0" y1="${y3}" x2="${width}" y2="${y3}" stroke-width="1"/>`
+    ).join("\n      ");
+  }
+  function stringLines(stringCount = 6) {
+    return Array.from({ length: stringCount }, (_3, i3) => {
+      const thickness = 1 + i3 * 0.4;
+      const x2 = stringX(i3, stringCount);
+      return `<line class="fb-string" x1="${x2}" y1="0" x2="${x2}" y2="${SVG_HEIGHT}" stroke-width="${thickness}"/>`;
+    }).join("\n      ");
+  }
+  function fretMarkerDots(stringCount = 6, markers = [3, 5, 7, 9, 12], fretCount = 13) {
+    const w3 = svgWidth(stringCount);
+    return markers.filter((fret) => fret < fretCount).map((fret) => {
+      const cy = noteY(fret);
+      if (fret === 12) {
+        let x1, x2;
+        if (stringCount <= 4) {
+          x1 = stringX(1, stringCount);
+          x2 = stringX(stringCount - 2, stringCount);
+        } else {
+          x1 = (stringX(1, stringCount) + stringX(2, stringCount)) / 2;
+          x2 = (stringX(stringCount - 3, stringCount) + stringX(stringCount - 2, stringCount)) / 2;
+        }
+        return `<circle class="fb-marker" cx="${x1}" cy="${cy}" r="4"/><circle class="fb-marker" cx="${x2}" cy="${cy}" r="4"/>`;
+      }
+      return `<circle class="fb-marker" cx="${w3 / 2}" cy="${cy}" r="4"/>`;
+    }).join("\n      ");
+  }
+  var POSITION_CIRCLE_R = 14;
+  function positionCircles(stringCount = 6, fretCount = 13) {
+    if (fretCount > MAX_FRET_COUNT) {
+      throw new Error(
+        `fretCount ${fretCount} exceeds max ${MAX_FRET_COUNT} (fretPositions has ${fretPositions.length} entries)`
+      );
+    }
+    return Array.from(
+      { length: stringCount },
+      (_3, string) => Array.from({ length: fretCount }, (_4, fret) => {
+        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${stringX(string, stringCount)}" cy="${noteY(fret)}" r="${POSITION_CIRCLE_R}"/>`;
+      }).join("\n      ")
+    ).join("\n      ");
+  }
+  function tapTargetRects(stringCount = 6, fretCount = 13) {
+    const w3 = svgWidth(stringCount);
+    return Array.from(
+      { length: stringCount },
+      (_3, string) => Array.from({ length: fretCount }, (_4, fret) => {
+        const cx = stringX(string, stringCount);
+        const x2 = Math.max(0, cx - STRING_GAP / 2);
+        const right = Math.min(w3, cx + STRING_GAP / 2);
+        const y3 = fret === 0 ? 0 : fretPositions[fret];
+        const bottom = fretPositions[fret + 1] ?? fretPositions[fretPositions.length - 1];
+        return `<rect class="fb-tap" data-string="${string}" data-fret="${fret}" x="${x2}" y="${y3}" width="${right - x2}" height="${bottom - y3}"/>`;
+      }).join("\n      ")
+    ).join("\n      ");
+  }
+  function fretboardSVG(config = {}) {
+    const sc = config.stringCount ?? 6;
+    const fc = config.fretCount ?? 13;
+    const w3 = svgWidth(sc);
+    const markers = config.fretMarkers ?? [3, 5, 7, 9, 12];
+    const idAttr = config.id ? ` id="${config.id}"` : "";
+    return `<div class="fretboard-wrapper">
+      <div class="fretboard-container">
+        <svg class="fretboard"${idAttr} viewBox="0 0 ${w3} ${SVG_HEIGHT}">
+          <!-- Fret marker dots (inlays) -->
+          ${fretMarkerDots(sc, markers, fc)}
+          <!-- Nut (horizontal bar at top) -->
+          <rect class="fb-nut" x="0" y="${fretPositions[1] - 2}" width="${w3}" height="4" rx="1"/>
+          <!-- Frets (horizontal lines) -->
+          ${fretLines(w3)}
+          <!-- Strings (vertical lines) -->
+          ${stringLines(sc)}
+          <!-- Position circles -->
+          ${positionCircles(sc, fc)}
+          ${config.tapTargets ? "<!-- Tap targets -->\n          " + tapTargetRects(sc, fc) : ""}
+        </svg>
+      </div>
+    </div>`;
+  }
+
+  // src/quiz-fretboard-state.ts
+  function createFretboardHelpers(musicData) {
+    const noteNames2 = musicData.notes.map((n2) => n2.name);
+    const fretCount = musicData.fretCount || 13;
+    function getNoteAtPosition2(string, fret) {
+      const offset = musicData.stringOffsets[string];
+      return noteNames2[(offset + fret) % 12];
+    }
+    function parseFretboardItem(itemId2) {
+      const [s3, f4] = itemId2.split("-").map(Number);
+      return {
+        currentString: s3,
+        currentFret: f4,
+        currentNote: getNoteAtPosition2(s3, f4)
+      };
+    }
+    function checkFretboardAnswer(currentNote, input) {
+      const note = musicData.notes.find((n2) => n2.name === currentNote);
+      const correct = !!(note && musicData.noteMatchesInput(note, input));
+      return {
+        correct,
+        correctAnswer: displayNote(currentNote)
+      };
+    }
+    function notePassesFilter(note, noteFilter) {
+      if (noteFilter === "none") return false;
+      if (noteFilter === "all") return true;
+      const isNatural = musicData.naturalNotes.includes(note);
+      return noteFilter === "natural" ? isNatural : !isNatural;
+    }
+    function getFretboardEnabledItems(enabledStrings, noteFilter) {
+      const items = [];
+      for (const s3 of enabledStrings) {
+        for (let f4 = 0; f4 < fretCount; f4++) {
+          const note = getNoteAtPosition2(s3, f4);
+          if (notePassesFilter(note, noteFilter)) {
+            items.push(s3 + "-" + f4);
+          }
+        }
+      }
+      return items;
+    }
+    function getItemIdsForString(string, noteFilter) {
+      const items = [];
+      for (let f4 = 0; f4 < fretCount; f4++) {
+        const note = getNoteAtPosition2(string, f4);
+        if (notePassesFilter(note, noteFilter)) {
+          items.push(string + "-" + f4);
+        }
+      }
+      return items;
+    }
+    function getItemIdsForFretRange(startFret, endFret, noteFilter, stringCount) {
+      const lo = Math.max(0, startFret);
+      const hi = Math.min(endFret, fretCount - 1);
+      const items = [];
+      for (let s3 = 0; s3 < stringCount; s3++) {
+        for (let f4 = lo; f4 <= hi; f4++) {
+          const note = getNoteAtPosition2(s3, f4);
+          if (notePassesFilter(note, noteFilter)) {
+            items.push(s3 + "-" + f4);
+          }
+        }
+      }
+      return items;
+    }
+    return {
+      fretCount,
+      getNoteAtPosition: getNoteAtPosition2,
+      parseFretboardItem,
+      checkFretboardAnswer,
+      getFretboardEnabledItems,
+      getItemIdsForString,
+      getItemIdsForFretRange
+    };
+  }
+
+  // src/modes/fretboard/logic.ts
+  function fretLabel(start, end) {
+    return "Frets " + start + "\u2013" + end;
+  }
+  var FRET_GROUPS = [
+    {
+      id: "frets-0-3-natural",
+      label: () => fretLabel(0, 3),
+      longLabel: () => fretLabel(0, 3) + ", naturals",
+      frets: [0, 3],
+      noteFilter: "natural"
+    },
+    {
+      id: "frets-0-3-sharps",
+      label: () => fretLabel(0, 3) + " \u266F/\u266D",
+      longLabel: () => fretLabel(0, 3) + " \u266F/\u266D",
+      frets: [0, 3],
+      noteFilter: "sharps-flats"
+    },
+    {
+      id: "frets-4-8-natural",
+      label: () => fretLabel(4, 8),
+      longLabel: () => fretLabel(4, 8) + ", naturals",
+      frets: [4, 8],
+      noteFilter: "natural"
+    },
+    {
+      id: "frets-4-8-sharps",
+      label: () => fretLabel(4, 8) + " \u266F/\u266D",
+      longLabel: () => fretLabel(4, 8) + " \u266F/\u266D",
+      frets: [4, 8],
+      noteFilter: "sharps-flats"
+    },
+    {
+      id: "frets-9-12-natural",
+      label: () => fretLabel(9, 12),
+      longLabel: () => fretLabel(9, 12) + ", naturals",
+      frets: [9, 12],
+      noteFilter: "natural"
+    },
+    {
+      id: "frets-9-12-sharps",
+      label: () => fretLabel(9, 12) + " \u266F/\u266D",
+      longLabel: () => fretLabel(9, 12) + " \u266F/\u266D",
+      frets: [9, 12],
+      noteFilter: "sharps-flats"
+    }
+  ];
+  function getGroups(_instrument) {
+    return FRET_GROUPS;
+  }
+  var helpersCache = /* @__PURE__ */ new Map();
+  function getHelpers(instrument) {
+    let h3 = helpersCache.get(instrument.id);
+    if (!h3) {
+      h3 = createFretboardHelpers({
+        notes: NOTES,
+        naturalNotes: NATURAL_NOTES,
+        stringOffsets: instrument.stringOffsets,
+        fretCount: instrument.fretCount,
+        noteMatchesInput
+      });
+      helpersCache.set(instrument.id, h3);
+    }
+    return h3;
+  }
+  function getItemIdsForGroup6(instrument, groupId) {
+    const groups = getGroups(instrument);
+    const group = groups.find((g2) => g2.id === groupId);
+    if (!group) return [];
+    const fb = getHelpers(instrument);
+    return fb.getItemIdsForFretRange(
+      group.frets[0],
+      group.frets[1],
+      group.noteFilter,
+      instrument.stringCount
+    );
+  }
+  function getAllItems(instrument) {
+    const items = [];
+    for (let s3 = 0; s3 < instrument.stringCount; s3++) {
+      for (let f4 = 0; f4 < instrument.fretCount; f4++) {
+        items.push(s3 + "-" + f4);
+      }
+    }
+    return items;
+  }
+  function getAllGroupIds(instrument) {
+    return getGroups(instrument).map((g2) => g2.id);
+  }
+  function getQuestion8(instrument, itemId2) {
+    const fb = getHelpers(instrument);
+    return fb.parseFretboardItem(itemId2);
+  }
+  function formatLabel(instrument, enabledGroups) {
+    const groups = getGroups(instrument);
+    if (enabledGroups.size === groups.length) return "all groups";
+    const labels = groups.filter((g2) => enabledGroups.has(g2.id)).map((g2) => g2.label());
+    return labels.join(", ");
+  }
+
+  // src/modes/fretboard/definition.tsx
+  var FB_QUIZ_HL = "hsl(50, 100%, 50%)";
+  function setCircleFill(root, string, fret, color) {
+    const circle = root.querySelector(
+      'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]'
+    );
+    if (circle) circle.style.fill = color;
+  }
+  function clearAll(root) {
+    root.querySelectorAll(".fb-pos").forEach((c3) => {
+      c3.style.fill = "";
+    });
+  }
+  function createFretboardDef(instrument) {
+    const groups = getGroups(instrument);
+    const allItems2 = getAllItems(instrument);
+    const allGroupIds = getAllGroupIds(instrument);
+    return {
+      id: instrument.id,
+      name: instrument.name,
+      namespace: instrument.storageNamespace,
+      description: MODE_DESCRIPTIONS[instrument.id],
+      aboutDescription: MODE_ABOUT_DESCRIPTIONS[instrument.id],
+      beforeAfter: MODE_BEFORE_AFTER[instrument.id],
+      itemNoun: "positions",
+      allItems: allItems2,
+      getQuestion: (itemId2) => getQuestion8(instrument, itemId2),
+      getPromptText: () => "Name this note",
+      quizInstruction: "What note is this?",
+      answer: {
+        getExpectedValue: (q3) => q3.currentNote,
+        comparison: "note-enharmonic"
+      },
+      validateInput: (_q, input) => isValidNoteInput(input),
+      buttons: { kind: "note", columns: 6 },
+      scope: {
+        kind: "groups",
+        groups,
+        getItemIdsForGroup: (id) => getItemIdsForGroup6(instrument, id),
+        allGroupIds,
+        storageKey: instrument.storageNamespace + "_enabledGroups",
+        scopeLabel: "Groups",
+        defaultEnabled: [allGroupIds[0]],
+        formatLabel: (enabled) => formatLabel(instrument, enabled)
+      },
+      stats: { kind: "none" },
+      useController: (enabledGroups) => useFretboardController(instrument, groups, enabledGroups)
+    };
+  }
+  function renderFretboardPrompt(q3, quizFbRef, svgHTML) {
+    const el = quizFbRef.current;
+    if (el) {
+      clearAll(el);
+      setCircleFill(el, q3.currentString, q3.currentFret, FB_QUIZ_HL);
+    }
+    return /* @__PURE__ */ u3(
+      "div",
+      {
+        ref: quizFbRef,
+        dangerouslySetInnerHTML: { __html: svgHTML }
+      }
+    );
+  }
+  function renderFretboardStats(selector, instrument, svgHTML, progressFbRef) {
+    return /* @__PURE__ */ u3(
+      "div",
+      {
+        ref: (el) => {
+          progressFbRef.current = el;
+          if (!el) return;
+          for (let s3 = 0; s3 < instrument.stringCount; s3++) {
+            for (let f4 = 0; f4 < instrument.fretCount; f4++) {
+              const itemId2 = s3 + "-" + f4;
+              const color = getStatsCellColor(selector, itemId2);
+              setCircleFill(el, s3, f4, color);
+            }
+          }
+        },
+        dangerouslySetInnerHTML: { __html: svgHTML }
+      }
+    );
+  }
+  function useFretboardController(instrument, groups, enabledGroups) {
+    const quizFbRef = A2(null);
+    const progressFbRef = A2(null);
+    const svgHTML = T2(
+      () => fretboardSVG({
+        stringCount: instrument.stringCount,
+        fretCount: instrument.fretCount,
+        fretMarkers: instrument.fretMarkers
+      }),
+      [instrument]
+    );
+    const hasAccidentals = T2(() => {
+      for (const id of enabledGroups) {
+        const g2 = groups.find((g3) => g3.id === id);
+        if (g2?.noteFilter === "sharps-flats") return true;
+      }
+      return false;
+    }, [enabledGroups, groups]);
+    const engineSubmitRef = A2(() => {
+    });
+    const hasAccidentalsRef = A2(hasAccidentals);
+    hasAccidentalsRef.current = hasAccidentals;
+    const [pendingNote, setPendingNote] = d2(null);
+    const noteHandler = T2(
+      () => createAdaptiveKeyHandler(
+        (note) => engineSubmitRef.current(note),
+        () => hasAccidentalsRef.current,
+        setPendingNote
+      ),
+      []
+    );
+    const narrowing = T2(
+      () => noteNarrowingSet(pendingNote),
+      [pendingNote]
+    );
+    const renderPrompt = q2(
+      (q3) => renderFretboardPrompt(q3, quizFbRef, svgHTML),
+      [svgHTML]
+    );
+    const renderStats = q2(
+      (selector) => renderFretboardStats(selector, instrument, svgHTML, progressFbRef),
+      [svgHTML, instrument]
+    );
+    return {
+      renderPrompt,
+      renderStats,
+      onAnswer: (itemId2, result) => {
+        if (quizFbRef.current) {
+          const q3 = getQuestion8(instrument, itemId2);
+          const color = result.correct ? "var(--color-success)" : "var(--color-error)";
+          setCircleFill(quizFbRef.current, q3.currentString, q3.currentFret, color);
+        }
+      },
+      onStart: () => noteHandler.reset(),
+      onStop: () => {
+        noteHandler.reset();
+        if (quizFbRef.current) clearAll(quizFbRef.current);
+      },
+      handleKey: (e3, _ctx) => {
+        engineSubmitRef.current = _ctx.submitAnswer;
+        return noteHandler.handleKey(e3);
+      },
+      deactivateCleanup: () => noteHandler.reset(),
+      narrowing,
+      hideAccidentals: !hasAccidentals,
+      buttonColumns: hasAccidentals ? void 0 : 4
+    };
+  }
+
+  // src/modes/chord-spelling/logic.ts
+  var GROUP_LONG_LABELS = {
+    0: "Major triads",
+    1: "Minor triads",
+    2: "Dominant 7th",
+    3: "Major 7th",
+    4: "Minor 7th",
+    5: "Diminished, augmented & half-dim",
+    6: "Suspended & 6th chords"
+  };
+  var GROUP_IDS = {
+    0: "triads-major",
+    1: "triads-minor",
+    2: "dom-7th",
+    3: "maj-7th",
+    4: "min-7th",
+    5: "dim-aug-hdim",
+    6: "sus-6th"
+  };
+  function buildGroups() {
+    let maxGroup = 0;
+    for (const ct of CHORD_TYPES) {
+      if (ct.group > maxGroup) maxGroup = ct.group;
+    }
+    const result = [];
+    for (let g2 = 0; g2 <= maxGroup; g2++) {
+      const types = CHORD_TYPES.filter((t3) => t3.group === g2);
+      const label = types.map((t3) => t3.symbol || "maj").join(", ");
+      const longLabel = GROUP_LONG_LABELS[g2] ?? label;
+      const id = GROUP_IDS[g2] ?? String(g2);
+      result.push({ id, types, label, longLabel });
+    }
+    return result;
+  }
+  var SPELLING_GROUPS = buildGroups();
+  function getItemIdsForGroup7(groupId) {
+    const group = SPELLING_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
+    const items = [];
+    for (const root of CHORD_ROOTS) {
+      for (const type of group.types) {
+        items.push(root + ":" + type.name);
+      }
+    }
+    return items;
+  }
+  var ALL_ITEMS8 = [];
+  for (const root of CHORD_ROOTS) {
+    for (const type of CHORD_TYPES) {
+      ALL_ITEMS8.push(root + ":" + type.name);
+    }
+  }
+  var ALL_GROUP_IDS6 = SPELLING_GROUPS.map((g2) => g2.id);
+  var GRID_NOTES3 = CHORD_ROOTS.map((r3) => ({
+    name: r3,
+    displayName: r3
+  }));
+  var GRID_COL_LABELS3 = CHORD_TYPES.map((t3) => t3.symbol || "maj");
+  function parseItem(itemId2) {
+    const colonIdx = itemId2.indexOf(":");
+    const rootName = itemId2.substring(0, colonIdx);
+    const typeName = itemId2.substring(colonIdx + 1);
+    const chordType = CHORD_TYPES.find((t3) => t3.name === typeName);
+    const tones = getChordTones(rootName, chordType);
+    return { rootName, chordType, tones };
+  }
+  function evaluate(q3, inputs) {
+    const perEntry = inputs.map((input, i3) => {
+      const expected = q3.tones[i3];
+      const isCorrect = expected !== void 0 && spelledNoteMatchesInput(expected, input);
+      return {
+        display: isCorrect ? displayNote(expected) : displayNote(input),
+        correct: isCorrect
+      };
+    });
+    return {
+      correct: inputs.length === q3.tones.length && perEntry.every((e3) => e3.correct),
+      correctAnswer: q3.tones.map(displayNote).join(" "),
+      perEntry
+    };
+  }
+  function parseChordInput(text) {
+    return text.trim().split(/\s+/).filter(Boolean).map((token) => {
+      if (token.length === 0) return "";
+      const letter = token[0].toUpperCase();
+      if (!"CDEFGAB".includes(letter)) return token;
+      let suffix = "";
+      for (let i3 = 1; i3 < token.length; i3++) {
+        const ch = token[i3];
+        if (ch === "s" || ch === "S") suffix += "#";
+        else suffix += ch;
+      }
+      return letter + suffix;
+    });
+  }
+  function getGridItemId5(rootName, colIdx) {
+    return rootName + ":" + CHORD_TYPES[colIdx].name;
+  }
+
+  // src/modes/chord-spelling/definition.ts
+  var CHORD_SPELLING_DEF = {
+    id: "chordSpelling",
+    name: "Chord Spelling",
+    namespace: "chordSpelling",
+    motorTaskType: "chord-sequence",
+    description: MODE_DESCRIPTIONS.chordSpelling,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.chordSpelling,
+    beforeAfter: MODE_BEFORE_AFTER.chordSpelling,
+    itemNoun: "items",
+    allItems: ALL_ITEMS8,
+    getQuestion: (itemId2) => parseItem(itemId2),
+    getPromptText: (q3) => displayNote(q3.rootName) + q3.chordType.symbol,
+    quizInstruction: "Spell this chord",
+    // Sequential: collect N notes, then evaluate all at once
+    sequential: {
+      expectedCount: (q3) => q3.tones.length,
+      evaluate,
+      parseBatchInput: parseChordInput,
+      batchPlaceholder: "e.g. C E G \u2014 Enter"
+    },
+    buttons: { kind: "split-note" },
+    scope: {
+      kind: "groups",
+      groups: SPELLING_GROUPS,
+      getItemIdsForGroup: getItemIdsForGroup7,
+      allGroupIds: ALL_GROUP_IDS6,
+      storageKey: "chordSpelling_enabledGroups",
+      scopeLabel: "Chord types",
+      defaultEnabled: [ALL_GROUP_IDS6[0]],
+      formatLabel: (groups) => {
+        if (groups.size === SPELLING_GROUPS.length) return "all chord types";
+        const labels = SPELLING_GROUPS.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
+        return labels.join(", ") + " chords";
+      }
+    },
+    stats: {
+      kind: "grid",
+      colLabels: GRID_COL_LABELS3,
+      getItemId: getGridItemId5,
+      notes: GRID_NOTES3
+    }
+  };
+
+  // src/modes/speed-tap/logic.ts
+  var noteNames = NOTES.map((n2) => n2.name);
+  var ALL_ITEMS9 = NOTES.map((n2) => n2.name);
+  function getNoteAtPosition(string, fret) {
+    const offset = STRING_OFFSETS[string];
+    return noteNames[(offset + fret) % 12];
+  }
+  function getPositionsForNote(noteName) {
+    const positions = [];
+    for (let s3 = 0; s3 < 6; s3++) {
+      for (let f4 = 0; f4 <= 12; f4++) {
+        if (getNoteAtPosition(s3, f4) === noteName) {
+          positions.push({ string: s3, fret: f4 });
+        }
+      }
+    }
+    return positions;
+  }
+  function parseItem2(itemId2) {
+    const noteData = NOTES.find((n2) => n2.name === itemId2);
+    const name = noteData ? displayNote(pickRandomAccidental(noteData.displayName)) : displayNote(itemId2);
+    return {
+      note: itemId2,
+      displayName: name,
+      positions: getPositionsForNote(itemId2)
+    };
+  }
+  function positionKey(pos) {
+    return pos.string + "-" + pos.fret;
+  }
+  function evaluate2(q3, tapped) {
+    const targetSet = new Set(q3.positions.map(positionKey));
+    const tappedSet = new Set(tapped);
+    const perEntry = tapped.map((pos) => ({
+      positionKey: pos,
+      correct: targetSet.has(pos)
+    }));
+    const missed = [...targetSet].filter((t3) => !tappedSet.has(t3));
+    const correct = perEntry.every((e3) => e3.correct) && missed.length === 0;
+    return {
+      correct,
+      correctAnswer: displayNote(q3.note),
+      perEntry,
+      missed
+    };
+  }
+  var ACCIDENTAL_NOTES = NOTES.filter((n2) => !NATURAL_NOTES.includes(n2.name)).map((n2) => n2.name);
+  var NOTE_GROUPS = [
+    { id: "naturals", label: "Naturals", longLabel: "Natural notes" },
+    { id: "sharps-flats", label: "\u266F/\u266D", longLabel: "Sharps & flats" }
+  ];
+  var ALL_GROUP_IDS7 = NOTE_GROUPS.map((g2) => g2.id);
+  function getItemIdsForGroup8(groupId) {
+    return groupId === "naturals" ? NATURAL_NOTES.slice() : ACCIDENTAL_NOTES.slice();
+  }
+  function formatGroupLabel(enabledGroups) {
+    if (enabledGroups.size === 2) return "all notes";
+    if (enabledGroups.has("sharps-flats")) return "sharps & flats";
+    return "natural notes";
+  }
+
+  // src/modes/speed-tap/definition.tsx
+  function useSpeedTapController() {
+    const renderStats = q2(
+      (selector) => {
+        let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
+        for (let i3 = 0; i3 < NOTES.length; i3++) {
+          html += "<th>" + displayNote(NOTES[i3].name) + "</th>";
+        }
+        html += "</tr></thead><tbody><tr>";
+        for (let j3 = 0; j3 < NOTES.length; j3++) {
+          html += '<td class="stats-cell" style="background:' + getStatsCellColor(selector, NOTES[j3].name) + '"></td>';
+        }
+        html += "</tr></tbody></table>";
+        return /* @__PURE__ */ u3(
+          "div",
+          {
+            dangerouslySetInnerHTML: { __html: html }
+          }
+        );
+      },
+      []
+    );
+    return { renderStats };
+  }
+  var SPEED_TAP_DEF = {
+    id: "speedTap",
+    name: "Speed Tap",
+    namespace: "speedTap",
+    motorTaskType: "fretboard-tap",
+    description: MODE_DESCRIPTIONS.speedTap,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.speedTap,
+    beforeAfter: MODE_BEFORE_AFTER.speedTap,
+    itemNoun: "notes",
+    allItems: ALL_ITEMS9,
+    getQuestion: parseItem2,
+    getPromptText: (q3) => q3.displayName,
+    quizInstruction: "Tap all note positions",
+    multiTap: {
+      getTargets: (q3) => q3.positions.map(positionKey),
+      evaluate: evaluate2
+    },
+    getExpectedResponseCount: (itemId2) => getPositionsForNote(itemId2).length,
+    buttons: { kind: "none" },
+    scope: {
+      kind: "groups",
+      groups: NOTE_GROUPS,
+      getItemIdsForGroup: getItemIdsForGroup8,
+      allGroupIds: ALL_GROUP_IDS7,
+      storageKey: "speedTap_enabledGroups",
+      scopeLabel: "Notes",
+      defaultEnabled: [ALL_GROUP_IDS7[0]],
+      formatLabel: formatGroupLabel
+    },
+    stats: { kind: "none" },
+    useController: () => useSpeedTapController()
+  };
+
+  // src/modes/chord-shapes/voicings.ts
+  var GUITAR_VOICINGS = [
+    // --- Major ---
+    { root: "C", quality: "major", symbol: "", strings: [0, 1, 0, 2, 3, "x"] },
+    { root: "A", quality: "major", symbol: "", strings: [0, 2, 2, 2, 0, "x"] },
+    { root: "G", quality: "major", symbol: "", strings: [3, 0, 0, 0, 2, 3] },
+    { root: "E", quality: "major", symbol: "", strings: [0, 0, 1, 2, 2, 0] },
+    { root: "D", quality: "major", symbol: "", strings: [2, 3, 2, 0, "x", "x"] },
+    { root: "F", quality: "major", symbol: "", strings: [1, 1, 2, 3, 3, 1] },
+    // --- Minor ---
+    { root: "A", quality: "minor", symbol: "m", strings: [0, 1, 2, 2, 0, "x"] },
+    { root: "E", quality: "minor", symbol: "m", strings: [0, 0, 0, 2, 2, 0] },
+    { root: "D", quality: "minor", symbol: "m", strings: [1, 3, 2, 0, "x", "x"] },
+    // --- Dominant 7th ---
+    { root: "A", quality: "dom7", symbol: "7", strings: [0, 2, 0, 2, 0, "x"] },
+    { root: "B", quality: "dom7", symbol: "7", strings: [2, 0, 2, 1, 2, "x"] },
+    { root: "C", quality: "dom7", symbol: "7", strings: [0, 1, 3, 2, 3, "x"] },
+    { root: "D", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0, "x", "x"] },
+    { root: "E", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0, 2, 0] },
+    { root: "G", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0, 2, 3] }
+  ];
+  var UKULELE_VOICINGS = [
+    // --- Major ---                          // Chart (G C E A)
+    { root: "C", quality: "major", symbol: "", strings: [3, 0, 0, 0] },
+    // 0003
+    { root: "F", quality: "major", symbol: "", strings: [0, 1, 0, 2] },
+    // 2010
+    { root: "G", quality: "major", symbol: "", strings: [2, 3, 2, 0] },
+    // 0232
+    { root: "A", quality: "major", symbol: "", strings: [0, 0, 1, 2] },
+    // 2100
+    { root: "D", quality: "major", symbol: "", strings: [0, 2, 2, 2] },
+    // 2220
+    { root: "Bb", quality: "major", symbol: "", strings: [1, 1, 2, 3] },
+    // 3211
+    // --- Minor ---
+    { root: "A", quality: "minor", symbol: "m", strings: [0, 0, 0, 2] },
+    // 2000
+    { root: "D", quality: "minor", symbol: "m", strings: [0, 1, 2, 2] },
+    // 2210
+    { root: "E", quality: "minor", symbol: "m", strings: [2, 3, 4, 0] },
+    // 0432
+    // --- Dominant 7th ---
+    { root: "C", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0] },
+    { root: "G", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0] },
+    { root: "A", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0] },
+    { root: "D", quality: "dom7", symbol: "7", strings: [3, 2, 2, 2] }
+  ];
+  function getVoicings(instrument) {
+    return instrument === "guitar" ? GUITAR_VOICINGS : UKULELE_VOICINGS;
+  }
+
+  // src/modes/chord-shapes/logic.ts
+  function positionKey2(string, fret) {
+    return string + "-" + fret;
+  }
+  function getPlayedPositions(v3) {
+    const positions = [];
+    for (let s3 = 0; s3 < v3.strings.length; s3++) {
+      const fret = v3.strings[s3];
+      if (fret !== "x") {
+        positions.push(positionKey2(s3, fret));
+      }
+    }
+    return positions;
+  }
+  function getMutedStrings(v3) {
+    const muted = [];
+    for (let s3 = 0; s3 < v3.strings.length; s3++) {
+      if (v3.strings[s3] === "x") muted.push(s3);
+    }
+    return muted;
+  }
+  function itemId(v3) {
+    return v3.root + ":" + v3.quality;
+  }
+  function parseItem3(instrument, id) {
+    const voicing = findVoicing(instrument, id);
+    return buildQuestion(voicing);
+  }
+  function findVoicing(instrument, id) {
+    const voicings = getVoicings(instrument);
+    const v3 = voicings.find((v4) => itemId(v4) === id);
+    if (!v3) throw new Error("Unknown chord voicing: " + id);
+    return v3;
+  }
+  function buildQuestion(v3) {
+    return {
+      root: v3.root,
+      quality: v3.quality,
+      displayName: chordDisplayName(v3),
+      voicing: v3,
+      playedPositions: getPlayedPositions(v3),
+      mutedStrings: getMutedStrings(v3)
+    };
+  }
+  function chordDisplayName(v3) {
+    return displayNote(v3.root) + v3.symbol;
+  }
+  function allItems(instrument) {
+    return getVoicings(instrument).map(itemId);
+  }
+  function evaluate3(q3, tapped) {
+    const targetSet = new Set(q3.playedPositions);
+    const tappedSet = new Set(tapped);
+    const perEntry = tapped.map((pos) => ({
+      positionKey: pos,
+      correct: targetSet.has(pos)
+    }));
+    const missed = [...targetSet].filter((t3) => !tappedSet.has(t3));
+    const correct = perEntry.every((e3) => e3.correct) && missed.length === 0;
+    return {
+      correct,
+      correctAnswer: q3.displayName,
+      perEntry,
+      missed
+    };
+  }
+  var QUALITY_GROUPS = [
+    { id: "major", label: "Major", longLabel: "Major chords" },
+    { id: "minor", label: "Minor", longLabel: "Minor chords" },
+    { id: "dom7", label: "7th", longLabel: "Dominant 7th chords" }
+  ];
+  var ALL_GROUP_IDS8 = QUALITY_GROUPS.map((g2) => g2.id);
+  function getItemIdsForGroup9(instrument, groupId) {
+    return getVoicings(instrument).filter((v3) => v3.quality === groupId).map(itemId);
+  }
+  function formatGroupLabel2(enabledGroups) {
+    if (enabledGroups.size === 3) return "all chords";
+    const labels = [];
+    if (enabledGroups.has("major")) labels.push("major");
+    if (enabledGroups.has("minor")) labels.push("minor");
+    if (enabledGroups.has("dom7")) labels.push("7th");
+    return labels.join(" & ");
+  }
+
+  // src/modes/chord-shapes/definition.tsx
+  function useChordShapesController(instrument) {
+    const voicings = getVoicings(instrument);
+    const renderStats = q2(
+      (selector) => {
+        const roots = [];
+        const rootSet = /* @__PURE__ */ new Set();
+        const qualities = [];
+        const qualitySet = /* @__PURE__ */ new Set();
+        for (const v3 of voicings) {
+          if (!rootSet.has(v3.root)) {
+            rootSet.add(v3.root);
+            roots.push(v3.root);
+          }
+          if (!qualitySet.has(v3.quality)) {
+            qualitySet.add(v3.quality);
+            qualities.push(v3.quality);
+          }
+        }
+        const symbolFor = (q3) => voicings.find((v3) => v3.quality === q3)?.symbol ?? q3;
+        let html = '<table class="stats-table chord-shapes-stats"><thead><tr>';
+        html += "<th></th>";
+        for (const r3 of roots) html += "<th>" + displayNote(r3) + "</th>";
+        html += "</tr></thead><tbody>";
+        for (const q3 of qualities) {
+          html += "<tr><th>" + (symbolFor(q3) || "maj") + "</th>";
+          for (const r3 of roots) {
+            const id = r3 + ":" + q3;
+            const exists = voicings.some(
+              (v3) => v3.root === r3 && v3.quality === q3
+            );
+            if (exists) {
+              html += '<td class="stats-cell" style="background:' + getStatsCellColor(selector, id) + '"></td>';
+            } else {
+              html += "<td></td>";
+            }
+          }
+          html += "</tr>";
+        }
+        html += "</tbody></table>";
+        return /* @__PURE__ */ u3(
+          "div",
+          {
+            dangerouslySetInnerHTML: { __html: html }
+          }
+        );
+      },
+      [voicings]
+    );
+    return { renderStats };
+  }
+  function createChordShapesDef(instrument) {
+    const isGuitar = instrument === "guitar";
+    const id = isGuitar ? "guitarChordShapes" : "ukuleleChordShapes";
+    const stringCount = isGuitar ? 6 : 4;
+    const items = allItems(instrument);
+    return {
+      id,
+      name: isGuitar ? "Guitar Chord Shapes" : "Ukulele Chord Shapes",
+      namespace: id,
+      motorTaskType: "fretboard-tap",
+      description: MODE_DESCRIPTIONS[id],
+      aboutDescription: MODE_ABOUT_DESCRIPTIONS[id],
+      beforeAfter: MODE_BEFORE_AFTER[id],
+      itemNoun: "chords",
+      allItems: items,
+      getQuestion: (itemId2) => parseItem3(instrument, itemId2),
+      getPromptText: (q3) => q3.displayName,
+      quizInstruction: "Tap all played positions",
+      multiTap: {
+        getTargets: (q3) => q3.playedPositions,
+        evaluate: evaluate3,
+        stringCount,
+        getMutedStrings: (q3) => q3.mutedStrings,
+        onePerString: true
+      },
+      getExpectedResponseCount: (itemId2) => {
+        const q3 = parseItem3(instrument, itemId2);
+        return q3.playedPositions.length;
+      },
+      buttons: { kind: "none" },
+      scope: {
+        kind: "groups",
+        groups: QUALITY_GROUPS,
+        getItemIdsForGroup: (groupId) => getItemIdsForGroup9(instrument, groupId),
+        allGroupIds: ALL_GROUP_IDS8,
+        storageKey: id + "_enabledGroups",
+        scopeLabel: "Chords",
+        defaultEnabled: [ALL_GROUP_IDS8[0]],
+        formatLabel: formatGroupLabel2
+      },
+      stats: { kind: "none" },
+      useController: () => useChordShapesController(instrument)
+    };
+  }
+  var GUITAR_CHORD_SHAPES_DEF = createChordShapesDef("guitar");
+  var UKULELE_CHORD_SHAPES_DEF = createChordShapesDef("ukulele");
+
+  // src/mode-progress-manifest.ts
+  function entryFromDef(def) {
+    const scope = def.scope;
+    return {
+      modeId: def.id,
+      namespace: def.namespace,
+      groups: scope.kind === "groups" ? scope.groups.map((g2) => ({
+        id: g2.id,
+        label: g2.label,
+        longLabel: g2.longLabel,
+        getItemIds: () => scope.getItemIdsForGroup(g2.id)
+      })) : [{ id: "all", label: "All", getItemIds: () => def.allItems }],
+      allItemIds: () => def.allItems
+    };
+  }
+  var ALL_DEFINITIONS = [
+    createFretboardDef(GUITAR),
+    createFretboardDef(UKULELE),
+    NOTE_SEMITONES_DEF,
+    INTERVAL_SEMITONES_DEF,
+    SEMITONE_MATH_DEF,
+    INTERVAL_MATH_DEF,
+    KEY_SIGNATURES_DEF,
+    SCALE_DEGREES_DEF,
+    DIATONIC_CHORDS_DEF,
+    CHORD_SPELLING_DEF,
+    SPEED_TAP_DEF,
+    GUITAR_CHORD_SHAPES_DEF,
+    UKULELE_CHORD_SHAPES_DEF
+  ];
+  var MODE_PROGRESS_MANIFEST = ALL_DEFINITIONS.map(
+    entryFromDef
+  );
 
   // src/recommendations.ts
   function classifyGroups(recs) {
@@ -8274,12 +9000,10 @@ body.native-app {
               ] })
             ] })
           ] }),
-          /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(
+          progress && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(
             GroupProgressBar,
             {
-              colors: progress && progress.groupColors.length > 0 ? progress.groupColors : notStartedColors(
-                progress?.activeGroupCount || 1
-              )
+              colors: progress.groupColors.length > 0 ? progress.groupColors : notStartedColors(progress.activeGroupCount)
             }
           ) })
         ] })
@@ -10608,119 +11332,6 @@ body.native-app {
     return /* @__PURE__ */ u3("div", { class: "keyboard-hint", children: text });
   }
 
-  // src/fretboard.ts
-  var fretPositions = [
-    0,
-    56,
-    110,
-    163,
-    214,
-    264,
-    311,
-    358,
-    402,
-    445,
-    486,
-    526,
-    564,
-    600
-  ];
-  var MAX_FRET_COUNT = fretPositions.length - 1;
-  var PAD_X = 18;
-  var STRING_GAP = 50;
-  function stringX(stringIndex, stringCount) {
-    return PAD_X + (stringCount - 1 - stringIndex) * STRING_GAP;
-  }
-  function noteY(fret) {
-    return fret === 0 ? (fretPositions[0] + fretPositions[1]) / 2 : (fretPositions[fret] + fretPositions[fret + 1]) / 2;
-  }
-  function svgWidth(stringCount) {
-    return (stringCount - 1) * STRING_GAP + PAD_X * 2;
-  }
-  var SVG_HEIGHT = fretPositions[fretPositions.length - 1];
-  function fretLines(width) {
-    return fretPositions.slice(2).map(
-      (y3) => `<line class="fb-fret" x1="0" y1="${y3}" x2="${width}" y2="${y3}" stroke-width="1"/>`
-    ).join("\n      ");
-  }
-  function stringLines(stringCount = 6) {
-    return Array.from({ length: stringCount }, (_3, i3) => {
-      const thickness = 1 + i3 * 0.4;
-      const x2 = stringX(i3, stringCount);
-      return `<line class="fb-string" x1="${x2}" y1="0" x2="${x2}" y2="${SVG_HEIGHT}" stroke-width="${thickness}"/>`;
-    }).join("\n      ");
-  }
-  function fretMarkerDots(stringCount = 6, markers = [3, 5, 7, 9, 12], fretCount = 13) {
-    const w3 = svgWidth(stringCount);
-    return markers.filter((fret) => fret < fretCount).map((fret) => {
-      const cy = noteY(fret);
-      if (fret === 12) {
-        let x1, x2;
-        if (stringCount <= 4) {
-          x1 = stringX(1, stringCount);
-          x2 = stringX(stringCount - 2, stringCount);
-        } else {
-          x1 = (stringX(1, stringCount) + stringX(2, stringCount)) / 2;
-          x2 = (stringX(stringCount - 3, stringCount) + stringX(stringCount - 2, stringCount)) / 2;
-        }
-        return `<circle class="fb-marker" cx="${x1}" cy="${cy}" r="4"/><circle class="fb-marker" cx="${x2}" cy="${cy}" r="4"/>`;
-      }
-      return `<circle class="fb-marker" cx="${w3 / 2}" cy="${cy}" r="4"/>`;
-    }).join("\n      ");
-  }
-  var POSITION_CIRCLE_R = 14;
-  function positionCircles(stringCount = 6, fretCount = 13) {
-    if (fretCount > MAX_FRET_COUNT) {
-      throw new Error(
-        `fretCount ${fretCount} exceeds max ${MAX_FRET_COUNT} (fretPositions has ${fretPositions.length} entries)`
-      );
-    }
-    return Array.from(
-      { length: stringCount },
-      (_3, string) => Array.from({ length: fretCount }, (_4, fret) => {
-        return `<circle class="fb-pos" data-string="${string}" data-fret="${fret}" cx="${stringX(string, stringCount)}" cy="${noteY(fret)}" r="${POSITION_CIRCLE_R}"/>`;
-      }).join("\n      ")
-    ).join("\n      ");
-  }
-  function tapTargetRects(stringCount = 6, fretCount = 13) {
-    const w3 = svgWidth(stringCount);
-    return Array.from(
-      { length: stringCount },
-      (_3, string) => Array.from({ length: fretCount }, (_4, fret) => {
-        const cx = stringX(string, stringCount);
-        const x2 = Math.max(0, cx - STRING_GAP / 2);
-        const right = Math.min(w3, cx + STRING_GAP / 2);
-        const y3 = fret === 0 ? 0 : fretPositions[fret];
-        const bottom = fretPositions[fret + 1] ?? fretPositions[fretPositions.length - 1];
-        return `<rect class="fb-tap" data-string="${string}" data-fret="${fret}" x="${x2}" y="${y3}" width="${right - x2}" height="${bottom - y3}"/>`;
-      }).join("\n      ")
-    ).join("\n      ");
-  }
-  function fretboardSVG(config = {}) {
-    const sc = config.stringCount ?? 6;
-    const fc = config.fretCount ?? 13;
-    const w3 = svgWidth(sc);
-    const markers = config.fretMarkers ?? [3, 5, 7, 9, 12];
-    const idAttr = config.id ? ` id="${config.id}"` : "";
-    return `<div class="fretboard-wrapper">
-      <div class="fretboard-container">
-        <svg class="fretboard"${idAttr} viewBox="0 0 ${w3} ${SVG_HEIGHT}">
-          <!-- Fret marker dots (inlays) -->
-          ${fretMarkerDots(sc, markers, fc)}
-          <!-- Nut (horizontal bar at top) -->
-          <rect class="fb-nut" x="0" y="${fretPositions[1] - 2}" width="${w3}" height="4" rx="1"/>
-          <!-- Frets (horizontal lines) -->
-          ${fretLines(w3)}
-          <!-- Strings (vertical lines) -->
-          ${stringLines(sc)}
-          <!-- Position circles -->
-          ${positionCircles(sc, fc)}
-          ${config.tapTargets ? "<!-- Tap targets -->\n          " + tapTargetRects(sc, fc) : ""}
-        </svg>
-      </div>
-    </div>`;
-  }
-
   // src/ui/interactive-fretboard.tsx
   function readCSSColor(prop, fallback) {
     try {
@@ -10730,7 +11341,7 @@ body.native-app {
       return fallback;
     }
   }
-  function setCircleFill(root, posKey, color) {
+  function setCircleFill2(root, posKey, color) {
     const [s3, f4] = posKey.split("-");
     const circle = root.querySelector(
       'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
@@ -10828,14 +11439,14 @@ body.native-app {
         const tappedSet = new Set(evaluated.perEntry.map((e3) => e3.positionKey));
         for (const entry of evaluated.perEntry) {
           if (entry.correct) {
-            setCircleFill(root, entry.positionKey, colorOk);
+            setCircleFill2(root, entry.positionKey, colorOk);
           } else {
             setCircleRing(root, entry.positionKey, colorBad);
           }
         }
         for (const missed of evaluated.missed) {
           if (!tappedSet.has(missed)) {
-            setCircleFill(root, missed, colorMissed);
+            setCircleFill2(root, missed, colorMissed);
           }
         }
         if (mutedStrings && mutedStrings.size > 0) {
@@ -10847,7 +11458,7 @@ body.native-app {
           "hsl(210, 60%, 50%)"
         );
         for (const posKey of tappedPositions) {
-          setCircleFill(root, posKey, colorSel);
+          setCircleFill2(root, posKey, colorSel);
         }
       }
     }, [tappedPositions, evaluated, svgHTML, mutedStrings, stringCount]);
@@ -12306,693 +12917,6 @@ body.native-app {
       }
     );
   }
-
-  // src/modes/note-semitones/definition.ts
-  var NOTE_SEMITONES_DEF = {
-    id: "noteSemitones",
-    name: "Note \u2194 Semitones",
-    namespace: "noteSemitones",
-    description: MODE_DESCRIPTIONS.noteSemitones,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.noteSemitones,
-    beforeAfter: MODE_BEFORE_AFTER.noteSemitones,
-    itemNoun: "items",
-    allItems: ALL_ITEMS7,
-    getQuestion: getQuestion7,
-    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.accidentalChoice) : String(q3.noteNum),
-    quizInstruction: (q3) => q3.dir === "fwd" ? "What number?" : "What note?",
-    answer: {
-      kind: "bidirectional",
-      fwd: {
-        getExpectedValue: (q3) => String(q3.noteNum),
-        comparison: "integer"
-      },
-      rev: {
-        getExpectedValue: (q3) => q3.noteName,
-        comparison: "note-enharmonic",
-        getDisplayAnswer: (q3) => displayNote(q3.accidentalChoice)
-      }
-    },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 0, 11) : isValidNoteInput(input),
-    getDirection: (q3) => q3.dir,
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "0\u201311" : "Note name",
-    buttons: {
-      kind: "bidirectional",
-      fwd: { kind: "number", start: 0, end: 11 },
-      rev: { kind: "note" }
-    },
-    scope: { kind: "none" },
-    stats: {
-      kind: "table",
-      getRows: getStatsRows2,
-      fwdHeader: "N\u2192#",
-      revHeader: "#\u2192N"
-    }
-  };
-
-  // src/modes/interval-semitones/definition.ts
-  var INTERVAL_SEMITONES_DEF = {
-    id: "intervalSemitones",
-    name: "Interval \u2194 Semitones",
-    namespace: "intervalSemitones",
-    description: MODE_DESCRIPTIONS.intervalSemitones,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.intervalSemitones,
-    beforeAfter: MODE_BEFORE_AFTER.intervalSemitones,
-    itemNoun: "items",
-    allItems: ALL_ITEMS8,
-    getQuestion: getQuestion8,
-    getPromptText: (q3) => q3.dir === "fwd" ? q3.name : String(q3.num),
-    quizInstruction: (q3) => q3.dir === "fwd" ? "How many semitones?" : "What interval?",
-    answer: {
-      kind: "bidirectional",
-      fwd: {
-        getExpectedValue: (q3) => String(q3.num),
-        comparison: "integer"
-      },
-      rev: {
-        getExpectedValue: (q3) => q3.abbrev,
-        comparison: "interval"
-      }
-    },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 1, 12) : isValidIntervalInput(input),
-    getDirection: (q3) => q3.dir,
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "1\u201312" : "Interval (e.g. P5)",
-    buttons: {
-      kind: "bidirectional",
-      fwd: { kind: "number", start: 1, end: 12 },
-      rev: { kind: "interval" }
-    },
-    scope: { kind: "none" },
-    stats: {
-      kind: "table",
-      getRows: getStatsRows3,
-      fwdHeader: "I\u2192#",
-      revHeader: "#\u2192I"
-    }
-  };
-
-  // src/modes/semitone-math/definition.ts
-  var SEMITONE_MATH_DEF = {
-    id: "semitoneMath",
-    name: "Semitone Math",
-    namespace: "semitoneMath",
-    description: MODE_DESCRIPTIONS.semitoneMath,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.semitoneMath,
-    beforeAfter: MODE_BEFORE_AFTER.semitoneMath,
-    itemNoun: "items",
-    allItems: ALL_ITEMS4,
-    getQuestion: getQuestion4,
-    getPromptText: (q3) => q3.promptText,
-    quizInstruction: "What note?",
-    answer: {
-      getExpectedValue: (q3) => q3.answer.name,
-      comparison: "note-enharmonic",
-      getDisplayAnswer: (q3) => displayNote(pickAccidentalName(q3.answer.displayName, q3.useFlats))
-    },
-    validateInput: (_q, input) => isValidNoteInput(input),
-    getUseFlats: (q3) => q3.useFlats,
-    inputPlaceholder: "Note name",
-    buttons: { kind: "note" },
-    scope: {
-      kind: "groups",
-      groups: DISTANCE_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup4,
-      allGroupIds: ALL_GROUP_IDS4,
-      storageKey: "semitoneMath_enabledGroups",
-      scopeLabel: "Distances",
-      defaultEnabled: [ALL_GROUP_IDS4[0]],
-      formatLabel: (groups) => {
-        if (groups.size === DISTANCE_GROUPS.length) return "all distances";
-        const labels = DISTANCE_GROUPS.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
-        return labels.join(", ") + " semitones";
-      }
-    },
-    stats: {
-      kind: "grid",
-      colLabels: GRID_COL_LABELS,
-      getItemId: getGridItemId3
-    }
-  };
-
-  // src/modes/interval-math/definition.ts
-  var INTERVAL_MATH_DEF = {
-    id: "intervalMath",
-    name: "Interval Math",
-    namespace: "intervalMath",
-    description: MODE_DESCRIPTIONS.intervalMath,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.intervalMath,
-    beforeAfter: MODE_BEFORE_AFTER.intervalMath,
-    itemNoun: "items",
-    allItems: ALL_ITEMS5,
-    getQuestion: getQuestion5,
-    getPromptText: (q3) => q3.promptText,
-    quizInstruction: "What note?",
-    answer: {
-      getExpectedValue: (q3) => q3.answer.name,
-      comparison: "note-enharmonic",
-      getDisplayAnswer: (q3) => displayNote(pickAccidentalName(q3.answer.displayName, q3.useFlats))
-    },
-    validateInput: (_q, input) => isValidNoteInput(input),
-    getUseFlats: (q3) => q3.useFlats,
-    inputPlaceholder: "Note name",
-    buttons: { kind: "note" },
-    scope: {
-      kind: "groups",
-      groups: DISTANCE_GROUPS2,
-      getItemIdsForGroup: getItemIdsForGroup5,
-      allGroupIds: ALL_GROUP_IDS5,
-      storageKey: "intervalMath_enabledGroups",
-      scopeLabel: "Intervals",
-      defaultEnabled: [ALL_GROUP_IDS5[0]],
-      formatLabel: (groups) => {
-        if (groups.size === DISTANCE_GROUPS2.length) return "all intervals";
-        const labels = DISTANCE_GROUPS2.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
-        return labels.join(", ") + " intervals";
-      }
-    },
-    stats: {
-      kind: "grid",
-      colLabels: GRID_COL_LABELS2,
-      getItemId: getGridItemId4
-    }
-  };
-
-  // src/modes/key-signatures/definition.ts
-  var KEY_SIGNATURES_DEF = {
-    id: "keySignatures",
-    name: "Key Signatures",
-    namespace: "keySignatures",
-    description: MODE_DESCRIPTIONS.keySignatures,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.keySignatures,
-    beforeAfter: MODE_BEFORE_AFTER.keySignatures,
-    itemNoun: "items",
-    allItems: ALL_ITEMS,
-    getQuestion,
-    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.root) + " " + q3.quality : q3.sigLabel + " " + q3.quality,
-    quizInstruction: (q3) => q3.dir === "fwd" ? "What key signature?" : "What key?",
-    answer: {
-      kind: "bidirectional",
-      fwd: {
-        getExpectedValue: (q3) => q3.sigLabel,
-        comparison: "exact"
-      },
-      rev: {
-        getExpectedValue: (q3) => q3.root,
-        comparison: "note-enharmonic"
-      }
-    },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidKeysigInput(input) : isValidNoteInput(input),
-    getDirection: (q3) => q3.dir,
-    getUseFlats: (q3) => rootUsesFlats(q3.root),
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Signature (e.g. 2#)" : "Note name",
-    buttons: {
-      kind: "bidirectional",
-      fwd: { kind: "split-keysig" },
-      rev: { kind: "note" }
-    },
-    scope: {
-      kind: "groups",
-      groups: ALL_KEY_GROUPS,
-      getItemIdsForGroup,
-      allGroupIds: ALL_GROUP_IDS,
-      storageKey: "keySignatures_enabledGroups",
-      scopeLabel: "Keys",
-      defaultEnabled: [ALL_GROUP_IDS[0]],
-      formatLabel: (groups) => {
-        if (groups.size === ALL_KEY_GROUPS.length) return "all keys";
-        const keys = ALL_KEY_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.keys).map((k3) => displayNote(k3));
-        return keys.join(", ");
-      }
-    },
-    stats: {
-      kind: "table",
-      getRows: getStatsRows,
-      fwdHeader: "Key\u2192Sig",
-      revHeader: "Sig\u2192Key"
-    }
-  };
-
-  // src/modes/scale-degrees/definition.ts
-  var SCALE_DEGREES_DEF = {
-    id: "scaleDegrees",
-    name: "Scale Degrees",
-    namespace: "scaleDegrees",
-    description: MODE_DESCRIPTIONS.scaleDegrees,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.scaleDegrees,
-    beforeAfter: MODE_BEFORE_AFTER.scaleDegrees,
-    itemNoun: "items",
-    allItems: ALL_ITEMS2,
-    getQuestion: getQuestion2,
-    getPromptText: (q3) => q3.dir === "fwd" ? DEGREE_LABELS2[q3.degree - 1] + " of " + displayNote(q3.keyRoot) + " major" : displayNote(q3.keyRoot) + " major: " + displayNote(q3.noteName),
-    quizInstruction: (q3) => q3.dir === "fwd" ? "What note?" : "What degree?",
-    answer: {
-      kind: "bidirectional",
-      fwd: {
-        getExpectedValue: (q3) => q3.noteName,
-        comparison: "note-enharmonic"
-      },
-      rev: {
-        getExpectedValue: (q3) => String(q3.degree),
-        comparison: "exact",
-        getDisplayAnswer: (q3) => DEGREE_LABELS2[q3.degree - 1]
-      }
-    },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : /^[2-7]$/.test(input),
-    getDirection: (q3) => q3.dir,
-    getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Degree (2\u20137)",
-    buttons: {
-      kind: "bidirectional",
-      fwd: { kind: "note" },
-      rev: { kind: "degree" }
-    },
-    scope: {
-      kind: "groups",
-      groups: DEGREE_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup2,
-      allGroupIds: ALL_GROUP_IDS2,
-      storageKey: "scaleDegrees_enabledGroups",
-      scopeLabel: "Degrees",
-      defaultEnabled: [ALL_GROUP_IDS2[0]],
-      formatLabel: (groups) => {
-        if (groups.size === DEGREE_GROUPS.length) return "all degrees";
-        const degrees = DEGREE_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.degrees).sort((a3, b) => a3 - b);
-        return degrees.map((d4) => DEGREE_LABELS2[d4 - 1]).join(", ") + " degrees";
-      }
-    },
-    stats: {
-      kind: "grid",
-      colLabels: ACTIVE_DEGREES.map((d4) => DEGREE_LABELS2[d4 - 1]),
-      getItemId: getGridItemId,
-      notes: GRID_NOTES
-    }
-  };
-
-  // src/modes/diatonic-chords/definition.ts
-  var DIATONIC_CHORDS_DEF = {
-    id: "diatonicChords",
-    name: "Diatonic Chords",
-    namespace: "diatonicChords",
-    description: MODE_DESCRIPTIONS.diatonicChords,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.diatonicChords,
-    beforeAfter: MODE_BEFORE_AFTER.diatonicChords,
-    itemNoun: "items",
-    allItems: ALL_ITEMS3,
-    getQuestion: getQuestion3,
-    getPromptText: (q3) => q3.dir === "fwd" ? q3.chord.numeral + " in " + displayNote(q3.keyRoot) + " major" : displayNote(q3.rootNote) + q3.chord.qualityLabel + " in " + displayNote(q3.keyRoot) + " major",
-    quizInstruction: (q3) => q3.dir === "fwd" ? "What chord root?" : "What numeral?",
-    answer: {
-      kind: "bidirectional",
-      fwd: {
-        getExpectedValue: (q3) => q3.rootNote,
-        comparison: "note-enharmonic",
-        getDisplayAnswer: (q3) => displayNote(q3.rootNote) + " " + q3.chord.quality
-      },
-      rev: {
-        getExpectedValue: (q3) => q3.chord.numeral,
-        comparison: "exact",
-        normalizeInput: normalizeNumeralInput
-      }
-    },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : isValidNumeralInput(input) || /^[1-7]$/.test(input) || input === "vii",
-    getDirection: (q3) => q3.dir,
-    getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Numeral (e.g. IV)",
-    buttons: {
-      kind: "bidirectional",
-      fwd: { kind: "note" },
-      rev: { kind: "numeral" }
-    },
-    scope: {
-      kind: "groups",
-      groups: CHORD_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup3,
-      allGroupIds: ALL_GROUP_IDS3,
-      storageKey: "diatonicChords_enabledGroups",
-      scopeLabel: "Chords",
-      defaultEnabled: [ALL_GROUP_IDS3[0]],
-      formatLabel: (groups) => {
-        if (groups.size === CHORD_GROUPS.length) return "all chords";
-        const numerals = CHORD_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.degrees).sort((a3, b) => a3 - b).map((d4) => ROMAN_NUMERALS[d4 - 1]);
-        return numerals.join(", ") + " chords";
-      }
-    },
-    stats: {
-      kind: "grid",
-      colLabels: ROMAN_NUMERALS,
-      getItemId: getGridItemId2,
-      notes: GRID_NOTES2
-    }
-  };
-
-  // src/modes/fretboard/definition.tsx
-  var FB_QUIZ_HL = "hsl(50, 100%, 50%)";
-  function setCircleFill2(root, string, fret, color) {
-    const circle = root.querySelector(
-      'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]'
-    );
-    if (circle) circle.style.fill = color;
-  }
-  function clearAll(root) {
-    root.querySelectorAll(".fb-pos").forEach((c3) => {
-      c3.style.fill = "";
-    });
-  }
-  function createFretboardDef(instrument) {
-    const groups = getGroups(instrument);
-    const allItems2 = getAllItems(instrument);
-    const allGroupIds = getAllGroupIds(instrument);
-    return {
-      id: instrument.id,
-      name: instrument.name,
-      namespace: instrument.storageNamespace,
-      description: MODE_DESCRIPTIONS[instrument.id],
-      aboutDescription: MODE_ABOUT_DESCRIPTIONS[instrument.id],
-      beforeAfter: MODE_BEFORE_AFTER[instrument.id],
-      itemNoun: "positions",
-      allItems: allItems2,
-      getQuestion: (itemId2) => getQuestion6(instrument, itemId2),
-      getPromptText: () => "Name this note",
-      quizInstruction: "What note is this?",
-      answer: {
-        getExpectedValue: (q3) => q3.currentNote,
-        comparison: "note-enharmonic"
-      },
-      validateInput: (_q, input) => isValidNoteInput(input),
-      buttons: { kind: "note", columns: 6 },
-      scope: {
-        kind: "groups",
-        groups,
-        getItemIdsForGroup: (id) => getItemIdsForGroup7(instrument, id),
-        allGroupIds,
-        storageKey: instrument.storageNamespace + "_enabledGroups",
-        scopeLabel: "Groups",
-        defaultEnabled: [allGroupIds[0]],
-        formatLabel: (enabled) => formatLabel(instrument, enabled)
-      },
-      stats: { kind: "none" },
-      useController: (enabledGroups) => useFretboardController(instrument, groups, enabledGroups)
-    };
-  }
-  function renderFretboardPrompt(q3, quizFbRef, svgHTML) {
-    const el = quizFbRef.current;
-    if (el) {
-      clearAll(el);
-      setCircleFill2(el, q3.currentString, q3.currentFret, FB_QUIZ_HL);
-    }
-    return /* @__PURE__ */ u3(
-      "div",
-      {
-        ref: quizFbRef,
-        dangerouslySetInnerHTML: { __html: svgHTML }
-      }
-    );
-  }
-  function renderFretboardStats(selector, instrument, svgHTML, progressFbRef) {
-    return /* @__PURE__ */ u3(
-      "div",
-      {
-        ref: (el) => {
-          progressFbRef.current = el;
-          if (!el) return;
-          for (let s3 = 0; s3 < instrument.stringCount; s3++) {
-            for (let f4 = 0; f4 < instrument.fretCount; f4++) {
-              const itemId2 = s3 + "-" + f4;
-              const color = getStatsCellColor(selector, itemId2);
-              setCircleFill2(el, s3, f4, color);
-            }
-          }
-        },
-        dangerouslySetInnerHTML: { __html: svgHTML }
-      }
-    );
-  }
-  function useFretboardController(instrument, groups, enabledGroups) {
-    const quizFbRef = A2(null);
-    const progressFbRef = A2(null);
-    const svgHTML = T2(
-      () => fretboardSVG({
-        stringCount: instrument.stringCount,
-        fretCount: instrument.fretCount,
-        fretMarkers: instrument.fretMarkers
-      }),
-      [instrument]
-    );
-    const hasAccidentals = T2(() => {
-      for (const id of enabledGroups) {
-        const g2 = groups.find((g3) => g3.id === id);
-        if (g2?.noteFilter === "sharps-flats") return true;
-      }
-      return false;
-    }, [enabledGroups, groups]);
-    const engineSubmitRef = A2(() => {
-    });
-    const hasAccidentalsRef = A2(hasAccidentals);
-    hasAccidentalsRef.current = hasAccidentals;
-    const [pendingNote, setPendingNote] = d2(null);
-    const noteHandler = T2(
-      () => createAdaptiveKeyHandler(
-        (note) => engineSubmitRef.current(note),
-        () => hasAccidentalsRef.current,
-        setPendingNote
-      ),
-      []
-    );
-    const narrowing = T2(
-      () => noteNarrowingSet(pendingNote),
-      [pendingNote]
-    );
-    const renderPrompt = q2(
-      (q3) => renderFretboardPrompt(q3, quizFbRef, svgHTML),
-      [svgHTML]
-    );
-    const renderStats = q2(
-      (selector) => renderFretboardStats(selector, instrument, svgHTML, progressFbRef),
-      [svgHTML, instrument]
-    );
-    return {
-      renderPrompt,
-      renderStats,
-      onAnswer: (itemId2, result) => {
-        if (quizFbRef.current) {
-          const q3 = getQuestion6(instrument, itemId2);
-          const color = result.correct ? "var(--color-success)" : "var(--color-error)";
-          setCircleFill2(quizFbRef.current, q3.currentString, q3.currentFret, color);
-        }
-      },
-      onStart: () => noteHandler.reset(),
-      onStop: () => {
-        noteHandler.reset();
-        if (quizFbRef.current) clearAll(quizFbRef.current);
-      },
-      handleKey: (e3, _ctx) => {
-        engineSubmitRef.current = _ctx.submitAnswer;
-        return noteHandler.handleKey(e3);
-      },
-      deactivateCleanup: () => noteHandler.reset(),
-      narrowing,
-      hideAccidentals: !hasAccidentals,
-      buttonColumns: hasAccidentals ? void 0 : 4
-    };
-  }
-
-  // src/modes/chord-spelling/definition.ts
-  var CHORD_SPELLING_DEF = {
-    id: "chordSpelling",
-    name: "Chord Spelling",
-    namespace: "chordSpelling",
-    motorTaskType: "chord-sequence",
-    description: MODE_DESCRIPTIONS.chordSpelling,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.chordSpelling,
-    beforeAfter: MODE_BEFORE_AFTER.chordSpelling,
-    itemNoun: "items",
-    allItems: ALL_ITEMS6,
-    getQuestion: (itemId2) => parseItem(itemId2),
-    getPromptText: (q3) => displayNote(q3.rootName) + q3.chordType.symbol,
-    quizInstruction: "Spell this chord",
-    // Sequential: collect N notes, then evaluate all at once
-    sequential: {
-      expectedCount: (q3) => q3.tones.length,
-      evaluate,
-      parseBatchInput: parseChordInput,
-      batchPlaceholder: "e.g. C E G \u2014 Enter"
-    },
-    buttons: { kind: "split-note" },
-    scope: {
-      kind: "groups",
-      groups: SPELLING_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup6,
-      allGroupIds: ALL_GROUP_IDS6,
-      storageKey: "chordSpelling_enabledGroups",
-      scopeLabel: "Chord types",
-      defaultEnabled: [ALL_GROUP_IDS6[0]],
-      formatLabel: (groups) => {
-        if (groups.size === SPELLING_GROUPS.length) return "all chord types";
-        const labels = SPELLING_GROUPS.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
-        return labels.join(", ") + " chords";
-      }
-    },
-    stats: {
-      kind: "grid",
-      colLabels: GRID_COL_LABELS3,
-      getItemId: getGridItemId5,
-      notes: GRID_NOTES3
-    }
-  };
-
-  // src/modes/speed-tap/definition.tsx
-  function useSpeedTapController() {
-    const renderStats = q2(
-      (selector) => {
-        let html = '<table class="stats-table speed-tap-stats"><thead><tr>';
-        for (let i3 = 0; i3 < NOTES.length; i3++) {
-          html += "<th>" + displayNote(NOTES[i3].name) + "</th>";
-        }
-        html += "</tr></thead><tbody><tr>";
-        for (let j3 = 0; j3 < NOTES.length; j3++) {
-          html += '<td class="stats-cell" style="background:' + getStatsCellColor(selector, NOTES[j3].name) + '"></td>';
-        }
-        html += "</tr></tbody></table>";
-        return /* @__PURE__ */ u3(
-          "div",
-          {
-            dangerouslySetInnerHTML: { __html: html }
-          }
-        );
-      },
-      []
-    );
-    return { renderStats };
-  }
-  var SPEED_TAP_DEF = {
-    id: "speedTap",
-    name: "Speed Tap",
-    namespace: "speedTap",
-    motorTaskType: "fretboard-tap",
-    description: MODE_DESCRIPTIONS.speedTap,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.speedTap,
-    beforeAfter: MODE_BEFORE_AFTER.speedTap,
-    itemNoun: "notes",
-    allItems: ALL_ITEMS9,
-    getQuestion: parseItem2,
-    getPromptText: (q3) => q3.displayName,
-    quizInstruction: "Tap all note positions",
-    multiTap: {
-      getTargets: (q3) => q3.positions.map(positionKey),
-      evaluate: evaluate2
-    },
-    getExpectedResponseCount: (itemId2) => getPositionsForNote(itemId2).length,
-    buttons: { kind: "none" },
-    scope: {
-      kind: "groups",
-      groups: NOTE_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup8,
-      allGroupIds: ALL_GROUP_IDS7,
-      storageKey: "speedTap_enabledGroups",
-      scopeLabel: "Notes",
-      defaultEnabled: [ALL_GROUP_IDS7[0]],
-      formatLabel: formatGroupLabel
-    },
-    stats: { kind: "none" },
-    useController: () => useSpeedTapController()
-  };
-
-  // src/modes/chord-shapes/definition.tsx
-  function useChordShapesController(instrument) {
-    const voicings = getVoicings(instrument);
-    const renderStats = q2(
-      (selector) => {
-        const roots = [];
-        const rootSet = /* @__PURE__ */ new Set();
-        const qualities = [];
-        const qualitySet = /* @__PURE__ */ new Set();
-        for (const v3 of voicings) {
-          if (!rootSet.has(v3.root)) {
-            rootSet.add(v3.root);
-            roots.push(v3.root);
-          }
-          if (!qualitySet.has(v3.quality)) {
-            qualitySet.add(v3.quality);
-            qualities.push(v3.quality);
-          }
-        }
-        const symbolFor = (q3) => voicings.find((v3) => v3.quality === q3)?.symbol ?? q3;
-        let html = '<table class="stats-table chord-shapes-stats"><thead><tr>';
-        html += "<th></th>";
-        for (const r3 of roots) html += "<th>" + displayNote(r3) + "</th>";
-        html += "</tr></thead><tbody>";
-        for (const q3 of qualities) {
-          html += "<tr><th>" + (symbolFor(q3) || "maj") + "</th>";
-          for (const r3 of roots) {
-            const id = r3 + ":" + q3;
-            const exists = voicings.some(
-              (v3) => v3.root === r3 && v3.quality === q3
-            );
-            if (exists) {
-              html += '<td class="stats-cell" style="background:' + getStatsCellColor(selector, id) + '"></td>';
-            } else {
-              html += "<td></td>";
-            }
-          }
-          html += "</tr>";
-        }
-        html += "</tbody></table>";
-        return /* @__PURE__ */ u3(
-          "div",
-          {
-            dangerouslySetInnerHTML: { __html: html }
-          }
-        );
-      },
-      [voicings]
-    );
-    return { renderStats };
-  }
-  function createChordShapesDef(instrument) {
-    const isGuitar = instrument === "guitar";
-    const id = isGuitar ? "guitarChordShapes" : "ukuleleChordShapes";
-    const stringCount = isGuitar ? 6 : 4;
-    const items = allItems(instrument);
-    return {
-      id,
-      name: isGuitar ? "Guitar Chord Shapes" : "Ukulele Chord Shapes",
-      namespace: id,
-      motorTaskType: "fretboard-tap",
-      description: MODE_DESCRIPTIONS[id],
-      aboutDescription: MODE_ABOUT_DESCRIPTIONS[id],
-      beforeAfter: MODE_BEFORE_AFTER[id],
-      itemNoun: "chords",
-      allItems: items,
-      getQuestion: (itemId2) => parseItem3(instrument, itemId2),
-      getPromptText: (q3) => q3.displayName,
-      quizInstruction: "Tap all played positions",
-      multiTap: {
-        getTargets: (q3) => q3.playedPositions,
-        evaluate: evaluate3,
-        stringCount,
-        getMutedStrings: (q3) => q3.mutedStrings,
-        onePerString: true
-      },
-      getExpectedResponseCount: (itemId2) => {
-        const q3 = parseItem3(instrument, itemId2);
-        return q3.playedPositions.length;
-      },
-      buttons: { kind: "none" },
-      scope: {
-        kind: "groups",
-        groups: QUALITY_GROUPS,
-        getItemIdsForGroup: (groupId) => getItemIdsForGroup9(instrument, groupId),
-        allGroupIds: ALL_GROUP_IDS8,
-        storageKey: id + "_enabledGroups",
-        scopeLabel: "Chords",
-        defaultEnabled: [ALL_GROUP_IDS8[0]],
-        formatLabel: formatGroupLabel2
-      },
-      stats: { kind: "none" },
-      useController: () => useChordShapesController(instrument)
-    };
-  }
-  var GUITAR_CHORD_SHAPES_DEF = createChordShapesDef("guitar");
-  var UKULELE_CHORD_SHAPES_DEF = createChordShapesDef("ukulele");
 
   // src/app.ts
   document.addEventListener("touchstart", () => {
