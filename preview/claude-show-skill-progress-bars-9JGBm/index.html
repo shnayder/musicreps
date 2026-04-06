@@ -3174,7 +3174,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="729c50 show-skill-progress-bars-9JGBm"></div>
+  <div class="home-screen" id="home-screen" data-version="011af7 show-skill-progress-bars-9JGBm"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -5988,815 +5988,6 @@ body.native-app {
     );
   }
 
-  // src/mode-utils.ts
-  function buildBidirectionalIds(keys) {
-    const ids = [];
-    for (let i3 = 0; i3 < keys.length; i3++) {
-      ids.push(keys[i3] + ":fwd", keys[i3] + ":rev");
-    }
-    return ids;
-  }
-  function buildMathIds(notes, values) {
-    const ids = [];
-    for (let i3 = 0; i3 < notes.length; i3++) {
-      for (let j3 = 0; j3 < values.length; j3++) {
-        ids.push(notes[i3] + "+" + values[j3], notes[i3] + "-" + values[j3]);
-      }
-    }
-    return ids;
-  }
-  function parseMathId(id) {
-    const match = id.match(/^([A-Ga-g][#b]?)([+-])(.+)$/);
-    if (!match) {
-      return { note: id, op: "+", value: "" };
-    }
-    return {
-      note: match[1],
-      op: match[2],
-      value: match[3]
-    };
-  }
-
-  // src/modes/note-semitones/logic.ts
-  var ALL_ITEMS = buildBidirectionalIds(NOTES.map((n2) => n2.name));
-  function getQuestion(itemId2) {
-    const [noteName, dir] = itemId2.split(":");
-    const note = NOTES.find((n2) => n2.name === noteName);
-    return {
-      noteName: note.name,
-      noteNum: note.num,
-      dir,
-      accidentalChoice: pickRandomAccidental(note.displayName)
-    };
-  }
-  function getStatsRows() {
-    return NOTES.map((note) => ({
-      label: displayNote(note.name),
-      sublabel: String(note.num),
-      _colHeader: "Note",
-      fwdItemId: note.name + ":fwd",
-      revItemId: note.name + ":rev"
-    }));
-  }
-
-  // src/modes/note-semitones/definition.ts
-  var NOTE_SEMITONES_DEF = {
-    id: "noteSemitones",
-    name: "Note \u2194 Semitones",
-    namespace: "noteSemitones",
-    description: MODE_DESCRIPTIONS.noteSemitones,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.noteSemitones,
-    beforeAfter: MODE_BEFORE_AFTER.noteSemitones,
-    itemNoun: "items",
-    allItems: ALL_ITEMS,
-    getQuestion,
-    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.accidentalChoice) : String(q3.noteNum),
-    quizInstruction: (q3) => q3.dir === "fwd" ? "What number?" : "What note?",
-    answer: {
-      kind: "bidirectional",
-      fwd: {
-        getExpectedValue: (q3) => String(q3.noteNum),
-        comparison: "integer"
-      },
-      rev: {
-        getExpectedValue: (q3) => q3.noteName,
-        comparison: "note-enharmonic",
-        getDisplayAnswer: (q3) => displayNote(q3.accidentalChoice)
-      }
-    },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 0, 11) : isValidNoteInput(input),
-    getDirection: (q3) => q3.dir,
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "0\u201311" : "Note name",
-    buttons: {
-      kind: "bidirectional",
-      fwd: { kind: "number", start: 0, end: 11 },
-      rev: { kind: "note" }
-    },
-    scope: { kind: "none" },
-    stats: {
-      kind: "table",
-      getRows: getStatsRows,
-      fwdHeader: "N\u2192#",
-      revHeader: "#\u2192N"
-    }
-  };
-
-  // src/modes/interval-semitones/logic.ts
-  var ALL_ITEMS2 = buildBidirectionalIds(
-    INTERVALS.map((i3) => i3.abbrev)
-  );
-  function getQuestion2(itemId2) {
-    const [abbrev, dir] = itemId2.split(":");
-    const interval = INTERVALS.find((i3) => i3.abbrev === abbrev);
-    return {
-      abbrev: interval.abbrev,
-      name: interval.name,
-      num: interval.num,
-      dir
-    };
-  }
-  function getStatsRows2() {
-    return INTERVALS.map((interval) => ({
-      label: interval.abbrev,
-      sublabel: String(interval.num),
-      _colHeader: "Interval",
-      fwdItemId: interval.abbrev + ":fwd",
-      revItemId: interval.abbrev + ":rev"
-    }));
-  }
-
-  // src/modes/interval-semitones/definition.ts
-  var INTERVAL_SEMITONES_DEF = {
-    id: "intervalSemitones",
-    name: "Interval \u2194 Semitones",
-    namespace: "intervalSemitones",
-    description: MODE_DESCRIPTIONS.intervalSemitones,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.intervalSemitones,
-    beforeAfter: MODE_BEFORE_AFTER.intervalSemitones,
-    itemNoun: "items",
-    allItems: ALL_ITEMS2,
-    getQuestion: getQuestion2,
-    getPromptText: (q3) => q3.dir === "fwd" ? q3.name : String(q3.num),
-    quizInstruction: (q3) => q3.dir === "fwd" ? "How many semitones?" : "What interval?",
-    answer: {
-      kind: "bidirectional",
-      fwd: {
-        getExpectedValue: (q3) => String(q3.num),
-        comparison: "integer"
-      },
-      rev: {
-        getExpectedValue: (q3) => q3.abbrev,
-        comparison: "interval"
-      }
-    },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 1, 12) : isValidIntervalInput(input),
-    getDirection: (q3) => q3.dir,
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "1\u201312" : "Interval (e.g. P5)",
-    buttons: {
-      kind: "bidirectional",
-      fwd: { kind: "number", start: 1, end: 12 },
-      rev: { kind: "interval" }
-    },
-    scope: { kind: "none" },
-    stats: {
-      kind: "table",
-      getRows: getStatsRows2,
-      fwdHeader: "I\u2192#",
-      revHeader: "#\u2192I"
-    }
-  };
-
-  // src/modes/semitone-math/logic.ts
-  var DISTANCE_GROUPS = [
-    {
-      id: "dist-1-2",
-      distances: [1, 2],
-      label: "\xB11\u20132",
-      longLabel: "1\u20132 semitones apart"
-    },
-    {
-      id: "dist-3-4",
-      distances: [3, 4],
-      label: "\xB13\u20134",
-      longLabel: "3\u20134 semitones apart"
-    },
-    {
-      id: "dist-5-6",
-      distances: [5, 6],
-      label: "\xB15\u20136",
-      longLabel: "5\u20136 semitones apart"
-    },
-    {
-      id: "dist-7-8",
-      distances: [7, 8],
-      label: "\xB17\u20138",
-      longLabel: "7\u20138 semitones apart"
-    },
-    {
-      id: "dist-9-11",
-      distances: [9, 10, 11],
-      label: "\xB19\u201311",
-      longLabel: "9\u201311 semitones apart"
-    }
-  ];
-  function getItemIdsForGroup(groupId) {
-    const group = DISTANCE_GROUPS.find((g2) => g2.id === groupId);
-    if (!group) return [];
-    const items = [];
-    for (const note of NOTES) {
-      for (const d4 of group.distances) {
-        items.push(note.name + "+" + d4);
-        items.push(note.name + "-" + d4);
-      }
-    }
-    return items;
-  }
-  var ALL_ITEMS3 = buildMathIds(
-    NOTES.map((n2) => n2.name),
-    Array.from({ length: 11 }, (_3, i3) => i3 + 1)
-  );
-  var ALL_GROUP_IDS = DISTANCE_GROUPS.map((g2) => g2.id);
-  function getQuestion3(itemId2) {
-    const parsed = parseMathId(itemId2);
-    const noteName = parsed.note;
-    const op = parsed.op;
-    const semitones = parseInt(parsed.value);
-    const note = NOTES.find((n2) => n2.name === noteName);
-    const answer = op === "+" ? noteAdd(note.num, semitones) : noteSub(note.num, semitones);
-    const useFlats = op === "-";
-    const promptNoteName = displayNote(
-      pickAccidentalName(note.displayName, useFlats)
-    );
-    return {
-      note,
-      op,
-      semitones,
-      answer,
-      useFlats,
-      promptText: promptNoteName + " " + op + " " + semitones
-    };
-  }
-  var GRID_COL_LABELS = Array.from(
-    { length: 11 },
-    (_3, i3) => String(i3 + 1)
-  );
-  function getGridItemId(noteName, colIdx) {
-    const n2 = colIdx + 1;
-    return [noteName + "+" + n2, noteName + "-" + n2];
-  }
-
-  // src/modes/semitone-math/definition.ts
-  var SEMITONE_MATH_DEF = {
-    id: "semitoneMath",
-    name: "Semitone Math",
-    namespace: "semitoneMath",
-    description: MODE_DESCRIPTIONS.semitoneMath,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.semitoneMath,
-    beforeAfter: MODE_BEFORE_AFTER.semitoneMath,
-    itemNoun: "items",
-    allItems: ALL_ITEMS3,
-    getQuestion: getQuestion3,
-    getPromptText: (q3) => q3.promptText,
-    quizInstruction: "What note?",
-    answer: {
-      getExpectedValue: (q3) => q3.answer.name,
-      comparison: "note-enharmonic",
-      getDisplayAnswer: (q3) => displayNote(pickAccidentalName(q3.answer.displayName, q3.useFlats))
-    },
-    validateInput: (_q, input) => isValidNoteInput(input),
-    getUseFlats: (q3) => q3.useFlats,
-    inputPlaceholder: "Note name",
-    buttons: { kind: "note" },
-    scope: {
-      kind: "groups",
-      groups: DISTANCE_GROUPS,
-      getItemIdsForGroup,
-      allGroupIds: ALL_GROUP_IDS,
-      storageKey: "semitoneMath_enabledGroups",
-      scopeLabel: "Distances",
-      defaultEnabled: [ALL_GROUP_IDS[0]],
-      formatLabel: (groups) => {
-        if (groups.size === DISTANCE_GROUPS.length) return "all distances";
-        const labels = DISTANCE_GROUPS.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
-        return labels.join(", ") + " semitones";
-      }
-    },
-    stats: {
-      kind: "grid",
-      colLabels: GRID_COL_LABELS,
-      getItemId: getGridItemId
-    }
-  };
-
-  // src/modes/interval-math/logic.ts
-  var MATH_INTERVALS = INTERVALS.filter(
-    (i3) => i3.num >= 1 && i3.num <= 11
-  );
-  var DISTANCE_GROUPS2 = [
-    {
-      id: "seconds",
-      distances: [1, 2],
-      label: "m2 M2",
-      longLabel: "Seconds (m2, M2)"
-    },
-    {
-      id: "thirds",
-      distances: [3, 4],
-      label: "m3 M3",
-      longLabel: "Thirds (m3, M3)"
-    },
-    {
-      id: "fourth-tritone",
-      distances: [5, 6],
-      label: "P4 TT",
-      longLabel: "Fourth & tritone (P4, TT)"
-    },
-    {
-      id: "fifth-sixth",
-      distances: [7, 8],
-      label: "P5 m6",
-      longLabel: "Fifth & minor 6th (P5, m6)"
-    },
-    {
-      id: "sixths-sevenths",
-      distances: [9, 10, 11],
-      label: "M6 m7 M7",
-      longLabel: "Sixths & sevenths (M6, m7, M7)"
-    }
-  ];
-  function getItemIdsForGroup2(groupId) {
-    const group = DISTANCE_GROUPS2.find((g2) => g2.id === groupId);
-    if (!group) return [];
-    const intervals = MATH_INTERVALS.filter(
-      (i3) => group.distances.includes(i3.num)
-    );
-    const items = [];
-    for (const note of NOTES) {
-      for (const interval of intervals) {
-        items.push(note.name + "+" + interval.abbrev);
-        items.push(note.name + "-" + interval.abbrev);
-      }
-    }
-    return items;
-  }
-  var ALL_ITEMS4 = buildMathIds(
-    NOTES.map((n2) => n2.name),
-    MATH_INTERVALS.map((i3) => i3.abbrev)
-  );
-  var ALL_GROUP_IDS2 = DISTANCE_GROUPS2.map((g2) => g2.id);
-  function getQuestion4(itemId2) {
-    const parsed = parseMathId(itemId2);
-    const noteName = parsed.note;
-    const op = parsed.op;
-    const abbrev = parsed.value;
-    const note = NOTES.find((n2) => n2.name === noteName);
-    const interval = MATH_INTERVALS.find((i3) => i3.abbrev === abbrev);
-    const answer = op === "+" ? noteAdd(note.num, interval.num) : noteSub(note.num, interval.num);
-    const useFlats = op === "-";
-    const promptNoteName = displayNote(
-      pickAccidentalName(note.displayName, useFlats)
-    );
-    return {
-      note,
-      op,
-      interval,
-      answer,
-      useFlats,
-      promptText: promptNoteName + " " + op + " " + interval.abbrev
-    };
-  }
-  var GRID_COL_LABELS2 = MATH_INTERVALS.map((i3) => i3.abbrev);
-  function getGridItemId2(noteName, colIdx) {
-    const abbrev = MATH_INTERVALS[colIdx].abbrev;
-    return [noteName + "+" + abbrev, noteName + "-" + abbrev];
-  }
-
-  // src/modes/interval-math/definition.ts
-  var INTERVAL_MATH_DEF = {
-    id: "intervalMath",
-    name: "Interval Math",
-    namespace: "intervalMath",
-    description: MODE_DESCRIPTIONS.intervalMath,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.intervalMath,
-    beforeAfter: MODE_BEFORE_AFTER.intervalMath,
-    itemNoun: "items",
-    allItems: ALL_ITEMS4,
-    getQuestion: getQuestion4,
-    getPromptText: (q3) => q3.promptText,
-    quizInstruction: "What note?",
-    answer: {
-      getExpectedValue: (q3) => q3.answer.name,
-      comparison: "note-enharmonic",
-      getDisplayAnswer: (q3) => displayNote(pickAccidentalName(q3.answer.displayName, q3.useFlats))
-    },
-    validateInput: (_q, input) => isValidNoteInput(input),
-    getUseFlats: (q3) => q3.useFlats,
-    inputPlaceholder: "Note name",
-    buttons: { kind: "note" },
-    scope: {
-      kind: "groups",
-      groups: DISTANCE_GROUPS2,
-      getItemIdsForGroup: getItemIdsForGroup2,
-      allGroupIds: ALL_GROUP_IDS2,
-      storageKey: "intervalMath_enabledGroups",
-      scopeLabel: "Intervals",
-      defaultEnabled: [ALL_GROUP_IDS2[0]],
-      formatLabel: (groups) => {
-        if (groups.size === DISTANCE_GROUPS2.length) return "all intervals";
-        const labels = DISTANCE_GROUPS2.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
-        return labels.join(", ") + " intervals";
-      }
-    },
-    stats: {
-      kind: "grid",
-      colLabels: GRID_COL_LABELS2,
-      getItemId: getGridItemId2
-    }
-  };
-
-  // src/modes/key-signatures/logic.ts
-  var KEY_GROUPS = [
-    {
-      id: "major-easy",
-      keys: ["C", "G", "F", "D", "Bb", "A", "Eb"],
-      label: "Major 0\u20133 \u266F/\u266D",
-      longLabel: "Major keys (0\u20133 \u266F/\u266D)"
-    },
-    {
-      id: "major-hard",
-      keys: ["E", "Ab", "B", "Db", "F#"],
-      label: "Major 4+ \u266F/\u266D",
-      longLabel: "Major keys (4+ \u266F/\u266D)"
-    }
-  ];
-  var MINOR_ROOT_TO_MAJOR = /* @__PURE__ */ new Map();
-  var RELATIVE_MINOR_DEGREE = 6;
-  for (const key of MAJOR_KEYS) {
-    MINOR_ROOT_TO_MAJOR.set(
-      getScaleDegreeNote(key.root, RELATIVE_MINOR_DEGREE),
-      key
-    );
-  }
-  var MINOR_ROOTS = MAJOR_KEYS.map(
-    (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE)
-  );
-  function minorKeyGroup(id, majorKeys, label, longLabel) {
-    const keys = majorKeys.map(
-      (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE) + "m"
-    );
-    return { id, keys, label, longLabel };
-  }
-  var MINOR_KEY_GROUPS = [
-    minorKeyGroup(
-      "minor-easy",
-      MAJOR_KEYS.filter((k3) => k3.accidentalCount <= 3),
-      "Minor 0\u20133 \u266F/\u266D",
-      "Minor keys (0\u20133 \u266F/\u266D)"
-    ),
-    minorKeyGroup(
-      "minor-hard",
-      MAJOR_KEYS.filter((k3) => k3.accidentalCount > 3),
-      "Minor 4+ \u266F/\u266D",
-      "Minor keys (4+ \u266F/\u266D)"
-    )
-  ];
-  var ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
-  function getItemIdsForGroup3(groupId) {
-    const group = ALL_KEY_GROUPS.find((g2) => g2.id === groupId);
-    if (!group) return [];
-    const items = [];
-    for (const root of group.keys) {
-      items.push(root + ":fwd");
-      items.push(root + ":rev");
-    }
-    return items;
-  }
-  var ALL_ITEMS5 = [];
-  for (const key of MAJOR_KEYS) {
-    ALL_ITEMS5.push(key.root + ":fwd");
-    ALL_ITEMS5.push(key.root + ":rev");
-  }
-  for (const minorRoot of MINOR_ROOTS) {
-    ALL_ITEMS5.push(minorRoot + "m:fwd");
-    ALL_ITEMS5.push(minorRoot + "m:rev");
-  }
-  var ALL_GROUP_IDS3 = ALL_KEY_GROUPS.map((g2) => g2.id);
-  function getQuestion5(itemId2) {
-    const [rootPart, dir] = itemId2.split(":");
-    const isMinor = rootPart.endsWith("m") && rootPart.length > 1 && MINOR_ROOT_TO_MAJOR.has(rootPart.slice(0, -1));
-    if (isMinor) {
-      const minorRoot = rootPart.slice(0, -1);
-      const majorKey = MINOR_ROOT_TO_MAJOR.get(minorRoot);
-      return {
-        root: minorRoot,
-        dir,
-        sigLabel: keySignatureLabel(majorKey),
-        quality: "minor"
-      };
-    }
-    const key = MAJOR_KEYS.find((k3) => k3.root === rootPart);
-    return {
-      root: key.root,
-      dir,
-      sigLabel: keySignatureLabel(key),
-      quality: "major"
-    };
-  }
-  function getStatsRows3() {
-    const majorRows = MAJOR_KEYS.map((key) => ({
-      label: displayNote(key.root) + " major",
-      sublabel: keySignatureLabel(key),
-      _colHeader: "Key",
-      fwdItemId: key.root + ":fwd",
-      revItemId: key.root + ":rev"
-    }));
-    const minorRows = MINOR_ROOTS.map((minorRoot) => {
-      const majorKey = MINOR_ROOT_TO_MAJOR.get(minorRoot);
-      return {
-        label: displayNote(minorRoot) + " minor",
-        sublabel: keySignatureLabel(majorKey),
-        _colHeader: "Key",
-        fwdItemId: minorRoot + "m:fwd",
-        revItemId: minorRoot + "m:rev"
-      };
-    });
-    return [...majorRows, ...minorRows];
-  }
-
-  // src/modes/key-signatures/definition.ts
-  var KEY_SIGNATURES_DEF = {
-    id: "keySignatures",
-    name: "Key Signatures",
-    namespace: "keySignatures",
-    description: MODE_DESCRIPTIONS.keySignatures,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.keySignatures,
-    beforeAfter: MODE_BEFORE_AFTER.keySignatures,
-    itemNoun: "items",
-    allItems: ALL_ITEMS5,
-    getQuestion: getQuestion5,
-    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.root) + " " + q3.quality : q3.sigLabel + " " + q3.quality,
-    quizInstruction: (q3) => q3.dir === "fwd" ? "What key signature?" : "What key?",
-    answer: {
-      kind: "bidirectional",
-      fwd: {
-        getExpectedValue: (q3) => q3.sigLabel,
-        comparison: "exact"
-      },
-      rev: {
-        getExpectedValue: (q3) => q3.root,
-        comparison: "note-enharmonic"
-      }
-    },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidKeysigInput(input) : isValidNoteInput(input),
-    getDirection: (q3) => q3.dir,
-    getUseFlats: (q3) => rootUsesFlats(q3.root),
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Signature (e.g. 2#)" : "Note name",
-    buttons: {
-      kind: "bidirectional",
-      fwd: { kind: "split-keysig" },
-      rev: { kind: "note" }
-    },
-    scope: {
-      kind: "groups",
-      groups: ALL_KEY_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup3,
-      allGroupIds: ALL_GROUP_IDS3,
-      storageKey: "keySignatures_enabledGroups",
-      scopeLabel: "Keys",
-      defaultEnabled: [ALL_GROUP_IDS3[0]],
-      formatLabel: (groups) => {
-        if (groups.size === ALL_KEY_GROUPS.length) return "all keys";
-        const keys = ALL_KEY_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.keys).map((k3) => displayNote(k3));
-        return keys.join(", ");
-      }
-    },
-    stats: {
-      kind: "table",
-      getRows: getStatsRows3,
-      fwdHeader: "Key\u2192Sig",
-      revHeader: "Sig\u2192Key"
-    }
-  };
-
-  // src/modes/scale-degrees/logic.ts
-  var DEGREE_LABELS2 = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th"];
-  var ACTIVE_DEGREES = [2, 3, 4, 5, 6, 7];
-  var DEGREE_GROUPS = [
-    {
-      id: "4th-5th",
-      degrees: [4, 5],
-      label: "4th, 5th",
-      longLabel: "4th & 5th degrees"
-    },
-    {
-      id: "3rd-7th",
-      degrees: [3, 7],
-      label: "3rd, 7th",
-      longLabel: "3rd & 7th degrees"
-    },
-    {
-      id: "2nd-6th",
-      degrees: [2, 6],
-      label: "2nd, 6th",
-      longLabel: "2nd & 6th degrees"
-    }
-  ];
-  function getItemIdsForGroup4(groupId) {
-    const group = DEGREE_GROUPS.find((g2) => g2.id === groupId);
-    if (!group) return [];
-    const items = [];
-    for (const key of MAJOR_KEYS) {
-      for (const d4 of group.degrees) {
-        items.push(key.root + ":" + d4 + ":fwd");
-        items.push(key.root + ":" + d4 + ":rev");
-      }
-    }
-    return items;
-  }
-  var ALL_ITEMS6 = [];
-  for (const key of MAJOR_KEYS) {
-    for (const d4 of ACTIVE_DEGREES) {
-      ALL_ITEMS6.push(key.root + ":" + d4 + ":fwd");
-      ALL_ITEMS6.push(key.root + ":" + d4 + ":rev");
-    }
-  }
-  var ALL_GROUP_IDS4 = DEGREE_GROUPS.map((g2) => g2.id);
-  var GRID_NOTES = MAJOR_KEYS.map((k3) => ({
-    name: k3.root,
-    displayName: k3.root
-  }));
-  function getQuestion6(itemId2) {
-    const parts = itemId2.split(":");
-    const keyRoot = parts[0];
-    const degree = parseInt(parts[1]);
-    const dir = parts[2];
-    const noteName = getScaleDegreeNote(keyRoot, degree);
-    return { keyRoot, degree, dir, noteName };
-  }
-  function getGridItemId3(keyRoot, colIdx) {
-    const d4 = ACTIVE_DEGREES[colIdx];
-    return [keyRoot + ":" + d4 + ":fwd", keyRoot + ":" + d4 + ":rev"];
-  }
-
-  // src/modes/scale-degrees/definition.ts
-  var SCALE_DEGREES_DEF = {
-    id: "scaleDegrees",
-    name: "Scale Degrees",
-    namespace: "scaleDegrees",
-    description: MODE_DESCRIPTIONS.scaleDegrees,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.scaleDegrees,
-    beforeAfter: MODE_BEFORE_AFTER.scaleDegrees,
-    itemNoun: "items",
-    allItems: ALL_ITEMS6,
-    getQuestion: getQuestion6,
-    getPromptText: (q3) => q3.dir === "fwd" ? DEGREE_LABELS2[q3.degree - 1] + " of " + displayNote(q3.keyRoot) + " major" : displayNote(q3.keyRoot) + " major: " + displayNote(q3.noteName),
-    quizInstruction: (q3) => q3.dir === "fwd" ? "What note?" : "What degree?",
-    answer: {
-      kind: "bidirectional",
-      fwd: {
-        getExpectedValue: (q3) => q3.noteName,
-        comparison: "note-enharmonic"
-      },
-      rev: {
-        getExpectedValue: (q3) => String(q3.degree),
-        comparison: "exact",
-        getDisplayAnswer: (q3) => DEGREE_LABELS2[q3.degree - 1]
-      }
-    },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : /^[2-7]$/.test(input),
-    getDirection: (q3) => q3.dir,
-    getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Degree (2\u20137)",
-    buttons: {
-      kind: "bidirectional",
-      fwd: { kind: "note" },
-      rev: { kind: "degree" }
-    },
-    scope: {
-      kind: "groups",
-      groups: DEGREE_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup4,
-      allGroupIds: ALL_GROUP_IDS4,
-      storageKey: "scaleDegrees_enabledGroups",
-      scopeLabel: "Degrees",
-      defaultEnabled: [ALL_GROUP_IDS4[0]],
-      formatLabel: (groups) => {
-        if (groups.size === DEGREE_GROUPS.length) return "all degrees";
-        const degrees = DEGREE_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.degrees).sort((a3, b) => a3 - b);
-        return degrees.map((d4) => DEGREE_LABELS2[d4 - 1]).join(", ") + " degrees";
-      }
-    },
-    stats: {
-      kind: "grid",
-      colLabels: ACTIVE_DEGREES.map((d4) => DEGREE_LABELS2[d4 - 1]),
-      getItemId: getGridItemId3,
-      notes: GRID_NOTES
-    }
-  };
-
-  // src/modes/diatonic-chords/logic.ts
-  var CHORD_GROUPS = [
-    {
-      id: "primary",
-      degrees: [1, 4, 5],
-      label: "I IV V",
-      longLabel: "Primary chords (I, IV, V)"
-    },
-    {
-      id: "secondary",
-      degrees: [2, 6],
-      label: "ii vi",
-      longLabel: "Secondary chords (ii, vi)"
-    },
-    {
-      id: "tertiary",
-      degrees: [3, 7],
-      label: "iii vii\xB0",
-      // \u00B0 = ° (degree sign)
-      longLabel: "Tertiary chords (iii, vii\xB0)"
-    }
-  ];
-  function getItemIdsForGroup5(groupId) {
-    const group = CHORD_GROUPS.find((g2) => g2.id === groupId);
-    if (!group) return [];
-    const items = [];
-    for (const key of MAJOR_KEYS) {
-      for (const d4 of group.degrees) {
-        items.push(key.root + ":" + d4 + ":fwd");
-        items.push(key.root + ":" + d4 + ":rev");
-      }
-    }
-    return items;
-  }
-  var ALL_ITEMS7 = [];
-  for (const key of MAJOR_KEYS) {
-    for (let d4 = 1; d4 <= 7; d4++) {
-      ALL_ITEMS7.push(key.root + ":" + d4 + ":fwd");
-      ALL_ITEMS7.push(key.root + ":" + d4 + ":rev");
-    }
-  }
-  var ALL_GROUP_IDS5 = CHORD_GROUPS.map((g2) => g2.id);
-  var GRID_NOTES2 = MAJOR_KEYS.map((k3) => ({
-    name: k3.root,
-    displayName: k3.root
-  }));
-  function getQuestion7(itemId2) {
-    const parts = itemId2.split(":");
-    const keyRoot = parts[0];
-    const degree = parseInt(parts[1]);
-    const dir = parts[2];
-    const chord = DIATONIC_CHORDS[degree - 1];
-    const rootNote = getScaleDegreeNote(keyRoot, degree);
-    return { keyRoot, degree, chord, dir, rootNote };
-  }
-  function normalizeNumeralInput(input) {
-    const num = parseInt(input, 10);
-    if (num >= 1 && num <= 7) return ROMAN_NUMERALS[num - 1];
-    if (input === "vii") return "vii\xB0";
-    return input;
-  }
-  function getGridItemId4(keyRoot, colIdx) {
-    const d4 = colIdx + 1;
-    return [keyRoot + ":" + d4 + ":fwd", keyRoot + ":" + d4 + ":rev"];
-  }
-
-  // src/modes/diatonic-chords/definition.ts
-  var DIATONIC_CHORDS_DEF = {
-    id: "diatonicChords",
-    name: "Diatonic Chords",
-    namespace: "diatonicChords",
-    description: MODE_DESCRIPTIONS.diatonicChords,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.diatonicChords,
-    beforeAfter: MODE_BEFORE_AFTER.diatonicChords,
-    itemNoun: "items",
-    allItems: ALL_ITEMS7,
-    getQuestion: getQuestion7,
-    getPromptText: (q3) => q3.dir === "fwd" ? q3.chord.numeral + " in " + displayNote(q3.keyRoot) + " major" : displayNote(q3.rootNote) + q3.chord.qualityLabel + " in " + displayNote(q3.keyRoot) + " major",
-    quizInstruction: (q3) => q3.dir === "fwd" ? "What chord root?" : "What numeral?",
-    answer: {
-      kind: "bidirectional",
-      fwd: {
-        getExpectedValue: (q3) => q3.rootNote,
-        comparison: "note-enharmonic",
-        getDisplayAnswer: (q3) => displayNote(q3.rootNote) + " " + q3.chord.quality
-      },
-      rev: {
-        getExpectedValue: (q3) => q3.chord.numeral,
-        comparison: "exact",
-        normalizeInput: normalizeNumeralInput
-      }
-    },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : isValidNumeralInput(input) || /^[1-7]$/.test(input) || input === "vii",
-    getDirection: (q3) => q3.dir,
-    getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Numeral (e.g. IV)",
-    buttons: {
-      kind: "bidirectional",
-      fwd: { kind: "note" },
-      rev: { kind: "numeral" }
-    },
-    scope: {
-      kind: "groups",
-      groups: CHORD_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup5,
-      allGroupIds: ALL_GROUP_IDS5,
-      storageKey: "diatonicChords_enabledGroups",
-      scopeLabel: "Chords",
-      defaultEnabled: [ALL_GROUP_IDS5[0]],
-      formatLabel: (groups) => {
-        if (groups.size === CHORD_GROUPS.length) return "all chords";
-        const numerals = CHORD_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.degrees).sort((a3, b) => a3 - b).map((d4) => ROMAN_NUMERALS[d4 - 1]);
-        return numerals.join(", ") + " chords";
-      }
-    },
-    stats: {
-      kind: "grid",
-      colLabels: ROMAN_NUMERALS,
-      getItemId: getGridItemId4,
-      notes: GRID_NOTES2
-    }
-  };
-
   // src/stats-display.ts
   var _heatmapColors = null;
   function cssVar(name) {
@@ -7255,7 +6446,7 @@ body.native-app {
     }
     return h3;
   }
-  function getItemIdsForGroup6(instrument, groupId) {
+  function getItemIdsForGroup(instrument, groupId) {
     const groups = getGroups(instrument);
     const group = groups.find((g2) => g2.id === groupId);
     if (!group) return [];
@@ -7279,7 +6470,7 @@ body.native-app {
   function getAllGroupIds(instrument) {
     return getGroups(instrument).map((g2) => g2.id);
   }
-  function getQuestion8(instrument, itemId2) {
+  function getQuestion(instrument, itemId2) {
     const fb = getHelpers(instrument);
     return fb.parseFretboardItem(itemId2);
   }
@@ -7316,7 +6507,7 @@ body.native-app {
       beforeAfter: MODE_BEFORE_AFTER[instrument.id],
       itemNoun: "positions",
       allItems: allItems2,
-      getQuestion: (itemId2) => getQuestion8(instrument, itemId2),
+      getQuestion: (itemId2) => getQuestion(instrument, itemId2),
       getPromptText: () => "Name this note",
       quizInstruction: "What note is this?",
       answer: {
@@ -7328,7 +6519,7 @@ body.native-app {
       scope: {
         kind: "groups",
         groups,
-        getItemIdsForGroup: (id) => getItemIdsForGroup6(instrument, id),
+        getItemIdsForGroup: (id) => getItemIdsForGroup(instrument, id),
         allGroupIds,
         storageKey: instrument.storageNamespace + "_enabledGroups",
         scopeLabel: "Groups",
@@ -7420,7 +6611,7 @@ body.native-app {
       renderStats,
       onAnswer: (itemId2, result) => {
         if (quizFbRef.current) {
-          const q3 = getQuestion8(instrument, itemId2);
+          const q3 = getQuestion(instrument, itemId2);
           const color = result.correct ? "var(--color-success)" : "var(--color-error)";
           setCircleFill(quizFbRef.current, q3.currentString, q3.currentFret, color);
         }
@@ -7440,6 +6631,815 @@ body.native-app {
       buttonColumns: hasAccidentals ? void 0 : 4
     };
   }
+
+  // src/mode-utils.ts
+  function buildBidirectionalIds(keys) {
+    const ids = [];
+    for (let i3 = 0; i3 < keys.length; i3++) {
+      ids.push(keys[i3] + ":fwd", keys[i3] + ":rev");
+    }
+    return ids;
+  }
+  function buildMathIds(notes, values) {
+    const ids = [];
+    for (let i3 = 0; i3 < notes.length; i3++) {
+      for (let j3 = 0; j3 < values.length; j3++) {
+        ids.push(notes[i3] + "+" + values[j3], notes[i3] + "-" + values[j3]);
+      }
+    }
+    return ids;
+  }
+  function parseMathId(id) {
+    const match = id.match(/^([A-Ga-g][#b]?)([+-])(.+)$/);
+    if (!match) {
+      return { note: id, op: "+", value: "" };
+    }
+    return {
+      note: match[1],
+      op: match[2],
+      value: match[3]
+    };
+  }
+
+  // src/modes/note-semitones/logic.ts
+  var ALL_ITEMS = buildBidirectionalIds(NOTES.map((n2) => n2.name));
+  function getQuestion2(itemId2) {
+    const [noteName, dir] = itemId2.split(":");
+    const note = NOTES.find((n2) => n2.name === noteName);
+    return {
+      noteName: note.name,
+      noteNum: note.num,
+      dir,
+      accidentalChoice: pickRandomAccidental(note.displayName)
+    };
+  }
+  function getStatsRows() {
+    return NOTES.map((note) => ({
+      label: displayNote(note.name),
+      sublabel: String(note.num),
+      _colHeader: "Note",
+      fwdItemId: note.name + ":fwd",
+      revItemId: note.name + ":rev"
+    }));
+  }
+
+  // src/modes/note-semitones/definition.ts
+  var NOTE_SEMITONES_DEF = {
+    id: "noteSemitones",
+    name: "Note \u2194 Semitones",
+    namespace: "noteSemitones",
+    description: MODE_DESCRIPTIONS.noteSemitones,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.noteSemitones,
+    beforeAfter: MODE_BEFORE_AFTER.noteSemitones,
+    itemNoun: "items",
+    allItems: ALL_ITEMS,
+    getQuestion: getQuestion2,
+    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.accidentalChoice) : String(q3.noteNum),
+    quizInstruction: (q3) => q3.dir === "fwd" ? "What number?" : "What note?",
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => String(q3.noteNum),
+        comparison: "integer"
+      },
+      rev: {
+        getExpectedValue: (q3) => q3.noteName,
+        comparison: "note-enharmonic",
+        getDisplayAnswer: (q3) => displayNote(q3.accidentalChoice)
+      }
+    },
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 0, 11) : isValidNoteInput(input),
+    getDirection: (q3) => q3.dir,
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "0\u201311" : "Note name",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "number", start: 0, end: 11 },
+      rev: { kind: "note" }
+    },
+    scope: { kind: "none" },
+    stats: {
+      kind: "table",
+      getRows: getStatsRows,
+      fwdHeader: "N\u2192#",
+      revHeader: "#\u2192N"
+    }
+  };
+
+  // src/modes/interval-semitones/logic.ts
+  var ALL_ITEMS2 = buildBidirectionalIds(
+    INTERVALS.map((i3) => i3.abbrev)
+  );
+  function getQuestion3(itemId2) {
+    const [abbrev, dir] = itemId2.split(":");
+    const interval = INTERVALS.find((i3) => i3.abbrev === abbrev);
+    return {
+      abbrev: interval.abbrev,
+      name: interval.name,
+      num: interval.num,
+      dir
+    };
+  }
+  function getStatsRows2() {
+    return INTERVALS.map((interval) => ({
+      label: interval.abbrev,
+      sublabel: String(interval.num),
+      _colHeader: "Interval",
+      fwdItemId: interval.abbrev + ":fwd",
+      revItemId: interval.abbrev + ":rev"
+    }));
+  }
+
+  // src/modes/interval-semitones/definition.ts
+  var INTERVAL_SEMITONES_DEF = {
+    id: "intervalSemitones",
+    name: "Interval \u2194 Semitones",
+    namespace: "intervalSemitones",
+    description: MODE_DESCRIPTIONS.intervalSemitones,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.intervalSemitones,
+    beforeAfter: MODE_BEFORE_AFTER.intervalSemitones,
+    itemNoun: "items",
+    allItems: ALL_ITEMS2,
+    getQuestion: getQuestion3,
+    getPromptText: (q3) => q3.dir === "fwd" ? q3.name : String(q3.num),
+    quizInstruction: (q3) => q3.dir === "fwd" ? "How many semitones?" : "What interval?",
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => String(q3.num),
+        comparison: "integer"
+      },
+      rev: {
+        getExpectedValue: (q3) => q3.abbrev,
+        comparison: "interval"
+      }
+    },
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 1, 12) : isValidIntervalInput(input),
+    getDirection: (q3) => q3.dir,
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "1\u201312" : "Interval (e.g. P5)",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "number", start: 1, end: 12 },
+      rev: { kind: "interval" }
+    },
+    scope: { kind: "none" },
+    stats: {
+      kind: "table",
+      getRows: getStatsRows2,
+      fwdHeader: "I\u2192#",
+      revHeader: "#\u2192I"
+    }
+  };
+
+  // src/modes/semitone-math/logic.ts
+  var DISTANCE_GROUPS = [
+    {
+      id: "dist-1-2",
+      distances: [1, 2],
+      label: "\xB11\u20132",
+      longLabel: "1\u20132 semitones apart"
+    },
+    {
+      id: "dist-3-4",
+      distances: [3, 4],
+      label: "\xB13\u20134",
+      longLabel: "3\u20134 semitones apart"
+    },
+    {
+      id: "dist-5-6",
+      distances: [5, 6],
+      label: "\xB15\u20136",
+      longLabel: "5\u20136 semitones apart"
+    },
+    {
+      id: "dist-7-8",
+      distances: [7, 8],
+      label: "\xB17\u20138",
+      longLabel: "7\u20138 semitones apart"
+    },
+    {
+      id: "dist-9-11",
+      distances: [9, 10, 11],
+      label: "\xB19\u201311",
+      longLabel: "9\u201311 semitones apart"
+    }
+  ];
+  function getItemIdsForGroup2(groupId) {
+    const group = DISTANCE_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
+    const items = [];
+    for (const note of NOTES) {
+      for (const d4 of group.distances) {
+        items.push(note.name + "+" + d4);
+        items.push(note.name + "-" + d4);
+      }
+    }
+    return items;
+  }
+  var ALL_ITEMS3 = buildMathIds(
+    NOTES.map((n2) => n2.name),
+    Array.from({ length: 11 }, (_3, i3) => i3 + 1)
+  );
+  var ALL_GROUP_IDS = DISTANCE_GROUPS.map((g2) => g2.id);
+  function getQuestion4(itemId2) {
+    const parsed = parseMathId(itemId2);
+    const noteName = parsed.note;
+    const op = parsed.op;
+    const semitones = parseInt(parsed.value);
+    const note = NOTES.find((n2) => n2.name === noteName);
+    const answer = op === "+" ? noteAdd(note.num, semitones) : noteSub(note.num, semitones);
+    const useFlats = op === "-";
+    const promptNoteName = displayNote(
+      pickAccidentalName(note.displayName, useFlats)
+    );
+    return {
+      note,
+      op,
+      semitones,
+      answer,
+      useFlats,
+      promptText: promptNoteName + " " + op + " " + semitones
+    };
+  }
+  var GRID_COL_LABELS = Array.from(
+    { length: 11 },
+    (_3, i3) => String(i3 + 1)
+  );
+  function getGridItemId(noteName, colIdx) {
+    const n2 = colIdx + 1;
+    return [noteName + "+" + n2, noteName + "-" + n2];
+  }
+
+  // src/modes/semitone-math/definition.ts
+  var SEMITONE_MATH_DEF = {
+    id: "semitoneMath",
+    name: "Semitone Math",
+    namespace: "semitoneMath",
+    description: MODE_DESCRIPTIONS.semitoneMath,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.semitoneMath,
+    beforeAfter: MODE_BEFORE_AFTER.semitoneMath,
+    itemNoun: "items",
+    allItems: ALL_ITEMS3,
+    getQuestion: getQuestion4,
+    getPromptText: (q3) => q3.promptText,
+    quizInstruction: "What note?",
+    answer: {
+      getExpectedValue: (q3) => q3.answer.name,
+      comparison: "note-enharmonic",
+      getDisplayAnswer: (q3) => displayNote(pickAccidentalName(q3.answer.displayName, q3.useFlats))
+    },
+    validateInput: (_q, input) => isValidNoteInput(input),
+    getUseFlats: (q3) => q3.useFlats,
+    inputPlaceholder: "Note name",
+    buttons: { kind: "note" },
+    scope: {
+      kind: "groups",
+      groups: DISTANCE_GROUPS,
+      getItemIdsForGroup: getItemIdsForGroup2,
+      allGroupIds: ALL_GROUP_IDS,
+      storageKey: "semitoneMath_enabledGroups",
+      scopeLabel: "Distances",
+      defaultEnabled: [ALL_GROUP_IDS[0]],
+      formatLabel: (groups) => {
+        if (groups.size === DISTANCE_GROUPS.length) return "all distances";
+        const labels = DISTANCE_GROUPS.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
+        return labels.join(", ") + " semitones";
+      }
+    },
+    stats: {
+      kind: "grid",
+      colLabels: GRID_COL_LABELS,
+      getItemId: getGridItemId
+    }
+  };
+
+  // src/modes/interval-math/logic.ts
+  var MATH_INTERVALS = INTERVALS.filter(
+    (i3) => i3.num >= 1 && i3.num <= 11
+  );
+  var DISTANCE_GROUPS2 = [
+    {
+      id: "seconds",
+      distances: [1, 2],
+      label: "m2 M2",
+      longLabel: "Seconds (m2, M2)"
+    },
+    {
+      id: "thirds",
+      distances: [3, 4],
+      label: "m3 M3",
+      longLabel: "Thirds (m3, M3)"
+    },
+    {
+      id: "fourth-tritone",
+      distances: [5, 6],
+      label: "P4 TT",
+      longLabel: "Fourth & tritone (P4, TT)"
+    },
+    {
+      id: "fifth-sixth",
+      distances: [7, 8],
+      label: "P5 m6",
+      longLabel: "Fifth & minor 6th (P5, m6)"
+    },
+    {
+      id: "sixths-sevenths",
+      distances: [9, 10, 11],
+      label: "M6 m7 M7",
+      longLabel: "Sixths & sevenths (M6, m7, M7)"
+    }
+  ];
+  function getItemIdsForGroup3(groupId) {
+    const group = DISTANCE_GROUPS2.find((g2) => g2.id === groupId);
+    if (!group) return [];
+    const intervals = MATH_INTERVALS.filter(
+      (i3) => group.distances.includes(i3.num)
+    );
+    const items = [];
+    for (const note of NOTES) {
+      for (const interval of intervals) {
+        items.push(note.name + "+" + interval.abbrev);
+        items.push(note.name + "-" + interval.abbrev);
+      }
+    }
+    return items;
+  }
+  var ALL_ITEMS4 = buildMathIds(
+    NOTES.map((n2) => n2.name),
+    MATH_INTERVALS.map((i3) => i3.abbrev)
+  );
+  var ALL_GROUP_IDS2 = DISTANCE_GROUPS2.map((g2) => g2.id);
+  function getQuestion5(itemId2) {
+    const parsed = parseMathId(itemId2);
+    const noteName = parsed.note;
+    const op = parsed.op;
+    const abbrev = parsed.value;
+    const note = NOTES.find((n2) => n2.name === noteName);
+    const interval = MATH_INTERVALS.find((i3) => i3.abbrev === abbrev);
+    const answer = op === "+" ? noteAdd(note.num, interval.num) : noteSub(note.num, interval.num);
+    const useFlats = op === "-";
+    const promptNoteName = displayNote(
+      pickAccidentalName(note.displayName, useFlats)
+    );
+    return {
+      note,
+      op,
+      interval,
+      answer,
+      useFlats,
+      promptText: promptNoteName + " " + op + " " + interval.abbrev
+    };
+  }
+  var GRID_COL_LABELS2 = MATH_INTERVALS.map((i3) => i3.abbrev);
+  function getGridItemId2(noteName, colIdx) {
+    const abbrev = MATH_INTERVALS[colIdx].abbrev;
+    return [noteName + "+" + abbrev, noteName + "-" + abbrev];
+  }
+
+  // src/modes/interval-math/definition.ts
+  var INTERVAL_MATH_DEF = {
+    id: "intervalMath",
+    name: "Interval Math",
+    namespace: "intervalMath",
+    description: MODE_DESCRIPTIONS.intervalMath,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.intervalMath,
+    beforeAfter: MODE_BEFORE_AFTER.intervalMath,
+    itemNoun: "items",
+    allItems: ALL_ITEMS4,
+    getQuestion: getQuestion5,
+    getPromptText: (q3) => q3.promptText,
+    quizInstruction: "What note?",
+    answer: {
+      getExpectedValue: (q3) => q3.answer.name,
+      comparison: "note-enharmonic",
+      getDisplayAnswer: (q3) => displayNote(pickAccidentalName(q3.answer.displayName, q3.useFlats))
+    },
+    validateInput: (_q, input) => isValidNoteInput(input),
+    getUseFlats: (q3) => q3.useFlats,
+    inputPlaceholder: "Note name",
+    buttons: { kind: "note" },
+    scope: {
+      kind: "groups",
+      groups: DISTANCE_GROUPS2,
+      getItemIdsForGroup: getItemIdsForGroup3,
+      allGroupIds: ALL_GROUP_IDS2,
+      storageKey: "intervalMath_enabledGroups",
+      scopeLabel: "Intervals",
+      defaultEnabled: [ALL_GROUP_IDS2[0]],
+      formatLabel: (groups) => {
+        if (groups.size === DISTANCE_GROUPS2.length) return "all intervals";
+        const labels = DISTANCE_GROUPS2.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
+        return labels.join(", ") + " intervals";
+      }
+    },
+    stats: {
+      kind: "grid",
+      colLabels: GRID_COL_LABELS2,
+      getItemId: getGridItemId2
+    }
+  };
+
+  // src/modes/key-signatures/logic.ts
+  var KEY_GROUPS = [
+    {
+      id: "major-easy",
+      keys: ["C", "G", "F", "D", "Bb", "A", "Eb"],
+      label: "Major 0\u20133 \u266F/\u266D",
+      longLabel: "Major keys (0\u20133 \u266F/\u266D)"
+    },
+    {
+      id: "major-hard",
+      keys: ["E", "Ab", "B", "Db", "F#"],
+      label: "Major 4+ \u266F/\u266D",
+      longLabel: "Major keys (4+ \u266F/\u266D)"
+    }
+  ];
+  var MINOR_ROOT_TO_MAJOR = /* @__PURE__ */ new Map();
+  var RELATIVE_MINOR_DEGREE = 6;
+  for (const key of MAJOR_KEYS) {
+    MINOR_ROOT_TO_MAJOR.set(
+      getScaleDegreeNote(key.root, RELATIVE_MINOR_DEGREE),
+      key
+    );
+  }
+  var MINOR_ROOTS = MAJOR_KEYS.map(
+    (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE)
+  );
+  function minorKeyGroup(id, majorKeys, label, longLabel) {
+    const keys = majorKeys.map(
+      (k3) => getScaleDegreeNote(k3.root, RELATIVE_MINOR_DEGREE) + "m"
+    );
+    return { id, keys, label, longLabel };
+  }
+  var MINOR_KEY_GROUPS = [
+    minorKeyGroup(
+      "minor-easy",
+      MAJOR_KEYS.filter((k3) => k3.accidentalCount <= 3),
+      "Minor 0\u20133 \u266F/\u266D",
+      "Minor keys (0\u20133 \u266F/\u266D)"
+    ),
+    minorKeyGroup(
+      "minor-hard",
+      MAJOR_KEYS.filter((k3) => k3.accidentalCount > 3),
+      "Minor 4+ \u266F/\u266D",
+      "Minor keys (4+ \u266F/\u266D)"
+    )
+  ];
+  var ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
+  function getItemIdsForGroup4(groupId) {
+    const group = ALL_KEY_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
+    const items = [];
+    for (const root of group.keys) {
+      items.push(root + ":fwd");
+      items.push(root + ":rev");
+    }
+    return items;
+  }
+  var ALL_ITEMS5 = [];
+  for (const key of MAJOR_KEYS) {
+    ALL_ITEMS5.push(key.root + ":fwd");
+    ALL_ITEMS5.push(key.root + ":rev");
+  }
+  for (const minorRoot of MINOR_ROOTS) {
+    ALL_ITEMS5.push(minorRoot + "m:fwd");
+    ALL_ITEMS5.push(minorRoot + "m:rev");
+  }
+  var ALL_GROUP_IDS3 = ALL_KEY_GROUPS.map((g2) => g2.id);
+  function getQuestion6(itemId2) {
+    const [rootPart, dir] = itemId2.split(":");
+    const isMinor = rootPart.endsWith("m") && rootPart.length > 1 && MINOR_ROOT_TO_MAJOR.has(rootPart.slice(0, -1));
+    if (isMinor) {
+      const minorRoot = rootPart.slice(0, -1);
+      const majorKey = MINOR_ROOT_TO_MAJOR.get(minorRoot);
+      return {
+        root: minorRoot,
+        dir,
+        sigLabel: keySignatureLabel(majorKey),
+        quality: "minor"
+      };
+    }
+    const key = MAJOR_KEYS.find((k3) => k3.root === rootPart);
+    return {
+      root: key.root,
+      dir,
+      sigLabel: keySignatureLabel(key),
+      quality: "major"
+    };
+  }
+  function getStatsRows3() {
+    const majorRows = MAJOR_KEYS.map((key) => ({
+      label: displayNote(key.root) + " major",
+      sublabel: keySignatureLabel(key),
+      _colHeader: "Key",
+      fwdItemId: key.root + ":fwd",
+      revItemId: key.root + ":rev"
+    }));
+    const minorRows = MINOR_ROOTS.map((minorRoot) => {
+      const majorKey = MINOR_ROOT_TO_MAJOR.get(minorRoot);
+      return {
+        label: displayNote(minorRoot) + " minor",
+        sublabel: keySignatureLabel(majorKey),
+        _colHeader: "Key",
+        fwdItemId: minorRoot + "m:fwd",
+        revItemId: minorRoot + "m:rev"
+      };
+    });
+    return [...majorRows, ...minorRows];
+  }
+
+  // src/modes/key-signatures/definition.ts
+  var KEY_SIGNATURES_DEF = {
+    id: "keySignatures",
+    name: "Key Signatures",
+    namespace: "keySignatures",
+    description: MODE_DESCRIPTIONS.keySignatures,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.keySignatures,
+    beforeAfter: MODE_BEFORE_AFTER.keySignatures,
+    itemNoun: "items",
+    allItems: ALL_ITEMS5,
+    getQuestion: getQuestion6,
+    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.root) + " " + q3.quality : q3.sigLabel + " " + q3.quality,
+    quizInstruction: (q3) => q3.dir === "fwd" ? "What key signature?" : "What key?",
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => q3.sigLabel,
+        comparison: "exact"
+      },
+      rev: {
+        getExpectedValue: (q3) => q3.root,
+        comparison: "note-enharmonic"
+      }
+    },
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidKeysigInput(input) : isValidNoteInput(input),
+    getDirection: (q3) => q3.dir,
+    getUseFlats: (q3) => rootUsesFlats(q3.root),
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Signature (e.g. 2#)" : "Note name",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "split-keysig" },
+      rev: { kind: "note" }
+    },
+    scope: {
+      kind: "groups",
+      groups: ALL_KEY_GROUPS,
+      getItemIdsForGroup: getItemIdsForGroup4,
+      allGroupIds: ALL_GROUP_IDS3,
+      storageKey: "keySignatures_enabledGroups",
+      scopeLabel: "Keys",
+      defaultEnabled: [ALL_GROUP_IDS3[0]],
+      formatLabel: (groups) => {
+        if (groups.size === ALL_KEY_GROUPS.length) return "all keys";
+        const keys = ALL_KEY_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.keys).map((k3) => displayNote(k3));
+        return keys.join(", ");
+      }
+    },
+    stats: {
+      kind: "table",
+      getRows: getStatsRows3,
+      fwdHeader: "Key\u2192Sig",
+      revHeader: "Sig\u2192Key"
+    }
+  };
+
+  // src/modes/scale-degrees/logic.ts
+  var DEGREE_LABELS2 = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th"];
+  var ACTIVE_DEGREES = [2, 3, 4, 5, 6, 7];
+  var DEGREE_GROUPS = [
+    {
+      id: "4th-5th",
+      degrees: [4, 5],
+      label: "4th, 5th",
+      longLabel: "4th & 5th degrees"
+    },
+    {
+      id: "3rd-7th",
+      degrees: [3, 7],
+      label: "3rd, 7th",
+      longLabel: "3rd & 7th degrees"
+    },
+    {
+      id: "2nd-6th",
+      degrees: [2, 6],
+      label: "2nd, 6th",
+      longLabel: "2nd & 6th degrees"
+    }
+  ];
+  function getItemIdsForGroup5(groupId) {
+    const group = DEGREE_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
+    const items = [];
+    for (const key of MAJOR_KEYS) {
+      for (const d4 of group.degrees) {
+        items.push(key.root + ":" + d4 + ":fwd");
+        items.push(key.root + ":" + d4 + ":rev");
+      }
+    }
+    return items;
+  }
+  var ALL_ITEMS6 = [];
+  for (const key of MAJOR_KEYS) {
+    for (const d4 of ACTIVE_DEGREES) {
+      ALL_ITEMS6.push(key.root + ":" + d4 + ":fwd");
+      ALL_ITEMS6.push(key.root + ":" + d4 + ":rev");
+    }
+  }
+  var ALL_GROUP_IDS4 = DEGREE_GROUPS.map((g2) => g2.id);
+  var GRID_NOTES = MAJOR_KEYS.map((k3) => ({
+    name: k3.root,
+    displayName: k3.root
+  }));
+  function getQuestion7(itemId2) {
+    const parts = itemId2.split(":");
+    const keyRoot = parts[0];
+    const degree = parseInt(parts[1]);
+    const dir = parts[2];
+    const noteName = getScaleDegreeNote(keyRoot, degree);
+    return { keyRoot, degree, dir, noteName };
+  }
+  function getGridItemId3(keyRoot, colIdx) {
+    const d4 = ACTIVE_DEGREES[colIdx];
+    return [keyRoot + ":" + d4 + ":fwd", keyRoot + ":" + d4 + ":rev"];
+  }
+
+  // src/modes/scale-degrees/definition.ts
+  var SCALE_DEGREES_DEF = {
+    id: "scaleDegrees",
+    name: "Scale Degrees",
+    namespace: "scaleDegrees",
+    description: MODE_DESCRIPTIONS.scaleDegrees,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.scaleDegrees,
+    beforeAfter: MODE_BEFORE_AFTER.scaleDegrees,
+    itemNoun: "items",
+    allItems: ALL_ITEMS6,
+    getQuestion: getQuestion7,
+    getPromptText: (q3) => q3.dir === "fwd" ? DEGREE_LABELS2[q3.degree - 1] + " of " + displayNote(q3.keyRoot) + " major" : displayNote(q3.keyRoot) + " major: " + displayNote(q3.noteName),
+    quizInstruction: (q3) => q3.dir === "fwd" ? "What note?" : "What degree?",
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => q3.noteName,
+        comparison: "note-enharmonic"
+      },
+      rev: {
+        getExpectedValue: (q3) => String(q3.degree),
+        comparison: "exact",
+        getDisplayAnswer: (q3) => DEGREE_LABELS2[q3.degree - 1]
+      }
+    },
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : /^[2-7]$/.test(input),
+    getDirection: (q3) => q3.dir,
+    getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Degree (2\u20137)",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "note" },
+      rev: { kind: "degree" }
+    },
+    scope: {
+      kind: "groups",
+      groups: DEGREE_GROUPS,
+      getItemIdsForGroup: getItemIdsForGroup5,
+      allGroupIds: ALL_GROUP_IDS4,
+      storageKey: "scaleDegrees_enabledGroups",
+      scopeLabel: "Degrees",
+      defaultEnabled: [ALL_GROUP_IDS4[0]],
+      formatLabel: (groups) => {
+        if (groups.size === DEGREE_GROUPS.length) return "all degrees";
+        const degrees = DEGREE_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.degrees).sort((a3, b) => a3 - b);
+        return degrees.map((d4) => DEGREE_LABELS2[d4 - 1]).join(", ") + " degrees";
+      }
+    },
+    stats: {
+      kind: "grid",
+      colLabels: ACTIVE_DEGREES.map((d4) => DEGREE_LABELS2[d4 - 1]),
+      getItemId: getGridItemId3,
+      notes: GRID_NOTES
+    }
+  };
+
+  // src/modes/diatonic-chords/logic.ts
+  var CHORD_GROUPS = [
+    {
+      id: "primary",
+      degrees: [1, 4, 5],
+      label: "I IV V",
+      longLabel: "Primary chords (I, IV, V)"
+    },
+    {
+      id: "secondary",
+      degrees: [2, 6],
+      label: "ii vi",
+      longLabel: "Secondary chords (ii, vi)"
+    },
+    {
+      id: "tertiary",
+      degrees: [3, 7],
+      label: "iii vii\xB0",
+      // \u00B0 = ° (degree sign)
+      longLabel: "Tertiary chords (iii, vii\xB0)"
+    }
+  ];
+  function getItemIdsForGroup6(groupId) {
+    const group = CHORD_GROUPS.find((g2) => g2.id === groupId);
+    if (!group) return [];
+    const items = [];
+    for (const key of MAJOR_KEYS) {
+      for (const d4 of group.degrees) {
+        items.push(key.root + ":" + d4 + ":fwd");
+        items.push(key.root + ":" + d4 + ":rev");
+      }
+    }
+    return items;
+  }
+  var ALL_ITEMS7 = [];
+  for (const key of MAJOR_KEYS) {
+    for (let d4 = 1; d4 <= 7; d4++) {
+      ALL_ITEMS7.push(key.root + ":" + d4 + ":fwd");
+      ALL_ITEMS7.push(key.root + ":" + d4 + ":rev");
+    }
+  }
+  var ALL_GROUP_IDS5 = CHORD_GROUPS.map((g2) => g2.id);
+  var GRID_NOTES2 = MAJOR_KEYS.map((k3) => ({
+    name: k3.root,
+    displayName: k3.root
+  }));
+  function getQuestion8(itemId2) {
+    const parts = itemId2.split(":");
+    const keyRoot = parts[0];
+    const degree = parseInt(parts[1]);
+    const dir = parts[2];
+    const chord = DIATONIC_CHORDS[degree - 1];
+    const rootNote = getScaleDegreeNote(keyRoot, degree);
+    return { keyRoot, degree, chord, dir, rootNote };
+  }
+  function normalizeNumeralInput(input) {
+    const num = parseInt(input, 10);
+    if (num >= 1 && num <= 7) return ROMAN_NUMERALS[num - 1];
+    if (input === "vii") return "vii\xB0";
+    return input;
+  }
+  function getGridItemId4(keyRoot, colIdx) {
+    const d4 = colIdx + 1;
+    return [keyRoot + ":" + d4 + ":fwd", keyRoot + ":" + d4 + ":rev"];
+  }
+
+  // src/modes/diatonic-chords/definition.ts
+  var DIATONIC_CHORDS_DEF = {
+    id: "diatonicChords",
+    name: "Diatonic Chords",
+    namespace: "diatonicChords",
+    description: MODE_DESCRIPTIONS.diatonicChords,
+    aboutDescription: MODE_ABOUT_DESCRIPTIONS.diatonicChords,
+    beforeAfter: MODE_BEFORE_AFTER.diatonicChords,
+    itemNoun: "items",
+    allItems: ALL_ITEMS7,
+    getQuestion: getQuestion8,
+    getPromptText: (q3) => q3.dir === "fwd" ? q3.chord.numeral + " in " + displayNote(q3.keyRoot) + " major" : displayNote(q3.rootNote) + q3.chord.qualityLabel + " in " + displayNote(q3.keyRoot) + " major",
+    quizInstruction: (q3) => q3.dir === "fwd" ? "What chord root?" : "What numeral?",
+    answer: {
+      kind: "bidirectional",
+      fwd: {
+        getExpectedValue: (q3) => q3.rootNote,
+        comparison: "note-enharmonic",
+        getDisplayAnswer: (q3) => displayNote(q3.rootNote) + " " + q3.chord.quality
+      },
+      rev: {
+        getExpectedValue: (q3) => q3.chord.numeral,
+        comparison: "exact",
+        normalizeInput: normalizeNumeralInput
+      }
+    },
+    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : isValidNumeralInput(input) || /^[1-7]$/.test(input) || input === "vii",
+    getDirection: (q3) => q3.dir,
+    getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
+    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Numeral (e.g. IV)",
+    buttons: {
+      kind: "bidirectional",
+      fwd: { kind: "note" },
+      rev: { kind: "numeral" }
+    },
+    scope: {
+      kind: "groups",
+      groups: CHORD_GROUPS,
+      getItemIdsForGroup: getItemIdsForGroup6,
+      allGroupIds: ALL_GROUP_IDS5,
+      storageKey: "diatonicChords_enabledGroups",
+      scopeLabel: "Chords",
+      defaultEnabled: [ALL_GROUP_IDS5[0]],
+      formatLabel: (groups) => {
+        if (groups.size === CHORD_GROUPS.length) return "all chords";
+        const numerals = CHORD_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.degrees).sort((a3, b) => a3 - b).map((d4) => ROMAN_NUMERALS[d4 - 1]);
+        return numerals.join(", ") + " chords";
+      }
+    },
+    stats: {
+      kind: "grid",
+      colLabels: ROMAN_NUMERALS,
+      getItemId: getGridItemId4,
+      notes: GRID_NOTES2
+    }
+  };
 
   // src/modes/chord-spelling/logic.ts
   var GROUP_LONG_LABELS = {
@@ -7936,6 +7936,23 @@ body.native-app {
   var GUITAR_CHORD_SHAPES_DEF = createChordShapesDef("guitar");
   var UKULELE_CHORD_SHAPES_DEF = createChordShapesDef("ukulele");
 
+  // src/mode-definitions.ts
+  var ALL_MODE_DEFINITIONS = [
+    createFretboardDef(GUITAR),
+    createFretboardDef(UKULELE),
+    NOTE_SEMITONES_DEF,
+    INTERVAL_SEMITONES_DEF,
+    SEMITONE_MATH_DEF,
+    INTERVAL_MATH_DEF,
+    KEY_SIGNATURES_DEF,
+    SCALE_DEGREES_DEF,
+    DIATONIC_CHORDS_DEF,
+    CHORD_SPELLING_DEF,
+    SPEED_TAP_DEF,
+    GUITAR_CHORD_SHAPES_DEF,
+    UKULELE_CHORD_SHAPES_DEF
+  ];
+
   // src/mode-progress-manifest.ts
   function entryFromDef(def) {
     const scope = def.scope;
@@ -7951,24 +7968,7 @@ body.native-app {
       allItemIds: () => def.allItems
     };
   }
-  var ALL_DEFINITIONS = [
-    createFretboardDef(GUITAR),
-    createFretboardDef(UKULELE),
-    NOTE_SEMITONES_DEF,
-    INTERVAL_SEMITONES_DEF,
-    SEMITONE_MATH_DEF,
-    INTERVAL_MATH_DEF,
-    KEY_SIGNATURES_DEF,
-    SCALE_DEGREES_DEF,
-    DIATONIC_CHORDS_DEF,
-    CHORD_SPELLING_DEF,
-    SPEED_TAP_DEF,
-    GUITAR_CHORD_SHAPES_DEF,
-    UKULELE_CHORD_SHAPES_DEF
-  ];
-  var MODE_PROGRESS_MANIFEST = ALL_DEFINITIONS.map(
-    entryFromDef
-  );
+  var MODE_PROGRESS_MANIFEST = ALL_MODE_DEFINITIONS.map(entryFromDef);
 
   // src/recommendations.ts
   function classifyGroups(recs) {
@@ -9000,7 +9000,7 @@ body.native-app {
               ] })
             ] })
           ] }),
-          progress && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(
+          progress && (progress.groupColors.length > 0 || progress.activeGroupCount > 0) && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(
             GroupProgressBar,
             {
               colors: progress.groupColors.length > 0 ? progress.groupColors : notStartedColors(progress.activeGroupCount)
@@ -12962,19 +12962,9 @@ body.native-app {
     loadNotationPreference();
     cleanupLegacyKeys();
     const nav = createNavigation();
-    registerDeclarativeMode(nav, createFretboardDef(GUITAR));
-    registerDeclarativeMode(nav, createFretboardDef(UKULELE));
-    registerDeclarativeMode(nav, NOTE_SEMITONES_DEF);
-    registerDeclarativeMode(nav, INTERVAL_SEMITONES_DEF);
-    registerDeclarativeMode(nav, SEMITONE_MATH_DEF);
-    registerDeclarativeMode(nav, INTERVAL_MATH_DEF);
-    registerDeclarativeMode(nav, KEY_SIGNATURES_DEF);
-    registerDeclarativeMode(nav, SCALE_DEGREES_DEF);
-    registerDeclarativeMode(nav, DIATONIC_CHORDS_DEF);
-    registerDeclarativeMode(nav, CHORD_SPELLING_DEF);
-    registerDeclarativeMode(nav, SPEED_TAP_DEF);
-    registerDeclarativeMode(nav, GUITAR_CHORD_SHAPES_DEF);
-    registerDeclarativeMode(nav, UKULELE_CHORD_SHAPES_DEF);
+    for (const def of ALL_MODE_DEFINITIONS) {
+      registerDeclarativeMode(nav, def);
+    }
     nav.init();
     const settings = createSettingsController({
       onNotationChange() {
