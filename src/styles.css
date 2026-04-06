@@ -450,6 +450,15 @@ body {
   border-right: 1px solid var(--color-border-lighter);
   overscroll-behavior: none;
 }
+/* Viewport containment: #app only exists in the built app (build-template.ts),
+   so prototype/design pages that import styles.css are unaffected. */
+#app {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
 
 /* ==========================================================================
    2b. SCREEN LAYOUT — three-zone structure (header/main/footer)
@@ -1240,7 +1249,6 @@ body {
 .mode-screen.mode-active {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
 }
 
 .quiz-session-header {
