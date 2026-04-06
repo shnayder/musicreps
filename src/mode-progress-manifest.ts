@@ -40,6 +40,11 @@ import {
 import { ALL_ITEMS as NOTE_SEMI_ITEMS } from './modes/note-semitones/logic.ts';
 import { ALL_ITEMS as INT_SEMI_ITEMS } from './modes/interval-semitones/logic.ts';
 import { ALL_ITEMS as SPEED_TAP_ITEMS } from './modes/speed-tap/logic.ts';
+import {
+  allItems as chordShapesAllItems,
+  getItemIdsForGroup as chordShapesGroup,
+  QUALITY_GROUPS as CHORD_QUALITY_GROUPS,
+} from './modes/chord-shapes/logic.ts';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -163,6 +168,24 @@ export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = [
     namespace: 'speedTap',
     groups: [{ id: 'all', label: 'All', getItemIds: () => SPEED_TAP_ITEMS }],
     allItemIds: () => SPEED_TAP_ITEMS,
+  },
+  {
+    modeId: 'guitarChordShapes',
+    namespace: 'guitarChordShapes',
+    groups: buildGroupEntries(
+      CHORD_QUALITY_GROUPS,
+      (id) => chordShapesGroup('guitar', id),
+    ),
+    allItemIds: () => chordShapesAllItems('guitar'),
+  },
+  {
+    modeId: 'ukuleleChordShapes',
+    namespace: 'ukuleleChordShapes',
+    groups: buildGroupEntries(
+      CHORD_QUALITY_GROUPS,
+      (id) => chordShapesGroup('ukulele', id),
+    ),
+    allItemIds: () => chordShapesAllItems('ukulele'),
   },
 ];
 

@@ -8,8 +8,8 @@ import {
 } from './mode-progress-manifest.ts';
 
 describe('MODE_PROGRESS_MANIFEST', () => {
-  it('has 11 entries (one per mode)', () => {
-    assert.equal(MODE_PROGRESS_MANIFEST.length, 11);
+  it('has 13 entries (one per mode)', () => {
+    assert.equal(MODE_PROGRESS_MANIFEST.length, 13);
   });
 
   it('has unique mode IDs', () => {
@@ -66,6 +66,8 @@ describe('MODE_PROGRESS_MANIFEST', () => {
       diatonicChords: 3, // chord groups
       chordSpelling: 7, // spelling groups (groups 0-6)
       speedTap: 1, // single-group mode
+      guitarChordShapes: 3, // major, minor, dom7
+      ukuleleChordShapes: 3, // major, minor, dom7
     };
 
     for (const entry of MODE_PROGRESS_MANIFEST) {
