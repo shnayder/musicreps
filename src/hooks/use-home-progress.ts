@@ -206,7 +206,24 @@ export function useHomeProgress(
     });
 
     observer.observe(el, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
+
+    // Also refresh when the app is foregrounded (e.g. after being
+    // backgrounded overnight on iOS).  The visibilitychange event fires
+    // in both WKWebView (Capacitor) and regular browsers.
+    const onVisible = () => {
+      if (
+        document.visibilityState === 'visible' &&
+        !el.classList.contains('hidden')
+      ) {
+        setRefreshKey((k) => k + 1);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
 
   // Recompute when refreshKey or starred changes.
