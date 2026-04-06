@@ -458,8 +458,6 @@
 }
 html {
   font-size: 106.25%; /* 17px base — aligns with Apple HIG body size */
-  height: 100%;
-  overflow: hidden;
   background: var(--color-canvas);
   overscroll-behavior: none;
 }
@@ -472,20 +470,22 @@ body {
   padding-bottom: 0;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
   color: var(--color-text);
   background: var(--color-canvas);
   border-left: 1px solid var(--color-border-lighter);
   border-right: 1px solid var(--color-border-lighter);
   overscroll-behavior: none;
 }
+/* Viewport containment: #app only exists in the built app (build-template.ts),
+   so prototype/design pages that import styles.css are unaffected. */
 #app {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 /* ==========================================================================
@@ -3180,7 +3180,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="5b27e4 fix-ios-scroll-bug-1zAsk"></div>
+  <div class="home-screen" id="home-screen" data-version="917287 fix-ios-scroll-bug-1zAsk"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
