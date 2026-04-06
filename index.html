@@ -3172,7 +3172,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1251"></div>
+  <div class="home-screen" id="home-screen" data-version="#1253"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -7449,7 +7449,16 @@ body.native-app {
         }
       });
       observer.observe(el, { attributes: true, attributeFilter: ["class"] });
-      return () => observer.disconnect();
+      const onVisible = () => {
+        if (document.visibilityState === "visible" && !el.classList.contains("hidden")) {
+          setRefreshKey((k3) => k3 + 1);
+        }
+      };
+      document.addEventListener("visibilitychange", onVisible);
+      return () => {
+        observer.disconnect();
+        document.removeEventListener("visibilitychange", onVisible);
+      };
     }, []);
     const starredKey = T2(() => [...starred].sort().join(","), [starred]);
     return T2(() => {
