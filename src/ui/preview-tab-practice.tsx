@@ -446,7 +446,7 @@ function PreviewAboutTab() {
           <p class='about-col-text'>{ba.after()}</p>
         </div>
       </div>
-      <Text role='body-secondary' as='p' class='about-description'>
+      <Text role='body' as='p' class='about-description'>
         {MODE_ABOUT_DESCRIPTIONS.keySignatures}
       </Text>
     </div>
