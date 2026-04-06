@@ -1289,10 +1289,6 @@ body {
 }
 .about-description {
   margin: var(--gap-group) 0 0;
-  font-size: var(--type-body-size);
-  font-weight: var(--type-body-weight);
-  line-height: var(--type-body-leading);
-  color: var(--type-body-color);
 }
 .about-tab-tip {
   margin: var(--gap-section) 0 0;
