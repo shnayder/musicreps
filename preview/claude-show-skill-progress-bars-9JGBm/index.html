@@ -3174,7 +3174,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="6fd4bd show-skill-progress-bars-9JGBm"></div>
+  <div class="home-screen" id="home-screen" data-version="929961 show-skill-progress-bars-9JGBm"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -6798,6 +6798,142 @@ body.native-app {
     return "natural notes";
   }
 
+  // src/modes/chord-shapes/voicings.ts
+  var GUITAR_VOICINGS = [
+    // --- Major ---
+    { root: "C", quality: "major", symbol: "", strings: [0, 1, 0, 2, 3, "x"] },
+    { root: "A", quality: "major", symbol: "", strings: [0, 2, 2, 2, 0, "x"] },
+    { root: "G", quality: "major", symbol: "", strings: [3, 0, 0, 0, 2, 3] },
+    { root: "E", quality: "major", symbol: "", strings: [0, 0, 1, 2, 2, 0] },
+    { root: "D", quality: "major", symbol: "", strings: [2, 3, 2, 0, "x", "x"] },
+    { root: "F", quality: "major", symbol: "", strings: [1, 1, 2, 3, 3, 1] },
+    // --- Minor ---
+    { root: "A", quality: "minor", symbol: "m", strings: [0, 1, 2, 2, 0, "x"] },
+    { root: "E", quality: "minor", symbol: "m", strings: [0, 0, 0, 2, 2, 0] },
+    { root: "D", quality: "minor", symbol: "m", strings: [1, 3, 2, 0, "x", "x"] },
+    // --- Dominant 7th ---
+    { root: "A", quality: "dom7", symbol: "7", strings: [0, 2, 0, 2, 0, "x"] },
+    { root: "B", quality: "dom7", symbol: "7", strings: [2, 0, 2, 1, 2, "x"] },
+    { root: "C", quality: "dom7", symbol: "7", strings: [0, 1, 3, 2, 3, "x"] },
+    { root: "D", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0, "x", "x"] },
+    { root: "E", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0, 2, 0] },
+    { root: "G", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0, 2, 3] }
+  ];
+  var UKULELE_VOICINGS = [
+    // --- Major ---                          // Chart (G C E A)
+    { root: "C", quality: "major", symbol: "", strings: [3, 0, 0, 0] },
+    // 0003
+    { root: "F", quality: "major", symbol: "", strings: [0, 1, 0, 2] },
+    // 2010
+    { root: "G", quality: "major", symbol: "", strings: [2, 3, 2, 0] },
+    // 0232
+    { root: "A", quality: "major", symbol: "", strings: [0, 0, 1, 2] },
+    // 2100
+    { root: "D", quality: "major", symbol: "", strings: [0, 2, 2, 2] },
+    // 2220
+    { root: "Bb", quality: "major", symbol: "", strings: [1, 1, 2, 3] },
+    // 3211
+    // --- Minor ---
+    { root: "A", quality: "minor", symbol: "m", strings: [0, 0, 0, 2] },
+    // 2000
+    { root: "D", quality: "minor", symbol: "m", strings: [0, 1, 2, 2] },
+    // 2210
+    { root: "E", quality: "minor", symbol: "m", strings: [2, 3, 4, 0] },
+    // 0432
+    // --- Dominant 7th ---
+    { root: "C", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0] },
+    { root: "G", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0] },
+    { root: "A", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0] },
+    { root: "D", quality: "dom7", symbol: "7", strings: [3, 2, 2, 2] }
+  ];
+  function getVoicings(instrument) {
+    return instrument === "guitar" ? GUITAR_VOICINGS : UKULELE_VOICINGS;
+  }
+
+  // src/modes/chord-shapes/logic.ts
+  function positionKey2(string, fret) {
+    return string + "-" + fret;
+  }
+  function getPlayedPositions(v3) {
+    const positions = [];
+    for (let s3 = 0; s3 < v3.strings.length; s3++) {
+      const fret = v3.strings[s3];
+      if (fret !== "x") {
+        positions.push(positionKey2(s3, fret));
+      }
+    }
+    return positions;
+  }
+  function getMutedStrings(v3) {
+    const muted = [];
+    for (let s3 = 0; s3 < v3.strings.length; s3++) {
+      if (v3.strings[s3] === "x") muted.push(s3);
+    }
+    return muted;
+  }
+  function itemId(v3) {
+    return v3.root + ":" + v3.quality;
+  }
+  function parseItem3(instrument, id) {
+    const voicing = findVoicing(instrument, id);
+    return buildQuestion(voicing);
+  }
+  function findVoicing(instrument, id) {
+    const voicings = getVoicings(instrument);
+    const v3 = voicings.find((v4) => itemId(v4) === id);
+    if (!v3) throw new Error("Unknown chord voicing: " + id);
+    return v3;
+  }
+  function buildQuestion(v3) {
+    return {
+      root: v3.root,
+      quality: v3.quality,
+      displayName: chordDisplayName(v3),
+      voicing: v3,
+      playedPositions: getPlayedPositions(v3),
+      mutedStrings: getMutedStrings(v3)
+    };
+  }
+  function chordDisplayName(v3) {
+    return displayNote(v3.root) + v3.symbol;
+  }
+  function allItems(instrument) {
+    return getVoicings(instrument).map(itemId);
+  }
+  function evaluate3(q3, tapped) {
+    const targetSet = new Set(q3.playedPositions);
+    const tappedSet = new Set(tapped);
+    const perEntry = tapped.map((pos) => ({
+      positionKey: pos,
+      correct: targetSet.has(pos)
+    }));
+    const missed = [...targetSet].filter((t3) => !tappedSet.has(t3));
+    const correct = perEntry.every((e3) => e3.correct) && missed.length === 0;
+    return {
+      correct,
+      correctAnswer: q3.displayName,
+      perEntry,
+      missed
+    };
+  }
+  var QUALITY_GROUPS = [
+    { id: "major", label: "Major", longLabel: "Major chords" },
+    { id: "minor", label: "Minor", longLabel: "Minor chords" },
+    { id: "dom7", label: "7th", longLabel: "Dominant 7th chords" }
+  ];
+  var ALL_GROUP_IDS8 = QUALITY_GROUPS.map((g2) => g2.id);
+  function getItemIdsForGroup9(instrument, groupId) {
+    return getVoicings(instrument).filter((v3) => v3.quality === groupId).map(itemId);
+  }
+  function formatGroupLabel2(enabledGroups) {
+    if (enabledGroups.size === 3) return "all chords";
+    const labels = [];
+    if (enabledGroups.has("major")) labels.push("major");
+    if (enabledGroups.has("minor")) labels.push("minor");
+    if (enabledGroups.has("dom7")) labels.push("7th");
+    return labels.join(" & ");
+  }
+
   // src/mode-progress-manifest.ts
   function buildGroupEntries(groups, getIds) {
     return groups.map((g2) => ({
@@ -6885,6 +7021,24 @@ body.native-app {
       namespace: "speedTap",
       groups: [{ id: "all", label: "All", getItemIds: () => ALL_ITEMS9 }],
       allItemIds: () => ALL_ITEMS9
+    },
+    {
+      modeId: "guitarChordShapes",
+      namespace: "guitarChordShapes",
+      groups: buildGroupEntries(
+        QUALITY_GROUPS,
+        (id) => getItemIdsForGroup9("guitar", id)
+      ),
+      allItemIds: () => allItems("guitar")
+    },
+    {
+      modeId: "ukuleleChordShapes",
+      namespace: "ukuleleChordShapes",
+      groups: buildGroupEntries(
+        QUALITY_GROUPS,
+        (id) => getItemIdsForGroup9("ukulele", id)
+      ),
+      allItemIds: () => allItems("ukulele")
     }
   ];
 
@@ -12741,142 +12895,6 @@ body.native-app {
     stats: { kind: "none" },
     useController: () => useSpeedTapController()
   };
-
-  // src/modes/chord-shapes/voicings.ts
-  var GUITAR_VOICINGS = [
-    // --- Major ---
-    { root: "C", quality: "major", symbol: "", strings: [0, 1, 0, 2, 3, "x"] },
-    { root: "A", quality: "major", symbol: "", strings: [0, 2, 2, 2, 0, "x"] },
-    { root: "G", quality: "major", symbol: "", strings: [3, 0, 0, 0, 2, 3] },
-    { root: "E", quality: "major", symbol: "", strings: [0, 0, 1, 2, 2, 0] },
-    { root: "D", quality: "major", symbol: "", strings: [2, 3, 2, 0, "x", "x"] },
-    { root: "F", quality: "major", symbol: "", strings: [1, 1, 2, 3, 3, 1] },
-    // --- Minor ---
-    { root: "A", quality: "minor", symbol: "m", strings: [0, 1, 2, 2, 0, "x"] },
-    { root: "E", quality: "minor", symbol: "m", strings: [0, 0, 0, 2, 2, 0] },
-    { root: "D", quality: "minor", symbol: "m", strings: [1, 3, 2, 0, "x", "x"] },
-    // --- Dominant 7th ---
-    { root: "A", quality: "dom7", symbol: "7", strings: [0, 2, 0, 2, 0, "x"] },
-    { root: "B", quality: "dom7", symbol: "7", strings: [2, 0, 2, 1, 2, "x"] },
-    { root: "C", quality: "dom7", symbol: "7", strings: [0, 1, 3, 2, 3, "x"] },
-    { root: "D", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0, "x", "x"] },
-    { root: "E", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0, 2, 0] },
-    { root: "G", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0, 2, 3] }
-  ];
-  var UKULELE_VOICINGS = [
-    // --- Major ---                          // Chart (G C E A)
-    { root: "C", quality: "major", symbol: "", strings: [3, 0, 0, 0] },
-    // 0003
-    { root: "F", quality: "major", symbol: "", strings: [0, 1, 0, 2] },
-    // 2010
-    { root: "G", quality: "major", symbol: "", strings: [2, 3, 2, 0] },
-    // 0232
-    { root: "A", quality: "major", symbol: "", strings: [0, 0, 1, 2] },
-    // 2100
-    { root: "D", quality: "major", symbol: "", strings: [0, 2, 2, 2] },
-    // 2220
-    { root: "Bb", quality: "major", symbol: "", strings: [1, 1, 2, 3] },
-    // 3211
-    // --- Minor ---
-    { root: "A", quality: "minor", symbol: "m", strings: [0, 0, 0, 2] },
-    // 2000
-    { root: "D", quality: "minor", symbol: "m", strings: [0, 1, 2, 2] },
-    // 2210
-    { root: "E", quality: "minor", symbol: "m", strings: [2, 3, 4, 0] },
-    // 0432
-    // --- Dominant 7th ---
-    { root: "C", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0] },
-    { root: "G", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0] },
-    { root: "A", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0] },
-    { root: "D", quality: "dom7", symbol: "7", strings: [3, 2, 2, 2] }
-  ];
-  function getVoicings(instrument) {
-    return instrument === "guitar" ? GUITAR_VOICINGS : UKULELE_VOICINGS;
-  }
-
-  // src/modes/chord-shapes/logic.ts
-  function positionKey2(string, fret) {
-    return string + "-" + fret;
-  }
-  function getPlayedPositions(v3) {
-    const positions = [];
-    for (let s3 = 0; s3 < v3.strings.length; s3++) {
-      const fret = v3.strings[s3];
-      if (fret !== "x") {
-        positions.push(positionKey2(s3, fret));
-      }
-    }
-    return positions;
-  }
-  function getMutedStrings(v3) {
-    const muted = [];
-    for (let s3 = 0; s3 < v3.strings.length; s3++) {
-      if (v3.strings[s3] === "x") muted.push(s3);
-    }
-    return muted;
-  }
-  function itemId(v3) {
-    return v3.root + ":" + v3.quality;
-  }
-  function parseItem3(instrument, id) {
-    const voicing = findVoicing(instrument, id);
-    return buildQuestion(voicing);
-  }
-  function findVoicing(instrument, id) {
-    const voicings = getVoicings(instrument);
-    const v3 = voicings.find((v4) => itemId(v4) === id);
-    if (!v3) throw new Error("Unknown chord voicing: " + id);
-    return v3;
-  }
-  function buildQuestion(v3) {
-    return {
-      root: v3.root,
-      quality: v3.quality,
-      displayName: chordDisplayName(v3),
-      voicing: v3,
-      playedPositions: getPlayedPositions(v3),
-      mutedStrings: getMutedStrings(v3)
-    };
-  }
-  function chordDisplayName(v3) {
-    return displayNote(v3.root) + v3.symbol;
-  }
-  function allItems(instrument) {
-    return getVoicings(instrument).map(itemId);
-  }
-  function evaluate3(q3, tapped) {
-    const targetSet = new Set(q3.playedPositions);
-    const tappedSet = new Set(tapped);
-    const perEntry = tapped.map((pos) => ({
-      positionKey: pos,
-      correct: targetSet.has(pos)
-    }));
-    const missed = [...targetSet].filter((t3) => !tappedSet.has(t3));
-    const correct = perEntry.every((e3) => e3.correct) && missed.length === 0;
-    return {
-      correct,
-      correctAnswer: q3.displayName,
-      perEntry,
-      missed
-    };
-  }
-  var QUALITY_GROUPS = [
-    { id: "major", label: "Major", longLabel: "Major chords" },
-    { id: "minor", label: "Minor", longLabel: "Minor chords" },
-    { id: "dom7", label: "7th", longLabel: "Dominant 7th chords" }
-  ];
-  var ALL_GROUP_IDS8 = QUALITY_GROUPS.map((g2) => g2.id);
-  function getItemIdsForGroup9(instrument, groupId) {
-    return getVoicings(instrument).filter((v3) => v3.quality === groupId).map(itemId);
-  }
-  function formatGroupLabel2(enabledGroups) {
-    if (enabledGroups.size === 3) return "all chords";
-    const labels = [];
-    if (enabledGroups.has("major")) labels.push("major");
-    if (enabledGroups.has("minor")) labels.push("minor");
-    if (enabledGroups.has("dom7")) labels.push("7th");
-    return labels.join(" & ");
-  }
 
   // src/modes/chord-shapes/definition.tsx
   function useChordShapesController(instrument) {
