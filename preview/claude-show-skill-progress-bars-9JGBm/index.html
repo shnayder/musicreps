@@ -3174,7 +3174,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="f3a6cc show-skill-progress-bars-9JGBm"></div>
+  <div class="home-screen" id="home-screen" data-version="6fd4bd show-skill-progress-bars-9JGBm"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -8120,10 +8120,12 @@ body.native-app {
               ] })
             ] })
           ] }),
-          progress && progress.activeGroupCount > 0 && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(
+          /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(
             GroupProgressBar,
             {
-              colors: progress.groupColors.length > 0 ? progress.groupColors : notStartedColors(progress.activeGroupCount)
+              colors: progress && progress.groupColors.length > 0 ? progress.groupColors : notStartedColors(
+                progress?.activeGroupCount || 1
+              )
             }
           ) })
         ] })
