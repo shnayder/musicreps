@@ -110,6 +110,7 @@ describe('computeProgressForMode', () => {
     const storage = createMemoryStorage();
     const result = computeProgressForMode(entry, storage, null);
     assert.equal(result.groupColors.length, 0);
+    assert.equal(result.activeGroupCount, 1);
   });
 
   it('single-group mode with data has per-item color segments', () => {
@@ -127,6 +128,7 @@ describe('computeProgressForMode', () => {
     const skipped = new Set(['all']);
     const result = computeProgressForMode(entry, storage, null, skipped);
     assert.equal(result.groupColors.length, 0);
+    assert.equal(result.activeGroupCount, 0);
   });
 
   it('group mode returns empty when no items seen', () => {
@@ -134,6 +136,7 @@ describe('computeProgressForMode', () => {
     const storage = createMemoryStorage();
     const result = computeProgressForMode(entry, storage, null);
     assert.equal(result.groupColors.length, 0);
+    assert.equal(result.activeGroupCount, entry.groups.length);
   });
 
   it('sorts segments descending by speed', () => {
@@ -166,6 +169,7 @@ describe('computeProgressForMode', () => {
     const skipped = new Set(['major-hard', 'minor-hard']);
     const result = computeProgressForMode(entry, storage, null, skipped);
     assert.equal(result.groupColors.length, 2); // 4 - 2 skipped
+    assert.equal(result.activeGroupCount, 2);
   });
 
   it('returns empty when all groups skipped', () => {
@@ -179,6 +183,7 @@ describe('computeProgressForMode', () => {
     ]);
     const result = computeProgressForMode(entry, storage, null, skipped);
     assert.equal(result.groupColors.length, 0);
+    assert.equal(result.activeGroupCount, 0);
   });
 
   it('uses motorBaseline for scaling', () => {

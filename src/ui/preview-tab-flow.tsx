@@ -54,6 +54,7 @@ function FlowIdleSection(
               'hsl(40, 60%, 58%)',
               'hsl(30, 4%, 85%)',
             ],
+            activeGroupCount: 5,
           }}
         />
       </Section>

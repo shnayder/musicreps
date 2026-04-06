@@ -6,10 +6,19 @@ import {
   getModeProgress,
   MODE_PROGRESS_MANIFEST,
 } from './mode-progress-manifest.ts';
+import { TRACKS } from './mode-catalog.ts';
 
 describe('MODE_PROGRESS_MANIFEST', () => {
-  it('has 11 entries (one per mode)', () => {
-    assert.equal(MODE_PROGRESS_MANIFEST.length, 11);
+  it('covers every mode in TRACKS', () => {
+    const manifestIds = new Set(MODE_PROGRESS_MANIFEST.map((e) => e.modeId));
+    const trackIds = new Set(TRACKS.flatMap((t) => t.skills));
+    const missing = [...trackIds].filter((id) => !manifestIds.has(id));
+    assert.deepEqual(
+      missing,
+      [],
+      `Modes in TRACKS but missing from manifest: ${missing.join(', ')}. ` +
+        'Add the ModeDefinition to ALL_DEFINITIONS in mode-progress-manifest.ts.',
+    );
   });
 
   it('has unique mode IDs', () => {
@@ -42,7 +51,6 @@ describe('MODE_PROGRESS_MANIFEST', () => {
         entry.groups.length > 0,
         `${entry.modeId} has empty groups array`,
       );
-      // Every group should return at least one item
       for (const g of entry.groups) {
         const ids = g.getItemIds();
         assert.ok(
@@ -65,7 +73,9 @@ describe('MODE_PROGRESS_MANIFEST', () => {
       scaleDegrees: 3, // degree groups
       diatonicChords: 3, // chord groups
       chordSpelling: 7, // spelling groups (groups 0-6)
-      speedTap: 1, // single-group mode
+      speedTap: 2, // naturals, sharps/flats
+      guitarChordShapes: 3, // major, minor, dom7
+      ukuleleChordShapes: 3, // major, minor, dom7
     };
 
     for (const entry of MODE_PROGRESS_MANIFEST) {
