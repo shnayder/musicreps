@@ -719,34 +719,30 @@ function HomeHeader(
 // HomeAboutTab — in-app intro: what this is, how it works, getting started
 // ---------------------------------------------------------------------------
 
-function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
+function HomeAboutTab() {
   return (
     <div class='settings-page'>
-      {isNativeApp && (
-        <div class='home-about-brand'>
-          <h1 class='home-title'>
-            <RepeatMark size={28} class='home-logo-mark' />
-            Music Reps
-          </h1>
-          <p class='home-tagline'>
-            Make music fundamentals automatic so you can focus on playing.
-          </p>
-        </div>
-      )}
-
       <section class='settings-section'>
         <h2 class='settings-section-title'>What is Music Reps?</h2>
         <Text role='body' as='p'>
-          Music Reps trains instant recall of music fundamentals, letting you
-          play with confidence, improvise more freely, learn songs faster, and
-          be a better musician overall.
+          Music Reps{' '}
+          <strong>trains instant recall of music fundamentals</strong>
+          , letting you play with confidence, improvise more freely, learn songs
+          faster, and be a better musician overall.
         </Text>
         <Text role='body' as='p'>
           There are likely many musical skills you know, but only with some
           hesitation and mental effort: perhaps locating the G on the B string
           of your guitar, or figuring out what key has 4 flats, or listing the
-          notes in an Em7 chord. Music Reps closes the gap between{' '}
-          <em>give me a second, I know this</em> and <em>already moving on</em>.
+          notes in an Em7 chord. Music Reps <strong>closes the gap</strong>{' '}
+          between{' '}
+          <strong>
+            <em>give me a second, I know this</em>
+          </strong>{' '}
+          and{' '}
+          <strong>
+            <em>already moving on</em>
+          </strong>.
         </Text>
       </section>
 
@@ -821,7 +817,6 @@ function useHomeTabs(
     onToggleStar,
     onToggleExpand,
     onOpenDev,
-    isNativeApp,
   }: {
     starred: Set<string>;
     accordion: Record<string, boolean>;
@@ -836,7 +831,6 @@ function useHomeTabs(
     onToggleStar: (modeId: string) => void;
     onToggleExpand: (trackId: string) => void;
     onOpenDev?: () => void;
-    isNativeApp?: boolean;
   },
 ): TabDef<HomeTab>[] {
   return [
@@ -874,7 +868,7 @@ function useHomeTabs(
     {
       id: 'about',
       label: <TabIcon icon='about' text='About' />,
-      content: <HomeAboutTab isNativeApp={isNativeApp} />,
+      content: <HomeAboutTab />,
     },
     {
       id: 'settings',
@@ -954,7 +948,6 @@ export function HomeScreen(
     onToggleStar: handleToggleStar,
     onToggleExpand: handleToggleExpand,
     onOpenDev: showDevLink ? () => setShowDev(true) : undefined,
-    isNativeApp,
   });
 
   if (showDev) {
