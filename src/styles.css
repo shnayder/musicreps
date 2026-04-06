@@ -868,10 +868,10 @@ body {
 .home-about-list {
   margin: 0;
   padding-left: 1.25em;
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  line-height: var(--type-body-leading);
+  color: var(--type-body-color);
 }
 .home-about-list li + li {
   margin-top: var(--gap-related);
@@ -1289,9 +1289,10 @@ body {
 }
 .about-description {
   margin: var(--gap-group) 0 0;
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
-  color: var(--color-text-muted);
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  line-height: var(--type-body-leading);
+  color: var(--type-body-color);
 }
 .about-tab-tip {
   margin: var(--gap-section) 0 0;
@@ -1322,9 +1323,10 @@ body {
 }
 .about-col-text {
   margin: 0;
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
-  color: var(--color-text-muted);
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  line-height: var(--type-body-leading);
+  color: var(--type-body-color);
   font-style: italic;
 }
 .about-col-text + .about-col-text {
