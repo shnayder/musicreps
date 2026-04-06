@@ -1,50 +1,23 @@
-// Mode progress manifest: lightweight registry mapping each mode ID to the
-// metadata needed for home screen progress computation.
+// Mode progress manifest: derived from ModeDefinition objects.
+// No manual maintenance — adding a mode definition automatically includes it.
 
 import { GUITAR, UKULELE } from './music-data.ts';
+import type { ModeDefinition, ScopeDef } from './declarative/types.ts';
+
+import { NOTE_SEMITONES_DEF } from './modes/note-semitones/definition.ts';
+import { INTERVAL_SEMITONES_DEF } from './modes/interval-semitones/definition.ts';
+import { SEMITONE_MATH_DEF } from './modes/semitone-math/definition.ts';
+import { INTERVAL_MATH_DEF } from './modes/interval-math/definition.ts';
+import { KEY_SIGNATURES_DEF } from './modes/key-signatures/definition.ts';
+import { SCALE_DEGREES_DEF } from './modes/scale-degrees/definition.ts';
+import { DIATONIC_CHORDS_DEF } from './modes/diatonic-chords/definition.ts';
+import { createFretboardDef } from './modes/fretboard/definition.tsx';
+import { CHORD_SPELLING_DEF } from './modes/chord-spelling/definition.ts';
+import { SPEED_TAP_DEF } from './modes/speed-tap/definition.tsx';
 import {
-  ALL_ITEMS as KEY_SIG_ITEMS,
-  ALL_KEY_GROUPS,
-  getItemIdsForGroup as keySigGroup,
-} from './modes/key-signatures/logic.ts';
-import {
-  ALL_ITEMS as SCALE_DEG_ITEMS,
-  DEGREE_GROUPS as SCALE_DEGREE_GROUPS,
-  getItemIdsForGroup as scaleDegGroup,
-} from './modes/scale-degrees/logic.ts';
-import {
-  ALL_ITEMS as DIATONIC_ITEMS,
-  CHORD_GROUPS,
-  getItemIdsForGroup as diatonicGroup,
-} from './modes/diatonic-chords/logic.ts';
-import {
-  ALL_ITEMS as SEMI_MATH_ITEMS,
-  DISTANCE_GROUPS as SEMI_DISTANCE_GROUPS,
-  getItemIdsForGroup as semiMathGroup,
-} from './modes/semitone-math/logic.ts';
-import {
-  ALL_ITEMS as INT_MATH_ITEMS,
-  DISTANCE_GROUPS as INT_DISTANCE_GROUPS,
-  getItemIdsForGroup as intMathGroup,
-} from './modes/interval-math/logic.ts';
-import {
-  ALL_ITEMS as CHORD_SPELL_ITEMS,
-  getItemIdsForGroup as chordSpellGroup,
-  SPELLING_GROUPS,
-} from './modes/chord-spelling/logic.ts';
-import {
-  getAllItems as fretboardAllItems,
-  getGroups as fretboardGetGroups,
-  getItemIdsForGroup as fretboardGroup,
-} from './modes/fretboard/logic.ts';
-import { ALL_ITEMS as NOTE_SEMI_ITEMS } from './modes/note-semitones/logic.ts';
-import { ALL_ITEMS as INT_SEMI_ITEMS } from './modes/interval-semitones/logic.ts';
-import { ALL_ITEMS as SPEED_TAP_ITEMS } from './modes/speed-tap/logic.ts';
-import {
-  allItems as chordShapesAllItems,
-  getItemIdsForGroup as chordShapesGroup,
-  QUALITY_GROUPS as CHORD_QUALITY_GROUPS,
-} from './modes/chord-shapes/logic.ts';
+  GUITAR_CHORD_SHAPES_DEF,
+  UKULELE_CHORD_SHAPES_DEF,
+} from './modes/chord-shapes/definition.tsx';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -63,131 +36,56 @@ export type ModeProgressEntry = {
 };
 
 // ---------------------------------------------------------------------------
-// Manifest
+// Derivation from ModeDefinition
 // ---------------------------------------------------------------------------
 
-function buildGroupEntries(
-  groups: {
-    id: string;
-    label: string | (() => string);
-    longLabel?: string | (() => string);
-  }[],
-  getIds: (id: string) => string[],
-): Array<
-  {
-    id: string;
-    label: string | (() => string);
-    longLabel?: string | (() => string);
-    getItemIds: () => string[];
-  }
-> {
-  return groups.map((g) => ({
-    id: g.id,
-    label: g.label,
-    longLabel: g.longLabel,
-    getItemIds: () => getIds(g.id),
-  }));
+/** Build a manifest entry from any ModeDefinition. */
+// deno-lint-ignore no-explicit-any
+function entryFromDef(def: ModeDefinition<any>): ModeProgressEntry {
+  const scope: ScopeDef = def.scope;
+  return {
+    modeId: def.id,
+    namespace: def.namespace,
+    groups: scope.kind === 'groups'
+      ? scope.groups.map((g) => ({
+        id: g.id,
+        label: g.label,
+        longLabel: g.longLabel,
+        getItemIds: () => scope.getItemIdsForGroup(g.id),
+      }))
+      : [{ id: 'all', label: 'All', getItemIds: () => def.allItems }],
+    allItemIds: () => def.allItems,
+  };
 }
 
-const guitarGroups = fretboardGetGroups(GUITAR);
-const ukuleleGroups = fretboardGetGroups(UKULELE);
+// ---------------------------------------------------------------------------
+// All mode definitions — single source of truth
+// ---------------------------------------------------------------------------
 
-export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = [
-  {
-    modeId: 'fretboard',
-    namespace: 'fretboard',
-    groups: guitarGroups.map((g) => ({
-      id: g.id,
-      label: g.label,
-      longLabel: g.longLabel,
-      getItemIds: () => fretboardGroup(GUITAR, g.id),
-    })),
-    allItemIds: () => fretboardAllItems(GUITAR),
-  },
-  {
-    modeId: 'ukulele',
-    namespace: 'ukulele',
-    groups: ukuleleGroups.map((g) => ({
-      id: g.id,
-      label: g.label,
-      longLabel: g.longLabel,
-      getItemIds: () => fretboardGroup(UKULELE, g.id),
-    })),
-    allItemIds: () => fretboardAllItems(UKULELE),
-  },
-  {
-    modeId: 'noteSemitones',
-    namespace: 'noteSemitones',
-    groups: [{ id: 'all', label: 'All', getItemIds: () => NOTE_SEMI_ITEMS }],
-    allItemIds: () => NOTE_SEMI_ITEMS,
-  },
-  {
-    modeId: 'intervalSemitones',
-    namespace: 'intervalSemitones',
-    groups: [{ id: 'all', label: 'All', getItemIds: () => INT_SEMI_ITEMS }],
-    allItemIds: () => INT_SEMI_ITEMS,
-  },
-  {
-    modeId: 'semitoneMath',
-    namespace: 'semitoneMath',
-    groups: buildGroupEntries(SEMI_DISTANCE_GROUPS, semiMathGroup),
-    allItemIds: () => SEMI_MATH_ITEMS,
-  },
-  {
-    modeId: 'intervalMath',
-    namespace: 'intervalMath',
-    groups: buildGroupEntries(INT_DISTANCE_GROUPS, intMathGroup),
-    allItemIds: () => INT_MATH_ITEMS,
-  },
-  {
-    modeId: 'keySignatures',
-    namespace: 'keySignatures',
-    groups: buildGroupEntries(ALL_KEY_GROUPS, keySigGroup),
-    allItemIds: () => KEY_SIG_ITEMS,
-  },
-  {
-    modeId: 'scaleDegrees',
-    namespace: 'scaleDegrees',
-    groups: buildGroupEntries(SCALE_DEGREE_GROUPS, scaleDegGroup),
-    allItemIds: () => SCALE_DEG_ITEMS,
-  },
-  {
-    modeId: 'diatonicChords',
-    namespace: 'diatonicChords',
-    groups: buildGroupEntries(CHORD_GROUPS, diatonicGroup),
-    allItemIds: () => DIATONIC_ITEMS,
-  },
-  {
-    modeId: 'chordSpelling',
-    namespace: 'chordSpelling',
-    groups: buildGroupEntries(SPELLING_GROUPS, chordSpellGroup),
-    allItemIds: () => CHORD_SPELL_ITEMS,
-  },
-  {
-    modeId: 'speedTap',
-    namespace: 'speedTap',
-    groups: [{ id: 'all', label: 'All', getItemIds: () => SPEED_TAP_ITEMS }],
-    allItemIds: () => SPEED_TAP_ITEMS,
-  },
-  {
-    modeId: 'guitarChordShapes',
-    namespace: 'guitarChordShapes',
-    groups: buildGroupEntries(
-      CHORD_QUALITY_GROUPS,
-      (id) => chordShapesGroup('guitar', id),
-    ),
-    allItemIds: () => chordShapesAllItems('guitar'),
-  },
-  {
-    modeId: 'ukuleleChordShapes',
-    namespace: 'ukuleleChordShapes',
-    groups: buildGroupEntries(
-      CHORD_QUALITY_GROUPS,
-      (id) => chordShapesGroup('ukulele', id),
-    ),
-    allItemIds: () => chordShapesAllItems('ukulele'),
-  },
+// deno-lint-ignore no-explicit-any
+const ALL_DEFINITIONS: ModeDefinition<any>[] = [
+  createFretboardDef(GUITAR),
+  createFretboardDef(UKULELE),
+  NOTE_SEMITONES_DEF,
+  INTERVAL_SEMITONES_DEF,
+  SEMITONE_MATH_DEF,
+  INTERVAL_MATH_DEF,
+  KEY_SIGNATURES_DEF,
+  SCALE_DEGREES_DEF,
+  DIATONIC_CHORDS_DEF,
+  CHORD_SPELLING_DEF,
+  SPEED_TAP_DEF,
+  GUITAR_CHORD_SHAPES_DEF,
+  UKULELE_CHORD_SHAPES_DEF,
 ];
+
+// ---------------------------------------------------------------------------
+// Manifest (auto-derived)
+// ---------------------------------------------------------------------------
+
+export const MODE_PROGRESS_MANIFEST: ModeProgressEntry[] = ALL_DEFINITIONS.map(
+  entryFromDef,
+);
 
 /** Look up a mode's progress entry by ID. */
 export function getModeProgress(

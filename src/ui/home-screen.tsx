@@ -272,15 +272,15 @@ function ActiveSkillCard(
             )}
           </span>
         </span>
-        <div class='skill-card-progress'>
-          <GroupProgressBar
-            colors={progress && progress.groupColors.length > 0
-              ? progress.groupColors
-              : notStartedColors(
-                progress?.activeGroupCount || 1,
-              )}
-          />
-        </div>
+        {progress && (
+          <div class='skill-card-progress'>
+            <GroupProgressBar
+              colors={progress.groupColors.length > 0
+                ? progress.groupColors
+                : notStartedColors(progress.activeGroupCount)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
