@@ -724,12 +724,12 @@ function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
 
       <section class='settings-section'>
         <h2 class='settings-section-title'>What is Music Reps?</h2>
-        <Text role='body-secondary' as='p'>
+        <Text role='body' as='p'>
           Music Reps trains instant recall of music fundamentals, letting you
           play with confidence, improvise more freely, learn songs faster, and
           be a better musician overall.
         </Text>
-        <Text role='body-secondary' as='p'>
+        <Text role='body' as='p'>
           There are likely many musical skills you know, but only with some
           hesitation and mental effort: perhaps locating the G on the B string
           of your guitar, or figuring out what key has 4 flats, or listing the
