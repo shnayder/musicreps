@@ -2860,7 +2860,7 @@ button {
   height: auto;
 }
 .stats-container .fretboard {
-  max-height: 600px;
+  max-height: 450px;
   width: auto;
 }
 .stats-table {
