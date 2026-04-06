@@ -272,14 +272,23 @@ function ActiveSkillCard(
             )}
           </span>
         </span>
-        {progress && progress.groupColors.length > 0 && (
+        {progress && progress.activeGroupCount > 0 && (
           <div class='skill-card-progress'>
-            <GroupProgressBar colors={progress.groupColors} />
+            <GroupProgressBar
+              colors={progress.groupColors.length > 0
+                ? progress.groupColors
+                : notStartedColors(progress.activeGroupCount)}
+            />
           </div>
         )}
       </div>
     </div>
   );
+}
+
+/** Grey placeholder colors for not-started progress bars. */
+function notStartedColors(count: number): string[] {
+  return Array.from({ length: count }, () => 'var(--heatmap-none)');
 }
 
 // ---------------------------------------------------------------------------
