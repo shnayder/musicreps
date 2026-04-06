@@ -29,7 +29,7 @@ import {
 // ---------------------------------------------------------------------------
 
 export type ModeProgress = {
-  groupColors: string[]; // one HSL string per group, sorted descending by speed
+  groupColors: string[]; // HSL strings: one per group (multi-group modes) or one per item (single-group modes), sorted descending by speed
   activeGroupCount: number; // active (non-skipped) groups, for rendering empty bars
 };
 
