@@ -59,8 +59,10 @@ The adaptive icon background is defined in
 and `values/ic_launcher_background.xml` (color resource). The foreground SVG
 source is `static/android-foreground.svg`.
 
-**To update the Android icon:** edit `static/app-icon.svg`, run
-`scripts/generate-icons.sh`, then `deno task build && npx cap sync android`.
+**To update the Android icon:** edit `static/app-icon.svg` and
+`static/android-foreground.svg` (the foreground must match the main icon but
+with adaptive-icon safe zone padding), then run `scripts/generate-icons.sh` and
+`deno task build && npx cap sync android`.
 
 ## Skill icons — `static/icons/`
 
