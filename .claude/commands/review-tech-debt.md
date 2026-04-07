@@ -2,7 +2,8 @@ Audit the tech debt tracker against the current codebase.
 
 ## Steps
 
-1. Read `plans/exec-plans/tech-debt-tracker.md` to get all active items.
+1. Read `../musicreps-docs/plans/exec-plans/tech-debt-tracker.md` to get all
+   active items.
 
 2. For each active item, investigate the codebase to determine whether it has
    been fixed, partially addressed, or is still present. Use grep/glob/read as

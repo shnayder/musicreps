@@ -20,9 +20,6 @@
       "node_modules/",
       "scripts/",
       "tests/",
-      "guides/design/components-preview.html",
-      "guides/design/screenshot-review.html",
-      "plans/generated/",
       "android/",
       "ios/"
     ]
@@ -32,9 +29,6 @@
     "exclude": [
       "docs/",
       "node_modules/",
-      "guides/",
-      "plans/",
-      "backlogs/",
       "static/",
       "android/",
       "ios/"

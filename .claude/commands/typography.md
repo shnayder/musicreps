@@ -2,8 +2,9 @@ Typography guidance for designing new UI and reviewing changes.
 
 ## Reference
 
-Read `guides/design/typography.md` for the full system: three-layer
-architecture, 5-tier scale, 20 roles, intensity tiers, design principles.
+Read `../musicreps-docs/guides/design/typography.md` for the full system:
+three-layer architecture, 5-tier scale, 20 roles, intensity tiers, design
+principles.
 
 ## Mode
 

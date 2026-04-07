@@ -3,8 +3,8 @@ changes.
 
 ## Reference
 
-Read `guides/design/interaction.md` for the full system: hover, active, focus
-states, transition strategy, and accessibility standards.
+Read `../musicreps-docs/guides/design/interaction.md` for the full system:
+hover, active, focus states, transition strategy, and accessibility standards.
 
 ## Mode
 

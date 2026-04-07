@@ -2,8 +2,9 @@ Spacing and token guidance for designing new UI and reviewing changes.
 
 ## Reference
 
-Read `guides/design/spacing-and-tokens.md` for the full system: spacing scale,
-elevation, transitions, opacity, z-index, touch targets, border radius.
+Read `../musicreps-docs/guides/design/spacing-and-tokens.md` for the full
+system: spacing scale, elevation, transitions, opacity, z-index, touch targets,
+border radius.
 
 ## Mode
 
