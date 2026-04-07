@@ -902,8 +902,12 @@ body {
 .home-about-brand {
   text-align: center;
 }
+.settings-section > .text-body:first-of-type {
+  margin-top: 0;
+}
 .home-about-list {
   margin: 0;
+  margin-top: 0;
   padding-left: 1.25em;
   font-size: var(--type-body-size);
   font-weight: var(--type-body-weight);
@@ -1167,21 +1171,16 @@ body {
   align-items: center;
   gap: var(--gap-group);
 }
-.settings-page-title {
+.page-heading {
   margin: 0;
   flex: 1;
-  font-family: var(--type-heading-page-family);
-  font-size: var(--type-heading-page-size);
-  font-weight: var(--type-heading-page-weight);
-  line-height: var(--type-heading-page-leading);
-  color: var(--type-heading-page-color);
+  text-align: center;
 }
 .settings-section + .settings-section {
   margin-top: var(--pad-component);
 }
-.settings-section-title {
+.section-heading {
   margin: 0 0 var(--gap-related);
-  font-size: var(--text-base);
 }
 .settings-link-list {
   display: flex;
@@ -1309,14 +1308,9 @@ body {
 .tab-panel.active {
   display: block;
 }
-.tab-panel-title {
+.panel-heading {
   margin: 0 0 var(--gap-group);
   padding-top: var(--pad-component);
-  font-family: var(--type-heading-section-family);
-  font-size: var(--type-heading-section-size);
-  font-weight: var(--type-heading-section-weight);
-  line-height: var(--type-heading-section-leading);
-  color: var(--type-heading-section-color);
 }
 
 /* --- About tab --- */
@@ -3180,7 +3174,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1269"></div>
+  <div class="home-screen" id="home-screen" data-version="#1273"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -9031,7 +9025,7 @@ body.native-app {
   function ActiveSkillsList({ starred, onToggleStar, onSelectMode, progress, recommendations }) {
     if (starred.size === 0) {
       return /* @__PURE__ */ u3("div", { children: [
-        /* @__PURE__ */ u3("h2", { class: "tab-panel-title", children: "Active Skills" }),
+        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "panel-heading", children: "Active Skills" }),
         /* @__PURE__ */ u3("p", { class: "active-skills-empty", children: [
           "Pick the skills you want to drill. Star them in",
           " ",
@@ -9066,7 +9060,7 @@ body.native-app {
     const ordered = [...recommended, ...remaining];
     const allDone = recommendations.length === 0 && starred.size > 0;
     return /* @__PURE__ */ u3("div", { class: "active-skills-list", children: [
-      /* @__PURE__ */ u3("h2", { class: "tab-panel-title", children: "Active Skills" }),
+      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "panel-heading", children: "Active Skills" }),
       allDone && /* @__PURE__ */ u3("p", { class: "active-skills-done", children: [
         "All your starred skills are automatic. Nice work! Star new skills in",
         " ",
@@ -9108,7 +9102,7 @@ body.native-app {
   function SettingsAboutLegal({ appConfig, version }) {
     return /* @__PURE__ */ u3(k, { children: [
       /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "About" }),
+        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "About" }),
         /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
           appConfig.contactEmail && /* @__PURE__ */ u3("a", { class: "text-link", href: `mailto:${appConfig.contactEmail}`, children: "Contact" }),
           appConfig.supportUrl && /* @__PURE__ */ u3(
@@ -9128,7 +9122,7 @@ body.native-app {
         ] })
       ] }),
       /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "Legal" }),
+        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "Legal" }),
         /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
           appConfig.termsUrl && /* @__PURE__ */ u3(
             "a",
@@ -9156,9 +9150,8 @@ body.native-app {
   }
   function SettingsPanel({ settings, appConfig, version, useSolfege, setUseSolfege: setUseSolfege2, onOpenDev }) {
     return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
-      /* @__PURE__ */ u3("h2", { class: "tab-panel-title", children: "Settings" }),
       /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "General" }),
+        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "General" }),
         /* @__PURE__ */ u3(
           SettingToggle,
           {
@@ -9178,7 +9171,7 @@ body.native-app {
       ] }),
       /* @__PURE__ */ u3(SettingsAboutLegal, { appConfig, version }),
       onOpenDev && /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "Developer" }),
+        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "Developer" }),
         /* @__PURE__ */ u3("div", { class: "settings-link-list", children: /* @__PURE__ */ u3("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" }) })
       ] })
     ] });
@@ -9188,7 +9181,7 @@ body.native-app {
     return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
       /* @__PURE__ */ u3("div", { class: "settings-page-header", children: [
         /* @__PURE__ */ u3(CloseButton, { ariaLabel: "Close", onClick: onClose }),
-        /* @__PURE__ */ u3("h1", { class: "settings-page-title", children: "Dev" })
+        /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", class: "page-heading", children: "Dev" })
       ] }),
       /* @__PURE__ */ u3(DevSection, { title: "Global", children: [
         /* @__PURE__ */ u3(DevStatRow, { label: "Total reps", value: data.totalReps }),
@@ -9216,7 +9209,7 @@ body.native-app {
   }
   function DevSection({ title, children }) {
     return /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-      /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: title }),
+      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: title }),
       children
     ] });
   }
@@ -9234,7 +9227,7 @@ body.native-app {
   }
   function AllSkillsList({ accordion, starred, onToggleExpand, onToggleStar, onSelectMode, progress }) {
     return /* @__PURE__ */ u3("div", { class: "home-modes", children: [
-      /* @__PURE__ */ u3("h2", { class: "tab-panel-title", children: "All Skills" }),
+      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "panel-heading", children: "All Skills" }),
       /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "status-empty all-skills-hint", children: [
         "Tap the \u2606 on a skill to add it to your ",
         /* @__PURE__ */ u3("strong", { children: "Active" }),
@@ -9263,7 +9256,15 @@ body.native-app {
       ))
     ] });
   }
-  function HomeHeader({ isNativeApp, repsToday, totalReps, daysActive }) {
+  var TAB_TITLES = {
+    settings: "Settings",
+    about: "About"
+  };
+  function HomeHeader({ isNativeApp, tab, repsToday, totalReps, daysActive }) {
+    const pageTitle = TAB_TITLES[tab];
+    if (pageTitle) {
+      return /* @__PURE__ */ u3("div", { class: `home-header${isNativeApp ? " native" : ""}`, children: /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", class: "page-heading", children: pageTitle }) });
+    }
     return /* @__PURE__ */ u3("div", { class: `home-header${isNativeApp ? " native" : ""}`, children: [
       !isNativeApp && /* @__PURE__ */ u3(k, { children: [
         /* @__PURE__ */ u3("h1", { class: "home-title", children: [
@@ -9290,29 +9291,22 @@ body.native-app {
       ] })
     ] });
   }
-  function HomeAboutTab({ isNativeApp }) {
+  function HomeAboutTab() {
     return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
-      isNativeApp && /* @__PURE__ */ u3("div", { class: "home-about-brand", children: [
-        /* @__PURE__ */ u3("h1", { class: "home-title", children: [
-          /* @__PURE__ */ u3(RepeatMark, { size: 28, class: "home-logo-mark" }),
-          "Music Reps"
-        ] }),
-        /* @__PURE__ */ u3("p", { class: "home-tagline", children: "Make music fundamentals automatic so you can focus on playing." })
-      ] }),
       /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "What is Music Reps?" }),
-        /* @__PURE__ */ u3(Text, { role: "body", as: "p", children: "Music Reps trains instant recall of music fundamentals, letting you play with confidence, improvise more freely, learn songs faster, and be a better musician overall." }),
+        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "What is Music Reps?" }),
         /* @__PURE__ */ u3(Text, { role: "body", as: "p", children: [
-          "There are likely many musical skills you know, but only with some hesitation and mental effort: perhaps locating the G on the B string of your guitar, or figuring out what key has 4 flats, or listing the notes in an Em7 chord. Music Reps closes the gap between",
+          "Music Reps trains instant recall of music fundamentals, closing the gap between",
           " ",
-          /* @__PURE__ */ u3("em", { children: "give me a second, I know this" }),
-          " and ",
-          /* @__PURE__ */ u3("em", { children: "already moving on" }),
-          "."
-        ] })
+          /* @__PURE__ */ u3("em", { children: "\u201Cgive me a second, I know this\u201D" }),
+          "\u2009 and",
+          " ",
+          /* @__PURE__ */ u3("em", { children: "\u201Calready moving on.\u201D" })
+        ] }),
+        /* @__PURE__ */ u3(Text, { role: "body", as: "p", children: "There are likely musical skills you can do with some hesitation and mental effort: say locating the G on the B string of your guitar, or figuring out what key has 4 flats, or listing the notes in an Em7 chord. Doing reps makes them automatic, so you can focus on playing." })
       ] }),
       /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "How it works" }),
+        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "How it works" }),
         /* @__PURE__ */ u3("ul", { class: "home-about-list", children: [
           /* @__PURE__ */ u3("li", { children: [
             /* @__PURE__ */ u3("strong", { children: "Fast drills, many reps." }),
@@ -9342,7 +9336,7 @@ body.native-app {
         ] })
       ] }),
       /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3("h2", { class: "settings-section-title", children: "Getting started" }),
+        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "Getting started" }),
         /* @__PURE__ */ u3("ul", { class: "home-about-list", children: [
           /* @__PURE__ */ u3("li", { children: [
             "Browse ",
@@ -9379,8 +9373,7 @@ body.native-app {
     onSelectMode,
     onToggleStar,
     onToggleExpand,
-    onOpenDev,
-    isNativeApp
+    onOpenDev
   }) {
     return [
       {
@@ -9415,7 +9408,7 @@ body.native-app {
       {
         id: "about",
         label: /* @__PURE__ */ u3(TabIcon, { icon: "about", text: "About" }),
-        content: /* @__PURE__ */ u3(HomeAboutTab, { isNativeApp })
+        content: /* @__PURE__ */ u3(HomeAboutTab, {})
       },
       {
         id: "settings",
@@ -9477,8 +9470,7 @@ body.native-app {
       onSelectMode,
       onToggleStar: handleToggleStar,
       onToggleExpand: handleToggleExpand,
-      onOpenDev: showDevLink ? () => setShowDev(true) : void 0,
-      isNativeApp
+      onOpenDev: showDevLink ? () => setShowDev(true) : void 0
     });
     if (showDev) {
       return /* @__PURE__ */ u3(DevPage, { onClose: () => setShowDev(false) });
@@ -9488,6 +9480,7 @@ body.native-app {
         HomeHeader,
         {
           isNativeApp,
+          tab,
           repsToday: globalEffort.dailyReps[toLocalDateString(/* @__PURE__ */ new Date())] ?? 0,
           totalReps: globalEffort.totalReps,
           daysActive: globalEffort.daysActive
@@ -11139,7 +11132,7 @@ body.native-app {
           modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
           /* @__PURE__ */ u3("h1", { class: "mode-title", children: title })
         ] }),
-        totalReps != null && totalReps > 0 && /* @__PURE__ */ u3("span", { class: "skill-header-reps", children: [
+        totalReps != null && /* @__PURE__ */ u3("span", { class: "skill-header-reps", children: [
           totalReps.toLocaleString(),
           /* @__PURE__ */ u3(RepeatMark, { size: 18, class: "skill-header-reps-icon" })
         ] })
