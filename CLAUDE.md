@@ -197,10 +197,11 @@ recent decisions in your area:
 - `decisions/` — one-time choices with rationale
 - `guides/` — architecture, coding style, design system, development process
 
-**After making a non-obvious decision**, write a note to the vault using:
+**After making a non-obvious decision**, write a note to the vault using the
+`vault-note` tool in `../trellis/`:
 
 ```bash
-cd ../musicreps-docs && deno task vault-note add <type> <title> [--area=X] [--body=text]
+cd ../trellis && deno task vault-note add <type> <title> [--area=X] [--body=text]
 ```
 
 Types: `decision`, `convention`, `debt`, `question`, `observation`, `session`
@@ -208,7 +209,7 @@ Types: `decision`, `convention`, `debt`, `question`, `observation`, `session`
 At session end, write a brief session log:
 
 ```bash
-cd ../musicreps-docs && deno task vault-note add session "<summary>"
+cd ../trellis && deno task vault-note add session "<summary>"
 ```
 
 The review checklist (`.claude/commands/review-checklist.md`) verifies
