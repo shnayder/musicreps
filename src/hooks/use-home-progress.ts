@@ -29,7 +29,8 @@ import {
 // ---------------------------------------------------------------------------
 
 export type ModeProgress = {
-  groupColors: string[]; // one HSL string per group, sorted descending by speed
+  groupColors: string[]; // HSL strings: one per group (multi-group modes) or one per item (single-group modes), sorted descending by speed
+  activeGroupCount: number; // active (non-skipped) groups, for rendering empty bars
 };
 
 // ---------------------------------------------------------------------------
@@ -87,12 +88,20 @@ export function computeProgressForMode(
       skippedGroups,
     };
 
+  // Count active (non-skipped) groups for rendering empty bars
+  const activeGroupCount = skippedGroups
+    ? entry.groups.filter((g) => !skippedGroups.has(g.id)).length
+    : entry.groups.length;
+
   // Single-group + skipped → not started
   if (entry.groups.length === 1 && skippedGroups?.has(entry.groups[0].id)) {
-    return { groupColors: [] };
+    return { groupColors: [], activeGroupCount: 0 };
   }
 
-  return { groupColors: computeProgressColors(selector, input) };
+  return {
+    groupColors: computeProgressColors(selector, input),
+    activeGroupCount,
+  };
 }
 
 /** Compute progress for all modes. Exported for testing. */
@@ -206,7 +215,24 @@ export function useHomeProgress(
     });
 
     observer.observe(el, { attributes: true, attributeFilter: ['class'] });
-    return () => observer.disconnect();
+
+    // Also refresh when the app is foregrounded (e.g. after being
+    // backgrounded overnight on iOS).  The visibilitychange event fires
+    // in both WKWebView (Capacitor) and regular browsers.
+    const onVisible = () => {
+      if (
+        document.visibilityState === 'visible' &&
+        !el.classList.contains('hidden')
+      ) {
+        setRefreshKey((k) => k + 1);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
 
   // Recompute when refreshKey or starred changes.

@@ -1013,7 +1013,7 @@ function AboutTab(
           <p class='about-col-text'>{after}</p>
         </div>
       </div>
-      <Text role='body-secondary' as='p' class='about-description'>
+      <Text role='body' as='p' class='about-description'>
         {description}
       </Text>
       <Text role='status' as='p' class='status-empty about-tab-tip'>

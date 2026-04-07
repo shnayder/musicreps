@@ -272,14 +272,26 @@ function ActiveSkillCard(
             )}
           </span>
         </span>
-        {progress && progress.groupColors.length > 0 && (
-          <div class='skill-card-progress'>
-            <GroupProgressBar colors={progress.groupColors} />
-          </div>
-        )}
+        {progress &&
+          (progress.groupColors.length > 0 ||
+            progress.activeGroupCount > 0) &&
+          (
+            <div class='skill-card-progress'>
+              <GroupProgressBar
+                colors={progress.groupColors.length > 0
+                  ? progress.groupColors
+                  : notStartedColors(progress.activeGroupCount)}
+              />
+            </div>
+          )}
       </div>
     </div>
   );
+}
+
+/** Grey placeholder colors for not-started progress bars. */
+function notStartedColors(count: number): string[] {
+  return Array.from({ length: count }, () => 'var(--heatmap-none)');
 }
 
 // ---------------------------------------------------------------------------
@@ -298,7 +310,9 @@ function ActiveSkillsList(
   if (starred.size === 0) {
     return (
       <div>
-        <h2 class='tab-panel-title'>Active Skills</h2>
+        <Text role='heading-section' as='h2' class='panel-heading'>
+          Active Skills
+        </Text>
         <p class='active-skills-empty'>
           Pick the skills you want to drill. Star them in{' '}
           <strong>All Skills</strong> to build your lineup.
@@ -354,7 +368,9 @@ function ActiveSkillsList(
 
   return (
     <div class='active-skills-list'>
-      <h2 class='tab-panel-title'>Active Skills</h2>
+      <Text role='heading-section' as='h2' class='panel-heading'>
+        Active Skills
+      </Text>
       {allDone && (
         <p class='active-skills-done'>
           All your starred skills are automatic. Nice work! Star new skills in
@@ -419,7 +435,9 @@ function SettingsAboutLegal(
   return (
     <>
       <section class='settings-section'>
-        <h2 class='settings-section-title'>About</h2>
+        <Text role='heading-section' as='h2' class='section-heading'>
+          About
+        </Text>
         <div class='settings-link-list'>
           {appConfig.contactEmail && (
             <a class='text-link' href={`mailto:${appConfig.contactEmail}`}>
@@ -441,7 +459,9 @@ function SettingsAboutLegal(
       </section>
 
       <section class='settings-section'>
-        <h2 class='settings-section-title'>Legal</h2>
+        <Text role='heading-section' as='h2' class='section-heading'>
+          Legal
+        </Text>
         <div class='settings-link-list'>
           {appConfig.termsUrl && (
             <a
@@ -485,9 +505,10 @@ export function SettingsPanel(
 ) {
   return (
     <div class='settings-page'>
-      <h2 class='tab-panel-title'>Settings</h2>
       <section class='settings-section'>
-        <h2 class='settings-section-title'>General</h2>
+        <Text role='heading-section' as='h2' class='section-heading'>
+          General
+        </Text>
         <SettingToggle
           label='Note names'
           options={[
@@ -507,7 +528,9 @@ export function SettingsPanel(
 
       {onOpenDev && (
         <section class='settings-section'>
-          <h2 class='settings-section-title'>Developer</h2>
+          <Text role='heading-section' as='h2' class='section-heading'>
+            Developer
+          </Text>
           <div class='settings-link-list'>
             <button type='button' class='text-link' onClick={onOpenDev}>
               Dev panel
@@ -529,7 +552,7 @@ function DevPage({ onClose }: { onClose: () => void }) {
     <div class='settings-page'>
       <div class='settings-page-header'>
         <CloseButton ariaLabel='Close' onClick={onClose} />
-        <h1 class='settings-page-title'>Dev</h1>
+        <Text role='heading-page' as='h1' class='page-heading'>Dev</Text>
       </div>
 
       <DevSection title='Global'>
@@ -565,7 +588,9 @@ function DevSection(
 ) {
   return (
     <section class='settings-section'>
-      <h2 class='settings-section-title'>{title}</h2>
+      <Text role='heading-section' as='h2' class='section-heading'>
+        {title}
+      </Text>
       {children}
     </section>
   );
@@ -621,7 +646,9 @@ function AllSkillsList(
 ) {
   return (
     <div class='home-modes'>
-      <h2 class='tab-panel-title'>All Skills</h2>
+      <Text role='heading-section' as='h2' class='panel-heading'>
+        All Skills
+      </Text>
       <Text role='status' as='p' class='status-empty all-skills-hint'>
         Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
         {' '}
@@ -657,17 +684,33 @@ function AllSkillsList(
 export type HomeTab = 'active' | 'all' | 'about' | 'settings';
 
 // ---------------------------------------------------------------------------
-// HomeHeader — title + tagline that scrolls with content
+// HomeHeader — title + tagline shown in the fixed header area
 // ---------------------------------------------------------------------------
 
+const TAB_TITLES: Partial<Record<HomeTab, string>> = {
+  settings: 'Settings',
+  about: 'About',
+};
+
 function HomeHeader(
-  { isNativeApp, repsToday, totalReps, daysActive }: {
+  { isNativeApp, tab, repsToday, totalReps, daysActive }: {
     isNativeApp?: boolean;
+    tab: HomeTab;
     repsToday: number;
     totalReps: number;
     daysActive: number;
   },
 ) {
+  const pageTitle = TAB_TITLES[tab];
+  if (pageTitle) {
+    return (
+      <div class={`home-header${isNativeApp ? ' native' : ''}`}>
+        <Text role='heading-page' as='h1' class='page-heading'>
+          {pageTitle}
+        </Text>
+      </div>
+    );
+  }
   return (
     <div class={`home-header${isNativeApp ? ' native' : ''}`}>
       {!isNativeApp && (
@@ -707,39 +750,31 @@ function HomeHeader(
 // HomeAboutTab — in-app intro: what this is, how it works, getting started
 // ---------------------------------------------------------------------------
 
-function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
+function HomeAboutTab() {
   return (
     <div class='settings-page'>
-      {isNativeApp && (
-        <div class='home-about-brand'>
-          <h1 class='home-title'>
-            <RepeatMark size={28} class='home-logo-mark' />
-            Music Reps
-          </h1>
-          <p class='home-tagline'>
-            Make music fundamentals automatic so you can focus on playing.
-          </p>
-        </div>
-      )}
-
       <section class='settings-section'>
-        <h2 class='settings-section-title'>What is Music Reps?</h2>
-        <Text role='body-secondary' as='p'>
-          Music Reps trains instant recall of music fundamentals, letting you
-          play with confidence, improvise more freely, learn songs faster, and
-          be a better musician overall.
+        <Text role='heading-section' as='h2' class='section-heading'>
+          What is Music Reps?
         </Text>
-        <Text role='body-secondary' as='p'>
-          There are likely many musical skills you know, but only with some
-          hesitation and mental effort: perhaps locating the G on the B string
-          of your guitar, or figuring out what key has 4 flats, or listing the
-          notes in an Em7 chord. Music Reps closes the gap between{' '}
-          <em>give me a second, I know this</em> and <em>already moving on</em>.
+        <Text role='body' as='p'>
+          Music Reps trains instant recall of music fundamentals, closing the
+          gap between{' '}
+          <em>&ldquo;give me a second, I know this&rdquo;</em>&thinsp; and{' '}
+          <em>&ldquo;already moving on.&rdquo;</em>
+        </Text>
+        <Text role='body' as='p'>
+          There are likely musical skills you can do with some hesitation and
+          mental effort: say locating the G on the B string of your guitar, or
+          figuring out what key has 4 flats, or listing the notes in an Em7
+          chord. Doing reps makes them automatic, so you can focus on playing.
         </Text>
       </section>
 
       <section class='settings-section'>
-        <h2 class='settings-section-title'>How it works</h2>
+        <Text role='heading-section' as='h2' class='section-heading'>
+          How it works
+        </Text>
         <ul class='home-about-list'>
           <li>
             <strong>Fast drills, many reps.</strong>{' '}
@@ -770,7 +805,9 @@ function HomeAboutTab({ isNativeApp }: { isNativeApp?: boolean }) {
       </section>
 
       <section class='settings-section'>
-        <h2 class='settings-section-title'>Getting started</h2>
+        <Text role='heading-section' as='h2' class='section-heading'>
+          Getting started
+        </Text>
         <ul class='home-about-list'>
           <li>
             Browse <strong>All Skills</strong>{' '}
@@ -809,7 +846,6 @@ function useHomeTabs(
     onToggleStar,
     onToggleExpand,
     onOpenDev,
-    isNativeApp,
   }: {
     starred: Set<string>;
     accordion: Record<string, boolean>;
@@ -824,7 +860,6 @@ function useHomeTabs(
     onToggleStar: (modeId: string) => void;
     onToggleExpand: (trackId: string) => void;
     onOpenDev?: () => void;
-    isNativeApp?: boolean;
   },
 ): TabDef<HomeTab>[] {
   return [
@@ -862,7 +897,7 @@ function useHomeTabs(
     {
       id: 'about',
       label: <TabIcon icon='about' text='About' />,
-      content: <HomeAboutTab isNativeApp={isNativeApp} />,
+      content: <HomeAboutTab />,
     },
     {
       id: 'settings',
@@ -942,7 +977,6 @@ export function HomeScreen(
     onToggleStar: handleToggleStar,
     onToggleExpand: handleToggleExpand,
     onOpenDev: showDevLink ? () => setShowDev(true) : undefined,
-    isNativeApp,
   });
 
   if (showDev) {
@@ -954,6 +988,7 @@ export function HomeScreen(
       <LayoutHeader>
         <HomeHeader
           isNativeApp={isNativeApp}
+          tab={tab}
           repsToday={globalEffort.dailyReps[toLocalDateString(new Date())] ?? 0}
           totalReps={globalEffort.totalReps}
           daysActive={globalEffort.daysActive}

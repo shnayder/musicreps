@@ -8,7 +8,7 @@ declare global {
 }
 
 import { h, render } from 'preact';
-import { GUITAR, loadNotationPreference, UKULELE } from './music-data.ts';
+import { loadNotationPreference } from './music-data.ts';
 import { createNavigation } from './navigation.ts';
 import { createSettingsController } from './settings.ts';
 import { refreshNoteButtonLabels } from './quiz-engine.ts';
@@ -23,22 +23,7 @@ import { reportHealthy, scheduleUpdateCheck } from './updater.ts';
 // Declarative mode definitions + GenericMode
 import { GenericMode } from './declarative/generic-mode.tsx';
 import type { ModeDefinition } from './declarative/types.ts';
-import { NOTE_SEMITONES_DEF } from './modes/note-semitones/definition.ts';
-import { INTERVAL_SEMITONES_DEF } from './modes/interval-semitones/definition.ts';
-import { SEMITONE_MATH_DEF } from './modes/semitone-math/definition.ts';
-import { INTERVAL_MATH_DEF } from './modes/interval-math/definition.ts';
-import { KEY_SIGNATURES_DEF } from './modes/key-signatures/definition.ts';
-import { SCALE_DEGREES_DEF } from './modes/scale-degrees/definition.ts';
-import { DIATONIC_CHORDS_DEF } from './modes/diatonic-chords/definition.ts';
-
-import { createFretboardDef } from './modes/fretboard/definition.tsx';
-import { CHORD_SPELLING_DEF } from './modes/chord-spelling/definition.ts';
-
-import { SPEED_TAP_DEF } from './modes/speed-tap/definition.tsx';
-import {
-  GUITAR_CHORD_SHAPES_DEF,
-  UKULELE_CHORD_SHAPES_DEF,
-} from './modes/chord-shapes/definition.tsx';
+import { ALL_MODE_DEFINITIONS } from './mode-definitions.ts';
 
 // Enable :active pseudo-class on iOS Safari. WebKit doesn't fire :active on
 // touch unless the document has a touchstart listener.
@@ -104,20 +89,10 @@ async function boot() {
 
   const nav = createNavigation();
 
-  // Declarative modes
-  registerDeclarativeMode(nav, createFretboardDef(GUITAR));
-  registerDeclarativeMode(nav, createFretboardDef(UKULELE));
-  registerDeclarativeMode(nav, NOTE_SEMITONES_DEF);
-  registerDeclarativeMode(nav, INTERVAL_SEMITONES_DEF);
-  registerDeclarativeMode(nav, SEMITONE_MATH_DEF);
-  registerDeclarativeMode(nav, INTERVAL_MATH_DEF);
-  registerDeclarativeMode(nav, KEY_SIGNATURES_DEF);
-  registerDeclarativeMode(nav, SCALE_DEGREES_DEF);
-  registerDeclarativeMode(nav, DIATONIC_CHORDS_DEF);
-  registerDeclarativeMode(nav, CHORD_SPELLING_DEF);
-  registerDeclarativeMode(nav, SPEED_TAP_DEF);
-  registerDeclarativeMode(nav, GUITAR_CHORD_SHAPES_DEF);
-  registerDeclarativeMode(nav, UKULELE_CHORD_SHAPES_DEF);
+  // Declarative modes — single source of truth in mode-definitions.ts
+  for (const def of ALL_MODE_DEFINITIONS) {
+    registerDeclarativeMode(nav, def);
+  }
 
   nav.init();
 

@@ -450,6 +450,15 @@ body {
   border-right: 1px solid var(--color-border-lighter);
   overscroll-behavior: none;
 }
+/* Viewport containment: #app only exists in the built app (build-template.ts),
+   so prototype/design pages that import styles.css are unaffected. */
+#app {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
 
 /* ==========================================================================
    2b. SCREEN LAYOUT — three-zone structure (header/main/footer)
@@ -865,13 +874,17 @@ body {
 .home-about-brand {
   text-align: center;
 }
+.settings-section > .text-body:first-of-type {
+  margin-top: 0;
+}
 .home-about-list {
   margin: 0;
+  margin-top: 0;
   padding-left: 1.25em;
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  line-height: var(--type-body-leading);
+  color: var(--type-body-color);
 }
 .home-about-list li + li {
   margin-top: var(--gap-related);
@@ -1130,21 +1143,16 @@ body {
   align-items: center;
   gap: var(--gap-group);
 }
-.settings-page-title {
+.page-heading {
   margin: 0;
   flex: 1;
-  font-family: var(--type-heading-page-family);
-  font-size: var(--type-heading-page-size);
-  font-weight: var(--type-heading-page-weight);
-  line-height: var(--type-heading-page-leading);
-  color: var(--type-heading-page-color);
+  text-align: center;
 }
 .settings-section + .settings-section {
   margin-top: var(--pad-component);
 }
-.settings-section-title {
+.section-heading {
   margin: 0 0 var(--gap-related);
-  font-size: var(--text-base);
 }
 .settings-link-list {
   display: flex;
@@ -1240,7 +1248,6 @@ body {
 .mode-screen.mode-active {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
 }
 
 .quiz-session-header {
@@ -1273,14 +1280,9 @@ body {
 .tab-panel.active {
   display: block;
 }
-.tab-panel-title {
+.panel-heading {
   margin: 0 0 var(--gap-group);
   padding-top: var(--pad-component);
-  font-family: var(--type-heading-section-family);
-  font-size: var(--type-heading-section-size);
-  font-weight: var(--type-heading-section-weight);
-  line-height: var(--type-heading-section-leading);
-  color: var(--type-heading-section-color);
 }
 
 /* --- About tab --- */
@@ -1289,9 +1291,6 @@ body {
 }
 .about-description {
   margin: var(--gap-group) 0 0;
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
-  color: var(--color-text-muted);
 }
 .about-tab-tip {
   margin: var(--gap-section) 0 0;
@@ -1322,9 +1321,10 @@ body {
 }
 .about-col-text {
   margin: 0;
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
-  color: var(--color-text-muted);
+  font-size: var(--type-body-size);
+  font-weight: var(--type-body-weight);
+  line-height: var(--type-body-leading);
+  color: var(--type-body-color);
   font-style: italic;
 }
 .about-col-text + .about-col-text {
@@ -2862,7 +2862,7 @@ button {
   height: auto;
 }
 .stats-container .fretboard {
-  max-height: 600px;
+  max-height: 450px;
   width: auto;
 }
 .stats-table {

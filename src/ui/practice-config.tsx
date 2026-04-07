@@ -37,7 +37,7 @@ export function SkillHeader(
           {modeId && <SkillIcon modeId={modeId} />}
           <h1 class='mode-title'>{title}</h1>
         </div>
-        {totalReps != null && totalReps > 0 && (
+        {totalReps != null && (
           <span class='skill-header-reps'>
             {totalReps.toLocaleString()}
             <RepeatMark size={18} class='skill-header-reps-icon' />
