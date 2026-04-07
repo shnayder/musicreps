@@ -586,6 +586,83 @@ non-`localhost` hosts require an `NSAppTransportSecurity` exception in
 The `OTAUpdatePlugin` is registered via `AppViewController.capacitorDidLoad()`,
 not via `packageClassList`, so `npx cap sync ios` won't affect it.
 
+## Android App (Capacitor)
+
+The Android app is the same Capacitor wrapper as iOS. The Gradle project lives
+in `android/`.
+
+### Prerequisites
+
+- Android Studio (includes bundled JDK 21 and emulator)
+- Android SDK (installed via Android Studio's SDK Manager)
+- A system image for the emulator (e.g., API 37 arm64)
+
+The build uses Android Studio's bundled JDK. If building from the command line,
+set `JAVA_HOME` to point to it:
+
+```bash
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+export ANDROID_HOME=~/Library/Android/sdk
+```
+
+### Build and run in Emulator
+
+```bash
+# 1. Build web content + sync into Android project
+deno task build && npx cap sync android
+
+# 2. Build the debug APK
+cd android && ./gradlew assembleDebug && cd ..
+
+# 3. Boot an emulator (skip if already running)
+$ANDROID_HOME/emulator/emulator -avd Pixel_8 &
+
+# 4. Wait for boot, then install and launch
+$ANDROID_HOME/platform-tools/adb wait-for-device
+$ANDROID_HOME/platform-tools/adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+$ANDROID_HOME/platform-tools/adb shell am start -n com.musicreps.app/.MainActivity
+```
+
+Or open in Android Studio and hit Run (▶):
+
+```bash
+npx cap open android
+```
+
+### Iterating on changes
+
+After editing JS/CSS/HTML, rebuild and sync web content — no native rebuild
+needed unless you changed Java/Kotlin code:
+
+```bash
+deno task build && npx cap copy android
+```
+
+Then relaunch the app (kill it first — Capacitor loads from local files).
+
+If you changed native code or Capacitor config, rebuild via Gradle:
+
+```bash
+cd android && ./gradlew assembleDebug && cd ..
+```
+
+### Sharing a debug APK
+
+The debug APK is at `android/app/build/outputs/apk/debug/app-debug.apk`. Share
+it directly (e.g., Drive link). The recipient needs to enable "Install from
+unknown sources" in their Android settings.
+
+### Key paths
+
+| Path                                  | Contents                              |
+| ------------------------------------- | ------------------------------------- |
+| `capacitor.config.ts`                 | App name, bundle ID, web dir          |
+| `android/app/build.gradle`            | App-level Gradle config               |
+| `android/variables.gradle`            | SDK versions and dependency versions  |
+| `android/app/src/main/AndroidManifest.xml` | Android app configuration        |
+| `android/app/src/main/res/mipmap-*/`  | App icons (all densities)             |
+| `android/app/src/main/assets/public/` | Web content (copied, gitignored)      |
+
 ## Code Review & PR
 
 Every branch that changes code follows these steps before merging:
