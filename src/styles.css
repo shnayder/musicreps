@@ -874,6 +874,10 @@ body {
 .home-about-brand {
   text-align: center;
 }
+.home-about-list,
+.settings-section > .text-body:first-of-type {
+  margin-top: 0;
+}
 .home-about-list {
   margin: 0;
   padding-left: 1.25em;
@@ -1139,19 +1143,15 @@ body {
   align-items: center;
   gap: var(--gap-group);
 }
-.settings-page-title {
+.page-heading {
   margin: 0;
   flex: 1;
-  font-family: var(--type-heading-page-family);
-  font-size: var(--type-heading-page-size);
-  font-weight: var(--type-heading-page-weight);
-  line-height: var(--type-heading-page-leading);
-  color: var(--type-heading-page-color);
+  text-align: center;
 }
 .settings-section + .settings-section {
   margin-top: var(--pad-component);
 }
-.settings-section-title {
+.section-heading {
   margin: 0 0 var(--gap-related);
   font-size: var(--text-base);
 }
@@ -1281,14 +1281,9 @@ body {
 .tab-panel.active {
   display: block;
 }
-.tab-panel-title {
+.panel-heading {
   margin: 0 0 var(--gap-group);
   padding-top: var(--pad-component);
-  font-family: var(--type-heading-section-family);
-  font-size: var(--type-heading-section-size);
-  font-weight: var(--type-heading-section-weight);
-  line-height: var(--type-heading-section-leading);
-  color: var(--type-heading-section-color);
 }
 
 /* --- About tab --- */
