@@ -874,12 +874,12 @@ body {
 .home-about-brand {
   text-align: center;
 }
-.home-about-list,
 .settings-section > .text-body:first-of-type {
   margin-top: 0;
 }
 .home-about-list {
   margin: 0;
+  margin-top: 0;
   padding-left: 1.25em;
   font-size: var(--type-body-size);
   font-weight: var(--type-body-weight);
@@ -1153,7 +1153,6 @@ body {
 }
 .section-heading {
   margin: 0 0 var(--gap-related);
-  font-size: var(--text-base);
 }
 .settings-link-list {
   display: flex;

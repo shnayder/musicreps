@@ -684,7 +684,7 @@ function AllSkillsList(
 export type HomeTab = 'active' | 'all' | 'about' | 'settings';
 
 // ---------------------------------------------------------------------------
-// HomeHeader — title + tagline that scrolls with content
+// HomeHeader — title + tagline shown in the fixed header area
 // ---------------------------------------------------------------------------
 
 const TAB_TITLES: Partial<Record<HomeTab, string>> = {
