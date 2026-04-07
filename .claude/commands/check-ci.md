@@ -13,12 +13,12 @@ Poll GitHub Actions and Copilot code review until both complete, then report.
 3. **Copilot code review** (claude/* branches only): If there is an open PR,
    check for Copilot review:
    ```
-   gh pr view <number> --json reviews --jq '.reviews[] | select(.author.login == "copilot") | {state: .state, body: .body}'
+   gh pr view <number> --json reviews --jq '.reviews[] | select(.author.login == "copilot-pull-request-reviewer") | {state: .state, body: .body}'
    ```
    If no Copilot review yet, wait 30 seconds and check again (max 10 minutes).
    When it arrives, read the inline comments:
    ```
-   gh api repos/<owner>/<repo>/pulls/<number>/comments --jq '.[] | select(.user.login == "github-actions[bot]" or .user.login == "copilot") | .body'
+   gh api repos/<owner>/<repo>/pulls/<number>/comments --jq '.[] | select(.user.login == "github-actions[bot]" or .user.login == "copilot-pull-request-reviewer") | .body'
    ```
 
 4. **Report results**:
