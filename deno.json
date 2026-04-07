@@ -22,7 +22,9 @@
       "tests/",
       "guides/design/components-preview.html",
       "guides/design/screenshot-review.html",
-      "plans/generated/"
+      "plans/generated/",
+      "android/",
+      "ios/"
     ]
   },
   "fmt": {
@@ -33,7 +35,9 @@
       "guides/",
       "plans/",
       "backlogs/",
-      "static/"
+      "static/",
+      "android/",
+      "ios/"
     ]
   },
   "tasks": {

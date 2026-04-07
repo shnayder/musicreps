@@ -20,6 +20,14 @@ ios/App/output/
 ios/DerivedData/
 **/xcuserdata/
 ios/capacitor-cordova-ios-plugins/
+# Android (Capacitor) — generated/copied at build time
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+android/app/src/main/res/xml/config.xml
+android/capacitor-cordova-android-plugins/
+android/.idea/
+
 .sidecar/
 .sidecar-agent
 .sidecar-task

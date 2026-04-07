@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Music Reps</string>
+    <string name="title_activity_main">Music Reps</string>
+    <string name="package_name">com.musicreps.app</string>
+    <string name="custom_url_scheme">com.musicreps.app</string>
+</resources>

@@ -1,0 +1,33 @@
+<svg
+  width="108"
+  height="108"
+  viewBox="0 0 108 108"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Adaptive icon foreground: 108dp canvas, icon in 72dp safe zone (offset 18dp) -->
+  <svg x="18" y="18" width="72" height="72" viewBox="0 0 1024 1024">
+    <g clip-path="url(#clip0_1_189)">
+      <circle cx="350.643" cy="366.933" r="76.8" fill="#313535" />
+      <path
+        d="M427.443 674.133C427.443 716.549 393.058 750.933 350.643 750.933C308.227 750.933 273.843 716.549 273.843 674.133C273.843 631.718 308.227 597.333 350.643 597.333C393.058 597.333 427.443 631.718 427.443 674.133Z"
+        fill="#313535"
+      />
+      <path
+        d="M750.933 136.533L750.933 904.533"
+        stroke="#313535"
+        stroke-width="136.533"
+      />
+      <path
+        d="M588.8 136.533L588.8 904.533"
+        stroke="#313535"
+        stroke-width="68.2667"
+      />
+    </g>
+    <defs>
+      <clipPath id="clip0_1_189">
+        <rect width="1024" height="1024" fill="white" />
+      </clipPath>
+    </defs>
+  </svg>
+</svg>

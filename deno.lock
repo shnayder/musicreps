@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "npm:@capacitor/android@^8.3.0": "8.3.0_@capacitor+core@8.1.0",
     "npm:@capacitor/cli@^8.1.0": "8.1.0",
     "npm:@capacitor/core@^8.1.0": "8.1.0",
     "npm:@capacitor/filesystem@^8.1.2": "8.1.2_@capacitor+core@8.1.0",
@@ -15,6 +16,12 @@
     "npm:typescript@^5.9.3": "5.9.3"
   },
   "npm": {
+    "@capacitor/android@8.3.0_@capacitor+core@8.1.0": {
+      "integrity": "sha512-EQy6ByUuKayQBJmMm/e0byJiHavqsQHrvW23BuT2GNVQvenAvipqwaePiJHzrv2PZr7A0T0+se4kgDCeROj0mQ==",
+      "dependencies": [
+        "@capacitor/core"
+      ]
+    },
     "@capacitor/cli@8.1.0": {
       "integrity": "sha512-JAzA/ckPgTCjZz6YumBLV2dNCFEVXAuR1oOKLD7AJ4LAI5pF5RtRZrf5FoaxvJVb0S4CouZT5cD+7NwsNJX/nw==",
       "dependencies": [
@@ -745,6 +752,7 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@capacitor/android@^8.3.0",
         "npm:@capacitor/cli@^8.1.0",
         "npm:@capacitor/core@^8.1.0",
         "npm:@capacitor/filesystem@^8.1.2",

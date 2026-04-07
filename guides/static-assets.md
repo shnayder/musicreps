@@ -44,12 +44,25 @@ config uses one universal 1024x1024 image for all iOS contexts.
 No transparency, no alpha channel (iOS rejects it). No changes to
 `Contents.json` needed unless adding per-size variants.
 
-### Android — (future)
+### Android — `android/app/src/main/res/mipmap-*/`
 
-When Capacitor Android is added, the icon will live in
-`android/app/src/main/res/mipmap-*/`. Android uses adaptive icons (foreground +
-background layers) at multiple densities. The Capacitor docs or Android Studio's
-Image Asset wizard will generate the needed files.
+Android uses adaptive icons (foreground + background layers) at five densities.
+The icon generation script produces all needed files.
+
+| Files                                   | Sizes                         | Notes                          |
+| --------------------------------------- | ----------------------------- | ------------------------------ |
+| `ic_launcher.png` + `ic_launcher_round.png` | 48–192 (mdpi→xxxhdpi)     | Legacy launcher icons          |
+| `ic_launcher_foreground.png`            | 108–432 (mdpi→xxxhdpi)       | Adaptive foreground (72dp safe zone in 108dp canvas) |
+
+The adaptive icon background is defined in
+`android/app/src/main/res/drawable/ic_launcher_background.xml` (#FAFAFA solid)
+and `values/ic_launcher_background.xml` (color resource). The foreground SVG
+source is `static/android-foreground.svg`.
+
+**To update the Android icon:** edit `static/app-icon.svg` and
+`static/android-foreground.svg` (the foreground must match the main icon but
+with adaptive-icon safe zone padding), then run `scripts/generate-icons.sh` and
+`deno task build && npx cap sync android`.
 
 ## Skill icons — `static/icons/`
 
@@ -72,7 +85,7 @@ Requires: `brew install resvg` (one-time setup).
 # 2. Generate all PNGs:
 scripts/generate-icons.sh
 # 3. Build + sync:
-deno task build && npx cap sync ios
+deno task build && npx cap sync
 ```
 
 The script rasterizes the SVG at 1024x1024 with `resvg`, then uses `sips`
@@ -85,3 +98,5 @@ The script rasterizes the SVG at 1024x1024 with `resvg`, then uses `sips`
 | 192x192   | `static/icon-192x192.png`                                          |
 | 180x180   | `static/apple-touch-icon.png`                                      |
 | 32x32     | `static/favicon-32x32.png`                                         |
+| 48–192    | `android/app/src/main/res/mipmap-*/ic_launcher{,_round}.png`       |
+| 108–432   | `android/app/src/main/res/mipmap-*/ic_launcher_foreground.png`     |

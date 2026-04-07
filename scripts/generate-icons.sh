@@ -43,4 +43,27 @@ IOS_DEST="ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png"
 cp "static/icon-1024x1024.png" "$IOS_DEST"
 echo "  1024x1024 → $IOS_DEST"
 
-echo "Done. Run 'deno task build && npx cap sync ios' to deploy."
+echo "Generating Android icons..."
+RES="android/app/src/main/res"
+FG="static/android-foreground.svg"
+
+if [ -d "$RES" ]; then
+  # Legacy launcher icons
+  for pair in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
+    density="${pair%%:*}"; size="${pair##*:}"
+    resvg "$SOURCE" "$RES/mipmap-$density/ic_launcher.png" -w "$size" -h "$size"
+    resvg "$SOURCE" "$RES/mipmap-$density/ic_launcher_round.png" -w "$size" -h "$size"
+    echo "  ${size}x${size} → mipmap-$density/ic_launcher{,_round}.png"
+  done
+
+  # Adaptive foreground (108dp canvas with 72dp safe zone)
+  for pair in mdpi:108 hdpi:162 xhdpi:216 xxhdpi:324 xxxhdpi:432; do
+    density="${pair%%:*}"; size="${pair##*:}"
+    resvg "$FG" "$RES/mipmap-$density/ic_launcher_foreground.png" -w "$size" -h "$size"
+    echo "  ${size}x${size} → mipmap-$density/ic_launcher_foreground.png"
+  done
+else
+  echo "  (skipped — android/ not scaffolded)"
+fi
+
+echo "Done. Run 'deno task build && npx cap sync' to deploy."
