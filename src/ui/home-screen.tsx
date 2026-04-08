@@ -13,7 +13,7 @@ import { RepeatMark } from './repeat-mark.tsx';
 import type { SettingsController } from '../types.ts';
 import { storage } from '../storage.ts';
 import { NOTES } from '../music-data.ts';
-import { playNote, playTestTone } from '../note-sound.ts';
+import { playNote } from '../note-sound.ts';
 import type { AppConfig } from '../app-config.ts';
 import {
   type ModeProgress,
@@ -583,14 +583,6 @@ function DevPage({ onClose }: { onClose: () => void }) {
       )}
 
       <DevSection title='Sound Spike'>
-        <button
-          type='button'
-          class='answer-btn'
-          style={{ aspectRatio: 'auto', padding: '12px', maxWidth: '200px' }}
-          onClick={playTestTone}
-        >
-          Test Tone (440 Hz)
-        </button>
         <DevNoteRow label='Octave 3' octave={3} />
         <DevNoteRow label='Octave 4' octave={4} />
       </DevSection>
