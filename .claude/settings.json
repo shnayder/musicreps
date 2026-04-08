@@ -64,8 +64,7 @@
       "Bash(deno task build:*)",
       "Bash(deno task:*)",
       "Bash(deno fmt:*)",
-      "Bash(npx playwright:*)",
-      "Bash(td:*)"
+      "Bash(npx playwright:*)"
     ]
   },
   "sandbox": {
