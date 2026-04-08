@@ -267,6 +267,16 @@ async function main(): Promise<void> {
   // Pass 1: raw screenshots
   captureRawScreenshots();
 
+  // Verify all raw screenshots exist before rendering
+  const missing = requiredScreenshots().filter(
+    (n) => !existsSync(path.join(RAW_DIR, `${n}.png`)),
+  );
+  if (missing.length > 0) {
+    console.error(`Missing raw screenshots: ${missing.join(', ')}`);
+    console.error('Run without --skip-raw to capture them.');
+    process.exit(1);
+  }
+
   // Clean stale output before rendering
   for (const subdir of ['ios', 'play']) {
     const dir = path.join(OUT_DIR, subdir);
@@ -281,6 +291,7 @@ async function main(): Promise<void> {
   generateIndex();
 
   if (preview) {
+    // macOS-only; other platforms would need xdg-open or similar
     execSync(`open "${path.join(OUT_DIR, 'index.html')}"`, {
       stdio: 'ignore',
     });
