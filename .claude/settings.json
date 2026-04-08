@@ -36,7 +36,8 @@
   "permissions": {
     "additionalDirectories": [
       "~/Dropbox/projects/musicreps-root/.todos",
-      "~/Dropbox/projects/musicreps-root/musicreps-docs"
+      "~/Dropbox/projects/musicreps-root/musicreps-docs",
+      "~/Dropbox/projects/musicreps-root/trellis"
     ],
     "allow": [
       "Bash(deno run:*)",
