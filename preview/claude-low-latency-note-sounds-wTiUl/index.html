@@ -3174,7 +3174,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="019487 low-latency-note-sounds-wTiUl"></div>
+  <div class="home-screen" id="home-screen" data-version="4262fe low-latency-note-sounds-wTiUl"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -6001,6 +6001,21 @@ body.native-app {
   var HARMONICS = [1, 0.4, 0.15, 0.06];
   var NOTE_DURATION = 1.5;
   var DECAY_TAU = 0.3;
+  function playTestTone() {
+    const ac = ensureCtx();
+    if (ac.state !== "running") ac.resume();
+    const osc = ac.createOscillator();
+    osc.type = "sine";
+    osc.frequency.value = 440;
+    osc.connect(ac.destination);
+    osc.start();
+    osc.stop(ac.currentTime + 0.5);
+    console.log(`[sound] TEST TONE 440Hz state=${ac.state} t=${ac.currentTime}`);
+    osc.onended = () => {
+      console.log("[sound] TEST TONE ended");
+      osc.disconnect();
+    };
+  }
   function playNote(semitone, octave) {
     const ac = ensureCtx();
     const stateBefore = ac.state;
@@ -9261,6 +9276,16 @@ body.native-app {
         }
       ) }),
       /* @__PURE__ */ u3(DevSection, { title: "Sound Spike", children: [
+        /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            class: "answer-btn",
+            style: { aspectRatio: "auto", padding: "12px", maxWidth: "200px" },
+            onClick: playTestTone,
+            children: "Test Tone (440 Hz)"
+          }
+        ),
         /* @__PURE__ */ u3(DevNoteRow, { label: "Octave 3", octave: 3 }),
         /* @__PURE__ */ u3(DevNoteRow, { label: "Octave 4", octave: 4 })
       ] })
