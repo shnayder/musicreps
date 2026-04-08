@@ -3174,7 +3174,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="05c85c low-latency-note-sounds-wTiUl"></div>
+  <div class="home-screen" id="home-screen" data-version="a02ca2 low-latency-note-sounds-wTiUl"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -6000,48 +6000,42 @@ body.native-app {
   }
   var HARMONICS = [1, 0.4, 0.15, 0.06];
   var NOTE_DURATION = 1.5;
+  var DECAY_TAU = 0.3;
   function playNote(semitone, octave) {
     const ac = ensureCtx();
-    const play = () => {
-      const now = ac.currentTime;
-      const f0 = freq(semitone, octave);
-      const filter = ac.createBiquadFilter();
-      filter.type = "lowpass";
-      filter.frequency.setValueAtTime(4e3, now);
-      filter.frequency.exponentialRampToValueAtTime(800, now + 0.1);
-      const gain = ac.createGain();
-      gain.gain.setValueAtTime(0.35, now);
-      gain.gain.exponentialRampToValueAtTime(1e-3, now + 1.2);
-      filter.connect(gain);
-      gain.connect(ac.destination);
-      const oscs = [];
-      const hGains = [];
-      for (let i3 = 0; i3 < HARMONICS.length; i3++) {
-        const osc = ac.createOscillator();
-        osc.type = i3 === 0 ? "triangle" : "sine";
-        osc.frequency.value = f0 * (i3 + 1);
-        const hGain = ac.createGain();
-        hGain.gain.value = HARMONICS[i3];
-        osc.connect(hGain);
-        hGain.connect(filter);
-        osc.start(now);
-        osc.stop(now + NOTE_DURATION);
-        oscs.push(osc);
-        hGains.push(hGain);
-      }
-      oscs[oscs.length - 1].onended = () => {
-        for (const o3 of oscs) o3.disconnect();
-        for (const h3 of hGains) h3.disconnect();
-        filter.disconnect();
-        gain.disconnect();
-      };
-    };
-    if (ac.state === "suspended") {
-      ac.resume().then(play).catch(() => {
-      });
-    } else {
-      play();
+    if (ac.state !== "running") ac.resume();
+    const now = ac.currentTime;
+    const f0 = freq(semitone, octave);
+    const filter = ac.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(4e3, now);
+    filter.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+    const gain = ac.createGain();
+    gain.gain.setValueAtTime(0.5, now);
+    gain.gain.setTargetAtTime(0, now, DECAY_TAU);
+    filter.connect(gain);
+    gain.connect(ac.destination);
+    const oscs = [];
+    const hGains = [];
+    for (let i3 = 0; i3 < HARMONICS.length; i3++) {
+      const osc = ac.createOscillator();
+      osc.type = i3 === 0 ? "triangle" : "sine";
+      osc.frequency.value = f0 * (i3 + 1);
+      const hGain = ac.createGain();
+      hGain.gain.value = HARMONICS[i3];
+      osc.connect(hGain);
+      hGain.connect(filter);
+      osc.start(now);
+      osc.stop(now + NOTE_DURATION);
+      oscs.push(osc);
+      hGains.push(hGain);
     }
+    oscs[oscs.length - 1].onended = () => {
+      for (const o3 of oscs) o3.disconnect();
+      for (const h3 of hGains) h3.disconnect();
+      filter.disconnect();
+      gain.disconnect();
+    };
   }
 
   // src/stats-display.ts
