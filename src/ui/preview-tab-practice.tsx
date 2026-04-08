@@ -129,7 +129,7 @@ function Phase1Components(
                 label: (
                   <span class='tab-icon-label'>
                     <RepeatMark size={24} />
-                    <span class='sr-only'>Practice</span>
+                    <span class='tab-icon-text'>Practice</span>
                   </span>
                 ),
                 content: (
@@ -149,7 +149,7 @@ function Phase1Components(
               },
               {
                 id: 'about' as ModeTab,
-                label: <TabIcon icon='about' text='About' />,
+                label: <TabIcon icon='about' text='Info' />,
                 content: <PreviewAboutTab />,
               },
             ]}
@@ -461,7 +461,7 @@ function ModeNavFooter() {
       label: (
         <span class='tab-icon-label'>
           <RepeatMark size={24} />
-          <span class='sr-only'>Practice</span>
+          <span class='tab-icon-text'>Practice</span>
         </span>
       ),
       content: null,
@@ -473,7 +473,7 @@ function ModeNavFooter() {
     },
     {
       id: 'about',
-      label: <TabIcon icon='about' text='About' />,
+      label: <TabIcon icon='about' text='Info' />,
       content: null,
     },
   ];

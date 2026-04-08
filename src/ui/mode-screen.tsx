@@ -535,7 +535,7 @@ export function TabIcon({ icon, text }: { icon: string; text: string }) {
         // deno-lint-ignore react-no-danger
         dangerouslySetInnerHTML={{ __html: paths }}
       />
-      <span class='sr-only'>{text}</span>
+      <span class='tab-icon-text'>{text}</span>
     </span>
   );
 }
@@ -629,7 +629,7 @@ export function PracticeTab(
       label: (
         <span class='tab-icon-label'>
           <RepeatMark size={24} />
-          <span class='sr-only'>Practice</span>
+          <span class='tab-icon-text'>Practice</span>
         </span>
       ),
       content: practiceContent ?? (
@@ -663,7 +663,7 @@ export function PracticeTab(
   if (aboutContent) {
     tabs.push({
       id: 'about',
-      label: <TabIcon icon='about' text='About' />,
+      label: <TabIcon icon='about' text='Info' />,
       content: aboutContent,
     });
   }
