@@ -106,7 +106,7 @@ N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 
 ## Layout & information architecture
 
-<!-- Full explanation: guides/design/layout-and-ia.md -->
+<!-- Full explanation: $DOCS_VAULT/guides/design/layout-and-ia.md -->
 
 - [ ] Each screen state (idle, quizzing, calibrating) has a distinct layout —
       not just toggled visibility of a universal element list
@@ -136,7 +136,7 @@ N/A. Do not skip items — mark N/A explicitly if a category does not apply.
 
 ## Visual design consistency
 
-<!-- Full explanation: guides/design/visual-design.md -->
+<!-- Full explanation: $DOCS_VAULT/guides/design/visual-design.md -->
 
 - [ ] No new hard-coded colors — all via `var(--color-*)` or `var(--heatmap-*)`
 - [ ] No new font-size values — use type scale tokens (`--text-xs` through

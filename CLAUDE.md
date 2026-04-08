@@ -36,9 +36,9 @@ PRs — it enforces the full sequence. Use `/check-ci` after pushing to verify C
 passes before declaring success (CI also runs E2E tests via Playwright). Run
 `deno task prepush` locally if Playwright is available — it adds E2E tests.
 
-If you hit `UnknownIssuer` TLS errors or npm resolution failures, see the **Web
-sandbox** section in
-[guides/development.md](guides/development.md#web-sandbox-is_sandboxyes).
+If you hit `UnknownIssuer` TLS errors or npm resolution failures in the web
+sandbox: run `npm install` (npm routes through the proxy correctly). A
+session-start hook runs this automatically when `IS_SANDBOX=yes`.
 
 **Run `deno task iterate capture` after UI changes.** When a `deno task iterate`
 session is active, capture a new version after every round of UI changes so the
@@ -105,17 +105,8 @@ src/
     use-phase-class.ts    # Phase-to-CSS-class sync hook
     use-round-summary.ts  # Round-complete derived state hook
 scripts/take-screenshots.ts  # Playwright screenshots
-guides/                  # Detailed developer guides (see below)
-plans/                   # Design docs, product specs, execution plans
-  design-docs/           #   Architectural explorations and design reviews
-  product-specs/         #   What to build and why (active/ and completed/)
-  exec-plans/            #   Implementation plans (active/ and completed/)
-  generated/             #   Generated artifacts
-  references/            #   Reference material
-backlogs/                # Per-workstream backlogs (product, design, engineering, process)
 static/                  # Static assets copied to docs/ at build time
 docs/                    # Built output (gitignored, created by deno task build)
-  design/                #   Design reference pages (copied from guides/design/)
 .github/workflows/       # CI: preview deploys for claude/* branches
 ```
 
@@ -161,8 +152,8 @@ at build time. Key patterns:
   helpers, sub-components for JSX branches, custom hooks for related state, and
   standalone callbacks that close over refs.
 
-See [guides/architecture.md](guides/architecture.md) for module dependency
-graph, algorithm details, and step-by-step "adding a new quiz mode" checklist.
+See the architecture guide in the docs vault for module dependency graph,
+algorithm details, and step-by-step "adding a new quiz mode" checklist.
 
 ## Quiz Modes
 
@@ -193,46 +184,35 @@ Bidirectional modes track each direction as a separate item.
 - `Space` / `Enter` — next question
 - `Escape` — stop quiz / return to home screen
 
-## Guides
+## Docs Vault
 
-**Aspirational** — where the product is headed:
+Project knowledge base lives in a separate Obsidian vault. The path is set via
+the `DOCS_VAULT` env var (configured in `.claude/settings.json`). It contains
+guides, plans, backlogs, decisions, conventions, and more.
 
-| Guide                         | Contents                                                 |
-| ----------------------------- | -------------------------------------------------------- |
-| [vision.md](guides/vision.md) | Who it's for, what we're building, tone, skill lifecycle |
-| [brand.md](guides/brand.md)   | Core positioning, promise, messaging, visual tone        |
+**Before starting work**, check the docs vault for relevant conventions and
+recent decisions in your area:
 
-**Enduring** — design values that should outlast any implementation:
+- `conventions/` — ongoing patterns ("always do it this way")
+- `decisions/` — one-time choices with rationale
+- `guides/` — architecture, coding style, design system, development process
 
-| Guide                                                 | Contents                                                         |
-| ----------------------------------------------------- | ---------------------------------------------------------------- |
-| [design-principles.md](guides/design-principles.md)   | Product, visual, and UX design principles                        |
-| [layout-and-ia.md](guides/design/layout-and-ia.md)    | Screen structure principles: states, hierarchy, grouping, labels |
-| [process-principles.md](guides/process-principles.md) | Development process values and improvement goals                 |
+**After making a non-obvious decision**, write a note to the vault using the
+`vault-note` tool (path via `TRELLIS_ROOT` env var):
 
-**Current reference** — how things work today:
+```bash
+cd "$TRELLIS_ROOT" && deno task vault-note add <type> <title> [--area=X] [--body=text]
+```
 
-| Guide                                                         | Contents                                                                       |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| [architecture.md](guides/architecture.md)                     | Module graph, build system, patterns, algorithms, DOM layout, adding new modes |
-| [visual-design.md](guides/design/visual-design.md)            | Index to color, typography, spacing, components, patterns docs                 |
-| [typography.md](guides/design/typography.md)                  | Type system: 5-tier scale, 20 roles, intensity tiers, design principles        |
-| [color-system.md](guides/design/color-system.md)              | Color architecture, palette model, semantic families, heatmap                  |
-| [coding-style.md](guides/coding-style.md)                     | Naming, file structure, DOM rules, testing patterns                            |
-| [accidental-conventions.md](guides/accidental-conventions.md) | Sharp/flat naming rules by mode, rule priority                                 |
-| [terminology.md](guides/terminology.md)                       | User-facing terms and their internal equivalents                               |
+Types: `decision`, `convention`, `debt`, `question`, `observation`, `session`
 
-**Process** — how to work on the codebase:
+At session end, write a brief session log:
 
-| Guide                                                         | Contents                                                                   |
-| ------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| [development.md](guides/development.md)                       | Commands, testing, versioning, branching, deployment, GitHub API           |
-| [releases.md](guides/releases.md)                             | OTA update system, deploying releases, rollback, crash protection          |
-| [feature-process.md](guides/feature-process.md)               | When/how to write plans, design spec + implementation plan templates       |
-| [visual-design-spec.md](guides/visual-design-spec.md)         | Template for visual design work (layout, styling, design system alignment) |
-| [tech-debt-tracker.md](plans/exec-plans/tech-debt-tracker.md) | Technical debt tracking                                                    |
+```bash
+cd "$TRELLIS_ROOT" && deno task vault-note add session "<summary>"
+```
 
-The review checklist (`.claude/commands/review-checklist.md`) verifies these
+The review checklist (`.claude/commands/review-checklist.md`) verifies
 conventions — use `/review` to run it.
 
 ## Workstreams
@@ -258,15 +238,13 @@ port from the server's `Listening on` stderr output.
 
 **Versioning**: derived from git at build time — no manual bumps needed.
 
-**Backlogs**: each workstream has its own in `backlogs/`. The old monolithic
-`backlog.md` is archived at `backlogs/legacy.md`.
+**Backlogs**: each workstream has its own in the docs vault under `backlogs/`.
 
 ## GitHub API Access
 
 `gh` CLI is not authenticated in the web environment. Use `curl` through the
-egress proxy instead — see
-[development.md](guides/development.md#github-api-access-web-environment) for
-the pattern.
+egress proxy instead — see the development guide in the docs vault for the
+pattern.
 
 **Claude Code sandbox note:** `gh` CLI commands that hit the GitHub API (e.g.
 `gh pr create`, `gh pr view`) fail with TLS certificate errors inside the

@@ -2,8 +2,9 @@ Color system guidance for designing new UI and reviewing changes.
 
 ## Reference
 
-Read `guides/design/color-system.md` for the full system: three-layer token
-architecture, palette model, semantic families, color design principles.
+Read `$DOCS_VAULT/guides/design/color-system.md` for the full system:
+three-layer token architecture, palette model, semantic families, color design
+principles.
 
 ## Mode
 

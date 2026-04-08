@@ -2,8 +2,9 @@ Component pattern guidance for designing new UI and reviewing changes.
 
 ## Reference
 
-Read `guides/design/components.md` for the full system: button variant taxonomy,
-info hierarchy pattern, ActionButton vs raw button decision framework.
+Read `$DOCS_VAULT/guides/design/components.md` for the full system: button
+variant taxonomy, info hierarchy pattern, ActionButton vs raw button decision
+framework.
 
 ## Mode
 

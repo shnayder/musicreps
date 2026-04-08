@@ -48,17 +48,17 @@ Based on the goal and what you see in the screenshots, select which categories
 are most relevant. **Do not try to evaluate everything** — focus on what matters
 for this goal. Typical evaluations cover 2-4 categories.
 
-| Category              | Guide to read                                                                                        | When relevant                                    |
-| --------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| Type hierarchy        | `guides/design/visual-design.md` § Type Hierarchy                                                    | Text sizing, weight, color issues                |
-| Button taxonomy       | `guides/design/visual-design.md` § Button Variant Taxonomy                                           | Button/action styling issues                     |
-| Token compliance      | `guides/design/visual-design.md` + `.claude/commands/review-checklist.md` § Design system compliance | Any hardcoded CSS values                         |
-| Layout & IA           | `guides/design/layout-and-ia.md`                                                                     | Content order, grouping, labeling, screen states |
-| Elevation             | `guides/design/visual-design.md` § Elevation                                                         | Shadow/depth mismatches                          |
-| Interaction states    | `guides/design/visual-design.md` § Focus, hover, active                                              | Missing interactive feedback                     |
-| Structural components | `guides/design/visual-design.md` § Structural Components                                             | Should be using Text/ActionButton                |
-| Spacing/rhythm        | `guides/design/visual-design.md` § Spacing Scale                                                     | Spacing inconsistencies, density issues          |
-| Design principles     | `guides/design-principles.md`                                                                        | High-level tone, feel, product fit               |
+| Category              | Guide to read                                                                                                    | When relevant                                    |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| Type hierarchy        | `$DOCS_VAULT/guides/design/visual-design.md` § Type Hierarchy                                                    | Text sizing, weight, color issues                |
+| Button taxonomy       | `$DOCS_VAULT/guides/design/visual-design.md` § Button Variant Taxonomy                                           | Button/action styling issues                     |
+| Token compliance      | `$DOCS_VAULT/guides/design/visual-design.md` + `.claude/commands/review-checklist.md` § Design system compliance | Any hardcoded CSS values                         |
+| Layout & IA           | `$DOCS_VAULT/guides/design/layout-and-ia.md`                                                                     | Content order, grouping, labeling, screen states |
+| Elevation             | `$DOCS_VAULT/guides/design/visual-design.md` § Elevation                                                         | Shadow/depth mismatches                          |
+| Interaction states    | `$DOCS_VAULT/guides/design/visual-design.md` § Focus, hover, active                                              | Missing interactive feedback                     |
+| Structural components | `$DOCS_VAULT/guides/design/visual-design.md` § Structural Components                                             | Should be using Text/ActionButton                |
+| Spacing/rhythm        | `$DOCS_VAULT/guides/design/visual-design.md` § Spacing Scale                                                     | Spacing inconsistencies, density issues          |
+| Design principles     | `$DOCS_VAULT/guides/design-principles.md`                                                                        | High-level tone, feel, product fit               |
 
 Read only the guide sections for the categories you selected.
 
