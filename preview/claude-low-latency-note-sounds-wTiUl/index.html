@@ -3174,7 +3174,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="d8ade3 low-latency-note-sounds-wTiUl"></div>
+  <div class="home-screen" id="home-screen" data-version="7a2577 low-latency-note-sounds-wTiUl"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -5986,6 +5986,44 @@ body.native-app {
         ]
       }
     );
+  }
+
+  // src/note-sound.ts
+  var ctx = null;
+  function getCtx() {
+    if (!ctx) ctx = new AudioContext();
+    if (ctx.state === "suspended") ctx.resume();
+    return ctx;
+  }
+  function freq(semitone, octave) {
+    const midi = 12 * (octave + 1) + semitone;
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
+  var HARMONICS = [1, 0.4, 0.15, 0.06];
+  function playNote(semitone, octave) {
+    const ac = getCtx();
+    const now = ac.currentTime;
+    const f0 = freq(semitone, octave);
+    const filter = ac.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(4e3, now);
+    filter.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+    const gain = ac.createGain();
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(1e-3, now + 1.2);
+    filter.connect(gain);
+    gain.connect(ac.destination);
+    for (let i3 = 0; i3 < HARMONICS.length; i3++) {
+      const osc = ac.createOscillator();
+      osc.type = i3 === 0 ? "triangle" : "sine";
+      osc.frequency.value = f0 * (i3 + 1);
+      const hGain = ac.createGain();
+      hGain.gain.value = HARMONICS[i3];
+      osc.connect(hGain);
+      hGain.connect(filter);
+      osc.start(now);
+      osc.stop(now + 1.5);
+    }
   }
 
   // src/stats-display.ts
@@ -9204,7 +9242,11 @@ body.native-app {
           headers: ["Date", "Reps"],
           rows: data.recentDays.map((d4) => [d4.date, String(d4.count)])
         }
-      ) })
+      ) }),
+      /* @__PURE__ */ u3(DevSection, { title: "Sound Spike", children: [
+        /* @__PURE__ */ u3(DevNoteRow, { label: "Octave 3", octave: 3 }),
+        /* @__PURE__ */ u3(DevNoteRow, { label: "Octave 4", octave: 4 })
+      ] })
     ] });
   }
   function DevSection({ title, children }) {
@@ -9217,6 +9259,39 @@ body.native-app {
     return /* @__PURE__ */ u3("div", { class: "dev-stat-row", children: [
       /* @__PURE__ */ u3("span", { children: label }),
       /* @__PURE__ */ u3("span", { children: value })
+    ] });
+  }
+  function DevNoteRow({ label, octave }) {
+    return /* @__PURE__ */ u3("div", { children: [
+      /* @__PURE__ */ u3(Text, { role: "label", as: "div", style: { marginBottom: "4px" }, children: label }),
+      /* @__PURE__ */ u3(
+        "div",
+        {
+          style: {
+            display: "grid",
+            gridTemplateColumns: "repeat(12, 1fr)",
+            gap: "var(--gap-related)"
+          },
+          children: NOTES.map((n2) => /* @__PURE__ */ u3(
+            "button",
+            {
+              type: "button",
+              class: "answer-btn",
+              style: {
+                aspectRatio: "auto",
+                padding: "8px 0",
+                fontSize: "0.8rem"
+              },
+              onClick: () => playNote(n2.num, octave),
+              children: [
+                n2.name,
+                octave
+              ]
+            },
+            `${n2.name}${octave}`
+          ))
+        }
+      )
     ] });
   }
   function DevTable({ headers, rows }) {
@@ -12641,7 +12716,7 @@ body.native-app {
         if (isSequential) seqInput.resetOnItemChange(null);
         ctrlRef.current.onStop?.();
       },
-      handleKey: hasHandleKey ? (e3, ctx) => ctrlRef.current.handleKey(e3, ctx) : void 0
+      handleKey: hasHandleKey ? (e3, ctx2) => ctrlRef.current.handleKey(e3, ctx2) : void 0
     };
   }
   function useGenericDerivedState(def, engine, learner, groupScopeResult, currentQRef, seqInput, multiTapInput, isSequential, container, onMount, presentationPhase, deactivateCleanup) {
