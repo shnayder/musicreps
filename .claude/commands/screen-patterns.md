@@ -2,12 +2,12 @@ Screen and layout pattern guidance for designing new UI and reviewing changes.
 
 ## Reference
 
-Read `../musicreps-docs/guides/design/screen-patterns.md` for the full system:
+Read `$DOCS_VAULT/guides/design/screen-patterns.md` for the full system:
 three-act loop, zone model, content placement framework, layout techniques,
 density management.
 
-Also read `../musicreps-docs/guides/design/layout-and-ia.md` for the 17 enduring
-UX principles that the screen patterns guide references by number.
+Also read `$DOCS_VAULT/guides/design/layout-and-ia.md` for the 17 enduring UX
+principles that the screen patterns guide references by number.
 
 ## Mode
 

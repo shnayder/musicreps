@@ -1,6 +1,8 @@
 {
   "env": {
-    "ENABLE_LSP_TOOL": "1"
+    "ENABLE_LSP_TOOL": "1",
+    "DOCS_VAULT": "~/Dropbox/projects/musicreps-root/musicreps-docs",
+    "TRELLIS_ROOT": "~/Dropbox/projects/musicreps-root/trellis"
   },
   "enabledPlugins": {
     "typescript-lsp@claude-plugins-official": true

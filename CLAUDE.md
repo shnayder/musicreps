@@ -186,9 +186,9 @@ Bidirectional modes track each direction as a separate item.
 
 ## Docs Vault
 
-Project knowledge base lives in a separate Obsidian vault at
-`../musicreps-docs/`. It contains guides, plans, backlogs, decisions,
-conventions, and more.
+Project knowledge base lives in a separate Obsidian vault. The path is set via
+the `DOCS_VAULT` env var (configured in `.claude/settings.json`). It contains
+guides, plans, backlogs, decisions, conventions, and more.
 
 **Before starting work**, check the docs vault for relevant conventions and
 recent decisions in your area:
@@ -198,10 +198,10 @@ recent decisions in your area:
 - `guides/` — architecture, coding style, design system, development process
 
 **After making a non-obvious decision**, write a note to the vault using the
-`vault-note` tool in `../trellis/`:
+`vault-note` tool (path via `TRELLIS_ROOT` env var):
 
 ```bash
-cd ../trellis && deno task vault-note add <type> <title> [--area=X] [--body=text]
+cd "$TRELLIS_ROOT" && deno task vault-note add <type> <title> [--area=X] [--body=text]
 ```
 
 Types: `decision`, `convention`, `debt`, `question`, `observation`, `session`
@@ -209,7 +209,7 @@ Types: `decision`, `convention`, `debt`, `question`, `observation`, `session`
 At session end, write a brief session log:
 
 ```bash
-cd ../trellis && deno task vault-note add session "<summary>"
+cd "$TRELLIS_ROOT" && deno task vault-note add session "<summary>"
 ```
 
 The review checklist (`.claude/commands/review-checklist.md`) verifies
