@@ -60,6 +60,8 @@
     "e2e:nav": "npx tsx tests/e2e/navigation.test.ts",
     "e2e:persist": "npx tsx tests/e2e/persistence.test.ts",
     "e2e:chord": "npx tsx tests/e2e/chord-spelling.test.ts",
-    "e2e:skip": "npx tsx tests/e2e/skip-unskip.test.ts"
+    "e2e:skip": "npx tsx tests/e2e/skip-unskip.test.ts",
+    "marketing": "npx tsx scripts/generate-marketing.ts",
+    "marketing:preview": "npx tsx scripts/generate-marketing.ts --preview"
   }
 }
