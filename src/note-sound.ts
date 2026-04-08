@@ -3,9 +3,8 @@
 
 let ctx: AudioContext | null = null;
 
-function getCtx(): AudioContext {
+function ensureCtx(): AudioContext {
   if (!ctx) ctx = new AudioContext();
-  if (ctx.state === 'suspended') ctx.resume();
   return ctx;
 }
 
@@ -18,6 +17,7 @@ function freq(semitone: number, octave: number): number {
 
 // Harmonic amplitudes relative to fundamental (triangle-ish pluck).
 const HARMONICS = [1, 0.4, 0.15, 0.06];
+const NOTE_DURATION = 1.5;
 
 /**
  * Play a guitar-like plucked note.
@@ -25,36 +25,59 @@ const HARMONICS = [1, 0.4, 0.15, 0.06];
  * @param octave    e.g. 3 or 4
  */
 export function playNote(semitone: number, octave: number): void {
-  const ac = getCtx();
-  const now = ac.currentTime;
-  const f0 = freq(semitone, octave);
+  const ac = ensureCtx();
 
-  // Brightness sweep: lowpass filter starts bright, decays quickly.
-  const filter = ac.createBiquadFilter();
-  filter.type = 'lowpass';
-  filter.frequency.setValueAtTime(4000, now);
-  filter.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+  // Resume returns a promise — schedule audio only after it resolves.
+  // On non-suspended contexts this resolves immediately.
+  const play = () => {
+    const now = ac.currentTime;
+    const f0 = freq(semitone, octave);
 
-  // Pluck envelope: sharp attack, exponential decay.
-  const gain = ac.createGain();
-  gain.gain.setValueAtTime(0.35, now);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+    // Brightness sweep: lowpass filter starts bright, decays quickly.
+    const filter = ac.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(4000, now);
+    filter.frequency.exponentialRampToValueAtTime(800, now + 0.1);
 
-  filter.connect(gain);
-  gain.connect(ac.destination);
+    // Pluck envelope: sharp attack, exponential decay.
+    const gain = ac.createGain();
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
 
-  // Stack harmonics for a richer tone.
-  for (let i = 0; i < HARMONICS.length; i++) {
-    const osc = ac.createOscillator();
-    osc.type = i === 0 ? 'triangle' : 'sine';
-    osc.frequency.value = f0 * (i + 1);
+    filter.connect(gain);
+    gain.connect(ac.destination);
 
-    const hGain = ac.createGain();
-    hGain.gain.value = HARMONICS[i];
-    osc.connect(hGain);
-    hGain.connect(filter);
+    // Stack harmonics for a richer tone.
+    const oscs: OscillatorNode[] = [];
+    const hGains: GainNode[] = [];
+    for (let i = 0; i < HARMONICS.length; i++) {
+      const osc = ac.createOscillator();
+      osc.type = i === 0 ? 'triangle' : 'sine';
+      osc.frequency.value = f0 * (i + 1);
 
-    osc.start(now);
-    osc.stop(now + 1.5);
+      const hGain = ac.createGain();
+      hGain.gain.value = HARMONICS[i];
+      osc.connect(hGain);
+      hGain.connect(filter);
+
+      osc.start(now);
+      osc.stop(now + NOTE_DURATION);
+      oscs.push(osc);
+      hGains.push(hGain);
+    }
+
+    // Disconnect nodes after playback to avoid leaking audio graph nodes.
+    oscs[oscs.length - 1].onended = () => {
+      for (const o of oscs) o.disconnect();
+      for (const h of hGains) h.disconnect();
+      filter.disconnect();
+      gain.disconnect();
+    };
+  };
+
+  if (ac.state === 'suspended') {
+    ac.resume().then(play).catch(() => {});
+  } else {
+    play();
   }
 }
