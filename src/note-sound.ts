@@ -25,6 +25,25 @@ const DECAY_TAU = 0.3; // time constant for exponential decay
  * @param semitone  0–11 (C=0, matches music-data.ts NOTES[].num)
  * @param octave    e.g. 3 or 4
  */
+/** Bare-minimum test: single oscillator → destination. No filter, no gain. */
+export function playTestTone(): void {
+  const ac = ensureCtx();
+  if (ac.state !== 'running') ac.resume();
+  const osc = ac.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = 440;
+  osc.connect(ac.destination);
+  osc.start();
+  osc.stop(ac.currentTime + 0.5);
+  // deno-lint-ignore no-console
+  console.log(`[sound] TEST TONE 440Hz state=${ac.state} t=${ac.currentTime}`);
+  osc.onended = () => {
+    // deno-lint-ignore no-console
+    console.log('[sound] TEST TONE ended');
+    osc.disconnect();
+  };
+}
+
 export function playNote(semitone: number, octave: number): void {
   const ac = ensureCtx();
   const stateBefore = ac.state;
