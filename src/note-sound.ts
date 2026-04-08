@@ -27,6 +27,7 @@ const DECAY_TAU = 0.3; // time constant for exponential decay
  */
 export function playNote(semitone: number, octave: number): void {
   const ac = ensureCtx();
+  const stateBefore = ac.state;
 
   // Resume synchronously within user gesture — don't chain with .then()
   // because Safari drops the gesture context across microtasks.
@@ -35,6 +36,13 @@ export function playNote(semitone: number, octave: number): void {
 
   const now = ac.currentTime;
   const f0 = freq(semitone, octave);
+
+  // deno-lint-ignore no-console
+  console.log(
+    `[sound] note=${semitone} oct=${octave} f0=${f0.toFixed(1)}Hz` +
+      ` state=${stateBefore}→${ac.state} t=${now.toFixed(3)}` +
+      ` sampleRate=${ac.sampleRate} dest=${ac.destination.channelCount}ch`,
+  );
 
   // Brightness sweep: lowpass filter starts bright, decays quickly.
   const filter = ac.createBiquadFilter();
@@ -73,6 +81,8 @@ export function playNote(semitone: number, octave: number): void {
 
   // Disconnect nodes after playback to avoid leaking audio graph nodes.
   oscs[oscs.length - 1].onended = () => {
+    // deno-lint-ignore no-console
+    console.log(`[sound] ended note=${semitone} oct=${octave}`);
     for (const o of oscs) o.disconnect();
     for (const h of hGains) h.disconnect();
     filter.disconnect();
