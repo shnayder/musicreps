@@ -12,6 +12,8 @@ import { Pill } from './pill.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
 import type { SettingsController } from '../types.ts';
 import { storage } from '../storage.ts';
+import { NOTES } from '../music-data.ts';
+import { playNote } from '../note-sound.ts';
 import type { AppConfig } from '../app-config.ts';
 import {
   type ModeProgress,
@@ -579,6 +581,11 @@ function DevPage({ onClose }: { onClose: () => void }) {
           />
         </DevSection>
       )}
+
+      <DevSection title='Sound Spike'>
+        <DevNoteRow label='Octave 3' octave={3} />
+        <DevNoteRow label='Octave 4' octave={4} />
+      </DevSection>
     </div>
   );
 }
@@ -601,6 +608,42 @@ function DevStatRow({ label, value }: { label: string; value: number }) {
     <div class='dev-stat-row'>
       <span>{label}</span>
       <span>{value}</span>
+    </div>
+  );
+}
+
+function DevNoteRow(
+  { label, octave }: { label: string; octave: number },
+) {
+  return (
+    <div>
+      <Text role='label' as='div' style={{ marginBottom: '4px' }}>
+        {label}
+      </Text>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(12, 1fr)',
+          gap: 'var(--gap-related)',
+        }}
+      >
+        {NOTES.map((n) => (
+          <button
+            key={`${n.name}${octave}`}
+            type='button'
+            class='answer-btn'
+            style={{
+              aspectRatio: 'auto',
+              padding: '8px 0',
+              fontSize: '0.8rem',
+            }}
+            onClick={() => playNote(n.num, octave)}
+          >
+            {n.name}
+            {octave}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
