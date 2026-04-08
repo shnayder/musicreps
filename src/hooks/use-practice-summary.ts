@@ -64,9 +64,8 @@ export function usePracticeSummary(opts: {
         return;
       }
     }
-    // On return visits, reset to practice if still on about (user didn't
-    // manually switch away during the first visit).
-    setActiveTab((prev) => (prev === 'about' ? 'practice' : prev));
+    // Always open on Practice tab for predictable navigation.
+    setActiveTab('practice');
   }, [opts.modeId, opts.selector, opts.allItems]);
 
   const summary = useMemo(
