@@ -3174,7 +3174,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="b58584 low-latency-note-sounds-wTiUl"></div>
+  <div class="home-screen" id="home-screen" data-version="dd7b96 low-latency-note-sounds-wTiUl"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -5990,6 +5990,58 @@ body.native-app {
 
   // src/note-sound.ts
   var ctx = null;
+  var iosUnlocked = false;
+  function makeSilentWav() {
+    const sampleRate = 8e3;
+    const seconds = 0.5;
+    const numSamples = sampleRate * seconds;
+    const dataBytes = numSamples * 2;
+    const headerSize = 44;
+    const buf = new ArrayBuffer(headerSize + dataBytes);
+    const view = new DataView(buf);
+    function writeStr(offset, s3) {
+      for (let i3 = 0; i3 < s3.length; i3++) {
+        view.setUint8(offset + i3, s3.charCodeAt(i3));
+      }
+    }
+    writeStr(0, "RIFF");
+    view.setUint32(4, 36 + dataBytes, true);
+    writeStr(8, "WAVE");
+    writeStr(12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeStr(36, "data");
+    view.setUint32(40, dataBytes, true);
+    const bytes = new Uint8Array(buf);
+    let binary = "";
+    for (let i3 = 0; i3 < bytes.length; i3++) {
+      binary += String.fromCharCode(bytes[i3]);
+    }
+    return "data:audio/wav;base64," + btoa(binary);
+  }
+  function unlockiOSAudio() {
+    if (iosUnlocked) return;
+    iosUnlocked = true;
+    const audio = document.createElement("audio");
+    audio.controls = false;
+    audio.preload = "auto";
+    audio.loop = true;
+    audio.src = makeSilentWav();
+    audio.play().catch(() => {
+    });
+    if (ctx) {
+      const buf = ctx.createBuffer(1, 1, ctx.sampleRate);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(ctx.destination);
+      src.start(0);
+    }
+  }
   function ensureCtx() {
     if (!ctx) ctx = new AudioContext();
     return ctx;
@@ -6000,29 +6052,12 @@ body.native-app {
   }
   var HARMONICS = [1, 0.4, 0.15, 0.06];
   var NOTE_DURATION = 1.5;
-  function playTestTone() {
-    const ac = ensureCtx();
-    if (ac.state !== "running") ac.resume();
-    const osc = ac.createOscillator();
-    osc.type = "sine";
-    osc.frequency.value = 440;
-    osc.connect(ac.destination);
-    osc.start();
-    osc.stop(ac.currentTime + 0.5);
-    console.log(`[sound] TEST TONE 440Hz state=${ac.state} t=${ac.currentTime}`);
-    osc.onended = () => {
-      console.log("[sound] TEST TONE ended");
-      osc.disconnect();
-    };
-  }
   function playNote(semitone, octave) {
     const ac = ensureCtx();
+    unlockiOSAudio();
     const play = () => {
       const now = ac.currentTime;
       const f0 = freq(semitone, octave);
-      console.log(
-        `[sound] note=${semitone} oct=${octave} f0=${f0.toFixed(1)}Hz state=${ac.state} t=${now.toFixed(3)} sampleRate=${ac.sampleRate} dest=${ac.destination.channelCount}ch`
-      );
       const filter = ac.createBiquadFilter();
       filter.type = "lowpass";
       filter.frequency.setValueAtTime(4e3, now);
@@ -6048,7 +6083,6 @@ body.native-app {
         hGains.push(hGain);
       }
       oscs[oscs.length - 1].onended = () => {
-        console.log(`[sound] ended note=${semitone} oct=${octave}`);
         for (const o3 of oscs) o3.disconnect();
         for (const h3 of hGains) h3.disconnect();
         filter.disconnect();
@@ -9281,16 +9315,6 @@ body.native-app {
         }
       ) }),
       /* @__PURE__ */ u3(DevSection, { title: "Sound Spike", children: [
-        /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            class: "answer-btn",
-            style: { aspectRatio: "auto", padding: "12px", maxWidth: "200px" },
-            onClick: playTestTone,
-            children: "Test Tone (440 Hz)"
-          }
-        ),
         /* @__PURE__ */ u3(DevNoteRow, { label: "Octave 3", octave: 3 }),
         /* @__PURE__ */ u3(DevNoteRow, { label: "Octave 4", octave: 4 })
       ] })
