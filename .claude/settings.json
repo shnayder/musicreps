@@ -37,7 +37,6 @@
   },
   "permissions": {
     "additionalDirectories": [
-      "~/Dropbox/projects/musicreps-root/.todos",
       "~/Dropbox/projects/musicreps-root/musicreps-docs",
       "~/Dropbox/projects/musicreps-root/trellis"
     ],
@@ -64,8 +63,7 @@
       "Bash(deno task build:*)",
       "Bash(deno task:*)",
       "Bash(deno fmt:*)",
-      "Bash(npx playwright:*)",
-      "Bash(td:*)"
+      "Bash(npx playwright:*)"
     ]
   },
   "sandbox": {
