@@ -928,7 +928,6 @@ body {
   text-align: center;
 }
 .all-skills-hint {
-  margin: 0 0 var(--gap-related);
   text-align: center;
 }
 /* --- Home About tab --- */
@@ -1249,8 +1248,7 @@ body {
 .tab-panel.active {
   display: block;
 }
-.panel-heading {
-  margin: 0 0 var(--gap-group);
+.panel-content {
   padding-top: var(--pad-component);
 }
 

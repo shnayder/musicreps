@@ -310,14 +310,14 @@ function ActiveSkillsList(
 ) {
   if (starred.size === 0) {
     return (
-      <div>
-        <Text role='heading-section' as='h2' class='panel-heading'>
+      <Stack gap='group' class='panel-content'>
+        <Text role='heading-section' as='h2'>
           Active Skills
         </Text>
         <p class='active-skills-empty'>
           Star the skills you want to automate in <strong>All Skills</strong>.
         </p>
-      </div>
+      </Stack>
     );
   }
 
@@ -367,8 +367,8 @@ function ActiveSkillsList(
   const allDone = recommendations.length === 0 && starred.size > 0;
 
   return (
-    <div class='active-skills-list'>
-      <Text role='heading-section' as='h2' class='panel-heading'>
+    <Stack gap='group' class='active-skills-list panel-content'>
+      <Text role='heading-section' as='h2'>
         Active Skills
       </Text>
       {allDone && (
@@ -391,7 +391,7 @@ function ActiveSkillsList(
             : undefined}
         />
       ))}
-    </div>
+    </Stack>
   );
 }
 
@@ -626,8 +626,8 @@ function AllSkillsList(
     },
 ) {
   return (
-    <div class='home-modes'>
-      <Text role='heading-section' as='h2' class='panel-heading'>
+    <Stack gap='group' class='home-modes panel-content'>
+      <Text role='heading-section' as='h2'>
         All Skills
       </Text>
       <Text role='status' as='p' class='status-empty all-skills-hint'>
@@ -652,7 +652,7 @@ function AllSkillsList(
           ))}
         </TrackSection>
       ))}
-    </div>
+    </Stack>
   );
 }
 
