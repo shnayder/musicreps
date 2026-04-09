@@ -15,6 +15,7 @@ import { DesignSystemTab } from './preview-tab-design-system.tsx';
 import { FretboardTab } from './preview-tab-fretboard.tsx';
 import { PracticeRedesignTab } from './preview-tab-practice.tsx';
 import { ColorsTab } from './preview-tab-colors.tsx';
+import { SoundTab } from './preview-tab-sound.tsx';
 
 // ---------------------------------------------------------------------------
 // Tab navigation + PreviewApp
@@ -30,6 +31,7 @@ const TABS = [
   'design-system',
   'colors',
   'fretboard',
+  'sound',
 ] as const;
 
 type PreviewTab = typeof TABS[number];
@@ -44,6 +46,7 @@ const TAB_LABELS: Record<PreviewTab, string> = {
   'design-system': 'Design System',
   'colors': 'Colors',
   'fretboard': 'Fretboard',
+  'sound': 'Sound',
 };
 
 const STORAGE_KEY = 'preview_active_tab';
@@ -120,6 +123,7 @@ function PreviewApp() {
         {activeTab === 'design-system' && <DesignSystemTab tabId={activeTab} />}
         {activeTab === 'colors' && <ColorsTab tabId={activeTab} />}
         {activeTab === 'fretboard' && <FretboardTab tabId={activeTab} />}
+        {activeTab === 'sound' && <SoundTab tabId={activeTab} />}
       </div>
     </CommentProvider>
   );

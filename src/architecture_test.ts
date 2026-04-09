@@ -117,6 +117,7 @@ const FOUNDATION = new Set([
   'src/effort.ts',
   'src/storage.ts',
   'src/updater.ts',
+  'src/note-sound.ts',
 ]);
 
 const ENGINE = new Set([
