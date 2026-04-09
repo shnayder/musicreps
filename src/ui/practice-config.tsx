@@ -35,7 +35,7 @@ export function SkillHeader(
         {onBack && <CloseButton ariaLabel='Back to home' onClick={onBack} />}
         <div class='skill-header-title'>
           {modeId && <SkillIcon modeId={modeId} />}
-          <h1 class='mode-title'>{title}</h1>
+          <Text role='heading-page' as='h1' class='mode-title'>{title}</Text>
         </div>
         {totalReps != null && (
           <span class='skill-header-reps'>
