@@ -1298,8 +1298,11 @@ body {
 .about-tab {
   padding: var(--gap-group) 0;
 }
+.about-tab > .text-heading-section {
+  margin-bottom: var(--gap-group);
+}
 .about-description {
-  margin: var(--gap-group) 0 0;
+  margin: 0;
 }
 .about-tab-tip {
   margin: var(--gap-section) 0 0;
@@ -1348,6 +1351,16 @@ body {
 /* ==========================================================================
    5. PRACTICE CARD
    ========================================================================== */
+.practice-intro {
+  padding: var(--gap-group) var(--pad-region) 0;
+}
+.practice-intro > .text-heading-section {
+  margin-bottom: var(--gap-group);
+}
+.practice-intro-description {
+  margin-bottom: var(--gap-group);
+  /* font-style: italic; */
+}
 .practice-card {
   margin-bottom: var(--pad-component);
   padding: var(--pad-component) var(--pad-region);
@@ -1384,7 +1397,7 @@ body {
 }
 .practice-status-label {
   font-weight: var(--font-semibold);
-  font-size: var(--text-sm);
+  font-size: var(--type-label-size);
   color: var(--color-text);
 }
 .practice-status-detail {
@@ -1541,11 +1554,12 @@ body {
 }
 .suggestion-line {
   font-size: var(--text-sm);
-  color: var(--color-brand);
+  color: var(--color-text);
   line-height: var(--leading-normal);
 }
 .suggestion-verb {
   font-weight: var(--font-semibold);
+  color: var(--color-notice);
 }
 
 /* --- Level toggles (custom mode) --- */
@@ -1568,16 +1582,15 @@ body {
 .level-toggle-btn {
   min-width: 3.5rem;
   text-align: center;
-  height: 36px;
+  padding: var(--gap-related) var(--gap-group);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-card);
   color: var(--color-brand);
-  font-size: var(--type-control-size);
+  font-size: var(--text-sm);
   font-weight: var(--type-control-weight);
   line-height: var(--type-control-leading);
   cursor: pointer;
-  padding: 0 0.5rem;
   margin: 0;
   transition:
     background var(--duration-base) ease,

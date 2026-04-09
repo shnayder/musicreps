@@ -599,6 +599,7 @@ export function PracticeTab(
     validationMessage,
     aboutContent,
     practiceContent,
+    practiceIntro,
     progressExtra,
     startLabel,
   }: {
@@ -618,6 +619,8 @@ export function PracticeTab(
     aboutContent?: ComponentChildren;
     /** If provided, replaces the default PracticeCard in the practice tab. */
     practiceContent?: ComponentChildren;
+    /** Intro section rendered above practice content (description + before/after). */
+    practiceIntro?: ComponentChildren;
     /** Extra content inserted above baseline in the progress tab. */
     progressExtra?: ComponentChildren;
     /** Custom label for the start button (e.g. "Practice (32 items)"). */
@@ -634,12 +637,17 @@ export function PracticeTab(
           <span class='tab-icon-text'>Practice</span>
         </span>
       ),
-      content: practiceContent ?? (
-        <PracticeCard
-          summary={summary}
-          onApplyRecommendation={onApplyRecommendation}
-          scope={scope}
-        />
+      content: (
+        <>
+          {practiceIntro}
+          {practiceContent ?? (
+            <PracticeCard
+              summary={summary}
+              onApplyRecommendation={onApplyRecommendation}
+              scope={scope}
+            />
+          )}
+        </>
       ),
     },
     {

@@ -901,7 +901,7 @@ function IdlePracticeView<Q>(
         ? groupScopeResult.applyRecommendation
         : undefined}
       scopeValid={!groupScopeResult || groupScopeResult.enabledGroups.size > 0}
-      validationMessage='Select at least one group'
+      validationMessage='Select at least one level'
       startLabel={customItemCount != null
         ? `Practice (${customItemCount} ${
           customItemCount === 1 ? 'item' : 'items'
@@ -916,6 +916,9 @@ function IdlePracticeView<Q>(
         )
         : (
           <div class='practice-config'>
+            <Text role='heading-section' as='div' class='practice-config-label'>
+              Recommendation
+            </Text>
             <SuggestionLines
               lines={[singleLevelSuggestion(learner.selector, def.allItems)]}
             />
@@ -965,11 +968,14 @@ function IdlePracticeView<Q>(
       onCalibrate={onCalibrate}
       activeTab={ps.activeTab}
       onTabSwitch={ps.setActiveTab}
-      aboutContent={
-        <AboutTab
-          description={def.aboutDescription ?? def.description}
+      practiceIntro={
+        <PracticeIntro
+          description={def.description}
           beforeAfter={def.beforeAfter}
         />
+      }
+      aboutContent={
+        <AboutTab description={def.aboutDescription ?? def.description} />
       }
     />
   );
@@ -979,7 +985,7 @@ function IdlePracticeView<Q>(
 // AboutTab — before/after contrast and future mode-specific info
 // ---------------------------------------------------------------------------
 
-function AboutTab(
+function PracticeIntro(
   { description, beforeAfter }: {
     description: string;
     beforeAfter: {
@@ -996,10 +1002,14 @@ function AboutTab(
     : beforeAfter.after;
 
   return (
-    <div class='about-tab'>
+    <div class='practice-intro'>
+      <Text role='heading-section' as='h2'>What you're automating</Text>
+      <Text role='body-secondary' as='p' class='practice-intro-description'>
+        {description}
+      </Text>
       <div class='about-columns'>
         <div class='about-col about-col-before'>
-          <Text role='heading-section' as='div' class='about-col-header'>
+          <Text role='heading-subsection' as='div' class='about-col-header'>
             Before
           </Text>
           {beforeLines.map((line, i) => (
@@ -1007,12 +1017,20 @@ function AboutTab(
           ))}
         </div>
         <div class='about-col about-col-after'>
-          <Text role='heading-section' as='div' class='about-col-header'>
+          <Text role='heading-subsection' as='div' class='about-col-header'>
             After
           </Text>
           <p class='about-col-text'>{after}</p>
         </div>
       </div>
+    </div>
+  );
+}
+
+function AboutTab({ description }: { description: string }) {
+  return (
+    <div class='about-tab'>
+      <Text role='heading-section' as='h2'>Why automate this?</Text>
       <Text role='body' as='p' class='about-description'>
         {description}
       </Text>
