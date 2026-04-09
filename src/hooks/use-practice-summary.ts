@@ -23,7 +23,7 @@ export type PracticeSummaryHandle = {
   summary: PracticeSummaryState;
   activeTab: ModeTab;
   setActiveTab: (tab: ModeTab) => void;
-  /** Reset tab for mode activation: about on first visit, practice after. */
+  /** Reset tab to practice when mode is activated. */
   resetTabForActivation: () => void;
   statsSel: StatsViewSelector;
 };
@@ -39,7 +39,6 @@ export type PracticeSummaryHandle = {
  * @param recommendationText Precomputed recommendation text.
  */
 export function usePracticeSummary(opts: {
-  modeId: string;
   allItems: string[];
   selector: AdaptiveSelector;
   engine: QuizEngineHandle;

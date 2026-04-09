@@ -982,7 +982,8 @@ function IdlePracticeView<Q>(
 }
 
 // ---------------------------------------------------------------------------
-// AboutTab — before/after contrast and future mode-specific info
+// PracticeIntro — description + before/after contrast
+// AboutTab — mode description + call-to-action
 // ---------------------------------------------------------------------------
 
 function PracticeIntro(
@@ -1223,7 +1224,6 @@ function useGenericDerivedState<Q>(
   usePhaseClass(container, presentationPhase, PHASE_FOCUS_TARGETS);
   const round = useRoundSummary(engine);
   const ps = usePracticeSummary({
-    modeId: def.id,
     allItems: def.allItems,
     selector: learner.selector,
     engine,

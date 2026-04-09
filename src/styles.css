@@ -1358,7 +1358,6 @@ body {
 }
 .practice-intro-description {
   margin-bottom: var(--gap-group);
-  /* font-style: italic; */
 }
 .practice-card {
   margin-bottom: var(--pad-component);

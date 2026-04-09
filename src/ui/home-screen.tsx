@@ -314,8 +314,7 @@ function ActiveSkillsList(
           Active Skills
         </Text>
         <p class='active-skills-empty'>
-          Star the skills you want to automate in{' '}
-          <strong>All Skills</strong>.
+          Star the skills you want to automate in <strong>All Skills</strong>.
         </p>
       </div>
     );

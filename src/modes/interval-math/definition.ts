@@ -61,7 +61,7 @@ export const INTERVAL_MATH_DEF: ModeDefinition<Question> = {
       const labels = DISTANCE_GROUPS
         .filter((g) => groups.has(g.id))
         .map((g) => g.label);
-      return labels.join(', ') + ' intervals';
+      return labels.join(', ');
     },
   },
 
