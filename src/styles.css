@@ -1793,10 +1793,6 @@ button {
   background: var(--color-notice);
 }
 .quiz-info-time {
-  font-size: var(--type-metric-info-size);
-  font-weight: var(--type-metric-info-weight);
-  line-height: var(--type-metric-info-leading);
-  color: var(--type-metric-info-color);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1806,10 +1802,6 @@ button {
   align-items: center;
   gap: 0.3em;
   font-variant-numeric: tabular-nums;
-  font-size: var(--type-metric-effort-size);
-  font-weight: var(--type-metric-effort-weight);
-  line-height: var(--type-metric-effort-leading);
-  color: var(--type-metric-effort-color);
   white-space: nowrap;
   flex-shrink: 0;
 }

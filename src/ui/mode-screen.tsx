@@ -377,12 +377,14 @@ export function QuizSession(
             style={{ width: `${timerPct ?? 100}%` }}
           />
         </div>
-        <span class='quiz-info-time'>{timeLeft || ''}</span>
+        <Text role='metric-info' as='span' class='quiz-info-time'>
+          {timeLeft || ''}
+        </Text>
         {count && (
-          <span class='quiz-info-count'>
+          <Text role='metric-effort' as='span' class='quiz-info-count'>
             {count}
             <RepeatMark size={13} class='quiz-info-count-icon' />
-          </span>
+          </Text>
         )}
       </div>
     </div>
