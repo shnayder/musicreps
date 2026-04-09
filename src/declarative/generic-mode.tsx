@@ -922,7 +922,7 @@ function IdlePracticeView<Q>(
           </div>
         )}
       statsHeading={hasStats
-        ? <Text role='heading-section'>Item details</Text>
+        ? <Text role='heading-section'>Speed by item</Text>
         : undefined}
       statsContent={
         <>

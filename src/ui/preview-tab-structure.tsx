@@ -113,7 +113,7 @@ function IdleBasicComponents(
         <PracticeCard
           statusLabel='Strong'
           statusDetail='12 of 14 automatic'
-          recommendation='start A string — 5 new items'
+          recommendation='start A string'
           onApplyRecommendation={() => {}}
         />
       </Section>

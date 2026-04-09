@@ -213,7 +213,7 @@ describe('buildRecommendationText', () => {
       levelRecs: [{ groupId: '2', type: 'expand' }],
     };
     const text = buildRecommendationText(result, label);
-    assert.equal(text, 'start Group 2 \u2014 8 new items');
+    assert.equal(text, 'start Group 2');
   });
 
   it('builds automate text', () => {
@@ -248,8 +248,7 @@ describe('buildRecommendationText', () => {
     assert.ok(text.includes('practice Group 1'));
     assert.ok(text.includes('start Group 2'));
     assert.ok(text.includes('naturals first'));
-    assert.ok(text.includes('1 new item')); // singular
-    assert.ok(!text.includes('1 new items')); // not plural
+    assert.ok(!text.includes('new item')); // no item count suffix
   });
 
   it('deduplicates groups across rec types (highest priority wins)', () => {
@@ -270,7 +269,7 @@ describe('buildRecommendationText', () => {
     assert.equal(text, 'review Group 0, Group 1');
   });
 
-  it('uses singular for 1 new item', () => {
+  it('expand text has no item count suffix', () => {
     const result: RecommendationResult = {
       recommended: new Set(['0']),
       enabled: null,
@@ -279,8 +278,7 @@ describe('buildRecommendationText', () => {
       levelRecs: [{ groupId: '0', type: 'expand' }],
     };
     const text = buildRecommendationText(result, label);
-    assert.ok(text.includes('1 new item'));
-    assert.ok(!text.includes('1 new items'));
+    assert.equal(text, 'start Group 0');
   });
 });
 

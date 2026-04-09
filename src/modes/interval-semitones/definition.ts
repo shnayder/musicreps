@@ -58,7 +58,7 @@ export const INTERVAL_SEMITONES_DEF: ModeDefinition<Question> = {
   stats: {
     kind: 'table',
     getRows: getStatsRows,
-    fwdHeader: 'I\u2192#',
-    revHeader: '#\u2192I',
+    fwdHeader: 'Interval\u2192Number',
+    revHeader: 'Number\u2192Interval',
   },
 };

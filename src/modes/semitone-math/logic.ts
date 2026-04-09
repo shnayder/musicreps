@@ -22,31 +22,31 @@ export const DISTANCE_GROUPS = [
   {
     id: 'dist-1-2',
     distances: [1, 2],
-    label: '\u00B11\u20132',
+    label: '1\u20132 semitones',
     longLabel: '1\u20132 semitones apart',
   },
   {
     id: 'dist-3-4',
     distances: [3, 4],
-    label: '\u00B13\u20134',
+    label: '3\u20134 semitones',
     longLabel: '3\u20134 semitones apart',
   },
   {
     id: 'dist-5-6',
     distances: [5, 6],
-    label: '\u00B15\u20136',
+    label: '5\u20136 semitones',
     longLabel: '5\u20136 semitones apart',
   },
   {
     id: 'dist-7-8',
     distances: [7, 8],
-    label: '\u00B17\u20138',
+    label: '7\u20138 semitones',
     longLabel: '7\u20138 semitones apart',
   },
   {
     id: 'dist-9-11',
     distances: [9, 10, 11],
-    label: '\u00B19\u201311',
+    label: '9\u201311 semitones',
     longLabel: '9\u201311 semitones apart',
   },
 ];

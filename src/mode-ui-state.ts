@@ -85,11 +85,9 @@ export function buildRecommendationLines(
     lines.push({ verb: 'Practice', levels: labels });
   }
   if (byType['expand'] && result.expandIndex !== null) {
-    const suffix = ' \u2014 ' + result.expandNewCount + ' new item' +
-      (result.expandNewCount !== 1 ? 's' : '');
     lines.push({
       verb: 'Start',
-      levels: [getGroupLabel(result.expandIndex) + suffix],
+      levels: [getGroupLabel(result.expandIndex)],
     });
   }
   if (byType['automate']) {

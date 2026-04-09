@@ -28,31 +28,31 @@ export const DISTANCE_GROUPS = [
   {
     id: 'seconds',
     distances: [1, 2],
-    label: 'm2 M2',
+    label: 'Seconds (m2, M2)',
     longLabel: 'Seconds (m2, M2)',
   },
   {
     id: 'thirds',
     distances: [3, 4],
-    label: 'm3 M3',
+    label: 'Thirds (m3, M3)',
     longLabel: 'Thirds (m3, M3)',
   },
   {
     id: 'fourth-tritone',
     distances: [5, 6],
-    label: 'P4 TT',
+    label: 'Fourth & tritone (P4, TT)',
     longLabel: 'Fourth & tritone (P4, TT)',
   },
   {
     id: 'fifth-sixth',
     distances: [7, 8],
-    label: 'P5 m6',
+    label: 'Fifth & minor 6th (P5, m6)',
     longLabel: 'Fifth & minor 6th (P5, m6)',
   },
   {
     id: 'sixths-sevenths',
     distances: [9, 10, 11],
-    label: 'M6 m7 M7',
+    label: 'Sixths & sevenths (M6, m7, M7)',
     longLabel: 'Sixths & sevenths (M6, m7, M7)',
   },
 ];
