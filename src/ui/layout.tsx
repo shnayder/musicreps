@@ -67,9 +67,9 @@ export function Section(
 ) {
   const cls = 'section-block' + (extra ? ' ' + extra : '');
   return (
-    <div class={cls}>
+    <section class={cls}>
       <Text role={headingRole} as='h2'>{heading}</Text>
       {children}
-    </div>
+    </section>
   );
 }

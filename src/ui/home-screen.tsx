@@ -33,6 +33,7 @@ import {
   LayoutMain,
   ScreenLayout,
 } from './screen-layout.tsx';
+import { Section, Stack } from './layout.tsx';
 import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
@@ -433,10 +434,7 @@ function SettingsAboutLegal(
 ) {
   return (
     <>
-      <section class='settings-section'>
-        <Text role='heading-section' as='h2' class='section-heading'>
-          About
-        </Text>
+      <Section heading='About'>
         <div class='settings-link-list'>
           {appConfig.contactEmail && (
             <a class='text-link' href={`mailto:${appConfig.contactEmail}`}>
@@ -455,12 +453,9 @@ function SettingsAboutLegal(
           )}
           <span class='settings-meta'>Build {version}</span>
         </div>
-      </section>
+      </Section>
 
-      <section class='settings-section'>
-        <Text role='heading-section' as='h2' class='section-heading'>
-          Legal
-        </Text>
+      <Section heading='Legal'>
         <div class='settings-link-list'>
           {appConfig.termsUrl && (
             <a
@@ -483,7 +478,7 @@ function SettingsAboutLegal(
             </a>
           )}
         </div>
-      </section>
+      </Section>
     </>
   );
 }
@@ -503,11 +498,8 @@ export function SettingsPanel(
   },
 ) {
   return (
-    <div class='settings-page'>
-      <section class='settings-section'>
-        <Text role='heading-section' as='h2' class='section-heading'>
-          General
-        </Text>
+    <Stack gap='component' class='settings-page'>
+      <Section heading='General'>
         <SettingToggle
           label='Note names'
           options={[
@@ -521,23 +513,20 @@ export function SettingsPanel(
             setUseSolfege(sol);
           }}
         />
-      </section>
+      </Section>
 
       <SettingsAboutLegal appConfig={appConfig} version={version} />
 
       {onOpenDev && (
-        <section class='settings-section'>
-          <Text role='heading-section' as='h2' class='section-heading'>
-            Developer
-          </Text>
+        <Section heading='Developer'>
           <div class='settings-link-list'>
             <button type='button' class='text-link' onClick={onOpenDev}>
               Dev panel
             </button>
           </div>
-        </section>
+        </Section>
       )}
-    </div>
+    </Stack>
   );
 }
 
@@ -548,7 +537,7 @@ export function SettingsPanel(
 function DevPage({ onClose }: { onClose: () => void }) {
   const [data] = useState<DevPanelData>(getDevPanelData);
   return (
-    <div class='settings-page'>
+    <Stack gap='component' class='settings-page'>
       <div class='settings-page-header'>
         <CloseButton ariaLabel='Close' onClick={onClose} />
         <Text role='heading-page' as='h1' class='page-heading'>Dev</Text>
@@ -578,21 +567,14 @@ function DevPage({ onClose }: { onClose: () => void }) {
           />
         </DevSection>
       )}
-    </div>
+    </Stack>
   );
 }
 
 function DevSection(
   { title, children }: { title: string; children: ComponentChildren },
 ) {
-  return (
-    <section class='settings-section'>
-      <Text role='heading-section' as='h2' class='section-heading'>
-        {title}
-      </Text>
-      {children}
-    </section>
-  );
+  return <Section heading={title}>{children}</Section>;
 }
 
 function DevStatRow({ label, value }: { label: string; value: number }) {
@@ -751,11 +733,8 @@ function HomeHeader(
 
 function HomeAboutTab() {
   return (
-    <div class='settings-page'>
-      <section class='settings-section'>
-        <Text role='heading-section' as='h2' class='section-heading'>
-          What is Music Reps?
-        </Text>
+    <Stack gap='component' class='settings-page'>
+      <Section heading='What is Music Reps?'>
         <Text role='body' as='p'>
           Music Reps trains instant recall of music fundamentals, closing the
           gap between{' '}
@@ -768,12 +747,9 @@ function HomeAboutTab() {
           figuring out what key has 4 flats, or listing the notes in an Em7
           chord. Doing reps makes them automatic, so you can focus on playing.
         </Text>
-      </section>
+      </Section>
 
-      <section class='settings-section'>
-        <Text role='heading-section' as='h2' class='section-heading'>
-          How it works
-        </Text>
+      <Section heading='How it works'>
         <ul class='home-about-list'>
           <li>
             <strong>Fast drills, many reps.</strong>{' '}
@@ -801,12 +777,9 @@ function HomeAboutTab() {
             a day, over months and years.
           </li>
         </ul>
-      </section>
+      </Section>
 
-      <section class='settings-section'>
-        <Text role='heading-section' as='h2' class='section-heading'>
-          Getting started
-        </Text>
+      <Section heading='Getting started'>
         <ul class='home-about-list'>
           <li>
             Browse <strong>All Skills</strong>{' '}
@@ -821,8 +794,8 @@ function HomeAboutTab() {
             <strong>Progress</strong> tab.
           </li>
         </ul>
-      </section>
-    </div>
+      </Section>
+    </Stack>
   );
 }
 
