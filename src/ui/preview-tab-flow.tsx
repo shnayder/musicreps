@@ -8,7 +8,6 @@ import {
 import { NoteButtons } from './buttons.tsx';
 import type { StatsSelector } from './stats.tsx';
 import { StatsGrid, StatsLegend } from './stats.tsx';
-import { GroupProgressToggles } from './scope.tsx';
 import { FeedbackDisplay } from './quiz-ui.tsx';
 import {
   ModeTopBar,
@@ -22,7 +21,6 @@ import {
 import { SkillCard } from './home-screen.tsx';
 import {
   FretboardPreview,
-  type GroupSel,
   PreviewModeScreen,
   Section,
 } from './preview-shared.tsx';
@@ -32,9 +30,8 @@ import {
 // ---------------------------------------------------------------------------
 
 function FlowIdleSection(
-  { sel, groupSel, tabId }: {
+  { sel, tabId }: {
     sel: StatsSelector;
-    groupSel: GroupSel;
     tabId: string;
   },
 ) {
@@ -78,20 +75,6 @@ function FlowIdleSection(
                   statusDetail='8 of 24 automatic'
                   recommendation='start 3–4 semitones'
                   onApplyRecommendation={() => {}}
-                  scope={
-                    <GroupProgressToggles
-                      groups={[
-                        { label: '±1–2', itemIds: ['C+1', 'C+2', 'C+3'] },
-                        { label: '±3–4', itemIds: ['C+4', 'C+5', 'C+6'] },
-                        { label: '±5–6', itemIds: ['D+1', 'D+2', 'D+3'] },
-                      ]}
-                      active={new Set([0, 1])}
-                      onToggle={() => {}}
-                      selector={groupSel}
-                      onSkip={() => {}}
-                      onUnskip={() => {}}
-                    />
-                  }
                 />
               ),
             },
@@ -285,9 +268,8 @@ function FlowResultsSection(
 // ---------------------------------------------------------------------------
 
 export function FlowTab(
-  { sel, groupSel, tabId }: {
+  { sel, tabId }: {
     sel: StatsSelector;
-    groupSel: GroupSel;
     tabId: string;
   },
 ) {
@@ -298,7 +280,7 @@ export function FlowTab(
         <code>--hue-*</code>{' '}
         value and reload to see the effect across all states.
       </p>
-      <FlowIdleSection sel={sel} groupSel={groupSel} tabId={tabId} />
+      <FlowIdleSection sel={sel} tabId={tabId} />
       <FlowQuizStates tabId={tabId} />
       <FlowResultsSection sel={sel} tabId={tabId} />
     </div>

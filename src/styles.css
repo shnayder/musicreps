@@ -5,7 +5,7 @@
  *
  *   1. TOKENS ................. Custom properties (:root)
  *   2. BASE ................... Body, reset, scrollbar
- *   2c. LAYOUT PRIMITIVES ...... Stack, Card, Well, Section, toggle base
+ *   2c. LAYOUT PRIMITIVES ...... Stack, Card, Well, Section
  *   3. HOME SCREEN ........... Title, tabs, skill cards, tracks, footer
  *   4. MODE CHROME ........... Top bar, close buttons, tabs, settings
  *   5. PRACTICE CARD ......... Status, scope, suggestion, action zone
@@ -587,7 +587,7 @@ body {
 }
 
 /* ==========================================================================
-   2c. LAYOUT PRIMITIVES — Stack, Card, Well, Section
+   2c. LAYOUT PRIMITIVES — Stack, Card, Well, Section, before-after grid
    Composable building blocks that own spacing and containment.
    ========================================================================== */
 
@@ -639,40 +639,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--gap-related);
-}
-
-/* --- Toggle base: shared structure for all filter toggles --- */
-.toggle-btn {
-  height: 36px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-border);
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-  transition:
-    background var(--duration-base) ease,
-    color var(--duration-base) ease,
-    border-color var(--duration-base) ease;
-}
-.toggle-btn:hover {
-  background: var(--color-surface-hover);
-}
-.toggle-btn.active {
-  background: var(--color-toggle-active);
-  color: var(--color-on-brand);
-  border-color: var(--color-toggle-active);
-}
-/* Focus ring: inset outline, white on active (green) background */
-.toggle-btn:focus-visible {
-  outline-offset: -2px;
-}
-.toggle-btn.active:focus-visible {
-  outline-color: white;
 }
 
 /* --- Before/after grid: 3-column comparison layout --- */
@@ -1739,46 +1705,6 @@ body {
   flex: 1;
   min-height: 0;
 }
-.string-toggles {
-  display: flex;
-  flex-direction: row;
-  gap: var(--gap-micro);
-  justify-content: flex-start;
-}
-/* Toggle variants: only unique overrides — base styles from .toggle-btn */
-.string-toggle {
-  width: 36px;
-}
-.distance-toggles {
-  display: flex;
-  flex-direction: row;
-  gap: var(--gap-micro);
-  justify-content: flex-start;
-}
-.distance-toggle {
-  padding: 0 0.4rem;
-}
-
-/* --- Group progress toggles (vertical list with bars) --- */
-.group-progress-toggles {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--gap-related) var(--gap-group);
-  align-items: center;
-  padding: 0 var(--pad-component);
-}
-.group-progress-toggles.has-skip {
-  grid-template-columns: auto 1fr auto;
-}
-.group-progress-toggles .distance-toggle {
-  height: 28px;
-  font-size: var(--text-sm);
-  padding: 0 var(--gap-group);
-}
-.group-progress-toggles .distance-toggle.skipped {
-  opacity: var(--opacity-dimmed);
-  text-decoration: line-through;
-}
 .group-progress-bar {
   display: flex;
   height: 8px;
@@ -1792,76 +1718,6 @@ body {
 .group-bar-slice {
   flex: 1;
   min-width: 0;
-}
-.group-skip-btn {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  color: var(--type-control-color);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.group-skip-btn:hover,
-.group-skip-btn.open {
-  background: var(--color-surface-hover);
-  color: var(--color-text);
-}
-.group-skip-menu-wrap {
-  position: relative;
-}
-.group-skip-menu {
-  position: absolute;
-  right: -1px;
-  top: calc(100% + 2px);
-  z-index: var(--z-popover);
-  background: var(--color-overlay-surface);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  padding: var(--gap-micro) 0;
-  min-width: 140px;
-  white-space: nowrap;
-  overflow: hidden;
-}
-.group-skip-menu button {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-related);
-  width: 100%;
-  padding: var(--gap-related) var(--gap-group);
-  border: none;
-  background: transparent;
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  color: var(--color-text);
-  cursor: pointer;
-  text-align: left;
-}
-.group-skip-menu button:hover {
-  background: var(--color-surface-hover);
-}
-.group-skip-menu .menu-check {
-  width: 16px;
-  text-align: center;
-}
-
-.notes-toggles {
-  display: flex;
-  flex-direction: row;
-  gap: var(--gap-micro);
-  justify-content: flex-start;
-}
-.notes-toggle {
-  padding: 0 0.6rem;
 }
 .fretboard-container {
   position: relative;
@@ -2755,21 +2611,6 @@ button {
   color: var(--color-text-muted);
   cursor: pointer;
 }
-.toggle-group {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--gap-group);
-}
-.toggle-group-label {
-  font-size: var(--type-label-size);
-  font-weight: var(--type-label-weight);
-  line-height: var(--type-label-leading);
-  color: var(--type-label-color);
-  flex-shrink: 0;
-  min-width: 3.5rem;
-}
-
 /* --- Stats tables (lookup modes) --- */
 .stats-container {
   text-align: center;
@@ -2968,8 +2809,6 @@ button {
 .home-mode-btn:focus-visible {
   outline-offset: -2px;
 }
-
-/* Toggle buttons: focus-visible handled by .toggle-btn base */
 
 /* Answer buttons */
 .answer-btn:focus-visible {

@@ -4,7 +4,6 @@ import { goodRound, roughRound } from '../fixtures/index.ts';
 import { NoteButtons } from './buttons.tsx';
 import type { StatsSelector } from './stats.tsx';
 import { StatsGrid } from './stats.tsx';
-import { GroupProgressToggles } from './scope.tsx';
 import { FeedbackDisplay } from './quiz-ui.tsx';
 import {
   ModeScreen,
@@ -19,7 +18,7 @@ import {
 } from './mode-screen.tsx';
 import { Card, Section as LayoutSection, Stack } from './layout.tsx';
 import { Text } from './text.tsx';
-import { type GroupSel, PreviewGrid, Section } from './preview-shared.tsx';
+import { PreviewGrid, Section } from './preview-shared.tsx';
 
 // ---------------------------------------------------------------------------
 // File-local helpers
@@ -155,7 +154,7 @@ function QuizFlowComponents({ tabId }: { tabId: string }) {
 }
 
 function IdleBasicComponents(
-  { groupSel, tabId }: { groupSel: GroupSel; tabId: string },
+  { tabId }: { tabId: string },
 ) {
   return (
     <PreviewGrid>
@@ -180,28 +179,6 @@ function IdleBasicComponents(
           statusDetail='12 of 14 automatic'
           recommendation='start A string'
           onApplyRecommendation={() => {}}
-        />
-      </Section>
-      <Section title='PracticeCard (with group progress toggles)' tabId={tabId}>
-        <PracticeCard
-          statusLabel='Solid'
-          statusDetail='24 of 26 automatic'
-          recommendation='solidify +4 to +6 — 3 items to work on'
-          onApplyRecommendation={() => {}}
-          scope={
-            <GroupProgressToggles
-              groups={[
-                { label: '1–3', itemIds: ['C+1', 'C+2', 'C+3'] },
-                { label: '4–6', itemIds: ['C+4', 'C+5', 'C+6'] },
-                { label: '7–9', itemIds: ['D+1', 'D+2', 'D+3'] },
-              ]}
-              active={new Set([0, 1])}
-              onToggle={() => {}}
-              selector={groupSel}
-              onSkip={() => {}}
-              onUnskip={() => {}}
-            />
-          }
         />
       </Section>
     </PreviewGrid>
@@ -277,16 +254,15 @@ function IdleComposedComponents(
 }
 
 function IdleScreenComponents(
-  { sel, groupSel, tabId }: {
+  { sel, tabId }: {
     sel: StatsSelector;
-    groupSel: GroupSel;
     tabId: string;
   },
 ) {
   return (
     <>
       <h2>Idle Screen</h2>
-      <IdleBasicComponents groupSel={groupSel} tabId={tabId} />
+      <IdleBasicComponents tabId={tabId} />
       <IdleComposedComponents sel={sel} tabId={tabId} />
     </>
   );
@@ -297,9 +273,8 @@ function IdleScreenComponents(
 // ---------------------------------------------------------------------------
 
 export function StructureTab(
-  { sel, groupSel, tabId }: {
+  { sel, tabId }: {
     sel: StatsSelector;
-    groupSel: GroupSel;
     tabId: string;
   },
 ) {
@@ -307,7 +282,7 @@ export function StructureTab(
     <div>
       <LayoutPrimitives tabId={tabId} />
       <QuizFlowComponents tabId={tabId} />
-      <IdleScreenComponents sel={sel} groupSel={groupSel} tabId={tabId} />
+      <IdleScreenComponents sel={sel} tabId={tabId} />
     </div>
   );
 }
