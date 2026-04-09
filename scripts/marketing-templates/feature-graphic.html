@@ -1,132 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Marketing — Feature Graphic</title>
-<style>
-  /* Play Store feature graphic: 1024x500 landscape.
-     App branding + small phone mockup on the right. */
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing — Feature Graphic</title>
+    <style>
+      /* Play Store feature graphic: 1024x500 landscape.
+         App branding + small phone mockup on the right. */
 
-  @font-face {
-    font-family: 'Gabarito';
-    font-style: normal;
-    font-weight: 400 700;
-    font-display: swap;
-    src: url(../../src/Gabarito-latin.woff2) format('woff2');
-  }
-  @font-face {
-    font-family: 'Plus Jakarta Sans';
-    font-style: normal;
-    font-weight: 400 700;
-    font-display: swap;
-    src: url(../../src/PlusJakartaSans-latin.woff2) format('woff2');
-  }
+      @font-face {
+        font-family: 'Gabarito';
+        font-style: normal;
+        font-weight: 400 700;
+        font-display: swap;
+        src: url(../../src/Gabarito-latin.woff2) format('woff2');
+      }
+      @font-face {
+        font-family: 'Plus Jakarta Sans';
+        font-style: normal;
+        font-weight: 400 700;
+        font-display: swap;
+        src: url(../../src/PlusJakartaSans-latin.woff2) format('woff2');
+      }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-  :root {
-    --bg-color: #1a2f23;
-    --bg-gradient: linear-gradient(135deg, #2D4C3B 0%, #1a2f23 60%, #162618 100%);
-    --caption-color: #f5f0e8;
-    --subcaption-color: #b8c4b0;
-    --frame-color: #111;
-  }
+      :root {
+        --bg-color: #1a2f23;
+        --bg-gradient: linear-gradient(
+          135deg,
+          #2d4c3b 0%,
+          #1a2f23 60%,
+          #162618 100%
+        );
+        --caption-color: #f5f0e8;
+        --subcaption-color: #b8c4b0;
+        --frame-color: #111;
+      }
 
-  html, body {
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    background: var(--bg-gradient);
-    background-color: var(--bg-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+      html, body {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        font-family:
+          'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        background: var(--bg-gradient);
+        background-color: var(--bg-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-  .layout {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    padding: 0 6%;
-  }
+      .layout {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        padding: 0 6%;
+      }
 
-  /* --- Left: text --- */
-  .text-side {
-    flex: 1 1 55%;
-    display: flex;
-    flex-direction: column;
-    gap: 2vh;
-  }
+      /* --- Left: text --- */
+      .text-side {
+        flex: 1 1 55%;
+        display: flex;
+        flex-direction: column;
+        gap: 2vh;
+      }
 
-  .app-name {
-    font-family: 'Gabarito', system-ui, sans-serif;
-    font-size: 6vh;
-    font-weight: 700;
-    color: var(--caption-color);
-    letter-spacing: -0.02em;
-  }
+      .app-name {
+        font-family: 'Gabarito', system-ui, sans-serif;
+        font-size: 6vh;
+        font-weight: 700;
+        color: var(--caption-color);
+        letter-spacing: -0.02em;
+      }
 
-  .tagline {
-    font-size: 3.6vh;
-    font-weight: 400;
-    color: var(--subcaption-color);
-    line-height: 1.3;
-    max-width: 90%;
-  }
+      .tagline {
+        font-size: 3.6vh;
+        font-weight: 400;
+        color: var(--subcaption-color);
+        line-height: 1.3;
+        max-width: 90%;
+      }
 
-  /* --- Right: small phone mockup --- */
-  .phone-side {
-    flex: 0 0 30%;
-    height: 80%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+      /* --- Right: small phone mockup --- */
+      .phone-side {
+        flex: 0 0 30%;
+        height: 80%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-  .phone-body {
-    width: auto;
-    height: 100%;
-    aspect-ratio: 402 / 873;
-    background: var(--frame-color);
-    border-radius: 18px;
-    padding: 4px;
-    box-shadow:
-      0 0 0 1px rgba(255,255,255,0.08),
-      0 12px 40px rgba(0,0,0,0.4);
-  }
+      .phone-body {
+        width: auto;
+        height: 100%;
+        aspect-ratio: 402 / 873;
+        background: var(--frame-color);
+        border-radius: 18px;
+        padding: 4px;
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.08),
+          0 12px 40px rgba(0, 0, 0, 0.4);
+      }
 
-  .phone-screen {
-    width: 100%;
-    height: 100%;
-    border-radius: 15px;
-    overflow: hidden;
-    background: #000;
-  }
+      .phone-screen {
+        width: 100%;
+        height: 100%;
+        border-radius: 15px;
+        overflow: hidden;
+        background: #000;
+      }
 
-  .phone-screen img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-</style>
-</head>
-<body>
-  <div class="layout">
-    <div class="text-side">
-      <div class="app-name" id="caption">Music Reps</div>
-      <div class="tagline" id="subcaption">Make music fundamentals automatic</div>
-    </div>
-    <div class="phone-side">
-      <div class="phone-body">
-        <div class="phone-screen">
-          <img id="screenshot" src="" alt="App screenshot">
+      .phone-screen img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <div class="text-side">
+        <div class="app-name" id="caption">Music Reps</div>
+        <div class="tagline" id="subcaption">
+          Make music fundamentals automatic
+        </div>
+      </div>
+      <div class="phone-side">
+        <div class="phone-body">
+          <div class="phone-screen">
+            <img id="screenshot" src="" alt="App screenshot">
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>

@@ -58,7 +58,7 @@ export const MARKETING_ASSETS: MarketingAsset[] = [
     template: 'phone-single',
     formats: ['ios69', 'play'],
     screenshots: ['design-correct-feedback'],
-    caption: 'Train until it\'s automatic',
+    caption: "Train until it's automatic",
     subcaption: 'Adaptive drills that adjust to you',
   },
   {

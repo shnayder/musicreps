@@ -214,7 +214,11 @@ async function renderAssets(): Promise<void> {
         // Capture
         const outPath = path.join(outSubdir, `${asset.name}.png`);
         await page.screenshot({ path: outPath, type: 'png' });
-        console.log(`  ${FORMAT_DIR[format]}/${asset.name}.png  (${dims.width}×${dims.height})`);
+        console.log(
+          `  ${
+            FORMAT_DIR[format]
+          }/${asset.name}.png  (${dims.width}×${dims.height})`,
+        );
         totalRendered++;
 
         await context.close();
@@ -257,7 +261,9 @@ function generateIndex(): void {
     const files = readdirSync(dir).filter((f) => f.endsWith('.png')).sort();
     if (files.length === 0) continue;
 
-    html += `<h2>${store === 'ios' ? 'iOS App Store' : 'Google Play Store'}</h2>\n<div class="grid">\n`;
+    html += `<h2>${
+      store === 'ios' ? 'iOS App Store' : 'Google Play Store'
+    }</h2>\n<div class="grid">\n`;
     for (const file of files) {
       html += `<div class="card">
   <img src="${store}/${file}" alt="${file}">
