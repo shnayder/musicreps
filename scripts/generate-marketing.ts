@@ -15,10 +15,9 @@ import { chromium } from 'playwright';
 import { existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'fs';
 import { execSync } from 'child_process';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import {
   MARKETING_ASSETS,
-  requiredScreenshots,
   STORE_DIMENSIONS,
   type StoreFormat,
 } from './marketing-manifest.ts';
@@ -46,7 +45,15 @@ const forceRaw = args.includes('--force-raw');
 const preview = args.includes('--preview');
 const listMode = args.includes('--list');
 const onlyIdx = args.indexOf('--only');
-const onlyPattern = onlyIdx >= 0 ? args[onlyIdx + 1] : null;
+let onlyPattern: string | null = null;
+if (onlyIdx >= 0) {
+  const onlyValue = args[onlyIdx + 1];
+  if (!onlyValue || onlyValue.startsWith('--')) {
+    console.error('Error: --only requires a pattern argument.');
+    process.exit(1);
+  }
+  onlyPattern = onlyValue;
+}
 
 // ---------------------------------------------------------------------------
 // Filter assets
@@ -69,8 +76,17 @@ if (listMode) {
 // Pass 1: Capture raw screenshots
 // ---------------------------------------------------------------------------
 
+/** Screenshots needed by the current (possibly filtered) asset list. */
+function neededScreenshots(): string[] {
+  const set = new Set<string>();
+  for (const asset of assets) {
+    for (const s of asset.screenshots) set.add(s);
+  }
+  return [...set];
+}
+
 function captureRawScreenshots(): void {
-  const needed = requiredScreenshots();
+  const needed = neededScreenshots();
   if (!forceRaw && !skipRaw) {
     // Check if all needed screenshots already exist
     const allExist = needed.every((n) =>
@@ -122,14 +138,14 @@ async function renderAssets(): Promise<void> {
           TEMPLATES_DIR,
           `${asset.template}.html`,
         );
-        await page.goto(`file://${templatePath}`);
+        await page.goto(pathToFileURL(templatePath).href);
         await page.waitForLoadState('domcontentloaded');
 
         // Inject data
+        const rawDirUrl = pathToFileURL(RAW_DIR).href;
         await page.evaluate(
           (data: {
-            screenshots: string[];
-            rawDir: string;
+            screenshotUrls: string[];
             caption?: string;
             subcaption?: string;
             backgroundColor?: string;
@@ -144,22 +160,17 @@ async function renderAssets(): Promise<void> {
             }
 
             // Set screenshot src(s)
-            if (data.screenshots.length === 1) {
+            if (data.screenshotUrls.length === 1) {
               const img = document.getElementById(
                 'screenshot',
               ) as HTMLImageElement | null;
-              if (img) {
-                img.src = `file://${data.rawDir}/${data.screenshots[0]}.png`;
-              }
+              if (img) img.src = data.screenshotUrls[0];
             } else {
-              // Multi-screenshot templates use screenshot-0, screenshot-1, etc.
-              data.screenshots.forEach((name, i) => {
+              data.screenshotUrls.forEach((url, i) => {
                 const img = document.getElementById(
                   `screenshot-${i}`,
                 ) as HTMLImageElement | null;
-                if (img) {
-                  img.src = `file://${data.rawDir}/${name}.png`;
-                }
+                if (img) img.src = url;
               });
             }
 
@@ -177,8 +188,9 @@ async function renderAssets(): Promise<void> {
             }
           },
           {
-            screenshots: asset.screenshots,
-            rawDir: RAW_DIR,
+            screenshotUrls: asset.screenshots.map(
+              (name) => `${rawDirUrl}/${name}.png`,
+            ),
             caption: asset.caption,
             subcaption: asset.subcaption,
             backgroundColor: asset.backgroundColor,
@@ -193,8 +205,11 @@ async function renderAssets(): Promise<void> {
           );
         }, { timeout: 10_000 });
 
-        // Small delay for CSS rendering
-        await page.waitForTimeout(100);
+        // Wait for @font-face fonts to load
+        await page.waitForFunction(
+          () => document.fonts.status === 'loaded',
+          { timeout: 10_000 },
+        );
 
         // Capture
         const outPath = path.join(outSubdir, `${asset.name}.png`);
@@ -268,7 +283,7 @@ async function main(): Promise<void> {
   captureRawScreenshots();
 
   // Verify all raw screenshots exist before rendering
-  const missing = requiredScreenshots().filter(
+  const missing = neededScreenshots().filter(
     (n) => !existsSync(path.join(RAW_DIR, `${n}.png`)),
   );
   if (missing.length > 0) {
