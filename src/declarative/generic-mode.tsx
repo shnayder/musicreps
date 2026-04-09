@@ -1057,7 +1057,7 @@ function AboutTab({ description }: { description: string }) {
       <Text role='body' as='p' class='about-description'>
         {description}
       </Text>
-      <Text role='status' as='p' class='status-empty about-tab-tip'>
+      <Text role='status' as='p' class='text-hint about-tab-tip'>
         Start practicing on the{' '}
         <RepeatMark size={16} class='about-tab-tip-icon' /> tab below.
       </Text>

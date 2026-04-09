@@ -917,7 +917,7 @@ body {
   color: var(--color-star);
 }
 /* --- Active Skills tab content --- */
-/* hint text: use .status-empty on <Text role='status'> */
+/* hint text: use .text-hint on <Text role='status'> */
 /* --- Home About tab --- */
 .home-about-list {
   margin: 0;
@@ -1230,8 +1230,6 @@ body {
 }
 .tab-panel.active {
   display: block;
-}
-.panel-content {
   padding-top: var(--pad-component);
 }
 
@@ -1247,7 +1245,6 @@ body {
 }
 .about-tab-tip {
   margin: var(--gap-section) 0 0;
-  text-align: center;
 }
 .about-tab-tip-icon {
   vertical-align: -0.15em;
@@ -2278,9 +2275,10 @@ button {
 .status-notice {
   color: var(--color-notice);
 }
-.status-empty {
+.text-hint {
   color: var(--color-text-light);
   font-style: italic;
+  text-align: center;
 }
 
 /* -- Interactive roles -- */

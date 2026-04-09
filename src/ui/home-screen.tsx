@@ -310,13 +310,11 @@ function ActiveSkillsList(
 ) {
   if (starred.size === 0) {
     return (
-      <Stack gap='region' class='panel-content'>
-        <Stack gap='related'>
-          <Text role='heading-section' as='h2'>Active Skills</Text>
-          <Text role='status' as='p' class='status-empty'>
-            Star the skills you want to automate in <strong>All Skills</strong>.
-          </Text>
-        </Stack>
+      <Stack gap='group'>
+        <Text role='heading-section' as='h2'>Active Skills</Text>
+        <Text role='status' as='p' class='text-hint'>
+          Star the skills you want to automate in <strong>All Skills</strong>.
+        </Text>
       </Stack>
     );
   }
@@ -367,32 +365,28 @@ function ActiveSkillsList(
   const allDone = recommendations.length === 0 && starred.size > 0;
 
   return (
-    <Stack gap='region' class='panel-content'>
-      <Stack gap='related'>
-        <Text role='heading-section' as='h2'>Active Skills</Text>
-        {allDone && (
-          <p class='active-skills-done'>
-            All your starred skills are automatic. Nice work! Star new skills in
-            {' '}
-            <strong>All Skills</strong> to keep going.
-          </p>
-        )}
-      </Stack>
-      <Stack gap='group'>
-        {ordered.map(({ modeId, trackLabel, rec }) => (
-          <ActiveSkillCard
-            key={modeId}
-            modeId={modeId}
-            trackLabel={trackLabel}
-            onToggleStar={onToggleStar}
-            onSelectMode={onSelectMode}
-            progress={progress.get(modeId)}
-            rec={rec?.detail
-              ? { cueLabel: rec.cueLabel, detail: rec.detail }
-              : undefined}
-          />
-        ))}
-      </Stack>
+    <Stack gap='group'>
+      <Text role='heading-section' as='h2'>Active Skills</Text>
+      {allDone && (
+        <p class='active-skills-done'>
+          All your starred skills are automatic. Nice work! Star new skills in
+          {' '}
+          <strong>All Skills</strong> to keep going.
+        </p>
+      )}
+      {ordered.map(({ modeId, trackLabel, rec }) => (
+        <ActiveSkillCard
+          key={modeId}
+          modeId={modeId}
+          trackLabel={trackLabel}
+          onToggleStar={onToggleStar}
+          onSelectMode={onSelectMode}
+          progress={progress.get(modeId)}
+          rec={rec?.detail
+            ? { cueLabel: rec.cueLabel, detail: rec.detail }
+            : undefined}
+        />
+      ))}
     </Stack>
   );
 }
@@ -630,34 +624,30 @@ function AllSkillsList(
     },
 ) {
   return (
-    <Stack gap='related' class='panel-content'>
-      <Stack gap='related'>
-        <Text role='heading-section' as='h2'>All Skills</Text>
-        <Text role='status' as='p' class='status-empty'>
-          Star the skills you want to automate.
-        </Text>
-      </Stack>
-      <Stack gap='group'>
-        {TRACKS.map((track) => (
-          <TrackSection
-            key={track.id}
-            label={track.label}
-            isExpanded={accordion[track.id] !== false}
-            onToggle={() => onToggleExpand(track.id)}
-          >
-            {track.skills.map((modeId) => (
-              <SkillCard
-                key={modeId}
-                modeId={modeId}
-                isStarred={starred.has(modeId)}
-                onToggleStar={onToggleStar}
-                onSelectMode={onSelectMode}
-                progress={progress.get(modeId)}
-              />
-            ))}
-          </TrackSection>
-        ))}
-      </Stack>
+    <Stack gap='group'>
+      <Text role='heading-section' as='h2'>All Skills</Text>
+      <Text role='status' as='p' class='text-hint'>
+        Star the skills you want to automate.
+      </Text>
+      {TRACKS.map((track) => (
+        <TrackSection
+          key={track.id}
+          label={track.label}
+          isExpanded={accordion[track.id] !== false}
+          onToggle={() => onToggleExpand(track.id)}
+        >
+          {track.skills.map((modeId) => (
+            <SkillCard
+              key={modeId}
+              modeId={modeId}
+              isStarred={starred.has(modeId)}
+              onToggleStar={onToggleStar}
+              onSelectMode={onSelectMode}
+              progress={progress.get(modeId)}
+            />
+          ))}
+        </TrackSection>
+      ))}
     </Stack>
   );
 }
