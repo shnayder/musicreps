@@ -329,12 +329,6 @@ export function refreshNoteButtonLabels(container: HTMLElement): void {
       if (noteName) btn.textContent = displayNote(noteName);
     },
   );
-  container.querySelectorAll<HTMLButtonElement>('.string-toggle').forEach(
-    function (btn) {
-      const stringNote = btn.dataset.stringNote;
-      if (stringNote) btn.textContent = displayNote(stringNote);
-    },
-  );
 }
 
 // ---------------------------------------------------------------------------

@@ -437,7 +437,9 @@ export function SpeedCheck(
         <LayoutMain scrollable={false}>
           <QuizStage
             prompt={
-              <Text role='quiz-prompt' as='div'>{trials.promptText}</Text>
+              <Text role='quiz-prompt' as='div' class='quiz-prompt'>
+                {trials.promptText}
+              </Text>
             }
             response={
               <>

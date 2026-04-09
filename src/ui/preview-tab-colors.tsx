@@ -446,7 +446,7 @@ const COMPONENT_TOKENS: TokenMapping[] = [
     ],
   },
   {
-    component: 'Toggle (.string-toggle, .distance-toggle, etc.)',
+    component: 'Toggle (.level-toggle-btn)',
     tokens: ['--_bg', '--_text', '--_border'],
     states: [
       {
