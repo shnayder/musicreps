@@ -38,10 +38,10 @@ export function SkillHeader(
           <Text role='heading-page' as='h1' class='mode-title'>{title}</Text>
         </div>
         {totalReps != null && (
-          <span class='skill-header-reps'>
+          <Text role='metric-effort' as='span' class='skill-header-reps'>
             {totalReps.toLocaleString()}
             <RepeatMark size={18} class='skill-header-reps-icon' />
-          </span>
+          </Text>
         )}
       </div>
       {progressColors && progressColors.length > 0 && (

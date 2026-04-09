@@ -313,9 +313,9 @@ function SpeedCheckResults(
   return (
     <div class='calibration-results'>
       <Text role='heading-page' as='h2'>Speed Check Complete</Text>
-      <div class='calibration-baseline'>
+      <Text role='metric-primary' as='div' class='calibration-baseline'>
         {(baseline / 1000).toFixed(2)}s
-      </div>
+      </Text>
       <table class='calibration-thresholds'>
         <thead>
           <tr>

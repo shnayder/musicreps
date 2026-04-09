@@ -1366,10 +1366,6 @@ body {
   margin-bottom: var(--gap-group);
 }
 .suggestion-card-header {
-  font-family: var(--type-heading-subsection-family);
-  font-size: var(--type-heading-subsection-size);
-  font-weight: var(--type-heading-subsection-weight);
-  line-height: var(--type-heading-subsection-leading);
   color: var(--color-brand);
 }
 .suggestion-card-body {
@@ -1457,10 +1453,6 @@ body {
   display: flex;
   align-items: center;
   gap: 0.3em;
-  font-size: var(--type-metric-effort-size);
-  font-weight: var(--type-metric-effort-weight);
-  line-height: var(--type-metric-effort-leading);
-  color: var(--type-metric-effort-color);
   white-space: nowrap;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
@@ -2135,10 +2127,6 @@ button {
   margin: 0 auto;
 }
 .calibration-baseline {
-  font-size: var(--type-metric-primary-size);
-  font-weight: var(--type-metric-primary-weight);
-  line-height: var(--type-metric-primary-leading);
-  color: var(--type-metric-primary-color);
   font-variant-numeric: tabular-nums;
   margin: var(--gap-group) 0 var(--pad-region);
 }
