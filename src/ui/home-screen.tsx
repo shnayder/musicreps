@@ -126,8 +126,8 @@ export function SkillCardHeader(
       <SkillIcon modeId={modeId} />
       <span class='skill-card-header-text'>
         {trackLabel && <TrackPill label={trackLabel} />}
-        <span class='home-mode-name'>{name}</span>
-        <span class='home-mode-desc'>{desc}</span>
+        <Text role='heading-section' as='span'>{name}</Text>
+        <Text role='body-secondary' as='span'>{desc}</Text>
       </span>
     </span>
   );
@@ -259,7 +259,7 @@ function ActiveSkillCard(
         <span class='skill-card-header'>
           <SkillIcon modeId={modeId} />
           <span class='skill-card-header-text'>
-            <span class='home-mode-name'>{name}</span>
+            <Text role='heading-section' as='span'>{name}</Text>
             <TrackPill label={trackLabel} />
             {hasRec && (
               <span class='skill-rec-hint'>
@@ -716,26 +716,28 @@ function HomeHeader(
             <RepeatMark size={28} class='home-logo-mark' />
             Music Reps
           </h1>
-          <p class='home-tagline'>
+          <Text role='body-secondary' as='p' class='home-tagline'>
             Make music fundamentals automatic so you can focus on playing.
-          </p>
+          </Text>
         </>
       )}
       <div class='home-stats-bar'>
         <span class='home-stat'>
-          <span class='home-stat-value'>
+          <Text role='metric-effort' as='span'>
             {repsToday.toLocaleString()}
-          </span>
+          </Text>
           {' today'}
         </span>
         <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
         <span class='home-stat'>
-          <span class='home-stat-value'>{totalReps.toLocaleString()}</span>
+          <Text role='metric-effort' as='span'>
+            {totalReps.toLocaleString()}
+          </Text>
           {' total'}
         </span>
         <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
         <span class='home-stat'>
-          <span class='home-stat-value'>{daysActive}</span>
+          <Text role='metric-effort' as='span'>{daysActive}</Text>
           {daysActive === 1 ? ' day' : ' days'}
         </span>
       </div>

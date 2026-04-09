@@ -209,8 +209,12 @@ export function ModeTopBar(
         )}
         {modeId && <SkillIcon modeId={modeId} />}
         <div class='mode-top-bar-text'>
-          <h1 class='mode-title'>{title}</h1>
-          {description && <p class='mode-description'>{description}</p>}
+          <Text role='heading-page' as='h1' class='mode-title'>{title}</Text>
+          {description && (
+            <Text role='body-secondary' as='p' class='mode-description'>
+              {description}
+            </Text>
+          )}
         </div>
       </div>
     </div>
@@ -402,7 +406,7 @@ export function QuizArea(
         <div class='quiz-content'>
           {prompt && (
             <div class='quiz-prompt-row'>
-              <div class='quiz-prompt'>{prompt}</div>
+              <Text role='quiz-prompt' as='div'>{prompt}</Text>
             </div>
           )}
           {children}
@@ -436,17 +440,25 @@ export function RoundCompleteInfo(
 ) {
   return (
     <div class='round-complete'>
-      <div class='round-complete-heading'>{heading || ''}</div>
+      <Text role='heading-page' as='div' class='round-complete-heading'>
+        {heading || ''}
+      </Text>
       {count != null && (
         <>
-          <div class='round-complete-count'>{count}</div>
-          <div class='round-complete-count-label'>
+          <Text role='metric-hero' as='div'>{count}</Text>
+          <Text
+            role='body-secondary'
+            as='div'
+            class='round-complete-count-label'
+          >
             {count === 1 ? 'rep' : 'reps'}
-          </div>
+          </Text>
         </>
       )}
       <div class='round-complete-stats'>
-        <div class='round-stat-line round-stat-correct'>{correct || ''}</div>
+        <Text role='status' as='div' class='round-stat-correct'>
+          {correct || ''}
+        </Text>
       </div>
       {levelBars && levelBars.length > 0 && (
         <div class='round-complete-progress'>

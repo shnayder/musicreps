@@ -440,10 +440,18 @@ function SequentialQuizArea<Q>(
     <QuizStage
       prompt={
         <>
-          {instruction && <div class='quiz-instruction'>{instruction}</div>}
+          {instruction && (
+            <Text role='quiz-instruction' as='div' class='quiz-instruction'>
+              {instruction}
+            </Text>
+          )}
           {ctrl.renderPrompt && currentQ
             ? ctrl.renderPrompt(currentQ)
-            : <div class='quiz-prompt'>{promptText}</div>}
+            : (
+              <Text role='quiz-prompt' as='div' class='quiz-prompt'>
+                {promptText}
+              </Text>
+            )}
         </>
       }
       response={
@@ -493,8 +501,14 @@ function MultiTapQuizArea(
     <QuizStage
       prompt={
         <>
-          {instruction && <div class='quiz-instruction'>{instruction}</div>}
-          <div class='quiz-prompt'>{promptText}</div>
+          {instruction && (
+            <Text role='quiz-instruction' as='div' class='quiz-instruction'>
+              {instruction}
+            </Text>
+          )}
+          <Text role='quiz-prompt' as='div' class='quiz-prompt'>
+            {promptText}
+          </Text>
           <InteractiveFretboard
             onTap={multiTapInput.handleTap}
             tappedPositions={multiTapInput.tappedPositions}
@@ -548,10 +562,18 @@ function StandardQuizArea<Q>(
     <QuizStage
       prompt={
         <>
-          {instruction && <div class='quiz-instruction'>{instruction}</div>}
+          {instruction && (
+            <Text role='quiz-instruction' as='div' class='quiz-instruction'>
+              {instruction}
+            </Text>
+          )}
           {ctrl.renderPrompt && currentQ
             ? ctrl.renderPrompt(currentQ)
-            : <div class='quiz-prompt'>{promptText}</div>}
+            : (
+              <Text role='quiz-prompt' as='div' class='quiz-prompt'>
+                {promptText}
+              </Text>
+            )}
         </>
       }
       response={

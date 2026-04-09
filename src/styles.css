@@ -736,10 +736,6 @@ body {
   display: none;
 }
 .home-tagline {
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
   margin: var(--gap-group) 0 0;
 }
 /* On native apps, hide the title/tagline but keep the stats bar visible */
@@ -755,19 +751,12 @@ body {
   gap: var(--gap-group);
   margin-top: var(--gap-group);
   font-size: var(--type-status-size);
-  font-weight: var(--type-status-weight);
-  line-height: var(--type-status-leading);
   color: var(--type-status-color);
 }
 .home-header.native .home-stats-bar {
   margin-top: 0;
 }
-.home-stat-value {
-  font-size: var(--type-metric-effort-size);
-  font-weight: var(--type-metric-effort-weight);
-  line-height: var(--type-metric-effort-leading);
-  color: var(--type-metric-effort-color);
-}
+/* .home-stat-value: typography now via <Text role='metric-effort'> */
 .home-stat-sep {
   color: var(--color-text-muted);
 }
@@ -1121,19 +1110,7 @@ body {
 .skill-card-progress {
   margin-top: var(--gap-related);
 }
-.home-mode-name {
-  font-family: var(--type-heading-section-family);
-  font-size: var(--type-heading-section-size);
-  font-weight: var(--type-heading-section-weight);
-  line-height: var(--type-heading-section-leading);
-  color: var(--type-heading-section-color);
-}
-.home-mode-desc {
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
-}
+/* .home-mode-name and .home-mode-desc: typography now via <Text role> */
 .home-footer {
   display: flex;
   align-items: center;
@@ -1221,18 +1198,9 @@ body {
 }
 .mode-title {
   margin: 0;
-  font-family: var(--type-heading-page-family);
-  font-size: var(--type-heading-page-size);
-  font-weight: var(--type-heading-page-weight);
-  line-height: var(--type-heading-page-leading);
-  color: var(--type-heading-page-color);
 }
 .mode-description {
   margin: var(--gap-micro) 0 0;
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
 }
 .mode-before-after {
   display: grid;
@@ -2251,24 +2219,10 @@ button {
   text-align: center;
 }
 .round-complete-heading {
-  font-family: var(--type-heading-page-family);
-  font-size: var(--type-heading-page-size);
-  font-weight: var(--type-heading-page-weight);
-  line-height: var(--type-heading-page-leading);
-  color: var(--type-heading-page-color);
   margin-bottom: var(--pad-component);
 }
-.round-complete-count {
-  font-size: var(--type-metric-hero-size);
-  font-weight: var(--type-metric-hero-weight);
-  line-height: var(--type-metric-hero-leading);
-  color: var(--type-metric-hero-color);
-}
+/* .round-complete-count: typography now via <Text role='metric-hero'> */
 .round-complete-count-label {
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
   margin-bottom: var(--gap-group);
 }
 .round-complete-stats {
@@ -2285,12 +2239,7 @@ button {
   gap: var(--gap-group);
   text-align: left;
 }
-.round-stat-line {
-  font-size: var(--type-status-size);
-  font-weight: var(--type-status-weight);
-  line-height: var(--type-status-leading);
-  color: var(--type-status-color);
-}
+/* .round-stat-line: typography now via <Text role='status'> */
 /* ==========================================================================
    10. ANSWER BUTTONS
    ========================================================================== */
@@ -2342,18 +2291,9 @@ button {
   min-height: 2.5rem;
 }
 .quiz-instruction {
-  font-size: var(--type-quiz-instruction-size);
-  font-weight: var(--type-quiz-instruction-weight);
-  line-height: var(--type-quiz-instruction-leading);
-  color: var(--type-quiz-instruction-color);
   margin-bottom: var(--gap-group);
 }
-.quiz-prompt {
-  font-size: var(--type-quiz-prompt-size);
-  font-weight: var(--type-quiz-prompt-weight);
-  line-height: var(--type-quiz-prompt-leading);
-  color: var(--type-quiz-prompt-color);
-}
+/* .quiz-prompt: typography now via <Text role='quiz-prompt'> */
 .quiz-prompt:empty {
   display: none;
 }
