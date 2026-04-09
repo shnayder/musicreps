@@ -599,7 +599,7 @@ body {
 }
 .home-header {
   text-align: left;
-  padding: var(--gap-group) var(--size-content-inset) var(--pad-component);
+  padding: var(--gap-group) var(--size-content-inset);
   background: var(--color-chrome);
 }
 .home-title {
@@ -1062,7 +1062,6 @@ body {
    ========================================================================== */
 .mode-top-bar {
   padding: var(--gap-group) var(--size-content-inset);
-  margin-bottom: var(--gap-group);
   background: var(--color-chrome);
 }
 .mode-top-bar-row {
@@ -1296,7 +1295,7 @@ body {
 
 /* --- About tab --- */
 .about-tab {
-  padding: var(--gap-group) 0;
+  padding: 0;
 }
 .about-tab > .text-heading-section {
   margin-bottom: var(--gap-group);
@@ -1352,7 +1351,7 @@ body {
    5. PRACTICE CARD
    ========================================================================== */
 .practice-intro {
-  padding: var(--gap-group) var(--pad-region) 0;
+  padding: 0;
 }
 .practice-intro > .text-heading-section {
   margin-bottom: var(--gap-group);
@@ -1485,7 +1484,7 @@ body {
 
 /* --- Skill header: X (left) + icon+title (centered) + reps (right) --- */
 .skill-header {
-  padding: var(--pad-component) var(--size-content-inset) var(--gap-group);
+  padding: var(--gap-micro) var(--size-content-inset);
   background: var(--color-chrome);
 }
 .skill-header-row {
@@ -1529,7 +1528,8 @@ body {
 
 /* --- Practice config: suggested/custom toggle --- */
 .practice-config {
-  padding: var(--gap-group) var(--pad-region);
+  padding: 0;
+  margin-top: var(--pad-region);
   display: flex;
   flex-direction: column;
   gap: var(--gap-group);
