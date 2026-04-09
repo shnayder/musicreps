@@ -429,6 +429,11 @@
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
+/* Reset default margins on block elements used by Text/Section/Stack.
+   Spacing is owned by layout containers (gap), not by element defaults. */
+h1, h2, h3, p {
+  margin: 0;
+}
 html {
   font-size: 106.25%; /* 17px base — aligns with Apple HIG body size */
   background: var(--color-canvas);
@@ -692,7 +697,6 @@ body {
   font-weight: var(--type-display-brand-weight);
   line-height: var(--type-display-brand-leading);
   color: var(--type-display-brand-color);
-  margin: 0;
 }
 .home-logo-mark {
   color: var(--color-brand);
@@ -828,7 +832,6 @@ body {
   border: 1px solid var(--color-border-lighter);
   border-left: 3px solid var(--color-brand);
   border-radius: var(--radius-md);
-  margin: 0 0 var(--gap-group);
   cursor: pointer;
   position: relative;
 }
@@ -842,9 +845,7 @@ body {
   background: var(--color-surface-pressed);
 }
 /* --- Track accordion sections --- */
-.track-accordion {
-  margin-top: var(--gap-related);
-}
+/* .track-accordion: margin removed — Stack gap handles spacing */
 .track-accordion-header {
   display: flex;
   align-items: center;
@@ -882,9 +883,7 @@ body {
   font-size: 1.5em;
   line-height: var(--leading-none);
 }
-.track-accordion-body {
-  padding-bottom: var(--gap-related);
-}
+/* .track-accordion-body: spacing now from Stack gap */
 /* --- Star toggle on skill cards --- */
 .skill-card-star {
   position: absolute;
@@ -924,7 +923,6 @@ body {
   line-height: var(--type-status-leading);
   color: var(--color-text-light);
   font-style: italic;
-  margin: var(--gap-section) 0;
   text-align: center;
 }
 .all-skills-hint {
@@ -992,7 +990,6 @@ body {
   background: var(--color-success-bg);
   padding: var(--gap-group) var(--pad-component);
   border-radius: var(--radius-md);
-  margin-bottom: var(--pad-component);
   text-align: center;
 }
 /* --- Skill cards (extends home-mode-btn) --- */
@@ -1105,9 +1102,6 @@ body {
   flex: 1;
   min-width: 0;
 }
-.mode-title {
-  margin: 0;
-}
 .mode-description {
   margin: var(--gap-micro) 0 0;
 }
@@ -1118,7 +1112,6 @@ body {
   gap: var(--gap-group);
 }
 .page-heading {
-  margin: 0;
   flex: 1;
   text-align: center;
 }
