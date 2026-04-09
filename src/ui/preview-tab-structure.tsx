@@ -17,11 +17,76 @@ import {
   StartButton,
   Tabs,
 } from './mode-screen.tsx';
+import { Card, Section as LayoutSection, Stack } from './layout.tsx';
+import { Text } from './text.tsx';
 import { type GroupSel, PreviewGrid, Section } from './preview-shared.tsx';
 
 // ---------------------------------------------------------------------------
 // File-local helpers
 // ---------------------------------------------------------------------------
+
+function LayoutPrimitives({ tabId }: { tabId: string }) {
+  return (
+    <>
+      <h2>Layout Primitives</h2>
+      <PreviewGrid>
+        <Section title='Stack — gap variants' tabId={tabId}>
+          <Stack gap='micro'>
+            <Text role='label'>micro (2px)</Text>
+            <Text role='body-secondary'>Related sub-items</Text>
+          </Stack>
+          <hr />
+          <Stack gap='related'>
+            <Text role='label'>related (4px)</Text>
+            <Text role='body-secondary'>Label + value pairs</Text>
+          </Stack>
+          <hr />
+          <Stack gap='group'>
+            <Text role='label'>group (12px)</Text>
+            <Text role='body-secondary'>Distinct groups</Text>
+          </Stack>
+          <hr />
+          <Stack gap='component'>
+            <Text role='label'>component (16px)</Text>
+            <Text role='body-secondary'>Card-internal sections</Text>
+          </Stack>
+        </Section>
+        <Section title='Card' tabId={tabId}>
+          <Card>
+            <Stack gap='related'>
+              <Text role='heading-subsection'>Default card</Text>
+              <Text role='body'>White background, border, radius, padding</Text>
+            </Stack>
+          </Card>
+        </Section>
+        <Section title='Card — well variant' tabId={tabId}>
+          <Card variant='well'>
+            <Stack gap='related'>
+              <Text role='heading-subsection'>Well card</Text>
+              <Text role='body'>Inset background for recessed areas</Text>
+            </Stack>
+          </Card>
+        </Section>
+        <Section title='Card — accent variants' tabId={tabId}>
+          <Card accent='brand'>
+            <Text role='body'>Brand accent (left stripe)</Text>
+          </Card>
+          <div style={{ marginTop: '8px' }} />
+          <Card accent='notice'>
+            <Text role='body'>Notice accent (gold stripe)</Text>
+          </Card>
+        </Section>
+        <Section title='Section (heading + content)' tabId={tabId}>
+          <LayoutSection heading='Section heading'>
+            <Text role='body'>
+              Content follows the heading with a consistent gap.
+            </Text>
+          </LayoutSection>
+        </Section>
+      </PreviewGrid>
+    </>
+  );
+}
 
 function QuizFlowComponents({ tabId }: { tabId: string }) {
   return (
@@ -240,6 +305,7 @@ export function StructureTab(
 ) {
   return (
     <div>
+      <LayoutPrimitives tabId={tabId} />
       <QuizFlowComponents tabId={tabId} />
       <IdleScreenComponents sel={sel} groupSel={groupSel} tabId={tabId} />
     </div>
