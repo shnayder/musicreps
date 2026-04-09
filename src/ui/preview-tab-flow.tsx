@@ -76,7 +76,7 @@ function FlowIdleSection(
                 <PracticeCard
                   statusLabel='Learning'
                   statusDetail='8 of 24 automatic'
-                  recommendation='start ±3–4 — 12 new items'
+                  recommendation='start 3–4 semitones'
                   onApplyRecommendation={() => {}}
                   scope={
                     <GroupProgressToggles

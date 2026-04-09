@@ -30,7 +30,7 @@ import {
 } from './practice-config.tsx';
 import { type GroupSel, PreviewGrid, Section } from './preview-shared.tsx';
 import { Text } from './text.tsx';
-import { MODE_ABOUT_DESCRIPTIONS, MODE_BEFORE_AFTER } from '../mode-catalog.ts';
+import { MODE_ABOUT_DESCRIPTIONS } from '../mode-catalog.ts';
 import {
   LayoutFooter,
   LayoutHeader,
@@ -129,7 +129,7 @@ function Phase1Components(
                 label: (
                   <span class='tab-icon-label'>
                     <RepeatMark size={24} />
-                    <span class='sr-only'>Practice</span>
+                    <span class='tab-icon-text'>Practice</span>
                   </span>
                 ),
                 content: (
@@ -149,7 +149,7 @@ function Phase1Components(
               },
               {
                 id: 'about' as ModeTab,
-                label: <TabIcon icon='about' text='About' />,
+                label: <TabIcon icon='about' text='Info' />,
                 content: <PreviewAboutTab />,
               },
             ]}
@@ -426,26 +426,8 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
 
 /** Mode-nav tab bar used in idle-phase footer examples. */
 function PreviewAboutTab() {
-  const ba = MODE_BEFORE_AFTER.keySignatures;
-  const beforeLines = ba.before();
   return (
     <div class='about-tab'>
-      <div class='about-columns'>
-        <div class='about-col about-col-before'>
-          <Text role='heading-section' as='div' class='about-col-header'>
-            Before
-          </Text>
-          {beforeLines.map((line, i) => (
-            <p key={i} class='about-col-text'>{line}</p>
-          ))}
-        </div>
-        <div class='about-col about-col-after'>
-          <Text role='heading-section' as='div' class='about-col-header'>
-            After
-          </Text>
-          <p class='about-col-text'>{ba.after()}</p>
-        </div>
-      </div>
       <Text role='body' as='p' class='about-description'>
         {MODE_ABOUT_DESCRIPTIONS.keySignatures}
       </Text>
@@ -461,7 +443,7 @@ function ModeNavFooter() {
       label: (
         <span class='tab-icon-label'>
           <RepeatMark size={24} />
-          <span class='sr-only'>Practice</span>
+          <span class='tab-icon-text'>Practice</span>
         </span>
       ),
       content: null,
@@ -473,7 +455,7 @@ function ModeNavFooter() {
     },
     {
       id: 'about',
-      label: <TabIcon icon='about' text='About' />,
+      label: <TabIcon icon='about' text='Info' />,
       content: null,
     },
   ];

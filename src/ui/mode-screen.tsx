@@ -507,11 +507,13 @@ const TAB_ICONS: Record<string, string> = {
   // Star — filled star for Active skills tab
   'active-skills':
     '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
-  // Grid/list — four squares for All Skills tab
-  'all-skills': '<rect x="3" y="3" width="7" height="7"/>' +
-    '<rect x="14" y="3" width="7" height="7"/>' +
-    '<rect x="3" y="14" width="7" height="7"/>' +
-    '<rect x="14" y="14" width="7" height="7"/>',
+  // List — bulleted list for All Skills tab
+  'all-skills': '<line x1="8" x2="21" y1="6" y2="6"/>' +
+    '<line x1="8" x2="21" y1="12" y2="12"/>' +
+    '<line x1="8" x2="21" y1="18" y2="18"/>' +
+    '<line x1="3" x2="3.01" y1="6" y2="6"/>' +
+    '<line x1="3" x2="3.01" y1="12" y2="12"/>' +
+    '<line x1="3" x2="3.01" y1="18" y2="18"/>',
   // Gear — settings cog
   settings: '<circle cx="12" cy="12" r="3"/>' +
     '<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
@@ -535,7 +537,7 @@ export function TabIcon({ icon, text }: { icon: string; text: string }) {
         // deno-lint-ignore react-no-danger
         dangerouslySetInnerHTML={{ __html: paths }}
       />
-      <span class='sr-only'>{text}</span>
+      <span class='tab-icon-text'>{text}</span>
     </span>
   );
 }
@@ -597,6 +599,7 @@ export function PracticeTab(
     validationMessage,
     aboutContent,
     practiceContent,
+    practiceIntro,
     progressExtra,
     startLabel,
   }: {
@@ -616,6 +619,8 @@ export function PracticeTab(
     aboutContent?: ComponentChildren;
     /** If provided, replaces the default PracticeCard in the practice tab. */
     practiceContent?: ComponentChildren;
+    /** Intro section rendered above practice content (description + before/after). */
+    practiceIntro?: ComponentChildren;
     /** Extra content inserted above baseline in the progress tab. */
     progressExtra?: ComponentChildren;
     /** Custom label for the start button (e.g. "Practice (32 items)"). */
@@ -629,15 +634,20 @@ export function PracticeTab(
       label: (
         <span class='tab-icon-label'>
           <RepeatMark size={24} />
-          <span class='sr-only'>Practice</span>
+          <span class='tab-icon-text'>Practice</span>
         </span>
       ),
-      content: practiceContent ?? (
-        <PracticeCard
-          summary={summary}
-          onApplyRecommendation={onApplyRecommendation}
-          scope={scope}
-        />
+      content: (
+        <>
+          {practiceIntro}
+          {practiceContent ?? (
+            <PracticeCard
+              summary={summary}
+              onApplyRecommendation={onApplyRecommendation}
+              scope={scope}
+            />
+          )}
+        </>
       ),
     },
     {
@@ -663,7 +673,7 @@ export function PracticeTab(
   if (aboutContent) {
     tabs.push({
       id: 'about',
-      label: <TabIcon icon='about' text='About' />,
+      label: <TabIcon icon='about' text='Info' />,
       content: aboutContent,
     });
   }

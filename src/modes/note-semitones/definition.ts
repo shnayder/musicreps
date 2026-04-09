@@ -63,7 +63,7 @@ export const NOTE_SEMITONES_DEF: ModeDefinition<Question> = {
   stats: {
     kind: 'table',
     getRows: getStatsRows,
-    fwdHeader: 'N\u2192#',
-    revHeader: '#\u2192N',
+    fwdHeader: 'Note\u2192Number',
+    revHeader: 'Number\u2192Note',
   },
 };

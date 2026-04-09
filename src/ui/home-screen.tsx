@@ -314,8 +314,7 @@ function ActiveSkillsList(
           Active Skills
         </Text>
         <p class='active-skills-empty'>
-          Pick the skills you want to drill. Star them in{' '}
-          <strong>All Skills</strong> to build your lineup.
+          Star the skills you want to automate in <strong>All Skills</strong>.
         </p>
       </div>
     );
@@ -650,9 +649,7 @@ function AllSkillsList(
         All Skills
       </Text>
       <Text role='status' as='p' class='status-empty all-skills-hint'>
-        Tap the &#x2606; on a skill to add it to your <strong>Active</strong>
-        {' '}
-        list.
+        Star the skills you want to automate.
       </Text>
       {TRACKS.map((track) => (
         <TrackSection
