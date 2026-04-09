@@ -141,16 +141,24 @@ function ToggleStates({ tabId }: { tabId: string }) {
       <PreviewGrid>
         <Section title='String toggle (inactive / active)' tabId={tabId}>
           <div style={{ display: 'flex', gap: '4px' }}>
-            <button type='button' class='string-toggle'>1</button>
-            <button type='button' class='string-toggle active'>2</button>
-            <button type='button' class='string-toggle'>3</button>
+            <button type='button' class='toggle-btn string-toggle'>1</button>
+            <button type='button' class='toggle-btn string-toggle active'>
+              2
+            </button>
+            <button type='button' class='toggle-btn string-toggle'>3</button>
           </div>
         </Section>
         <Section title='Distance toggle (inactive / active)' tabId={tabId}>
           <div style={{ display: 'flex', gap: '4px' }}>
-            <button type='button' class='distance-toggle'>0–4</button>
-            <button type='button' class='distance-toggle active'>5–7</button>
-            <button type='button' class='distance-toggle'>8–12</button>
+            <button type='button' class='toggle-btn distance-toggle'>
+              0–4
+            </button>
+            <button type='button' class='toggle-btn distance-toggle active'>
+              5–7
+            </button>
+            <button type='button' class='toggle-btn distance-toggle'>
+              8–12
+            </button>
           </div>
         </Section>
         <Section title='Level toggle (inactive / active)' tabId={tabId}>

@@ -850,21 +850,6 @@ body {
 .home-modes {
   flex: 1;
 }
-.home-group-label {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
-  font-size: var(--text-sm);
-  font-weight: var(--font-bold);
-  margin-top: var(--gap-section);
-  margin-bottom: var(--gap-related);
-}
-.home-group-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--color-border-lighter);
-}
 .home-mode-btn {
   display: flex;
   flex-direction: column;
@@ -967,9 +952,6 @@ body {
   color: var(--color-star);
 }
 /* --- Active Skills tab content --- */
-.active-skills-list {
-  /* container only — children provide spacing */
-}
 .active-skills-empty {
   font-size: var(--type-status-size);
   font-weight: var(--type-status-weight);
@@ -984,9 +966,6 @@ body {
   text-align: center;
 }
 /* --- Home About tab --- */
-.home-about-brand {
-  text-align: center;
-}
 .settings-section > .text-body:first-of-type {
   margin-top: 0;
 }
@@ -1084,42 +1063,10 @@ body {
 .skill-card.has-rec {
   border-left-color: var(--color-notice);
 }
-.skill-card-ba {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: baseline;
-  gap: var(--gap-group);
-  margin-top: var(--gap-group);
-  font-size: var(--type-supporting-size);
-  font-weight: var(--type-supporting-weight);
-  line-height: var(--type-supporting-leading);
-}
-.skill-card-before {
-  text-align: right;
-  color: var(--color-text-muted);
-}
-.skill-card-arrow {
-  color: var(--color-brand);
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
-}
-.skill-card-after {
-  color: var(--color-text);
-  font-weight: var(--font-semibold);
-}
 .skill-card-progress {
   margin-top: var(--gap-related);
 }
 /* .home-mode-name and .home-mode-desc: typography now via <Text role> */
-.home-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--pad-component) 0;
-  border-top: 1px solid var(--color-border-lighter);
-  background: var(--color-chrome);
-  margin-top: var(--pad-component);
-}
 /* --- Text link (reusable) --- */
 .text-link {
   font-size: var(--type-control-size);
@@ -1201,28 +1148,6 @@ body {
 }
 .mode-description {
   margin: var(--gap-micro) 0 0;
-}
-.mode-before-after {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: baseline;
-  gap: var(--gap-group);
-  margin: var(--gap-related) 0 0;
-  font-size: var(--type-supporting-size);
-  line-height: var(--type-supporting-leading);
-}
-.mode-ba-before {
-  text-align: right;
-  color: var(--color-text-muted);
-}
-.mode-ba-arrow {
-  color: var(--color-brand);
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
-}
-.mode-ba-after {
-  color: var(--color-text);
-  font-weight: var(--font-semibold);
 }
 /* --- Settings page --- */
 .settings-page {
@@ -1452,15 +1377,6 @@ body {
   margin-top: var(--pad-region);
   padding-top: var(--pad-region);
 }
-.practice-section-header {
-  font-family: var(--type-heading-section-family);
-  font-size: var(--type-heading-section-size);
-  font-weight: var(--type-heading-section-weight);
-  line-height: var(--type-heading-section-leading);
-  color: var(--type-heading-section-color);
-  text-align: left;
-  margin-bottom: var(--gap-group);
-}
 .practice-status {
   display: flex;
   flex-direction: column;
@@ -1508,10 +1424,6 @@ body {
   align-items: center;
   gap: var(--gap-group);
   flex-wrap: wrap;
-}
-.suggestion-card-text {
-  flex: 1;
-  min-width: 0;
 }
 .suggestion-card-accept {
   font-size: var(--type-control-size);
@@ -1833,31 +1745,9 @@ body {
   gap: var(--gap-micro);
   justify-content: flex-start;
 }
+/* Toggle variants: only unique overrides — base styles from .toggle-btn */
 .string-toggle {
   width: 36px;
-  height: 36px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-border);
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-  transition:
-    background var(--duration-base) ease,
-    color var(--duration-base) ease,
-    border-color var(--duration-base) ease;
-}
-.string-toggle:hover {
-  background: var(--color-surface-hover);
-}
-.string-toggle.active {
-  background: var(--color-toggle-active);
-  color: var(--color-on-brand);
-  border-color: var(--color-toggle-active);
 }
 .distance-toggles {
   display: flex;
@@ -1866,29 +1756,7 @@ body {
   justify-content: flex-start;
 }
 .distance-toggle {
-  height: 36px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-border);
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  cursor: pointer;
   padding: 0 0.4rem;
-  margin: 0;
-  transition:
-    background var(--duration-base) ease,
-    color var(--duration-base) ease,
-    border-color var(--duration-base) ease;
-}
-.distance-toggle:hover {
-  background: var(--color-surface-hover);
-}
-.distance-toggle.active {
-  background: var(--color-toggle-active);
-  color: var(--color-on-brand);
-  border-color: var(--color-toggle-active);
 }
 
 /* --- Group progress toggles (vertical list with bars) --- */
@@ -1993,29 +1861,7 @@ body {
   justify-content: flex-start;
 }
 .notes-toggle {
-  height: 36px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-border);
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  cursor: pointer;
   padding: 0 0.6rem;
-  margin: 0;
-  transition:
-    background var(--duration-base) ease,
-    color var(--duration-base) ease,
-    border-color var(--duration-base) ease;
-}
-.notes-toggle:hover {
-  background: var(--color-surface-hover);
-}
-.notes-toggle.active {
-  background: var(--color-toggle-active);
-  color: var(--color-on-brand);
-  border-color: var(--color-toggle-active);
 }
 .fretboard-container {
   position: relative;
@@ -3123,17 +2969,7 @@ button {
   outline-offset: -2px;
 }
 
-/* Toggle buttons — inset outline, white on active (green) background */
-.string-toggle:focus-visible,
-.distance-toggle:focus-visible,
-.notes-toggle:focus-visible {
-  outline-offset: -2px;
-}
-.string-toggle.active:focus-visible,
-.distance-toggle.active:focus-visible,
-.notes-toggle.active:focus-visible {
-  outline-color: white;
-}
+/* Toggle buttons: focus-visible handled by .toggle-btn base */
 
 /* Answer buttons */
 .answer-btn:focus-visible {
