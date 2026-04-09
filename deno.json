@@ -30,6 +30,7 @@
       "docs/",
       "node_modules/",
       "static/",
+      "scripts/marketing-templates/",
       "android/",
       "ios/"
     ]
