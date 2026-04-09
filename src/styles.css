@@ -917,17 +917,7 @@ body {
   color: var(--color-star);
 }
 /* --- Active Skills tab content --- */
-.active-skills-empty {
-  font-size: var(--type-status-size);
-  font-weight: var(--type-status-weight);
-  line-height: var(--type-status-leading);
-  color: var(--color-text-light);
-  font-style: italic;
-  text-align: center;
-}
-.all-skills-hint {
-  text-align: center;
-}
+/* hint text: use .status-empty on <Text role='status'> */
 /* --- Home About tab --- */
 .home-about-list {
   margin: 0;

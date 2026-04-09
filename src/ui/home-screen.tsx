@@ -313,9 +313,9 @@ function ActiveSkillsList(
       <Stack gap='region' class='panel-content'>
         <Stack gap='related'>
           <Text role='heading-section' as='h2'>Active Skills</Text>
-          <p class='active-skills-empty'>
+          <Text role='status' as='p' class='status-empty'>
             Star the skills you want to automate in <strong>All Skills</strong>.
-          </p>
+          </Text>
         </Stack>
       </Stack>
     );
@@ -630,10 +630,10 @@ function AllSkillsList(
     },
 ) {
   return (
-    <Stack gap='region' class='panel-content'>
+    <Stack gap='related' class='panel-content'>
       <Stack gap='related'>
         <Text role='heading-section' as='h2'>All Skills</Text>
-        <Text role='status' as='p' class='all-skills-hint'>
+        <Text role='status' as='p' class='status-empty'>
           Star the skills you want to automate.
         </Text>
       </Stack>
