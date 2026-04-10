@@ -967,6 +967,8 @@ function IdlePracticeView<Q>(
                   rows={def.stats.getRows()}
                   fwdHeader={def.stats.fwdHeader}
                   revHeader={def.stats.revHeader}
+                  fwd2Header={def.stats.fwd2Header}
+                  rev2Header={def.stats.rev2Header}
                 />
               )}
             </>

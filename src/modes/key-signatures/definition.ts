@@ -85,7 +85,9 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
   stats: {
     kind: 'table',
     getRows: getStatsRows,
-    fwdHeader: 'Key\u2192Sig',
-    revHeader: 'Sig\u2192Key',
+    fwdHeader: 'Maj\u2192',
+    revHeader: '\u2190Maj',
+    fwd2Header: 'Min\u2192',
+    rev2Header: '\u2190Min',
   },
 };

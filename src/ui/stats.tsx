@@ -27,17 +27,22 @@ export interface StatsTableRow {
   _colHeader: string;
   fwdItemId: string;
   revItemId: string;
+  fwd2ItemId?: string;
+  rev2ItemId?: string;
 }
 
 export function StatsTable(
-  { selector, rows, fwdHeader, revHeader }: {
+  { selector, rows, fwdHeader, revHeader, fwd2Header, rev2Header }: {
     selector: StatsSelector;
     rows: StatsTableRow[];
     fwdHeader: string;
     revHeader: string;
+    fwd2Header?: string;
+    rev2Header?: string;
   },
 ) {
   if (!rows || rows.length === 0) return null;
+  const hasPair = !!(fwd2Header && rev2Header);
   return (
     <table class='stats-table'>
       <thead>
@@ -46,6 +51,8 @@ export function StatsTable(
           <th>#</th>
           <th>{fwdHeader}</th>
           <th>{revHeader}</th>
+          {hasPair && <th>{fwd2Header}</th>}
+          {hasPair && <th>{rev2Header}</th>}
         </tr>
       </thead>
       <tbody>
@@ -56,14 +63,30 @@ export function StatsTable(
             <tr key={row.fwdItemId}>
               <td>{row.label}</td>
               <td>{row.sublabel}</td>
-              <td
-                class='stats-cell'
-                style={{ background: fwdColor }}
-              />
-              <td
-                class='stats-cell'
-                style={{ background: revColor }}
-              />
+              <td class='stats-cell' style={{ background: fwdColor }} />
+              <td class='stats-cell' style={{ background: revColor }} />
+              {hasPair && (
+                <td
+                  class='stats-cell'
+                  style={{
+                    background: getStatsCellColor(
+                      selector,
+                      row.fwd2ItemId ?? '',
+                    ),
+                  }}
+                />
+              )}
+              {hasPair && (
+                <td
+                  class='stats-cell'
+                  style={{
+                    background: getStatsCellColor(
+                      selector,
+                      row.rev2ItemId ?? '',
+                    ),
+                  }}
+                />
+              )}
             </tr>
           );
         })}

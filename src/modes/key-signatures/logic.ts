@@ -161,22 +161,16 @@ export function getQuestion(itemId: string): Question {
  * One row per major key + one per minor key, with fwd/rev item IDs.
  */
 export function getStatsRows(): StatsTableRow[] {
-  const majorRows = MAJOR_KEYS.map((key) => ({
-    label: displayNote(key.root) + ' major',
-    sublabel: displayKeysigLabel(keySignatureLabel(key)),
-    _colHeader: 'Key',
-    fwdItemId: key.root + ':fwd',
-    revItemId: key.root + ':rev',
-  }));
-  const minorRows = MINOR_ROOTS.map((minorRoot) => {
-    const majorKey = MINOR_ROOT_TO_MAJOR.get(minorRoot)!;
+  return MAJOR_KEYS.map((key, i) => {
+    const minorRoot = MINOR_ROOTS[i];
     return {
-      label: displayNote(minorRoot) + ' minor',
-      sublabel: displayKeysigLabel(keySignatureLabel(majorKey)),
+      label: displayNote(key.root) + ' / ' + displayNote(minorRoot) + 'm',
+      sublabel: displayKeysigLabel(keySignatureLabel(key)),
       _colHeader: 'Key',
-      fwdItemId: minorRoot + 'm:fwd',
-      revItemId: minorRoot + 'm:rev',
+      fwdItemId: key.root + ':fwd',
+      revItemId: key.root + ':rev',
+      fwd2ItemId: minorRoot + 'm:fwd',
+      rev2ItemId: minorRoot + 'm:rev',
     };
   });
-  return [...majorRows, ...minorRows];
 }

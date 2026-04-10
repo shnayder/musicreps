@@ -107,6 +107,8 @@ export type TableStatsDef = {
   getRows: () => StatsTableRow[];
   fwdHeader: string;
   revHeader: string;
+  fwd2Header?: string;
+  rev2Header?: string;
 };
 
 export type NoStatsDef = { kind: 'none' };
