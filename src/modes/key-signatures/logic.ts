@@ -158,7 +158,8 @@ export function getQuestion(itemId: string): Question {
 
 /**
  * Build stats table rows for the progress tab.
- * One row per major key + one per minor key, with fwd/rev item IDs.
+ * Returns 12 paired major/minor rows, each with major fwd/rev item IDs
+ * plus minor fwd2/rev2 item IDs.
  */
 export function getStatsRows(): StatsTableRow[] {
   return MAJOR_KEYS.map((key, i) => {
