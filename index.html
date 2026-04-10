@@ -33,6 +33,7 @@
  *
  *   1. TOKENS ................. Custom properties (:root)
  *   2. BASE ................... Body, reset, scrollbar
+ *   2c. LAYOUT PRIMITIVES ...... Stack, Card, Well, Section
  *   3. HOME SCREEN ........... Title, tabs, skill cards, tracks, footer
  *   4. MODE CHROME ........... Top bar, close buttons, tabs, settings
  *   5. PRACTICE CARD ......... Status, scope, suggestion, action zone
@@ -456,6 +457,11 @@
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
+/* Reset default margins on block elements used by Text/Section/Stack.
+   Spacing is owned by layout containers (gap), not by element defaults. */
+h1, h2, h3, p {
+  margin: 0;
+}
 html {
   font-size: 106.25%; /* 17px base — aligns with Apple HIG body size */
   background: var(--color-canvas);
@@ -614,6 +620,61 @@ body {
 }
 
 /* ==========================================================================
+   2c. LAYOUT PRIMITIVES — Stack, Card, Well, Section
+   Composable building blocks that own spacing and containment.
+   ========================================================================== */
+
+/* --- Stack: flex column with semantic gap --- */
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+.stack-micro {
+  gap: var(--gap-micro);
+}
+.stack-related {
+  gap: var(--gap-related);
+}
+.stack-group {
+  gap: var(--gap-group);
+}
+.stack-component {
+  gap: var(--pad-component);
+}
+.stack-region {
+  gap: var(--pad-region);
+}
+.stack-section {
+  gap: var(--gap-section);
+}
+
+/* --- Card: container surface --- */
+.card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border-lighter);
+  border-radius: var(--radius-md);
+  padding: var(--pad-component);
+}
+.card-well {
+  background: var(--color-well);
+}
+.card-accent-brand {
+  border-left: 3px solid var(--color-brand);
+}
+.card-accent-notice {
+  background: var(--color-notice-bg);
+  border-color: var(--color-notice-border);
+  border-left: 3px solid var(--color-notice);
+}
+
+/* --- Section: heading + content with consistent gap --- */
+.section-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-related);
+}
+
+/* ==========================================================================
    3. HOME SCREEN
    ========================================================================== */
 /* .home-screen: outer container — ScreenLayout fills the viewport inside it.
@@ -639,7 +700,6 @@ body {
   font-weight: var(--type-display-brand-weight);
   line-height: var(--type-display-brand-leading);
   color: var(--type-display-brand-color);
-  margin: 0;
 }
 .home-logo-mark {
   color: var(--color-brand);
@@ -649,10 +709,6 @@ body {
   display: none;
 }
 .home-tagline {
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
   margin: var(--gap-group) 0 0;
 }
 /* On native apps, hide the title/tagline but keep the stats bar visible */
@@ -668,18 +724,10 @@ body {
   gap: var(--gap-group);
   margin-top: var(--gap-group);
   font-size: var(--type-status-size);
-  font-weight: var(--type-status-weight);
-  line-height: var(--type-status-leading);
   color: var(--type-status-color);
 }
 .home-header.native .home-stats-bar {
   margin-top: 0;
-}
-.home-stat-value {
-  font-size: var(--type-metric-effort-size);
-  font-weight: var(--type-metric-effort-weight);
-  line-height: var(--type-metric-effort-leading);
-  color: var(--type-metric-effort-color);
 }
 .home-stat-sep {
   color: var(--color-text-muted);
@@ -774,21 +822,6 @@ body {
 .home-modes {
   flex: 1;
 }
-.home-group-label {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
-  font-size: var(--text-sm);
-  font-weight: var(--font-bold);
-  margin-top: var(--gap-section);
-  margin-bottom: var(--gap-related);
-}
-.home-group-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--color-border-lighter);
-}
 .home-mode-btn {
   display: flex;
   flex-direction: column;
@@ -801,7 +834,6 @@ body {
   border: 1px solid var(--color-border-lighter);
   border-left: 3px solid var(--color-brand);
   border-radius: var(--radius-md);
-  margin: 0 0 var(--gap-group);
   cursor: pointer;
   position: relative;
 }
@@ -815,9 +847,7 @@ body {
   background: var(--color-surface-pressed);
 }
 /* --- Track accordion sections --- */
-.track-accordion {
-  margin-top: var(--gap-related);
-}
+/* .track-accordion: margin removed — Stack gap handles spacing */
 .track-accordion-header {
   display: flex;
   align-items: center;
@@ -855,9 +885,7 @@ body {
   font-size: 1.5em;
   line-height: var(--leading-none);
 }
-.track-accordion-body {
-  padding-bottom: var(--gap-related);
-}
+/* .track-accordion-body: spacing now from Stack gap */
 /* --- Star toggle on skill cards --- */
 .skill-card-star {
   position: absolute;
@@ -891,29 +919,8 @@ body {
   color: var(--color-star);
 }
 /* --- Active Skills tab content --- */
-.active-skills-list {
-  /* container only — children provide spacing */
-}
-.active-skills-empty {
-  font-size: var(--type-status-size);
-  font-weight: var(--type-status-weight);
-  line-height: var(--type-status-leading);
-  color: var(--color-text-light);
-  font-style: italic;
-  margin: var(--gap-section) 0;
-  text-align: center;
-}
-.all-skills-hint {
-  margin: 0 0 var(--gap-related);
-  text-align: center;
-}
+/* hint text: use .text-hint on <Text role='status'> */
 /* --- Home About tab --- */
-.home-about-brand {
-  text-align: center;
-}
-.settings-section > .text-body:first-of-type {
-  margin-top: 0;
-}
 .home-about-list {
   margin: 0;
   margin-top: 0;
@@ -975,7 +982,6 @@ body {
   background: var(--color-success-bg);
   padding: var(--gap-group) var(--pad-component);
   border-radius: var(--radius-md);
-  margin-bottom: var(--pad-component);
   text-align: center;
 }
 /* --- Skill cards (extends home-mode-btn) --- */
@@ -1008,53 +1014,8 @@ body {
 .skill-card.has-rec {
   border-left-color: var(--color-notice);
 }
-.skill-card-ba {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: baseline;
-  gap: var(--gap-group);
-  margin-top: var(--gap-group);
-  font-size: var(--type-supporting-size);
-  font-weight: var(--type-supporting-weight);
-  line-height: var(--type-supporting-leading);
-}
-.skill-card-before {
-  text-align: right;
-  color: var(--color-text-muted);
-}
-.skill-card-arrow {
-  color: var(--color-brand);
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
-}
-.skill-card-after {
-  color: var(--color-text);
-  font-weight: var(--font-semibold);
-}
 .skill-card-progress {
   margin-top: var(--gap-related);
-}
-.home-mode-name {
-  font-family: var(--type-heading-section-family);
-  font-size: var(--type-heading-section-size);
-  font-weight: var(--type-heading-section-weight);
-  line-height: var(--type-heading-section-leading);
-  color: var(--type-heading-section-color);
-}
-.home-mode-desc {
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
-}
-.home-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--pad-component) 0;
-  border-top: 1px solid var(--color-border-lighter);
-  background: var(--color-chrome);
-  margin-top: var(--pad-component);
 }
 /* --- Text link (reusable) --- */
 .text-link {
@@ -1132,63 +1093,18 @@ body {
   flex: 1;
   min-width: 0;
 }
-.mode-title {
-  margin: 0;
-  font-family: var(--type-heading-page-family);
-  font-size: var(--type-heading-page-size);
-  font-weight: var(--type-heading-page-weight);
-  line-height: var(--type-heading-page-leading);
-  color: var(--type-heading-page-color);
-}
 .mode-description {
   margin: var(--gap-micro) 0 0;
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
-}
-.mode-before-after {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: baseline;
-  gap: var(--gap-group);
-  margin: var(--gap-related) 0 0;
-  font-size: var(--type-supporting-size);
-  line-height: var(--type-supporting-leading);
-}
-.mode-ba-before {
-  text-align: right;
-  color: var(--color-text-muted);
-}
-.mode-ba-arrow {
-  color: var(--color-brand);
-  font-size: var(--text-base);
-  font-weight: var(--font-bold);
-}
-.mode-ba-after {
-  color: var(--color-text);
-  font-weight: var(--font-semibold);
 }
 /* --- Settings page --- */
-.settings-page {
-  display: flex;
-  flex-direction: column;
-}
 .settings-page-header {
   display: flex;
   align-items: center;
   gap: var(--gap-group);
 }
 .page-heading {
-  margin: 0;
   flex: 1;
   text-align: center;
-}
-.settings-section + .settings-section {
-  margin-top: var(--pad-component);
-}
-.section-heading {
-  margin: 0 0 var(--gap-related);
 }
 .settings-link-list {
   display: flex;
@@ -1315,9 +1231,6 @@ body {
 }
 .tab-panel.active {
   display: block;
-}
-.panel-heading {
-  margin: 0 0 var(--gap-group);
   padding-top: var(--pad-component);
 }
 
@@ -1333,7 +1246,6 @@ body {
 }
 .about-tab-tip {
   margin: var(--gap-section) 0 0;
-  text-align: center;
 }
 .about-tab-tip-icon {
   vertical-align: -0.15em;
@@ -1397,15 +1309,6 @@ body {
   margin-top: var(--pad-region);
   padding-top: var(--pad-region);
 }
-.practice-section-header {
-  font-family: var(--type-heading-section-family);
-  font-size: var(--type-heading-section-size);
-  font-weight: var(--type-heading-section-weight);
-  line-height: var(--type-heading-section-leading);
-  color: var(--type-heading-section-color);
-  text-align: left;
-  margin-bottom: var(--gap-group);
-}
 .practice-status {
   display: flex;
   flex-direction: column;
@@ -1442,10 +1345,6 @@ body {
   margin-bottom: var(--gap-group);
 }
 .suggestion-card-header {
-  font-family: var(--type-heading-subsection-family);
-  font-size: var(--type-heading-subsection-size);
-  font-weight: var(--type-heading-subsection-weight);
-  line-height: var(--type-heading-subsection-leading);
   color: var(--color-brand);
 }
 .suggestion-card-body {
@@ -1453,10 +1352,6 @@ body {
   align-items: center;
   gap: var(--gap-group);
   flex-wrap: wrap;
-}
-.suggestion-card-text {
-  flex: 1;
-  min-width: 0;
 }
 .suggestion-card-accept {
   font-size: var(--type-control-size);
@@ -1537,10 +1432,6 @@ body {
   display: flex;
   align-items: center;
   gap: 0.3em;
-  font-size: var(--type-metric-effort-size);
-  font-weight: var(--type-metric-effort-weight);
-  line-height: var(--type-metric-effort-leading);
-  color: var(--type-metric-effort-color);
   white-space: nowrap;
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
@@ -1772,90 +1663,6 @@ body {
   flex: 1;
   min-height: 0;
 }
-.string-toggles {
-  display: flex;
-  flex-direction: row;
-  gap: var(--gap-micro);
-  justify-content: flex-start;
-}
-.string-toggle {
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-border);
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  cursor: pointer;
-  padding: 0;
-  margin: 0;
-  transition:
-    background var(--duration-base) ease,
-    color var(--duration-base) ease,
-    border-color var(--duration-base) ease;
-}
-.string-toggle:hover {
-  background: var(--color-surface-hover);
-}
-.string-toggle.active {
-  background: var(--color-toggle-active);
-  color: var(--color-on-brand);
-  border-color: var(--color-toggle-active);
-}
-.distance-toggles {
-  display: flex;
-  flex-direction: row;
-  gap: var(--gap-micro);
-  justify-content: flex-start;
-}
-.distance-toggle {
-  height: 36px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-border);
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  cursor: pointer;
-  padding: 0 0.4rem;
-  margin: 0;
-  transition:
-    background var(--duration-base) ease,
-    color var(--duration-base) ease,
-    border-color var(--duration-base) ease;
-}
-.distance-toggle:hover {
-  background: var(--color-surface-hover);
-}
-.distance-toggle.active {
-  background: var(--color-toggle-active);
-  color: var(--color-on-brand);
-  border-color: var(--color-toggle-active);
-}
-
-/* --- Group progress toggles (vertical list with bars) --- */
-.group-progress-toggles {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--gap-related) var(--gap-group);
-  align-items: center;
-  padding: 0 var(--pad-component);
-}
-.group-progress-toggles.has-skip {
-  grid-template-columns: auto 1fr auto;
-}
-.group-progress-toggles .distance-toggle {
-  height: 28px;
-  font-size: var(--text-sm);
-  padding: 0 var(--gap-group);
-}
-.group-progress-toggles .distance-toggle.skipped {
-  opacity: var(--opacity-dimmed);
-  text-decoration: line-through;
-}
 .group-progress-bar {
   display: flex;
   height: 8px;
@@ -1869,98 +1676,6 @@ body {
 .group-bar-slice {
   flex: 1;
   min-width: 0;
-}
-.group-skip-btn {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  border: none;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  color: var(--type-control-color);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.group-skip-btn:hover,
-.group-skip-btn.open {
-  background: var(--color-surface-hover);
-  color: var(--color-text);
-}
-.group-skip-menu-wrap {
-  position: relative;
-}
-.group-skip-menu {
-  position: absolute;
-  right: -1px;
-  top: calc(100% + 2px);
-  z-index: var(--z-popover);
-  background: var(--color-overlay-surface);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  padding: var(--gap-micro) 0;
-  min-width: 140px;
-  white-space: nowrap;
-  overflow: hidden;
-}
-.group-skip-menu button {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-related);
-  width: 100%;
-  padding: var(--gap-related) var(--gap-group);
-  border: none;
-  background: transparent;
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  color: var(--color-text);
-  cursor: pointer;
-  text-align: left;
-}
-.group-skip-menu button:hover {
-  background: var(--color-surface-hover);
-}
-.group-skip-menu .menu-check {
-  width: 16px;
-  text-align: center;
-}
-
-.notes-toggles {
-  display: flex;
-  flex-direction: row;
-  gap: var(--gap-micro);
-  justify-content: flex-start;
-}
-.notes-toggle {
-  height: 36px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-border);
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  cursor: pointer;
-  padding: 0 0.6rem;
-  margin: 0;
-  transition:
-    background var(--duration-base) ease,
-    color var(--duration-base) ease,
-    border-color var(--duration-base) ease;
-}
-.notes-toggle:hover {
-  background: var(--color-surface-hover);
-}
-.notes-toggle.active {
-  background: var(--color-toggle-active);
-  color: var(--color-on-brand);
-  border-color: var(--color-toggle-active);
 }
 .fretboard-container {
   position: relative;
@@ -2059,10 +1774,6 @@ button {
   background: var(--color-notice);
 }
 .quiz-info-time {
-  font-size: var(--type-metric-info-size);
-  font-weight: var(--type-metric-info-weight);
-  line-height: var(--type-metric-info-leading);
-  color: var(--type-metric-info-color);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -2072,10 +1783,6 @@ button {
   align-items: center;
   gap: 0.3em;
   font-variant-numeric: tabular-nums;
-  font-size: var(--type-metric-effort-size);
-  font-weight: var(--type-metric-effort-weight);
-  line-height: var(--type-metric-effort-leading);
-  color: var(--type-metric-effort-color);
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -2164,24 +1871,9 @@ button {
   text-align: center;
 }
 .round-complete-heading {
-  font-family: var(--type-heading-page-family);
-  font-size: var(--type-heading-page-size);
-  font-weight: var(--type-heading-page-weight);
-  line-height: var(--type-heading-page-leading);
-  color: var(--type-heading-page-color);
   margin-bottom: var(--pad-component);
 }
-.round-complete-count {
-  font-size: var(--type-metric-hero-size);
-  font-weight: var(--type-metric-hero-weight);
-  line-height: var(--type-metric-hero-leading);
-  color: var(--type-metric-hero-color);
-}
 .round-complete-count-label {
-  font-size: var(--type-body-secondary-size);
-  font-weight: var(--type-body-secondary-weight);
-  line-height: var(--type-body-secondary-leading);
-  color: var(--type-body-secondary-color);
   margin-bottom: var(--gap-group);
 }
 .round-complete-stats {
@@ -2197,12 +1889,6 @@ button {
   flex-direction: column;
   gap: var(--gap-group);
   text-align: left;
-}
-.round-stat-line {
-  font-size: var(--type-status-size);
-  font-weight: var(--type-status-weight);
-  line-height: var(--type-status-leading);
-  color: var(--type-status-color);
 }
 /* ==========================================================================
    10. ANSWER BUTTONS
@@ -2255,17 +1941,7 @@ button {
   min-height: 2.5rem;
 }
 .quiz-instruction {
-  font-size: var(--type-quiz-instruction-size);
-  font-weight: var(--type-quiz-instruction-weight);
-  line-height: var(--type-quiz-instruction-leading);
-  color: var(--type-quiz-instruction-color);
   margin-bottom: var(--gap-group);
-}
-.quiz-prompt {
-  font-size: var(--type-quiz-prompt-size);
-  font-weight: var(--type-quiz-prompt-weight);
-  line-height: var(--type-quiz-prompt-leading);
-  color: var(--type-quiz-prompt-color);
 }
 .quiz-prompt:empty {
   display: none;
@@ -2419,10 +2095,6 @@ button {
   margin: 0 auto;
 }
 .calibration-baseline {
-  font-size: var(--type-metric-primary-size);
-  font-weight: var(--type-metric-primary-weight);
-  line-height: var(--type-metric-primary-leading);
-  color: var(--type-metric-primary-color);
   font-variant-numeric: tabular-nums;
   margin: var(--gap-group) 0 var(--pad-region);
 }
@@ -2601,9 +2273,10 @@ button {
 .status-notice {
   color: var(--color-notice);
 }
-.status-empty {
+.text-hint {
   color: var(--color-text-light);
   font-style: italic;
+  text-align: center;
 }
 
 /* -- Interactive roles -- */
@@ -2882,21 +2555,6 @@ button {
   color: var(--color-text-muted);
   cursor: pointer;
 }
-.toggle-group {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--gap-group);
-}
-.toggle-group-label {
-  font-size: var(--type-label-size);
-  font-weight: var(--type-label-weight);
-  line-height: var(--type-label-leading);
-  color: var(--type-label-color);
-  flex-shrink: 0;
-  min-width: 3.5rem;
-}
-
 /* --- Stats tables (lookup modes) --- */
 .stats-container {
   text-align: center;
@@ -3096,18 +2754,6 @@ button {
   outline-offset: -2px;
 }
 
-/* Toggle buttons — inset outline, white on active (green) background */
-.string-toggle:focus-visible,
-.distance-toggle:focus-visible,
-.notes-toggle:focus-visible {
-  outline-offset: -2px;
-}
-.string-toggle.active:focus-visible,
-.distance-toggle.active:focus-visible,
-.notes-toggle.active:focus-visible {
-  outline-color: white;
-}
-
 /* Answer buttons */
 .answer-btn:focus-visible {
   outline-offset: -2px;
@@ -3195,7 +2841,7 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1304"></div>
+  <div class="home-screen" id="home-screen" data-version="#1323"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -4962,12 +4608,6 @@ body.native-app {
       function(btn) {
         const noteName = btn.dataset.note;
         if (noteName) btn.textContent = displayNote(noteName);
-      }
-    );
-    container.querySelectorAll(".string-toggle").forEach(
-      function(btn) {
-        const stringNote = btn.dataset.stringNote;
-        if (stringNote) btn.textContent = displayNote(stringNote);
       }
     );
   }
@@ -8526,8 +8166,8 @@ body.native-app {
       ),
       modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
       /* @__PURE__ */ u3("div", { class: "mode-top-bar-text", children: [
-        /* @__PURE__ */ u3("h1", { class: "mode-title", children: title }),
-        description && /* @__PURE__ */ u3("p", { class: "mode-description", children: description })
+        /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", class: "mode-title", children: title }),
+        description && /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "mode-description", children: description })
       ] })
     ] }) });
   }
@@ -8551,7 +8191,7 @@ body.native-app {
   }
   function Recommendation({ text, onApply }) {
     return /* @__PURE__ */ u3("div", { class: "suggestion-card", children: /* @__PURE__ */ u3("div", { class: "suggestion-card-body", children: [
-      /* @__PURE__ */ u3("div", { class: "suggestion-card-header", children: text }),
+      /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", class: "suggestion-card-header", children: text }),
       onApply ? /* @__PURE__ */ u3(
         "button",
         {
@@ -8610,8 +8250,8 @@ body.native-app {
           )
         }
       ),
-      /* @__PURE__ */ u3("span", { class: "quiz-info-time", children: timeLeft || "" }),
-      count && /* @__PURE__ */ u3("span", { class: "quiz-info-count", children: [
+      /* @__PURE__ */ u3(Text, { role: "metric-info", as: "span", class: "quiz-info-time", children: timeLeft || "" }),
+      count && /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", class: "quiz-info-count", children: [
         count,
         /* @__PURE__ */ u3(RepeatMark, { size: 13, class: "quiz-info-count-icon" })
       ] })
@@ -8619,12 +8259,20 @@ body.native-app {
   }
   function RoundCompleteInfo({ heading, count, correct, levelBars }) {
     return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
-      /* @__PURE__ */ u3("div", { class: "round-complete-heading", children: heading || "" }),
+      /* @__PURE__ */ u3(Text, { role: "heading-page", as: "div", class: "round-complete-heading", children: heading || "" }),
       count != null && /* @__PURE__ */ u3(k, { children: [
-        /* @__PURE__ */ u3("div", { class: "round-complete-count", children: count }),
-        /* @__PURE__ */ u3("div", { class: "round-complete-count-label", children: count === 1 ? "rep" : "reps" })
+        /* @__PURE__ */ u3(Text, { role: "metric-hero", as: "div", class: "round-complete-count", children: count }),
+        /* @__PURE__ */ u3(
+          Text,
+          {
+            role: "body-secondary",
+            as: "div",
+            class: "round-complete-count-label",
+            children: count === 1 ? "rep" : "reps"
+          }
+        )
       ] }),
-      /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: /* @__PURE__ */ u3("div", { class: "round-stat-line round-stat-correct", children: correct || "" }) }),
+      /* @__PURE__ */ u3("div", { class: "round-complete-stats", children: /* @__PURE__ */ u3(Text, { role: "status", as: "div", class: "round-stat-correct", children: correct || "" }) }),
       levelBars && levelBars.length > 0 && /* @__PURE__ */ u3("div", { class: "round-complete-progress", children: levelBars.map((entry) => /* @__PURE__ */ u3(
         ProgressBarLabeled,
         {
@@ -8797,6 +8445,19 @@ body.native-app {
     ] });
   }
 
+  // src/ui/layout.tsx
+  function Stack({ gap, children, class: extra, as: Tag = "div" }) {
+    const cls = "stack stack-" + gap + (extra ? " " + extra : "");
+    return /* @__PURE__ */ u3(Tag, { class: cls, children });
+  }
+  function Section({ heading, headingRole = "heading-section", children, class: extra }) {
+    const cls = "section-block" + (extra ? " " + extra : "");
+    return /* @__PURE__ */ u3("section", { class: cls, children: [
+      /* @__PURE__ */ u3(Text, { role: headingRole, as: "h2", children: heading }),
+      children
+    ] });
+  }
+
   // src/ui/segmented-control.tsx
   var segmentedControlCounter = 0;
   function SegmentedControl({ options, value, onChange, "aria-labelledby": labelledBy }) {
@@ -8934,8 +8595,8 @@ body.native-app {
       /* @__PURE__ */ u3(SkillIcon, { modeId }),
       /* @__PURE__ */ u3("span", { class: "skill-card-header-text", children: [
         trackLabel && /* @__PURE__ */ u3(TrackPill, { label: trackLabel }),
-        /* @__PURE__ */ u3("span", { class: "home-mode-name", children: name }),
-        /* @__PURE__ */ u3("span", { class: "home-mode-desc", children: desc })
+        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "span", children: name }),
+        /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "span", children: desc })
       ] })
     ] });
   }
@@ -9026,7 +8687,7 @@ body.native-app {
           /* @__PURE__ */ u3("span", { class: "skill-card-header", children: [
             /* @__PURE__ */ u3(SkillIcon, { modeId }),
             /* @__PURE__ */ u3("span", { class: "skill-card-header-text", children: [
-              /* @__PURE__ */ u3("span", { class: "home-mode-name", children: name }),
+              /* @__PURE__ */ u3(Text, { role: "heading-section", as: "span", children: name }),
               /* @__PURE__ */ u3(TrackPill, { label: trackLabel }),
               hasRec && /* @__PURE__ */ u3("span", { class: "skill-rec-hint", children: [
                 /* @__PURE__ */ u3("strong", { children: rec.cueLabel }),
@@ -9049,9 +8710,9 @@ body.native-app {
   }
   function ActiveSkillsList({ starred, onToggleStar, onSelectMode, progress, recommendations }) {
     if (starred.size === 0) {
-      return /* @__PURE__ */ u3("div", { children: [
-        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "panel-heading", children: "Active Skills" }),
-        /* @__PURE__ */ u3("p", { class: "active-skills-empty", children: [
+      return /* @__PURE__ */ u3(Stack, { gap: "group", children: [
+        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: "Active Skills" }),
+        /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "text-hint", children: [
           "Star the skills you want to automate in ",
           /* @__PURE__ */ u3("strong", { children: "All Skills" }),
           "."
@@ -9083,8 +8744,8 @@ body.native-app {
     }
     const ordered = [...recommended, ...remaining];
     const allDone = recommendations.length === 0 && starred.size > 0;
-    return /* @__PURE__ */ u3("div", { class: "active-skills-list", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "panel-heading", children: "Active Skills" }),
+    return /* @__PURE__ */ u3(Stack, { gap: "group", children: [
+      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: "Active Skills" }),
       allDone && /* @__PURE__ */ u3("p", { class: "active-skills-done", children: [
         "All your starred skills are automatic. Nice work! Star new skills in",
         " ",
@@ -9120,89 +8781,77 @@ body.native-app {
           ]
         }
       ),
-      isExpanded && /* @__PURE__ */ u3("div", { class: "track-accordion-body", children })
+      isExpanded && /* @__PURE__ */ u3(Stack, { gap: "group", class: "track-accordion-body", children })
     ] });
   }
   function SettingsAboutLegal({ appConfig, version }) {
     return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "About" }),
-        /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
-          appConfig.contactEmail && /* @__PURE__ */ u3("a", { class: "text-link", href: `mailto:${appConfig.contactEmail}`, children: "Contact" }),
-          appConfig.supportUrl && /* @__PURE__ */ u3(
-            "a",
-            {
-              class: "text-link",
-              href: appConfig.supportUrl,
-              target: "_blank",
-              rel: "noopener noreferrer",
-              children: "Support"
-            }
-          ),
-          /* @__PURE__ */ u3("span", { class: "settings-meta", children: [
-            "Build ",
-            version
-          ] })
+      /* @__PURE__ */ u3(Section, { heading: "About", children: /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
+        appConfig.contactEmail && /* @__PURE__ */ u3("a", { class: "text-link", href: `mailto:${appConfig.contactEmail}`, children: "Contact" }),
+        appConfig.supportUrl && /* @__PURE__ */ u3(
+          "a",
+          {
+            class: "text-link",
+            href: appConfig.supportUrl,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            children: "Support"
+          }
+        ),
+        /* @__PURE__ */ u3("span", { class: "settings-meta", children: [
+          "Build ",
+          version
         ] })
-      ] }),
-      /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "Legal" }),
-        /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
-          appConfig.termsUrl && /* @__PURE__ */ u3(
-            "a",
-            {
-              class: "text-link",
-              href: appConfig.termsUrl,
-              target: "_blank",
-              rel: "noopener noreferrer",
-              children: "Terms & conditions"
-            }
-          ),
-          appConfig.privacyUrl && /* @__PURE__ */ u3(
-            "a",
-            {
-              class: "text-link",
-              href: appConfig.privacyUrl,
-              target: "_blank",
-              rel: "noopener noreferrer",
-              children: "Privacy policy"
-            }
-          )
-        ] })
-      ] })
+      ] }) }),
+      /* @__PURE__ */ u3(Section, { heading: "Legal", children: /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
+        appConfig.termsUrl && /* @__PURE__ */ u3(
+          "a",
+          {
+            class: "text-link",
+            href: appConfig.termsUrl,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            children: "Terms & conditions"
+          }
+        ),
+        appConfig.privacyUrl && /* @__PURE__ */ u3(
+          "a",
+          {
+            class: "text-link",
+            href: appConfig.privacyUrl,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            children: "Privacy policy"
+          }
+        )
+      ] }) })
     ] });
   }
   function SettingsPanel({ settings, appConfig, version, useSolfege, setUseSolfege: setUseSolfege2, onOpenDev }) {
-    return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
-      /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "General" }),
-        /* @__PURE__ */ u3(
-          SettingToggle,
-          {
-            label: "Note names",
-            options: [
-              { value: "letter", label: "A B C" },
-              { value: "solfege", label: "Do Re Mi" }
-            ],
-            value: useSolfege ? "solfege" : "letter",
-            onChange: (v3) => {
-              const sol = v3 === "solfege";
-              settings.setUseSolfege(sol);
-              setUseSolfege2(sol);
-            }
+    return /* @__PURE__ */ u3(Stack, { gap: "component", class: "settings-page", children: [
+      /* @__PURE__ */ u3(Section, { heading: "General", children: /* @__PURE__ */ u3(
+        SettingToggle,
+        {
+          label: "Note names",
+          options: [
+            { value: "letter", label: "A B C" },
+            { value: "solfege", label: "Do Re Mi" }
+          ],
+          value: useSolfege ? "solfege" : "letter",
+          onChange: (v3) => {
+            const sol = v3 === "solfege";
+            settings.setUseSolfege(sol);
+            setUseSolfege2(sol);
           }
-        )
-      ] }),
+        }
+      ) }),
       /* @__PURE__ */ u3(SettingsAboutLegal, { appConfig, version }),
-      onOpenDev && /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "Developer" }),
-        /* @__PURE__ */ u3("div", { class: "settings-link-list", children: /* @__PURE__ */ u3("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" }) })
-      ] })
+      onOpenDev && /* @__PURE__ */ u3(Section, { heading: "Developer", children: /* @__PURE__ */ u3("div", { class: "settings-link-list", children: /* @__PURE__ */ u3("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" }) }) })
     ] });
   }
   function DevPage({ onClose }) {
     const [data] = d2(getDevPanelData);
-    return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
+    return /* @__PURE__ */ u3(Stack, { gap: "component", class: "settings-page", children: [
       /* @__PURE__ */ u3("div", { class: "settings-page-header", children: [
         /* @__PURE__ */ u3(CloseButton, { ariaLabel: "Close", onClick: onClose }),
         /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", class: "page-heading", children: "Dev" })
@@ -9232,10 +8881,7 @@ body.native-app {
     ] });
   }
   function DevSection({ title, children }) {
-    return /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: title }),
-      children
-    ] });
+    return /* @__PURE__ */ u3(Section, { heading: title, children });
   }
   function DevStatRow({ label, value }) {
     return /* @__PURE__ */ u3("div", { class: "dev-stat-row", children: [
@@ -9250,9 +8896,9 @@ body.native-app {
     ] });
   }
   function AllSkillsList({ accordion, starred, onToggleExpand, onToggleStar, onSelectMode, progress }) {
-    return /* @__PURE__ */ u3("div", { class: "home-modes", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "panel-heading", children: "All Skills" }),
-      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "status-empty all-skills-hint", children: "Star the skills you want to automate." }),
+    return /* @__PURE__ */ u3(Stack, { gap: "group", children: [
+      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: "All Skills" }),
+      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "text-hint", children: "Star the skills you want to automate." }),
       TRACKS.map((track) => /* @__PURE__ */ u3(
         TrackSection,
         {
@@ -9290,30 +8936,29 @@ body.native-app {
           /* @__PURE__ */ u3(RepeatMark, { size: 28, class: "home-logo-mark" }),
           "Music Reps"
         ] }),
-        /* @__PURE__ */ u3("p", { class: "home-tagline", children: "Make music fundamentals automatic so you can focus on playing." })
+        /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "home-tagline", children: "Make music fundamentals automatic so you can focus on playing." })
       ] }),
       /* @__PURE__ */ u3("div", { class: "home-stats-bar", children: [
         /* @__PURE__ */ u3("span", { class: "home-stat", children: [
-          /* @__PURE__ */ u3("span", { class: "home-stat-value", children: repsToday.toLocaleString() }),
+          /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", children: repsToday.toLocaleString() }),
           " today"
         ] }),
         /* @__PURE__ */ u3("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
         /* @__PURE__ */ u3("span", { class: "home-stat", children: [
-          /* @__PURE__ */ u3("span", { class: "home-stat-value", children: totalReps.toLocaleString() }),
+          /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", children: totalReps.toLocaleString() }),
           " total"
         ] }),
         /* @__PURE__ */ u3("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
         /* @__PURE__ */ u3("span", { class: "home-stat", children: [
-          /* @__PURE__ */ u3("span", { class: "home-stat-value", children: daysActive }),
+          /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", children: daysActive }),
           daysActive === 1 ? " day" : " days"
         ] })
       ] })
     ] });
   }
   function HomeAboutTab() {
-    return /* @__PURE__ */ u3("div", { class: "settings-page", children: [
-      /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "What is Music Reps?" }),
+    return /* @__PURE__ */ u3(Stack, { gap: "component", class: "settings-page", children: [
+      /* @__PURE__ */ u3(Section, { heading: "What is Music Reps?", children: [
         /* @__PURE__ */ u3(Text, { role: "body", as: "p", children: [
           "Music Reps trains instant recall of music fundamentals, closing the gap between",
           " ",
@@ -9324,59 +8969,53 @@ body.native-app {
         ] }),
         /* @__PURE__ */ u3(Text, { role: "body", as: "p", children: "There are likely musical skills you can do with some hesitation and mental effort: say locating the G on the B string of your guitar, or figuring out what key has 4 flats, or listing the notes in an Em7 chord. Doing reps makes them automatic, so you can focus on playing." })
       ] }),
-      /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "How it works" }),
-        /* @__PURE__ */ u3("ul", { class: "home-about-list", children: [
-          /* @__PURE__ */ u3("li", { children: [
-            /* @__PURE__ */ u3("strong", { children: "Fast drills, many reps." }),
-            " ",
-            "Each skill asks rapid-fire questions to make the knowledge you already have automatic."
-          ] }),
-          /* @__PURE__ */ u3("li", { children: [
-            /* @__PURE__ */ u3("strong", { children: "Speed is the goal." }),
-            " ",
-            "When your response time drops from eight seconds to under one, you\u2019ve stopped counting and started knowing."
-          ] }),
-          /* @__PURE__ */ u3("li", { children: [
-            /* @__PURE__ */ u3("strong", { children: "Spaced repetition." }),
-            " ",
-            "The app focuses on what you haven\u2019t mastered and brings back material before you forget it."
-          ] }),
-          /* @__PURE__ */ u3("li", { children: [
-            /* @__PURE__ */ u3("strong", { children: "No instrument needed." }),
-            " ",
-            "Use commuting, waiting, or any other spare minutes to advance your playing."
-          ] }),
-          /* @__PURE__ */ u3("li", { children: [
-            /* @__PURE__ */ u3("strong", { children: "A few minutes at a time." }),
-            " ",
-            "Designed for short sessions \u2014 two to five minutes, a few times a day, over months and years."
-          ] })
+      /* @__PURE__ */ u3(Section, { heading: "How it works", children: /* @__PURE__ */ u3("ul", { class: "home-about-list", children: [
+        /* @__PURE__ */ u3("li", { children: [
+          /* @__PURE__ */ u3("strong", { children: "Fast drills, many reps." }),
+          " ",
+          "Each skill asks rapid-fire questions to make the knowledge you already have automatic."
+        ] }),
+        /* @__PURE__ */ u3("li", { children: [
+          /* @__PURE__ */ u3("strong", { children: "Speed is the goal." }),
+          " ",
+          "When your response time drops from eight seconds to under one, you\u2019ve stopped counting and started knowing."
+        ] }),
+        /* @__PURE__ */ u3("li", { children: [
+          /* @__PURE__ */ u3("strong", { children: "Spaced repetition." }),
+          " ",
+          "The app focuses on what you haven\u2019t mastered and brings back material before you forget it."
+        ] }),
+        /* @__PURE__ */ u3("li", { children: [
+          /* @__PURE__ */ u3("strong", { children: "No instrument needed." }),
+          " ",
+          "Use commuting, waiting, or any other spare minutes to advance your playing."
+        ] }),
+        /* @__PURE__ */ u3("li", { children: [
+          /* @__PURE__ */ u3("strong", { children: "A few minutes at a time." }),
+          " ",
+          "Designed for short sessions \u2014 two to five minutes, a few times a day, over months and years."
         ] })
-      ] }),
-      /* @__PURE__ */ u3("section", { class: "settings-section", children: [
-        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", class: "section-heading", children: "Getting started" }),
-        /* @__PURE__ */ u3("ul", { class: "home-about-list", children: [
-          /* @__PURE__ */ u3("li", { children: [
-            "Browse ",
-            /* @__PURE__ */ u3("strong", { children: "All Skills" }),
-            " ",
-            "to see what\u2019s available. Star the ones you want to work on."
-          ] }),
-          /* @__PURE__ */ u3("li", { children: [
-            "Your starred skills appear on the ",
-            /* @__PURE__ */ u3("strong", { children: "Active" }),
-            " ",
-            "tab with recommendations for what to practice next."
-          ] }),
-          /* @__PURE__ */ u3("li", { children: [
-            "Track your speed and coverage in each skill\u2019s",
-            " ",
-            /* @__PURE__ */ u3("strong", { children: "Progress" }),
-            " tab."
-          ] })
+      ] }) }),
+      /* @__PURE__ */ u3(Section, { heading: "Getting started", children: /* @__PURE__ */ u3("ul", { class: "home-about-list", children: [
+        /* @__PURE__ */ u3("li", { children: [
+          "Browse ",
+          /* @__PURE__ */ u3("strong", { children: "All Skills" }),
+          " ",
+          "to see what\u2019s available. Star the ones you want to work on."
+        ] }),
+        /* @__PURE__ */ u3("li", { children: [
+          "Your starred skills appear on the ",
+          /* @__PURE__ */ u3("strong", { children: "Active" }),
+          " ",
+          "tab with recommendations for what to practice next."
+        ] }),
+        /* @__PURE__ */ u3("li", { children: [
+          "Track your speed and coverage in each skill\u2019s",
+          " ",
+          /* @__PURE__ */ u3("strong", { children: "Progress" }),
+          " tab."
         ] })
-      ] })
+      ] }) })
     ] });
   }
   function useHomeTabs({
@@ -11139,9 +10778,9 @@ body.native-app {
         onBack && /* @__PURE__ */ u3(CloseButton, { ariaLabel: "Back to home", onClick: onBack }),
         /* @__PURE__ */ u3("div", { class: "skill-header-title", children: [
           modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
-          /* @__PURE__ */ u3("h1", { class: "mode-title", children: title })
+          /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", class: "mode-title", children: title })
         ] }),
-        totalReps != null && /* @__PURE__ */ u3("span", { class: "skill-header-reps", children: [
+        totalReps != null && /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", class: "skill-header-reps", children: [
           totalReps.toLocaleString(),
           /* @__PURE__ */ u3(RepeatMark, { size: 18, class: "skill-header-reps-icon" })
         ] })
@@ -11677,7 +11316,7 @@ body.native-app {
     const thresholds = getCalibrationThresholds(baseline);
     return /* @__PURE__ */ u3("div", { class: "calibration-results", children: [
       /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h2", children: "Speed Check Complete" }),
-      /* @__PURE__ */ u3("div", { class: "calibration-baseline", children: [
+      /* @__PURE__ */ u3(Text, { role: "metric-primary", as: "div", class: "calibration-baseline", children: [
         (baseline / 1e3).toFixed(2),
         "s"
       ] }),
@@ -11770,7 +11409,7 @@ body.native-app {
         /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(
           QuizStage,
           {
-            prompt: /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: trials.promptText }),
+            prompt: /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: trials.promptText }),
             response: /* @__PURE__ */ u3(k, { children: [
               /* @__PURE__ */ u3(
                 NoteButtons,
@@ -12185,8 +11824,8 @@ body.native-app {
       QuizStage,
       {
         prompt: /* @__PURE__ */ u3(k, { children: [
-          instruction && /* @__PURE__ */ u3("div", { class: "quiz-instruction", children: instruction }),
-          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: promptText })
+          instruction && /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
+          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText })
         ] }),
         response: /* @__PURE__ */ u3(k, { children: [
           /* @__PURE__ */ u3(
@@ -12222,8 +11861,8 @@ body.native-app {
       QuizStage,
       {
         prompt: /* @__PURE__ */ u3(k, { children: [
-          instruction && /* @__PURE__ */ u3("div", { class: "quiz-instruction", children: instruction }),
-          /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: promptText }),
+          instruction && /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
+          /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText }),
           /* @__PURE__ */ u3(
             InteractiveFretboard,
             {
@@ -12255,8 +11894,8 @@ body.native-app {
       QuizStage,
       {
         prompt: /* @__PURE__ */ u3(k, { children: [
-          instruction && /* @__PURE__ */ u3("div", { class: "quiz-instruction", children: instruction }),
-          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3("div", { class: "quiz-prompt", children: promptText })
+          instruction && /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
+          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText })
         ] }),
         response: /* @__PURE__ */ u3(k, { children: [
           /* @__PURE__ */ u3(
@@ -12569,7 +12208,7 @@ body.native-app {
     return /* @__PURE__ */ u3("div", { class: "about-tab", children: [
       /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: "Why automate this?" }),
       /* @__PURE__ */ u3(Text, { role: "body", as: "p", class: "about-description", children: description }),
-      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "status-empty about-tab-tip", children: [
+      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "text-hint about-tab-tip", children: [
         "Start practicing on the",
         " ",
         /* @__PURE__ */ u3(RepeatMark, { size: 16, class: "about-tab-tip-icon" }),
