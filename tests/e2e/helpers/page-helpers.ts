@@ -10,9 +10,7 @@ export async function createTestPage(
   browser: Browser,
   baseUrl: string,
 ): Promise<Page> {
-  // hasTouch: false ensures @media (pointer: fine) matches in headless
-  // Chromium, so keyboard/text-input controls remain visible during tests.
-  const ctx = await browser.newContext({ viewport: VIEWPORT, hasTouch: false });
+  const ctx = await browser.newContext({ viewport: VIEWPORT });
   const page = await ctx.newPage();
   await page.goto(baseUrl);
   await page.waitForLoadState('networkidle');

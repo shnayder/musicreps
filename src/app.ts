@@ -3,7 +3,7 @@
 
 declare global {
   interface Window {
-    Capacitor?: unknown;
+    Capacitor?: { isNativePlatform?: () => boolean };
   }
 }
 
@@ -73,7 +73,7 @@ async function boot() {
   // bulk-loads Preferences into an in-memory cache.
   await initStorage(Preferences);
 
-  const isNativeApp = !!window.Capacitor;
+  const isNativeApp = !!window.Capacitor?.isNativePlatform?.();
 
   // One-time migration: copy localStorage → Capacitor Preferences on
   // first native launch so existing users don't lose data.  Must run
