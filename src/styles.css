@@ -912,7 +912,7 @@ body {
   font-size: var(--type-label-tag-size);
   font-weight: var(--type-label-tag-weight);
   line-height: var(--type-label-tag-leading);
-  padding: 1px var(--gap-related);
+  padding: 2px var(--gap-related);
   border-radius: 999px;
   white-space: nowrap;
 }
