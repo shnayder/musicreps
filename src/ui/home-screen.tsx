@@ -33,7 +33,7 @@ import {
   LayoutMain,
   ScreenLayout,
 } from './screen-layout.tsx';
-import { Section, Stack } from './layout.tsx';
+import { Bar, Section, Stack } from './layout.tsx';
 import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
@@ -699,7 +699,7 @@ function HomeHeader(
           </Text>
         </>
       )}
-      <div class='home-stats-bar'>
+      <Bar gap='group' class='home-stats-bar'>
         <span class='home-stat'>
           <Text role='metric-effort' as='span'>
             {repsToday.toLocaleString()}
@@ -718,7 +718,7 @@ function HomeHeader(
           <Text role='metric-effort' as='span'>{daysActive}</Text>
           {daysActive === 1 ? ' day' : ' days'}
         </span>
-      </div>
+      </Bar>
     </div>
   );
 }

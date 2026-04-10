@@ -11,13 +11,13 @@ import { StatsGrid, StatsLegend } from './stats.tsx';
 import { FeedbackDisplay } from './quiz-ui.tsx';
 import {
   ModeTopBar,
-  PracticeCard,
   QuizArea,
   QuizSession,
   RoundCompleteActions,
   RoundCompleteInfo,
   Tabs,
 } from './mode-screen.tsx';
+import { Text } from './text.tsx';
 import { SkillCard } from './home-screen.tsx';
 import {
   FretboardPreview,
@@ -69,14 +69,7 @@ function FlowIdleSection(
             {
               id: 'practice',
               label: 'Practice',
-              content: (
-                <PracticeCard
-                  statusLabel='Learning'
-                  statusDetail='8 of 24 automatic'
-                  recommendation='start 3–4 semitones'
-                  onApplyRecommendation={() => {}}
-                />
-              ),
+              content: <Text role='body'>Practice content area</Text>,
             },
             {
               id: 'progress',

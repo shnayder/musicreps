@@ -368,11 +368,19 @@ export const MAJOR_KEYS: MajorKey[] = [
   },
 ];
 
-/** Build a display label for a key signature, e.g., '2#', '3b', '0'. */
+/** Build an ASCII label for a key signature, e.g., '2#', '3b', '0'.
+ *  Used for answer comparison and storage — use displayKeysigLabel() for UI. */
 export function keySignatureLabel(key: MajorKey) {
   if (key.accidentalCount === 0) return '0';
   if (key.accidentalType === 'sharps') return key.accidentalCount + '#';
   return key.accidentalCount + 'b';
+}
+
+/** Format a key-signature label for display with unicode symbols.
+ *  '2#' → '2♯', '3b' → '3♭', '0' → '0♯/♭'. */
+export function displayKeysigLabel(sigLabel: string) {
+  if (sigLabel === '0') return '0\u266F/\u266D';
+  return sigLabel.replace(/#/g, '\u266F').replace(/b/g, '\u266D');
 }
 
 /** All 15 key-signature labels (0 through 7 sharps/flats). Includes

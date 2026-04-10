@@ -145,24 +145,26 @@ describe('getQuestion expected values', () => {
 });
 
 describe('getStatsRows', () => {
-  it('returns 24 rows (12 major + 12 minor)', () => {
+  it('returns 12 paired rows (major/minor per signature)', () => {
     const rows = getStatsRows();
-    assert.equal(rows.length, 24);
+    assert.equal(rows.length, 12);
   });
 
-  it('each row has fwdItemId and revItemId', () => {
+  it('each row has major fwd/rev and minor fwd2/rev2 item IDs', () => {
     const rows = getStatsRows();
     for (const row of rows) {
-      assert.ok(row.fwdItemId, 'row should have fwdItemId');
-      assert.ok(row.revItemId, 'row should have revItemId');
       assert.ok(row.fwdItemId.endsWith(':fwd'));
       assert.ok(row.revItemId.endsWith(':rev'));
+      assert.ok(row.fwd2ItemId?.endsWith(':fwd'));
+      assert.ok(row.rev2ItemId?.endsWith(':rev'));
     }
   });
 
-  it('includes minor key rows', () => {
+  it('labels pair major and minor keys', () => {
     const rows = getStatsRows();
-    const minorRows = rows.filter((r) => r.label.includes('minor'));
-    assert.equal(minorRows.length, 12);
+    // C major pairs with Am
+    const cRow = rows.find((r) => r.label.startsWith('C'));
+    assert.ok(cRow);
+    assert.ok(cRow.label.includes('Am'));
   });
 });

@@ -32,6 +32,22 @@ export function Stack(
 }
 
 // ---------------------------------------------------------------------------
+// Bar — flex row with a semantic gap (horizontal counterpart of Stack)
+// ---------------------------------------------------------------------------
+
+export function Bar(
+  { gap, children, class: extra, as: Tag = 'div' }: {
+    gap: StackGap;
+    children: ComponentChildren;
+    class?: string;
+    as?: 'div' | 'section' | 'nav' | 'span';
+  },
+) {
+  const cls = 'bar bar-' + gap + (extra ? ' ' + extra : '');
+  return <Tag class={cls}>{children}</Tag>;
+}
+
+// ---------------------------------------------------------------------------
 // Card — container surface with padding, background, border, radius
 // ---------------------------------------------------------------------------
 

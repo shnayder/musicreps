@@ -923,12 +923,7 @@ function IdlePracticeView<Q>(
 
   return (
     <PracticeTab
-      summary={ps.summary}
       onStart={engine.start}
-      onApplyRecommendation={ps.summary.showRecommendationButton &&
-          groupScopeResult
-        ? groupScopeResult.applyRecommendation
-        : undefined}
       scopeValid={!groupScopeResult || groupScopeResult.enabledGroups.size > 0}
       validationMessage='Select at least one level'
       startLabel={customItemCount != null
@@ -945,7 +940,7 @@ function IdlePracticeView<Q>(
         )
         : (
           <div class='practice-config'>
-            <Text role='heading-section' as='div' class='practice-config-label'>
+            <Text role='heading-section' class='practice-config-label'>
               Recommendation
             </Text>
             <SuggestionLines
@@ -974,6 +969,8 @@ function IdlePracticeView<Q>(
                   rows={def.stats.getRows()}
                   fwdHeader={def.stats.fwdHeader}
                   revHeader={def.stats.revHeader}
+                  fwd2Header={def.stats.fwd2Header}
+                  rev2Header={def.stats.rev2Header}
                 />
               )}
             </>
@@ -997,27 +994,25 @@ function IdlePracticeView<Q>(
       onCalibrate={onCalibrate}
       activeTab={ps.activeTab}
       onTabSwitch={ps.setActiveTab}
-      practiceIntro={
-        <PracticeIntro
+      aboutContent={
+        <AboutTab
           description={def.description}
+          aboutDescription={def.aboutDescription}
           beforeAfter={def.beforeAfter}
         />
-      }
-      aboutContent={
-        <AboutTab description={def.aboutDescription ?? def.description} />
       }
     />
   );
 }
 
 // ---------------------------------------------------------------------------
-// PracticeIntro — description + before/after contrast
-// AboutTab — mode description + call-to-action
+// AboutTab — what you're automating + before/after + description
 // ---------------------------------------------------------------------------
 
-function PracticeIntro(
-  { description, beforeAfter }: {
+function AboutTab(
+  { description, aboutDescription, beforeAfter }: {
     description: string;
+    aboutDescription?: string;
     beforeAfter: {
       before: string[] | (() => string[]);
       after: string | (() => string);
@@ -1032,7 +1027,7 @@ function PracticeIntro(
     : beforeAfter.after;
 
   return (
-    <div class='practice-intro'>
+    <div class='about-tab'>
       <Text role='heading-section' as='h2'>What you're automating</Text>
       <Text role='body-secondary' as='p' class='practice-intro-description'>
         {description}
@@ -1053,17 +1048,14 @@ function PracticeIntro(
           <p class='about-col-text'>{after}</p>
         </div>
       </div>
-    </div>
-  );
-}
-
-function AboutTab({ description }: { description: string }) {
-  return (
-    <div class='about-tab'>
-      <Text role='heading-section' as='h2'>Why automate this?</Text>
-      <Text role='body' as='p' class='about-description'>
-        {description}
-      </Text>
+      {aboutDescription && (
+        <>
+          <Text role='heading-section' as='h2'>Why automate this?</Text>
+          <Text role='body' as='p' class='about-description'>
+            {aboutDescription}
+          </Text>
+        </>
+      )}
       <Text role='status' as='p' class='text-hint about-tab-tip'>
         Start practicing on the{' '}
         <RepeatMark size={16} class='about-tab-tip-icon' /> tab below.

@@ -22,10 +22,8 @@ import { SkillIcon } from './icons.tsx';
 import {
   ModeScreen,
   ModeTopBar,
-  PracticeCard,
   QuizArea,
   QuizSession,
-  Recommendation,
   RoundCompleteActions,
   RoundCompleteInfo,
   StartButton,
@@ -529,64 +527,6 @@ describe('Tabs', () => {
     assert.ok(html.includes('aria-selected="true"'));
     assert.ok(html.includes('aria-controls='));
     assert.ok(html.includes('aria-labelledby='));
-  });
-});
-
-describe('PracticeCard', () => {
-  it('renders status line', () => {
-    const html = render(
-      <PracticeCard
-        statusLabel='Strong'
-        statusDetail='12 of 14 automatic'
-      />,
-    );
-    assert.ok(html.includes('practice-card'));
-    assert.ok(html.includes('practice-status-label'));
-    assert.ok(html.includes('Strong'));
-    assert.ok(html.includes('12 of 14 automatic'));
-  });
-
-  it('shows recommendation with accept button', () => {
-    const html = render(
-      <PracticeCard
-        recommendation='start A string'
-        onApplyRecommendation={() => {}}
-      />,
-    );
-    assert.ok(html.includes('suggestion-card'));
-    assert.ok(html.includes('suggestion-card-header'));
-    assert.ok(html.includes('start A string'));
-    assert.ok(html.includes('suggestion-card-accept'));
-  });
-
-  it('shows scope controls', () => {
-    const html = render(
-      <PracticeCard
-        recommendation='start D string'
-        onApplyRecommendation={() => {}}
-        scope={<div class='mock-scope' />}
-      />,
-    );
-    assert.ok(html.includes('practice-scope'));
-    assert.ok(html.includes('mock-scope'));
-    assert.ok(html.includes('suggestion-card-header'));
-  });
-});
-
-describe('Recommendation', () => {
-  it('renders text and button', () => {
-    const html = render(
-      <Recommendation text='solidify +1' onApply={() => {}} />,
-    );
-    assert.ok(html.includes('suggestion-card'));
-    assert.ok(html.includes('suggestion-card-header'));
-    assert.ok(html.includes('solidify +1'));
-    assert.ok(html.includes('suggestion-card-accept'));
-  });
-
-  it('omits button when no onApply', () => {
-    const html = render(<Recommendation text='test' />);
-    assert.ok(!html.includes('suggestion-card-accept'));
   });
 });
 
