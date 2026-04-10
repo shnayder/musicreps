@@ -410,7 +410,9 @@ export function QuizArea(
         <div class='quiz-content'>
           {prompt && (
             <div class='quiz-prompt-row'>
-              <Text role='quiz-prompt' as='div'>{prompt}</Text>
+              <Text role='quiz-prompt' as='div' class='quiz-prompt'>
+                {prompt}
+              </Text>
             </div>
           )}
           {children}

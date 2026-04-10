@@ -10,7 +10,7 @@ import { Text } from './text.tsx';
 // ---------------------------------------------------------------------------
 
 export function TextPrompt({ text }: { text: string }) {
-  return <Text role='quiz-prompt' as='div'>{text}</Text>;
+  return <Text role='quiz-prompt' as='div' class='quiz-prompt'>{text}</Text>;
 }
 
 // ---------------------------------------------------------------------------
