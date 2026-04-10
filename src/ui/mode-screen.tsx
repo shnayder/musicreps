@@ -3,7 +3,6 @@
 
 import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
-import type { PracticeSummaryState } from '../types.ts';
 import { SkillIcon } from './icons.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
 import { ActionButton } from './action-button.tsx';
@@ -229,83 +228,6 @@ export function ModeTopBar(
 export type ModeTab = 'practice' | 'progress' | 'about';
 
 // ---------------------------------------------------------------------------
-// PracticeCard — wraps practice zones (status, scope, action)
-// ---------------------------------------------------------------------------
-
-export function PracticeCard(
-  props: {
-    summary?: PracticeSummaryState;
-    statusLabel?: string;
-    statusDetail?: string;
-    recommendation?: string;
-    scope?: ComponentChildren;
-    onApplyRecommendation?: () => void;
-  },
-) {
-  // When summary is provided, map its fields; individual props override.
-  const statusLabel = props.statusLabel ??
-    (props.summary ? props.summary.statusLabel : undefined);
-  const statusDetail = props.statusDetail ??
-    (props.summary ? props.summary.statusDetail : undefined);
-  const recommendation = props.recommendation ??
-    (props.summary && props.summary.recommendationText
-      ? props.summary.recommendationText
-      : undefined);
-  const onApplyRecommendation = props.onApplyRecommendation;
-  const { scope } = props;
-
-  return (
-    <div class='practice-card'>
-      {statusLabel && (
-        <div class='practice-status'>
-          <div class='practice-status-row'>
-            <Text role='label'>Status</Text>
-            <span class='practice-status-label'>{statusLabel}</span>
-          </div>
-          {statusDetail && (
-            <span class='practice-status-detail'>{statusDetail}</span>
-          )}
-        </div>
-      )}
-      {recommendation && (
-        <Recommendation text={recommendation} onApply={onApplyRecommendation} />
-      )}
-      {scope && <div class='practice-scope'>{scope}</div>}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Recommendation — standalone recommendation text + button
-// ---------------------------------------------------------------------------
-
-export function Recommendation(
-  { text, onApply }: { text: string; onApply?: () => void },
-) {
-  return (
-    <div class='suggestion-card'>
-      <div class='suggestion-card-body'>
-        <Text role='heading-subsection' as='div' class='suggestion-card-header'>
-          {text}
-        </Text>
-        {onApply
-          ? (
-            <button
-              type='button'
-              tabIndex={0}
-              class='suggestion-card-accept'
-              onClick={onApply}
-            >
-              Accept
-            </button>
-          )
-          : null}
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // StartButton — quiz start button
 // ---------------------------------------------------------------------------
 
@@ -363,7 +285,7 @@ export function QuizSession(
 ) {
   return (
     <div class='quiz-session'>
-      <Bar gap='group' class='quiz-session-header'>
+      <Bar gap='component' class='quiz-session-header'>
         <CloseButton
           ariaLabel='Stop quiz'
           onClick={onClose}
@@ -603,15 +525,12 @@ function BaselineInfo(
 }
 
 // ---------------------------------------------------------------------------
-// PracticeTab — composes Tabs + PracticeCard
+// PracticeTab — composes Tabs + practice content
 // ---------------------------------------------------------------------------
 
 export function PracticeTab(
   {
-    summary,
     onStart,
-    onApplyRecommendation,
-    scope,
     statsContent,
     statsHeading,
     onCalibrate,
@@ -622,14 +541,10 @@ export function PracticeTab(
     validationMessage,
     aboutContent,
     practiceContent,
-    practiceIntro,
     progressExtra,
     startLabel,
   }: {
-    summary: PracticeSummaryState;
     onStart: () => void;
-    onApplyRecommendation?: () => void;
-    scope?: ComponentChildren;
     statsContent: ComponentChildren;
     /** Heading rendered outside the centered stats container. */
     statsHeading?: ComponentChildren;
@@ -640,10 +555,7 @@ export function PracticeTab(
     scopeValid?: boolean;
     validationMessage?: string;
     aboutContent?: ComponentChildren;
-    /** If provided, replaces the default PracticeCard in the practice tab. */
-    practiceContent?: ComponentChildren;
-    /** Intro section rendered above practice content (description + before/after). */
-    practiceIntro?: ComponentChildren;
+    practiceContent: ComponentChildren;
     /** Extra content inserted above baseline in the progress tab. */
     progressExtra?: ComponentChildren;
     /** Custom label for the start button (e.g. "Practice (32 items)"). */
@@ -660,18 +572,7 @@ export function PracticeTab(
           <span class='tab-icon-text'>Practice</span>
         </span>
       ),
-      content: (
-        <>
-          {practiceIntro}
-          {practiceContent ?? (
-            <PracticeCard
-              summary={summary}
-              onApplyRecommendation={onApplyRecommendation}
-              scope={scope}
-            />
-          )}
-        </>
-      ),
+      content: practiceContent,
     },
     {
       id: 'progress',

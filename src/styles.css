@@ -1289,85 +1289,6 @@ body {
 .practice-intro-description {
   margin-bottom: var(--gap-group);
 }
-.practice-card {
-  margin-bottom: var(--pad-component);
-  padding: var(--pad-component) var(--pad-region);
-  background: var(--color-card);
-  border-radius: var(--radius-md);
-}
-.practice-zone + .practice-zone {
-  margin-top: var(--pad-region);
-  padding-top: var(--pad-region);
-}
-.practice-status {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-micro);
-  margin-bottom: var(--gap-group);
-}
-.practice-status:empty,
-.practice-status-label:empty {
-  display: none;
-}
-.practice-status-row {
-  display: flex;
-  align-items: baseline;
-  gap: var(--gap-related);
-}
-.practice-status-label {
-  font-weight: var(--font-semibold);
-  font-size: var(--type-label-size);
-  color: var(--color-text);
-}
-.practice-status-detail {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-.practice-status-detail:empty {
-  display: none;
-}
-.suggestion-card {
-  background: var(--color-notice-bg);
-  border: 1px solid var(--color-notice-border);
-  border-left: 3px solid var(--color-notice);
-  border-radius: var(--radius-md);
-  padding: var(--gap-group) var(--pad-component);
-  margin-bottom: var(--gap-group);
-}
-.suggestion-card-header {
-  color: var(--color-brand);
-}
-.suggestion-card-body {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
-  flex-wrap: wrap;
-}
-.suggestion-card-accept {
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  padding: var(--gap-related) var(--pad-component);
-  border: 1px solid var(--color-brand);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--color-brand);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.suggestion-card-accept:hover {
-  background: var(--color-brand);
-  color: var(--color-on-brand);
-}
-
-/* --- Practice scope (inside practice card) --- */
-.practice-scope {
-  margin-top: var(--pad-component);
-  background: var(--color-well);
-}
-.practice-scope .settings-row {
-  margin-bottom: 0;
-}
 
 /* --- Practice action zone (bottom-anchored, outside tabs) --- */
 .practice-zone-action {
@@ -1437,7 +1358,6 @@ body {
 /* --- Practice config: suggested/custom toggle --- */
 .practice-config {
   padding: 0;
-  margin-top: var(--pad-region);
   display: flex;
   flex-direction: column;
   gap: var(--gap-group);
@@ -2761,9 +2681,8 @@ button {
   outline-color: white;
 }
 
-/* Baseline, recommendation buttons */
-.baseline-rerun-btn:focus-visible,
-.suggestion-card-accept:focus-visible {
+/* Baseline button */
+.baseline-rerun-btn:focus-visible {
   outline-offset: 2px;
 }
 

@@ -185,7 +185,7 @@ export function PracticeConfig(
 ) {
   return (
     <div class='practice-config'>
-      <Text role='heading-section' as='div' class='practice-config-label'>
+      <Text role='heading-section' class='practice-config-label'>
         Practice setup
       </Text>
       <SegmentedControl

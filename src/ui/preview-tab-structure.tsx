@@ -8,9 +8,7 @@ import { FeedbackDisplay } from './quiz-ui.tsx';
 import {
   ModeScreen,
   ModeTopBar,
-  PracticeCard,
   QuizArea,
-  Recommendation,
   RoundCompleteActions,
   RoundCompleteInfo,
   StartButton,
@@ -189,20 +187,6 @@ function IdleBasicComponents(
           description='Transpose by semitones without counting'
         />
       </Section>
-      <Section title='Recommendation' tabId={tabId}>
-        <Recommendation
-          text='solidify +1 to +3 — 3 items to work on'
-          onApply={() => {}}
-        />
-      </Section>
-      <Section title='PracticeCard (no scope)' tabId={tabId}>
-        <PracticeCard
-          statusLabel='Strong'
-          statusDetail='12 of 14 automatic'
-          recommendation='start A string'
-          onApplyRecommendation={() => {}}
-        />
-      </Section>
     </PreviewGrid>
   );
 }
@@ -220,7 +204,7 @@ function IdleComposedComponents(
             {
               id: 'practice',
               label: 'Practice',
-              content: <PracticeCard statusLabel='Ready to start' />,
+              content: <Text role='body'>Practice content area</Text>,
             },
             {
               id: 'progress',
@@ -249,12 +233,7 @@ function IdleComposedComponents(
               {
                 id: 'practice',
                 label: 'Practice',
-                content: (
-                  <PracticeCard
-                    statusLabel='Solid'
-                    statusDetail='8 of 12 automatic'
-                  />
-                ),
+                content: <Text role='body'>Practice content area</Text>,
               },
               {
                 id: 'progress',

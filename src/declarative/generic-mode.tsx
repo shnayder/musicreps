@@ -916,12 +916,7 @@ function IdlePracticeView<Q>(
 
   return (
     <PracticeTab
-      summary={ps.summary}
       onStart={engine.start}
-      onApplyRecommendation={ps.summary.showRecommendationButton &&
-          groupScopeResult
-        ? groupScopeResult.applyRecommendation
-        : undefined}
       scopeValid={!groupScopeResult || groupScopeResult.enabledGroups.size > 0}
       validationMessage='Select at least one level'
       startLabel={customItemCount != null
