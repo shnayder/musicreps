@@ -120,8 +120,20 @@ export function LevelToggles(
 export type LevelCardStatus = 'normal' | 'known' | 'skipped';
 
 export function LevelProgressCard(
-  { label, pill, colors, status, onToggleKnown, onToggleSkip }: {
+  {
+    label,
+    statusLabel,
+    statusColor,
+    pill,
+    colors,
+    status,
+    onToggleKnown,
+    onToggleSkip,
+  }: {
     label: string;
+    statusLabel?: string;
+    /** Heatmap color for the status swatch dot. */
+    statusColor?: string;
     pill?: string;
     colors: string[];
     status?: LevelCardStatus;
@@ -159,6 +171,17 @@ export function LevelProgressCard(
           </span>
         )}
       </div>
+      {statusLabel && (
+        <span class='level-progress-status'>
+          {statusColor && (
+            <span
+              class='level-status-swatch'
+              style={`background-color: var(${statusColor})`}
+            />
+          )}
+          {statusLabel}
+        </span>
+      )}
       {pill && (
         <div class='level-progress-pill-row'>
           <Pill variant='notice'>{pill}</Pill>

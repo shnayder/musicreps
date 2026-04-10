@@ -84,6 +84,7 @@ import {
   SuggestionLines,
 } from '../ui/practice-config.tsx';
 import { StatsGrid, StatsLegend, StatsTable } from '../ui/stats.tsx';
+import { getSpeedLevel } from '../speed-levels.ts';
 import {
   FeedbackDisplay,
   KeyboardHint,
@@ -847,6 +848,10 @@ function LevelProgressCards<Q>(
         const itemIds = groupScope.getItemIdsForGroup(id);
         const colors = progressBarColors(learner.selector, itemIds);
         const pill = computeReviewPill(learner.selector, itemIds);
+        const { level: speedLevel, seen } = learner.selector.getLevelSpeed(
+          itemIds,
+        );
+        const sl = seen > 0 ? getSpeedLevel(speedLevel) : null;
         const skipReason = groupScopeResult.skippedGroups.get(id);
         const status = skipReason === 'mastered'
           ? 'known' as const
@@ -862,6 +867,8 @@ function LevelProgressCards<Q>(
           <LevelProgressCard
             key={id}
             label={label}
+            statusLabel={sl?.label}
+            statusColor={sl?.colorToken}
             pill={pill ?? undefined}
             colors={colors}
             status={status}
@@ -886,14 +893,14 @@ function singleLevelSuggestion(
   allItems: string[],
 ): SuggestionLine {
   const anySeen = allItems.some((id) => selector.getStats(id) !== null);
-  if (!anySeen) return { verb: 'Start practicing', levels: [] };
+  if (!anySeen) return { verb: 'Start', levels: [] };
   if (selector.checkAllAutomatic(allItems)) {
-    return { verb: 'All items mastered', levels: [] };
+    return { verb: 'All items automatic! Practice something else', levels: [] };
   }
   if (selector.checkNeedsReview(allItems)) {
     return { verb: 'Review', levels: [] };
   }
-  return { verb: 'Keep practicing', levels: [] };
+  return { verb: 'Practice', levels: [] };
 }
 
 function IdlePracticeView<Q>(

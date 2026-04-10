@@ -151,9 +151,13 @@ describe('statusLabelFromLevel', () => {
     assert.equal(statusLabelFromLevel(0.69), 'Learning');
   });
 
-  it('returns Hesitant for < 0.3', () => {
-    assert.equal(statusLabelFromLevel(0), 'Hesitant');
+  it('returns Hesitant for > 0 and < 0.3', () => {
+    assert.equal(statusLabelFromLevel(0.01), 'Hesitant');
     assert.equal(statusLabelFromLevel(0.29), 'Hesitant');
+  });
+
+  it('returns Starting for 0', () => {
+    assert.equal(statusLabelFromLevel(0), 'Starting');
   });
 });
 
@@ -228,7 +232,7 @@ describe('buildRecommendationText', () => {
       ],
     };
     const text = buildRecommendationText(result, label);
-    assert.equal(text, 'automate Group 0, Group 1');
+    assert.equal(text, 'practice Group 0, Group 1');
   });
 
   it('combines review + practice + expand + extra parts', () => {
@@ -340,8 +344,8 @@ describe('computePracticeSummary', () => {
       showMastery: false,
     });
     // Level speed: values = [0.95, 0.85, 0.6, 0.3, 0] sorted = [0, 0.3, 0.6, 0.85, 0.95]
-    // p=0.1: index = ceil(5*0.1)-1 = ceil(0.5)-1 = 0 → level = 0 → "Hesitant"
-    assert.equal(result.statusLabel, 'Hesitant');
+    // p=0.1: index = ceil(5*0.1)-1 = ceil(0.5)-1 = 0 → level = 0 → "Starting"
+    assert.equal(result.statusLabel, 'Starting');
     assert.equal(result.statusDetail, '1/5 positions automatic');
   });
 

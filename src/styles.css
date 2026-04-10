@@ -1521,6 +1521,20 @@ body {
   flex: 1;
   min-width: 0;
 }
+.level-progress-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+.level-status-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
 .level-progress-pill-row {
   margin-bottom: var(--gap-related);
 }

@@ -216,7 +216,7 @@ describe('classifyLevelStatus', () => {
       getLevelFreshness: () => ({ level: 0.8, seen: 10 }),
     };
     const status = classifyLevelStatus(sel, '0', () => ['a']);
-    assert.equal(status.speedLabel, 'learned');
+    assert.equal(status.speedLabel, 'solid');
     assert.ok(!status.needsReview);
   });
 
@@ -287,10 +287,16 @@ describe('computeLevelRecs', () => {
     };
   }
 
-  it('produces review recs for stale levels', () => {
-    const recs = computeLevelRecs([status('0', 'learned', true)]);
+  it('produces review recs for stale Solid+ levels', () => {
+    const recs = computeLevelRecs([status('0', 'solid', true)]);
     assert.equal(recs[0].type, 'review');
     assert.equal(recs[0].groupId, '0');
+  });
+
+  it('stale slow level gets practice, not review', () => {
+    const recs = computeLevelRecs([status('0', 'learning', true)]);
+    assert.equal(recs.length, 1);
+    assert.equal(recs[0].type, 'practice');
   });
 
   it('produces practice recs for slow levels', () => {
@@ -298,32 +304,37 @@ describe('computeLevelRecs', () => {
     assert.equal(recs[0].type, 'practice');
   });
 
-  it('produces automate recs for learned levels', () => {
-    const recs = computeLevelRecs([status('0', 'learned')]);
+  it('produces automate recs for learned fresh levels', () => {
+    const recs = computeLevelRecs([status('0', 'solid')]);
     assert.equal(recs[0].type, 'automate');
   });
 
-  it('produces no recs for automatic levels', () => {
+  it('learned stale level gets review only (no automate)', () => {
+    const recs = computeLevelRecs([status('0', 'solid', true)]);
+    assert.equal(recs.length, 1);
+    assert.equal(recs[0].type, 'review');
+  });
+
+  it('produces no recs for automatic fresh levels', () => {
     const recs = computeLevelRecs([status('0', 'automatic')]);
     assert.equal(recs.length, 0);
   });
 
+  it('automatic stale level gets review', () => {
+    const recs = computeLevelRecs([status('0', 'automatic', true)]);
+    assert.equal(recs.length, 1);
+    assert.equal(recs[0].type, 'review');
+  });
+
   it('review comes before practice and automate', () => {
     const recs = computeLevelRecs([
-      status('0', 'learned', true), // review
+      status('0', 'solid', true), // review (Solid + stale)
       status('1', 'learning'), // practice
-      status('2', 'learned'), // automate
+      status('2', 'solid'), // automate (Solid + fresh)
     ]);
     assert.equal(recs[0].type, 'review');
     assert.equal(recs[1].type, 'practice');
     assert.equal(recs[2].type, 'automate');
-  });
-
-  it('level needing review AND being slow gets both recs', () => {
-    const recs = computeLevelRecs([status('0', 'learning', true)]);
-    assert.equal(recs.length, 2);
-    assert.equal(recs[0].type, 'review');
-    assert.equal(recs[1].type, 'practice');
   });
 });
 
@@ -343,7 +354,7 @@ describe('checkExpansionGate', () => {
       speedLabel: speed >= 0.9
         ? 'automatic'
         : speed >= 0.7
-        ? 'learned'
+        ? 'solid'
         : 'learning',
       needsReview,
     };
@@ -387,17 +398,17 @@ describe('shouldThrottleExpansion', () => {
 
   it('throttles when ≥3 learned levels', () => {
     assert.ok(shouldThrottleExpansion([
-      status('learned'),
-      status('learned'),
-      status('learned'),
+      status('solid'),
+      status('solid'),
+      status('solid'),
     ]));
   });
 
   it('does not throttle when <3 learned levels', () => {
     assert.ok(
       !shouldThrottleExpansion([
-        status('learned'),
-        status('learned'),
+        status('solid'),
+        status('solid'),
         status('automatic'),
       ]),
     );
@@ -834,7 +845,30 @@ describe('computeRecommendations', () => {
 
   // --- Review detection ---
 
-  it('produces review levelRecs when freshness is low', () => {
+  it('produces review levelRecs when Solid+ level has low freshness', () => {
+    // All items automatic → P10 speed ≥ 0.9 (Solid+), so stale → review.
+    const data = {
+      '0': {
+        workingCount: 0,
+        unseenCount: 0,
+        automaticCount: 10,
+        totalCount: 10,
+      },
+    };
+    const sel = mockSelector(data, {
+      getLevelFreshness: () => ({ level: 0.3, seen: 10 }),
+    });
+    const result = computeRecommendations(
+      sel,
+      ['0'],
+      makeGetItemIds(data),
+      config,
+    );
+    assert.ok(result.levelRecs.some((r) => r.type === 'review'));
+  });
+
+  it('stale slow level gets practice, not review', () => {
+    // Mixed items → P10 speed in learning range, stale → practice.
     const data = {
       '0': {
         workingCount: 5,
@@ -852,7 +886,8 @@ describe('computeRecommendations', () => {
       makeGetItemIds(data),
       config,
     );
-    assert.ok(result.levelRecs.some((r) => r.type === 'review'));
+    assert.ok(!result.levelRecs.some((r) => r.type === 'review'));
+    assert.ok(result.levelRecs.some((r) => r.type === 'practice'));
   });
 
   it('no review recs when freshness is high', () => {

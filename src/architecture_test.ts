@@ -114,6 +114,7 @@ const FOUNDATION = new Set([
   'src/deadline.ts',
   'src/fretboard.ts',
   'src/recommendations.ts',
+  'src/speed-levels.ts',
   'src/effort.ts',
   'src/storage.ts',
   'src/updater.ts',

@@ -33,13 +33,10 @@ export function countAutomatic(
 // Re-export for consumers that import from mode-ui-state.
 export { computeLevelPercentile } from './adaptive.ts';
 
+import { speedLabel } from './speed-levels.ts';
+
 /** Compute the status label from P10(speed). */
-export function statusLabelFromLevel(level: number): string {
-  if (level >= 0.9) return 'Automatic';
-  if (level >= 0.7) return 'Solid';
-  if (level >= 0.3) return 'Learning';
-  return 'Hesitant';
-}
+export const statusLabelFromLevel = speedLabel;
 
 // Re-export for consumers that import from mode-ui-state.
 export type { SuggestionLine } from './types.ts';
@@ -92,7 +89,7 @@ export function buildRecommendationLines(
   }
   if (byType['automate']) {
     const labels = byType['automate'].map(getGroupLabel);
-    lines.push({ verb: 'Keep practicing', levels: labels });
+    lines.push({ verb: 'Practice', levels: labels });
   }
 
   return lines;
@@ -107,8 +104,6 @@ function flatVerb(line: SuggestionLine): string {
       return 'practice';
     case 'Start':
       return 'start';
-    case 'Keep practicing':
-      return 'automate';
     default:
       return line.verb.toLowerCase();
   }

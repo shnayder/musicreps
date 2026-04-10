@@ -28,11 +28,24 @@ import {
   semitoneMathItemIds,
 } from '../src/fixtures/heatmap-scenarios.ts';
 import { generateLocalStorageData } from '../src/fixtures/recommendation-scenarios.ts';
+import {
+  NOTE_SEMI_AUTOMATIC,
+  NOTE_SEMI_LEARNING,
+  NOTE_SEMI_SOLID_STALE,
+} from '../src/fixtures/recommendation-states.ts';
+
+const noteSemiStates = [NOTE_SEMI_LEARNING, NOTE_SEMI_SOLID_STALE, NOTE_SEMI_AUTOMATIC];
 import { GUITAR } from '../src/music-data.ts';
 import { MODE_NAMES } from '../src/mode-catalog.ts';
 import { getGroups, getItemIdsForGroup } from '../src/modes/fretboard/logic.ts';
-import { getItemIdsForGroup as semiMathGetGroup } from '../src/modes/semitone-math/logic.ts';
-import { getItemIdsForGroup as keySigGetGroup } from '../src/modes/key-signatures/logic.ts';
+import {
+  ALL_GROUP_IDS as SEMI_MATH_GROUP_IDS,
+  getItemIdsForGroup as semiMathGetGroup,
+} from '../src/modes/semitone-math/logic.ts';
+import {
+  ALL_GROUP_IDS as KEY_SIG_GROUP_IDS,
+  getItemIdsForGroup as keySigGetGroup,
+} from '../src/modes/key-signatures/logic.ts';
 import {
   ALL_ITEMS as NOTE_SEMI_ITEMS,
 } from '../src/modes/note-semitones/logic.ts';
@@ -88,7 +101,8 @@ export type ScreenshotEntry = {
 export function buildManifest(): ScreenshotEntry[] {
   const entries: ScreenshotEntry[] = [];
   const guitarGroups = getGroups(GUITAR);
-  const gIds = guitarGroups.map((_, i) => getItemIdsForGroup(GUITAR, i));
+  const fbGroupIds = guitarGroups.map((g) => g.id);
+  const gIds = fbGroupIds.map((id) => getItemIdsForGroup(GUITAR, id));
 
   // Home screen (before any mode is selected)
   entries.push({ name: 'home', modeId: 'home' });
@@ -132,23 +146,23 @@ export function buildManifest(): ScreenshotEntry[] {
           state: 'unseen' as const,
         })),
       ]),
-      // semitoneMath: g0 slow but fresh → "Get faster"
+      // semitoneMath: first group slow but fresh → "Practice"
       ...perGroupScenario('semitoneMath', [
         {
-          itemIds: semiMathGetGroup(0),
+          itemIds: semiMathGetGroup(SEMI_MATH_GROUP_IDS[0]),
           state: 'working',
           seenFraction: 0.7,
         },
       ]),
-      // keySignatures: g0 mastered, rest unseen → "Learn next level"
+      // keySignatures: first group mastered, rest unseen → "Start"
       ...generateLocalStorageData(
         'keySignatures',
         {
-          0: {
-            automaticCount: 10,
+          [KEY_SIG_GROUP_IDS[0]]: {
+            automaticCount: 14,
             workingCount: 0,
             unseenCount: 0,
-            totalCount: 10,
+            totalCount: 14,
           },
         },
         Date.now(),
@@ -159,60 +173,29 @@ export function buildManifest(): ScreenshotEntry[] {
   });
 
   // Home screen: all done — all starred skills fully automatic
-  // Use generateLocalStorageData with all-fluent specs so the recommendation
-  // engine classifies both as "automatic" → triggers "all done" message.
   entries.push({
     name: 'home-recs-all-done',
     modeId: 'home',
     localStorageData: {
       starredSkills: JSON.stringify(['noteSemitones', 'keySignatures']),
-      ...generateLocalStorageData(
-        'noteSemitones',
-        {
-          0: {
-            automaticCount: 24,
-            workingCount: 0,
-            unseenCount: 0,
-            totalCount: 24,
-          },
-        },
-        Date.now(),
-        () => NOTE_SEMI_ITEMS,
-      ),
+      // noteSemitones: all items automatic (single-level, use perGroupScenario)
+      ...perGroupScenario('noteSemitones', [
+        { itemIds: NOTE_SEMI_ITEMS, state: 'automatic' },
+      ]),
+      // keySignatures: all groups automatic
       ...generateLocalStorageData(
         'keySignatures',
-        {
-          0: {
-            automaticCount: 6,
-            workingCount: 0,
-            unseenCount: 0,
-            totalCount: 6,
-          },
-          1: {
-            automaticCount: 4,
-            workingCount: 0,
-            unseenCount: 0,
-            totalCount: 4,
-          },
-          2: {
-            automaticCount: 4,
-            workingCount: 0,
-            unseenCount: 0,
-            totalCount: 4,
-          },
-          3: {
-            automaticCount: 4,
-            workingCount: 0,
-            unseenCount: 0,
-            totalCount: 4,
-          },
-          4: {
-            automaticCount: 6,
-            workingCount: 0,
-            unseenCount: 0,
-            totalCount: 6,
-          },
-        },
+        Object.fromEntries(
+          KEY_SIG_GROUP_IDS.map((id) => {
+            const items = keySigGetGroup(id);
+            return [id, {
+              automaticCount: items.length,
+              workingCount: 0,
+              unseenCount: 0,
+              totalCount: items.length,
+            }];
+          }),
+        ),
         Date.now(),
         keySigGetGroup,
       ),
@@ -231,6 +214,15 @@ export function buildManifest(): ScreenshotEntry[] {
       ]),
     },
   });
+
+  // Single-level mode (noteSemitones) — uses shared recommendation states
+  for (const state of noteSemiStates) {
+    entries.push({
+      name: `design-${state.name}`,
+      modeId: 'noteSemitones',
+      localStorageData: state.localStorageData,
+    });
+  }
 
   // All modes: idle + quiz (+ reverse quiz for bidirectional modes)
   for (const modeId of MODE_IDS) {
@@ -363,7 +355,7 @@ export function buildManifest(): ScreenshotEntry[] {
   const fbGroupScenarios: [
     string,
     GroupItemProfile[],
-    number[], // enabled group indices
+    string[], // enabled group IDs
   ][] = [
     // Just started group 0 — a few items seen, rest unseen
     [
@@ -372,7 +364,7 @@ export function buildManifest(): ScreenshotEntry[] {
         { itemIds: gIds[0], state: 'working', seenFraction: 0.35 },
         ...gIds.slice(1).map(unseen),
       ],
-      [0],
+      [fbGroupIds[0]],
     ],
     // Working on first few groups — group 0 fast, group 1 mixed, group 2 just starting
     [
@@ -383,7 +375,7 @@ export function buildManifest(): ScreenshotEntry[] {
         { itemIds: gIds[2], state: 'working', seenFraction: 0.5 },
         ...gIds.slice(3).map(unseen),
       ],
-      [0, 1, 2],
+      fbGroupIds.slice(0, 3),
     ],
     // Mastered first couple, working on next ones
     [
@@ -395,7 +387,7 @@ export function buildManifest(): ScreenshotEntry[] {
         { itemIds: gIds[3], state: 'working', seenFraction: 0.5 },
         ...gIds.slice(4).map(unseen),
       ],
-      [0, 1, 2, 3],
+      fbGroupIds.slice(0, 4),
     ],
     // Needs review — first groups mastered but stale
     [
@@ -406,7 +398,7 @@ export function buildManifest(): ScreenshotEntry[] {
         { itemIds: gIds[2], state: 'stale' },
         ...gIds.slice(3).map(unseen),
       ],
-      [0, 1, 2],
+      fbGroupIds.slice(0, 3),
     ],
     // Nearly done — everything except last group is fast
     [
@@ -418,14 +410,14 @@ export function buildManifest(): ScreenshotEntry[] {
         })),
         { itemIds: gIds[gIds.length - 1], state: 'mixed' as const },
       ],
-      gIds.map((_, i) => i),
+      fbGroupIds,
     ],
   ];
 
-  for (const [label, groups, enabledIndices] of fbGroupScenarios) {
+  for (const [label, groups, enabledGroupIds] of fbGroupScenarios) {
     const data = {
       ...perGroupScenario('fretboard', groups),
-      fretboard_enabledGroups: JSON.stringify(enabledIndices),
+      fretboard_enabledGroups: JSON.stringify(enabledGroupIds),
     };
     // Practice tab — suggested mode (default)
     entries.push({

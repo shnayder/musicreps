@@ -22,6 +22,7 @@ import type {
   LevelRecommendation,
   RecommendationResult,
 } from './types.ts';
+import { getSpeedLevel, type SpeedLevel } from './speed-levels.ts';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -116,7 +117,7 @@ export type LevelStatus = {
   groupId: string;
   speed: number;
   freshness: number;
-  speedLabel: 'automatic' | 'learned' | 'learning' | 'hesitant' | 'starting';
+  speedLabel: SpeedLevel['key'];
   needsReview: boolean;
 };
 
@@ -135,18 +136,11 @@ export function classifyLevelStatus(
     nowMs,
   );
 
-  let speedLabel: LevelStatus['speedLabel'];
-  if (speed >= 0.9) speedLabel = 'automatic';
-  else if (speed >= 0.7) speedLabel = 'learned';
-  else if (speed >= 0.3) speedLabel = 'learning';
-  else if (speed > 0) speedLabel = 'hesitant';
-  else speedLabel = 'starting';
-
   return {
     groupId,
     speed,
     freshness,
-    speedLabel,
+    speedLabel: getSpeedLevel(speed).key,
     needsReview: freshness < 0.5,
   };
 }
@@ -164,14 +158,20 @@ export function computeLevelRecs(
 ): LevelRecommendation[] {
   const recs: LevelRecommendation[] = [];
 
-  // Priority 1: review — any level that needs review
+  // Priority 1: review — stale levels that were Solid+ (speed >= 0.7).
+  // Stale levels that are still slow get 'practice' instead — you're not
+  // reviewing something you once knew, just need more practice.
   for (const s of statuses) {
-    if (s.needsReview) {
+    if (
+      s.needsReview &&
+      (s.speedLabel === 'solid' || s.speedLabel === 'automatic')
+    ) {
       recs.push({ groupId: s.groupId, type: 'review' });
     }
   }
 
-  // Priority 2: practice — any level Starting/Hesitant/Learning
+  // Priority 2: practice — any level not yet Solid (Starting/Hesitant/Learning),
+  // regardless of freshness.
   for (const s of statuses) {
     if (
       s.speedLabel === 'starting' || s.speedLabel === 'hesitant' ||
@@ -181,10 +181,10 @@ export function computeLevelRecs(
     }
   }
 
-  // Priority 3: automate — any level Learned (not yet Automatic)
+  // Priority 3: automate — any level Learned (not yet Automatic), fresh.
   // (Priority for expand is handled by the expansion gate in computeRecommendations)
   for (const s of statuses) {
-    if (s.speedLabel === 'learned') {
+    if (s.speedLabel === 'solid' && !s.needsReview) {
       recs.push({ groupId: s.groupId, type: 'automate' });
     }
   }
@@ -215,7 +215,7 @@ export function checkExpansionGate(statuses: LevelStatus[]): boolean {
  */
 export function shouldThrottleExpansion(statuses: LevelStatus[]): boolean {
   const learnedCount =
-    statuses.filter((s) => s.speedLabel === 'learned').length;
+    statuses.filter((s) => s.speedLabel === 'solid').length;
   return learnedCount >= 3;
 }
 
