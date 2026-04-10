@@ -2774,7 +2774,8 @@ body.native-app {
   border-right: none;
 }
 body.native-app .answer-input,
-body.native-app .keyboard-hint {
+body.native-app .keyboard-hint,
+body.native-app .hint {
   display: none;
 }
 
@@ -2784,6 +2785,8 @@ body.native-app .keyboard-hint {
 @media (max-width: 599px) {
   :root {
     --size-content-inset: var(--gap-group);
+    --size-answer-grid: 220px;
+    --type-answer-size: 1.1rem;
   }
 
   body {
@@ -2802,10 +2805,19 @@ body.native-app .keyboard-hint {
   }
 
   .next-btn,
+  .start-btn {
+    margin-top: var(--gap-group);
+  }
+
+  .next-btn,
   .start-btn,
   .feedback-notice,
   .page-action-row {
     width: 80%;
+  }
+
+  .hint {
+    margin-top: var(--gap-group);
   }
 
   /* Prevent iOS zoom on input focus */
