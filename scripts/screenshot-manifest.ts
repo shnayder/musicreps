@@ -408,20 +408,17 @@ export function buildManifest(): ScreenshotEntry[] {
       ],
       [0, 1, 2],
     ],
-    // Nearly done — everything except B e ♯♭ (group 7) is fast
+    // Nearly done — everything except last group is fast
     [
       'fb-nearly-done',
       [
-        { itemIds: gIds[0], state: 'automatic' },
-        { itemIds: gIds[1], state: 'automatic' },
-        { itemIds: gIds[2], state: 'automatic' },
-        { itemIds: gIds[3], state: 'automatic' },
-        { itemIds: gIds[4], state: 'automatic' },
-        { itemIds: gIds[5], state: 'automatic' },
-        { itemIds: gIds[6], state: 'automatic' },
-        { itemIds: gIds[7], state: 'mixed' },
+        ...gIds.slice(0, -1).map((ids) => ({
+          itemIds: ids,
+          state: 'automatic' as const,
+        })),
+        { itemIds: gIds[gIds.length - 1], state: 'mixed' as const },
       ],
-      [0, 1, 2, 3, 4, 5, 6, 7],
+      gIds.map((_, i) => i),
     ],
   ];
 
