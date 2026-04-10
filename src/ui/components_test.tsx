@@ -17,12 +17,6 @@ import {
 import { SequentialSlots } from './sequential-slots.tsx';
 import type { StatsSelector } from './stats.tsx';
 import { StatsGrid } from './stats.tsx';
-import {
-  GroupProgressToggles,
-  GroupToggles,
-  NoteFilter,
-  StringToggles,
-} from './scope.tsx';
 import { CountdownBar, FeedbackDisplay, TextPrompt } from './quiz-ui.tsx';
 import { SkillIcon } from './icons.tsx';
 import {
@@ -265,117 +259,6 @@ describe('StatsGrid', () => {
 // ---------------------------------------------------------------------------
 // Scope components
 // ---------------------------------------------------------------------------
-
-describe('GroupToggles', () => {
-  it('renders toggles with active state', () => {
-    const html = render(
-      <GroupToggles
-        labels={['+1 to +3', '+4 to +6']}
-        active={new Set([0])}
-        onToggle={() => {}}
-      />,
-    );
-    assert.ok(html.includes('toggle-group'));
-    assert.ok(html.includes('distance-toggle active'));
-    assert.ok(html.includes('+1 to +3'));
-    assert.ok(html.includes('+4 to +6'));
-  });
-});
-
-describe('StringToggles', () => {
-  it('renders string toggles', () => {
-    const html = render(
-      <StringToggles
-        stringNames={['E', 'A', 'D']}
-        active={new Set([0, 1])}
-        onToggle={() => {}}
-      />,
-    );
-    assert.ok(html.includes('string-toggles'));
-    const activeCount = (html.match(/string-toggle active/g) || []).length;
-    assert.equal(activeCount, 2);
-  });
-});
-
-describe('NoteFilter', () => {
-  it('renders natural/sharps-flats toggle', () => {
-    const html = render(
-      <NoteFilter mode='natural' onChange={() => {}} />,
-    );
-    assert.ok(html.includes('notes-toggles'));
-    assert.ok(html.includes('notes-toggle active'));
-    assert.ok(html.includes('natural'));
-  });
-});
-
-describe('GroupProgressToggles', () => {
-  const mockSel = {
-    getSpeedScore: () => 0.7,
-    getFreshness: () => 0.6,
-  };
-  const groups = [
-    { label: 'G1', itemIds: ['a', 'b'] },
-    { label: 'G2', itemIds: ['c'] },
-  ];
-
-  it('renders correct number of progress bar slices', () => {
-    const html = render(
-      <GroupProgressToggles
-        groups={groups}
-        active={new Set([0, 1])}
-        onToggle={() => {}}
-        selector={mockSel}
-      />,
-    );
-    const slices = (html.match(/group-bar-slice/g) || []).length;
-    assert.equal(slices, 3); // 2 items in G1 + 1 in G2
-  });
-
-  it('marks skipped group toggle as disabled', () => {
-    const html = render(
-      <GroupProgressToggles
-        groups={groups}
-        active={new Set([0])}
-        onToggle={() => {}}
-        selector={mockSel}
-        skipped={new Map([[1, 'deferred']])}
-        onSkip={() => {}}
-        onUnskip={() => {}}
-      />,
-    );
-    // The skipped toggle should have disabled attribute and skipped class
-    assert.ok(html.includes('skipped'));
-    assert.ok(html.includes('disabled'));
-  });
-
-  it('renders skip menu when onSkip/onUnskip provided', () => {
-    const html = render(
-      <GroupProgressToggles
-        groups={groups}
-        active={new Set([0, 1])}
-        onToggle={() => {}}
-        selector={mockSel}
-        onSkip={() => {}}
-        onUnskip={() => {}}
-      />,
-    );
-    assert.ok(html.includes('group-skip-btn'));
-    assert.ok(html.includes('has-skip'));
-  });
-
-  it('omits skip menu when onSkip/onUnskip not provided', () => {
-    const html = render(
-      <GroupProgressToggles
-        groups={groups}
-        active={new Set([0, 1])}
-        onToggle={() => {}}
-        selector={mockSel}
-      />,
-    );
-    assert.ok(!html.includes('group-skip-btn'));
-    assert.ok(!html.includes('has-skip'));
-  });
-});
 
 // ---------------------------------------------------------------------------
 // Quiz UI components

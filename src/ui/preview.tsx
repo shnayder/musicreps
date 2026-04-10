@@ -106,16 +106,14 @@ function PreviewApp() {
             tabId={activeTab}
           />
         )}
-        {activeTab === 'flow' && (
-          <FlowTab sel={sel} groupSel={groupSel} tabId={activeTab} />
-        )}
+        {activeTab === 'flow' && <FlowTab sel={sel} tabId={activeTab} />}
         {activeTab === 'buttons' && <ButtonsTab tabId={activeTab} />}
         {activeTab === 'quiz-ui' && <QuizUITab tabId={activeTab} />}
         {activeTab === 'scope-stats' && (
-          <ScopeStatsTab sel={sel} groupSel={groupSel} tabId={activeTab} />
+          <ScopeStatsTab sel={sel} tabId={activeTab} />
         )}
         {activeTab === 'structure' && (
-          <StructureTab sel={sel} groupSel={groupSel} tabId={activeTab} />
+          <StructureTab sel={sel} tabId={activeTab} />
         )}
         {activeTab === 'design-system' && <DesignSystemTab tabId={activeTab} />}
         {activeTab === 'colors' && <ColorsTab tabId={activeTab} />}

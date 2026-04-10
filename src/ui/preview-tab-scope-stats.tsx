@@ -3,15 +3,8 @@
 import { NOTES } from '../music-data.ts';
 import type { StatsSelector } from './stats.tsx';
 import { StatsGrid, StatsLegend, StatsTable } from './stats.tsx';
-import {
-  GroupProgressBar,
-  GroupProgressToggles,
-  GroupToggles,
-  NoteFilter,
-  NotesToggles,
-  StringToggles,
-} from './scope.tsx';
-import { type GroupSel, PreviewGrid, Section } from './preview-shared.tsx';
+import { GroupProgressBar } from './scope.tsx';
+import { PreviewGrid, Section } from './preview-shared.tsx';
 
 // ---------------------------------------------------------------------------
 // File-local helpers
@@ -52,58 +45,12 @@ function StatsSection({ sel, tabId }: { sel: StatsSelector; tabId: string }) {
 }
 
 function ScopeSection(
-  { groupSel, tabId }: { groupSel: GroupSel; tabId: string },
+  { tabId }: { tabId: string },
 ) {
   return (
     <>
       <h2>Scope Controls</h2>
       <PreviewGrid>
-        <Section title='Group Toggles' tabId={tabId}>
-          <GroupToggles
-            labels={['+1 to +3', '+4 to +6', '+7 to +9', '+10 to +11']}
-            active={new Set([0, 1])}
-            onToggle={() => {}}
-          />
-        </Section>
-        <Section title='String Toggles' tabId={tabId}>
-          <StringToggles
-            stringNames={['E', 'A', 'D', 'G', 'B', 'e']}
-            active={new Set([0, 1, 2])}
-            onToggle={() => {}}
-          />
-        </Section>
-        <Section title='GroupProgressToggles (active groups)' tabId={tabId}>
-          <GroupProgressToggles
-            groups={[
-              { label: '1–3', itemIds: ['C+1', 'C+2', 'C+3'] },
-              { label: '4–6', itemIds: ['C+4', 'C+5', 'C+6'] },
-              { label: '7–9', itemIds: ['D+1', 'D+2', 'D+3'] },
-            ]}
-            active={new Set([0, 1])}
-            onToggle={() => {}}
-            selector={groupSel}
-            onSkip={() => {}}
-            onUnskip={() => {}}
-          />
-        </Section>
-        <Section title='GroupProgressToggles (with skipped)' tabId={tabId}>
-          <GroupProgressToggles
-            groups={[
-              { label: '1–3', itemIds: ['C+1', 'C+2', 'C+3'] },
-              { label: '4–6', itemIds: ['C+4', 'C+5', 'C+6'] },
-              { label: '7–9', itemIds: ['D+1', 'D+2', 'D+3'] },
-            ]}
-            active={new Set([0])}
-            onToggle={() => {}}
-            selector={groupSel}
-            skipped={new Map([[1, 'mastered'], [2, 'deferred']]) as ReadonlyMap<
-              number,
-              'mastered' | 'deferred'
-            >}
-            onSkip={() => {}}
-            onUnskip={() => {}}
-          />
-        </Section>
         <Section title='GroupProgressBar' tabId={tabId}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <GroupProgressBar
@@ -115,16 +62,6 @@ function ScopeSection(
             />
           </div>
         </Section>
-        <Section title='Note Filter' tabId={tabId}>
-          <NoteFilter mode='natural' onChange={() => {}} />
-        </Section>
-        <Section title='Notes Toggles' tabId={tabId}>
-          <NotesToggles
-            notes={['C', 'D', 'E', 'F', 'G', 'A', 'B']}
-            active={new Set(['C', 'D', 'E', 'F', 'G'])}
-            onToggle={() => {}}
-          />
-        </Section>
       </PreviewGrid>
     </>
   );
@@ -135,16 +72,15 @@ function ScopeSection(
 // ---------------------------------------------------------------------------
 
 export function ScopeStatsTab(
-  { sel, groupSel, tabId }: {
+  { sel, tabId }: {
     sel: StatsSelector;
-    groupSel: GroupSel;
     tabId: string;
   },
 ) {
   return (
     <div>
       <StatsSection sel={sel} tabId={tabId} />
-      <ScopeSection groupSel={groupSel} tabId={tabId} />
+      <ScopeSection tabId={tabId} />
     </div>
   );
 }

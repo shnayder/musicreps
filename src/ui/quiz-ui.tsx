@@ -3,13 +3,14 @@
 
 import { getUseSolfege } from '../music-data.ts';
 import { ActionButton } from './action-button.tsx';
+import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
 // TextPrompt — quiz question text
 // ---------------------------------------------------------------------------
 
 export function TextPrompt({ text }: { text: string }) {
-  return <div class='quiz-prompt'>{text}</div>;
+  return <Text role='quiz-prompt' as='div' class='quiz-prompt'>{text}</Text>;
 }
 
 // ---------------------------------------------------------------------------

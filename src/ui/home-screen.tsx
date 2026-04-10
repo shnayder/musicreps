@@ -33,6 +33,7 @@ import {
   LayoutMain,
   ScreenLayout,
 } from './screen-layout.tsx';
+import { Section, Stack } from './layout.tsx';
 import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
@@ -126,8 +127,8 @@ export function SkillCardHeader(
       <SkillIcon modeId={modeId} />
       <span class='skill-card-header-text'>
         {trackLabel && <TrackPill label={trackLabel} />}
-        <span class='home-mode-name'>{name}</span>
-        <span class='home-mode-desc'>{desc}</span>
+        <Text role='heading-section' as='span'>{name}</Text>
+        <Text role='body-secondary' as='span'>{desc}</Text>
       </span>
     </span>
   );
@@ -259,7 +260,7 @@ function ActiveSkillCard(
         <span class='skill-card-header'>
           <SkillIcon modeId={modeId} />
           <span class='skill-card-header-text'>
-            <span class='home-mode-name'>{name}</span>
+            <Text role='heading-section' as='span'>{name}</Text>
             <TrackPill label={trackLabel} />
             {hasRec && (
               <span class='skill-rec-hint'>
@@ -309,14 +310,12 @@ function ActiveSkillsList(
 ) {
   if (starred.size === 0) {
     return (
-      <div>
-        <Text role='heading-section' as='h2' class='panel-heading'>
-          Active Skills
-        </Text>
-        <p class='active-skills-empty'>
+      <Stack gap='group'>
+        <Text role='heading-section' as='h2'>Active Skills</Text>
+        <Text role='status' as='p' class='text-hint'>
           Star the skills you want to automate in <strong>All Skills</strong>.
-        </p>
-      </div>
+        </Text>
+      </Stack>
     );
   }
 
@@ -366,10 +365,8 @@ function ActiveSkillsList(
   const allDone = recommendations.length === 0 && starred.size > 0;
 
   return (
-    <div class='active-skills-list'>
-      <Text role='heading-section' as='h2' class='panel-heading'>
-        Active Skills
-      </Text>
+    <Stack gap='group'>
+      <Text role='heading-section' as='h2'>Active Skills</Text>
       {allDone && (
         <p class='active-skills-done'>
           All your starred skills are automatic. Nice work! Star new skills in
@@ -390,7 +387,7 @@ function ActiveSkillsList(
             : undefined}
         />
       ))}
-    </div>
+    </Stack>
   );
 }
 
@@ -419,7 +416,9 @@ export function TrackSection(
         </span>
         {label}
       </button>
-      {isExpanded && <div class='track-accordion-body'>{children}</div>}
+      {isExpanded && (
+        <Stack gap='group' class='track-accordion-body'>{children}</Stack>
+      )}
     </div>
   );
 }
@@ -433,10 +432,7 @@ function SettingsAboutLegal(
 ) {
   return (
     <>
-      <section class='settings-section'>
-        <Text role='heading-section' as='h2' class='section-heading'>
-          About
-        </Text>
+      <Section heading='About'>
         <div class='settings-link-list'>
           {appConfig.contactEmail && (
             <a class='text-link' href={`mailto:${appConfig.contactEmail}`}>
@@ -455,12 +451,9 @@ function SettingsAboutLegal(
           )}
           <span class='settings-meta'>Build {version}</span>
         </div>
-      </section>
+      </Section>
 
-      <section class='settings-section'>
-        <Text role='heading-section' as='h2' class='section-heading'>
-          Legal
-        </Text>
+      <Section heading='Legal'>
         <div class='settings-link-list'>
           {appConfig.termsUrl && (
             <a
@@ -483,7 +476,7 @@ function SettingsAboutLegal(
             </a>
           )}
         </div>
-      </section>
+      </Section>
     </>
   );
 }
@@ -503,11 +496,8 @@ export function SettingsPanel(
   },
 ) {
   return (
-    <div class='settings-page'>
-      <section class='settings-section'>
-        <Text role='heading-section' as='h2' class='section-heading'>
-          General
-        </Text>
+    <Stack gap='component' class='settings-page'>
+      <Section heading='General'>
         <SettingToggle
           label='Note names'
           options={[
@@ -521,23 +511,20 @@ export function SettingsPanel(
             setUseSolfege(sol);
           }}
         />
-      </section>
+      </Section>
 
       <SettingsAboutLegal appConfig={appConfig} version={version} />
 
       {onOpenDev && (
-        <section class='settings-section'>
-          <Text role='heading-section' as='h2' class='section-heading'>
-            Developer
-          </Text>
+        <Section heading='Developer'>
           <div class='settings-link-list'>
             <button type='button' class='text-link' onClick={onOpenDev}>
               Dev panel
             </button>
           </div>
-        </section>
+        </Section>
       )}
-    </div>
+    </Stack>
   );
 }
 
@@ -548,7 +535,7 @@ export function SettingsPanel(
 function DevPage({ onClose }: { onClose: () => void }) {
   const [data] = useState<DevPanelData>(getDevPanelData);
   return (
-    <div class='settings-page'>
+    <Stack gap='component' class='settings-page'>
       <div class='settings-page-header'>
         <CloseButton ariaLabel='Close' onClick={onClose} />
         <Text role='heading-page' as='h1' class='page-heading'>Dev</Text>
@@ -578,21 +565,14 @@ function DevPage({ onClose }: { onClose: () => void }) {
           />
         </DevSection>
       )}
-    </div>
+    </Stack>
   );
 }
 
 function DevSection(
   { title, children }: { title: string; children: ComponentChildren },
 ) {
-  return (
-    <section class='settings-section'>
-      <Text role='heading-section' as='h2' class='section-heading'>
-        {title}
-      </Text>
-      {children}
-    </section>
-  );
+  return <Section heading={title}>{children}</Section>;
 }
 
 function DevStatRow({ label, value }: { label: string; value: number }) {
@@ -644,11 +624,9 @@ function AllSkillsList(
     },
 ) {
   return (
-    <div class='home-modes'>
-      <Text role='heading-section' as='h2' class='panel-heading'>
-        All Skills
-      </Text>
-      <Text role='status' as='p' class='status-empty all-skills-hint'>
+    <Stack gap='group'>
+      <Text role='heading-section' as='h2'>All Skills</Text>
+      <Text role='status' as='p' class='text-hint'>
         Star the skills you want to automate.
       </Text>
       {TRACKS.map((track) => (
@@ -670,7 +648,7 @@ function AllSkillsList(
           ))}
         </TrackSection>
       ))}
-    </div>
+    </Stack>
   );
 }
 
@@ -716,26 +694,28 @@ function HomeHeader(
             <RepeatMark size={28} class='home-logo-mark' />
             Music Reps
           </h1>
-          <p class='home-tagline'>
+          <Text role='body-secondary' as='p' class='home-tagline'>
             Make music fundamentals automatic so you can focus on playing.
-          </p>
+          </Text>
         </>
       )}
       <div class='home-stats-bar'>
         <span class='home-stat'>
-          <span class='home-stat-value'>
+          <Text role='metric-effort' as='span'>
             {repsToday.toLocaleString()}
-          </span>
+          </Text>
           {' today'}
         </span>
         <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
         <span class='home-stat'>
-          <span class='home-stat-value'>{totalReps.toLocaleString()}</span>
+          <Text role='metric-effort' as='span'>
+            {totalReps.toLocaleString()}
+          </Text>
           {' total'}
         </span>
         <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
         <span class='home-stat'>
-          <span class='home-stat-value'>{daysActive}</span>
+          <Text role='metric-effort' as='span'>{daysActive}</Text>
           {daysActive === 1 ? ' day' : ' days'}
         </span>
       </div>
@@ -749,11 +729,8 @@ function HomeHeader(
 
 function HomeAboutTab() {
   return (
-    <div class='settings-page'>
-      <section class='settings-section'>
-        <Text role='heading-section' as='h2' class='section-heading'>
-          What is Music Reps?
-        </Text>
+    <Stack gap='component' class='settings-page'>
+      <Section heading='What is Music Reps?'>
         <Text role='body' as='p'>
           Music Reps trains instant recall of music fundamentals, closing the
           gap between{' '}
@@ -766,12 +743,9 @@ function HomeAboutTab() {
           figuring out what key has 4 flats, or listing the notes in an Em7
           chord. Doing reps makes them automatic, so you can focus on playing.
         </Text>
-      </section>
+      </Section>
 
-      <section class='settings-section'>
-        <Text role='heading-section' as='h2' class='section-heading'>
-          How it works
-        </Text>
+      <Section heading='How it works'>
         <ul class='home-about-list'>
           <li>
             <strong>Fast drills, many reps.</strong>{' '}
@@ -799,12 +773,9 @@ function HomeAboutTab() {
             a day, over months and years.
           </li>
         </ul>
-      </section>
+      </Section>
 
-      <section class='settings-section'>
-        <Text role='heading-section' as='h2' class='section-heading'>
-          Getting started
-        </Text>
+      <Section heading='Getting started'>
         <ul class='home-about-list'>
           <li>
             Browse <strong>All Skills</strong>{' '}
@@ -819,8 +790,8 @@ function HomeAboutTab() {
             <strong>Progress</strong> tab.
           </li>
         </ul>
-      </section>
-    </div>
+      </Section>
+    </Stack>
   );
 }
 
