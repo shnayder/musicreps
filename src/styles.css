@@ -1733,6 +1733,7 @@ button {
 .quiz-countdown-bar {
   flex: 1;
   height: 6px;
+  max-width: 60%;
   margin: 0 var(--gap-related);
   background: var(--color-surface-raised);
 }
