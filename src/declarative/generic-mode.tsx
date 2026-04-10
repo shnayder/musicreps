@@ -933,7 +933,7 @@ function IdlePracticeView<Q>(
         )
         : (
           <div class='practice-config'>
-            <Text role='heading-section' as='div' class='practice-config-label'>
+            <Text role='heading-section' class='practice-config-label'>
               Recommendation
             </Text>
             <SuggestionLines
