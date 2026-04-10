@@ -2,6 +2,7 @@
 // Bidirectional: "D major" → "2#", or "3b major" → "Eb".
 
 import {
+  displayKeysigLabel,
   displayNote,
   isValidKeysigInput,
   isValidNoteInput,
@@ -36,8 +37,9 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
   getPromptText: (q) =>
     q.dir === 'fwd'
       ? displayNote(q.root) + ' ' + q.quality
-      : q.sigLabel + ' ' + q.quality,
-  quizInstruction: (q) => q.dir === 'fwd' ? 'What key signature?' : 'What key?',
+      : displayKeysigLabel(q.sigLabel) + ', ' + q.quality,
+  quizInstruction: (q) =>
+    q.dir === 'fwd' ? 'How many \u266F or \u266D?' : 'Name the key',
   answer: {
     kind: 'bidirectional',
     fwd: {

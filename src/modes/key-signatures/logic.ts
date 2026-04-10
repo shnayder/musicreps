@@ -4,6 +4,7 @@
 
 import type { MajorKey, StatsTableRow } from '../../types.ts';
 import {
+  displayKeysigLabel,
   displayNote,
   getScaleDegreeNote,
   keySignatureLabel,
@@ -162,7 +163,7 @@ export function getQuestion(itemId: string): Question {
 export function getStatsRows(): StatsTableRow[] {
   const majorRows = MAJOR_KEYS.map((key) => ({
     label: displayNote(key.root) + ' major',
-    sublabel: keySignatureLabel(key),
+    sublabel: displayKeysigLabel(keySignatureLabel(key)),
     _colHeader: 'Key',
     fwdItemId: key.root + ':fwd',
     revItemId: key.root + ':rev',
@@ -171,7 +172,7 @@ export function getStatsRows(): StatsTableRow[] {
     const majorKey = MINOR_ROOT_TO_MAJOR.get(minorRoot)!;
     return {
       label: displayNote(minorRoot) + ' minor',
-      sublabel: keySignatureLabel(majorKey),
+      sublabel: displayKeysigLabel(keySignatureLabel(majorKey)),
       _colHeader: 'Key',
       fwdItemId: minorRoot + 'm:fwd',
       revItemId: minorRoot + 'm:rev',
