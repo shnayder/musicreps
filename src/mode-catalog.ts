@@ -293,6 +293,16 @@ export type Track = {
 
 export const TRACKS: Track[] = [
   {
+    id: 'guitar',
+    label: 'Guitar',
+    skills: ['fretboard', 'speedTap', 'guitarChordShapes'],
+  },
+  {
+    id: 'ukulele',
+    label: 'Ukulele',
+    skills: ['ukulele', 'ukuleleChordShapes'],
+  },
+  {
     id: 'core',
     label: 'Music theory',
     skills: [
@@ -309,15 +319,5 @@ export const TRACKS: Track[] = [
     id: 'reading',
     label: 'Reading music',
     skills: ['keySignatures'],
-  },
-  {
-    id: 'guitar',
-    label: 'Guitar',
-    skills: ['fretboard', 'speedTap', 'guitarChordShapes'],
-  },
-  {
-    id: 'ukulele',
-    label: 'Ukulele',
-    skills: ['ukulele', 'ukuleleChordShapes'],
   },
 ];

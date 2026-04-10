@@ -8,15 +8,13 @@ import { FeedbackDisplay } from './quiz-ui.tsx';
 import {
   ModeScreen,
   ModeTopBar,
-  PracticeCard,
   QuizArea,
-  Recommendation,
   RoundCompleteActions,
   RoundCompleteInfo,
   StartButton,
   Tabs,
 } from './mode-screen.tsx';
-import { Card, Section as LayoutSection, Stack } from './layout.tsx';
+import { Bar, Card, Section as LayoutSection, Stack } from './layout.tsx';
 import { Text } from './text.tsx';
 import { PreviewGrid, Section } from './preview-shared.tsx';
 
@@ -49,6 +47,28 @@ function LayoutPrimitives({ tabId }: { tabId: string }) {
             <Text role='label'>component (16px)</Text>
             <Text role='body-secondary'>Card-internal sections</Text>
           </Stack>
+        </Section>
+        <Section title='Bar — gap variants' tabId={tabId}>
+          <Bar gap='related'>
+            <Text role='label'>A</Text>
+            <Text role='label'>B</Text>
+            <Text role='label'>C</Text>
+          </Bar>
+          <Text role='body-secondary'>related (4px)</Text>
+          <hr />
+          <Bar gap='group'>
+            <Text role='label'>A</Text>
+            <Text role='label'>B</Text>
+            <Text role='label'>C</Text>
+          </Bar>
+          <Text role='body-secondary'>group (12px)</Text>
+          <hr />
+          <Bar gap='component'>
+            <Text role='label'>A</Text>
+            <Text role='label'>B</Text>
+            <Text role='label'>C</Text>
+          </Bar>
+          <Text role='body-secondary'>component (16px)</Text>
         </Section>
         <Section title='Card' tabId={tabId}>
           <Card>
@@ -167,20 +187,6 @@ function IdleBasicComponents(
           description='Transpose by semitones without counting'
         />
       </Section>
-      <Section title='Recommendation' tabId={tabId}>
-        <Recommendation
-          text='solidify +1 to +3 — 3 items to work on'
-          onApply={() => {}}
-        />
-      </Section>
-      <Section title='PracticeCard (no scope)' tabId={tabId}>
-        <PracticeCard
-          statusLabel='Strong'
-          statusDetail='12 of 14 automatic'
-          recommendation='start A string'
-          onApplyRecommendation={() => {}}
-        />
-      </Section>
     </PreviewGrid>
   );
 }
@@ -198,7 +204,7 @@ function IdleComposedComponents(
             {
               id: 'practice',
               label: 'Practice',
-              content: <PracticeCard statusLabel='Ready to start' />,
+              content: <Text role='body'>Practice content area</Text>,
             },
             {
               id: 'progress',
@@ -227,12 +233,7 @@ function IdleComposedComponents(
               {
                 id: 'practice',
                 label: 'Practice',
-                content: (
-                  <PracticeCard
-                    statusLabel='Solid'
-                    statusDetail='8 of 12 automatic'
-                  />
-                ),
+                content: <Text role='body'>Practice content area</Text>,
               },
               {
                 id: 'progress',

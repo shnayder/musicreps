@@ -4,6 +4,7 @@
 
 import type { MajorKey, StatsTableRow } from '../../types.ts';
 import {
+  displayKeysigLabel,
   displayNote,
   getScaleDegreeNote,
   keySignatureLabel,
@@ -157,25 +158,20 @@ export function getQuestion(itemId: string): Question {
 
 /**
  * Build stats table rows for the progress tab.
- * One row per major key + one per minor key, with fwd/rev item IDs.
+ * Returns 12 paired major/minor rows, each with major fwd/rev item IDs
+ * plus minor fwd2/rev2 item IDs.
  */
 export function getStatsRows(): StatsTableRow[] {
-  const majorRows = MAJOR_KEYS.map((key) => ({
-    label: displayNote(key.root) + ' major',
-    sublabel: keySignatureLabel(key),
-    _colHeader: 'Key',
-    fwdItemId: key.root + ':fwd',
-    revItemId: key.root + ':rev',
-  }));
-  const minorRows = MINOR_ROOTS.map((minorRoot) => {
-    const majorKey = MINOR_ROOT_TO_MAJOR.get(minorRoot)!;
+  return MAJOR_KEYS.map((key, i) => {
+    const minorRoot = MINOR_ROOTS[i];
     return {
-      label: displayNote(minorRoot) + ' minor',
-      sublabel: keySignatureLabel(majorKey),
+      label: displayNote(key.root) + ' / ' + displayNote(minorRoot) + 'm',
+      sublabel: displayKeysigLabel(keySignatureLabel(key)),
       _colHeader: 'Key',
-      fwdItemId: minorRoot + 'm:fwd',
-      revItemId: minorRoot + 'm:rev',
+      fwdItemId: key.root + ':fwd',
+      revItemId: key.root + ':rev',
+      fwd2ItemId: minorRoot + 'm:fwd',
+      rev2ItemId: minorRoot + 'm:rev',
     };
   });
-  return [...majorRows, ...minorRows];
 }

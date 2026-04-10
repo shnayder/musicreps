@@ -63,7 +63,8 @@
       "Bash(deno task build:*)",
       "Bash(deno task:*)",
       "Bash(deno fmt:*)",
-      "Bash(npx playwright:*)"
+      "Bash(npx playwright:*)",
+      "Bash(scripts/poll-ci.sh:*)"
     ]
   },
   "sandbox": {

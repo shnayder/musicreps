@@ -311,6 +311,8 @@ export type StatsTableRow = {
   _colHeader: string;
   fwdItemId: string;
   revItemId: string;
+  fwd2ItemId?: string;
+  rev2ItemId?: string;
 };
 
 // --- Mode lifecycle ---

@@ -2,10 +2,10 @@
 // Bidirectional: "D major" → "2#", or "3b major" → "Eb".
 
 import {
+  displayKeysigLabel,
   displayNote,
   isValidKeysigInput,
   isValidNoteInput,
-  rootUsesFlats,
 } from '../../music-data.ts';
 import {
   MODE_ABOUT_DESCRIPTIONS,
@@ -37,8 +37,9 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
   getPromptText: (q) =>
     q.dir === 'fwd'
       ? displayNote(q.root) + ' ' + q.quality
-      : q.sigLabel + ' ' + q.quality,
-  quizInstruction: (q) => q.dir === 'fwd' ? 'What key signature?' : 'What key?',
+      : displayKeysigLabel(q.sigLabel) + ', ' + q.quality,
+  quizInstruction: (q) =>
+    q.dir === 'fwd' ? 'How many \u266F or \u266D?' : 'Name the key',
   answer: {
     kind: 'bidirectional',
     fwd: {
@@ -53,7 +54,7 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
   validateInput: (q, input) =>
     q.dir === 'fwd' ? isValidKeysigInput(input) : isValidNoteInput(input),
   getDirection: (q) => q.dir,
-  getUseFlats: (q) => rootUsesFlats(q.root),
+  getUseFlats: (q) => q.sigLabel.includes('b'),
 
   inputPlaceholder: (q) =>
     q.dir === 'fwd' ? 'Signature (e.g. 2#)' : 'Note name',
@@ -84,7 +85,9 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
   stats: {
     kind: 'table',
     getRows: getStatsRows,
-    fwdHeader: 'Key\u2192Sig',
-    revHeader: 'Sig\u2192Key',
+    fwdHeader: 'Maj\u2192',
+    revHeader: '\u2190Maj',
+    fwd2Header: 'Min\u2192',
+    rev2Header: '\u2190Min',
   },
 };
