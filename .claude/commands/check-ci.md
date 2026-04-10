@@ -11,14 +11,24 @@ Poll GitHub Actions and Copilot code review until both complete, then report.
    again. Repeat until it completes (max 10 minutes).
 
 3. **Copilot code review** (claude/* branches only): If there is an open PR,
-   check for Copilot review:
+   poll for the Copilot review (it typically takes 3–7 minutes):
+   ```bash
+   for i in $(seq 1 20); do
+     REVIEW=$(gh api repos/<owner>/<repo>/pulls/<number>/reviews \
+       --jq '[.[] | select(.user.login | startswith("copilot-pull-request-reviewer"))] | length')
+     if [ "$REVIEW" -gt 0 ]; then echo "Copilot review found"; break; fi
+     echo "Attempt $i: no review yet, waiting 30s..."
+     sleep 30
+   done
    ```
-   gh pr view <number> --json reviews --jq '.reviews[] | select(.author.login == "copilot-pull-request-reviewer") | {state: .state, body: .body}'
-   ```
-   If no Copilot review yet, wait 30 seconds and check again (max 10 minutes).
-   When it arrives, read the inline comments:
-   ```
-   gh api repos/<owner>/<repo>/pulls/<number>/comments --jq '.[] | select(.user.login == "github-actions[bot]" or .user.login == "copilot-pull-request-reviewer") | .body'
+   When it arrives, read the review body and inline comments:
+   ```bash
+   # Review summary
+   gh api repos/<owner>/<repo>/pulls/<number>/reviews \
+     --jq '.[] | select(.user.login | startswith("copilot-pull-request-reviewer")) | .body'
+   # Inline comments
+   gh api repos/<owner>/<repo>/pulls/<number>/comments \
+     --jq '.[] | select(.user.login | test("copilot|github-actions")) | {path: .path, line: .line, body: .body}'
    ```
 
 4. **Report results**:
