@@ -648,6 +648,31 @@ body {
   gap: var(--gap-section);
 }
 
+/* --- Bar: flex row with semantic gap (horizontal Stack) --- */
+.bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.bar-micro {
+  gap: var(--gap-micro);
+}
+.bar-related {
+  gap: var(--gap-related);
+}
+.bar-group {
+  gap: var(--gap-group);
+}
+.bar-component {
+  gap: var(--pad-component);
+}
+.bar-region {
+  gap: var(--pad-region);
+}
+.bar-section {
+  gap: var(--gap-section);
+}
+
 /* --- Card: container surface --- */
 .card {
   background: var(--color-card);
@@ -718,10 +743,7 @@ body {
 }
 /* --- Stats bar (home header) --- */
 .home-stats-bar {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  gap: var(--gap-group);
   margin-top: var(--gap-group);
   font-size: var(--type-status-size);
   color: var(--type-status-color);
@@ -780,6 +802,7 @@ body {
   font-size: var(--text-xs);
   font-weight: var(--font-medium);
   line-height: var(--leading-none);
+  white-space: nowrap;
   color: inherit;
 }
 /* mode-nav is inside LayoutFooter — no position: fixed needed.
@@ -939,7 +962,7 @@ body {
   font-size: var(--type-label-tag-size);
   font-weight: var(--type-label-tag-weight);
   line-height: var(--type-label-tag-leading);
-  padding: 1px var(--gap-related);
+  padding: 2px var(--gap-related);
   border-radius: 999px;
   white-space: nowrap;
 }
@@ -1203,12 +1226,13 @@ body {
 }
 
 .quiz-session-header {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-related);
   padding: var(--gap-related) var(--size-content-inset) var(--gap-related)
     var(--gap-group);
   background: var(--color-chrome);
+}
+.quiz-countdown-group {
+  flex: 1;
+  min-width: 0;
 }
 
 /* Element-level visibility (replaces inline style="display: none;") */
@@ -1290,93 +1314,8 @@ body {
 /* ==========================================================================
    5. PRACTICE CARD
    ========================================================================== */
-.practice-intro {
-  padding: 0;
-}
-.practice-intro > .text-heading-section {
-  margin-bottom: var(--gap-group);
-}
 .practice-intro-description {
   margin-bottom: var(--gap-group);
-}
-.practice-card {
-  margin-bottom: var(--pad-component);
-  padding: var(--pad-component) var(--pad-region);
-  background: var(--color-card);
-  border-radius: var(--radius-md);
-}
-.practice-zone + .practice-zone {
-  margin-top: var(--pad-region);
-  padding-top: var(--pad-region);
-}
-.practice-status {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-micro);
-  margin-bottom: var(--gap-group);
-}
-.practice-status:empty,
-.practice-status-label:empty {
-  display: none;
-}
-.practice-status-row {
-  display: flex;
-  align-items: baseline;
-  gap: var(--gap-related);
-}
-.practice-status-label {
-  font-weight: var(--font-semibold);
-  font-size: var(--type-label-size);
-  color: var(--color-text);
-}
-.practice-status-detail {
-  font-size: var(--text-sm);
-  color: var(--color-text-muted);
-}
-.practice-status-detail:empty {
-  display: none;
-}
-.suggestion-card {
-  background: var(--color-notice-bg);
-  border: 1px solid var(--color-notice-border);
-  border-left: 3px solid var(--color-notice);
-  border-radius: var(--radius-md);
-  padding: var(--gap-group) var(--pad-component);
-  margin-bottom: var(--gap-group);
-}
-.suggestion-card-header {
-  color: var(--color-brand);
-}
-.suggestion-card-body {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
-  flex-wrap: wrap;
-}
-.suggestion-card-accept {
-  font-size: var(--type-control-size);
-  font-weight: var(--type-control-weight);
-  line-height: var(--type-control-leading);
-  padding: var(--gap-related) var(--pad-component);
-  border: 1px solid var(--color-brand);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--color-brand);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.suggestion-card-accept:hover {
-  background: var(--color-brand);
-  color: var(--color-on-brand);
-}
-
-/* --- Practice scope (inside practice card) --- */
-.practice-scope {
-  margin-top: var(--pad-component);
-  background: var(--color-well);
-}
-.practice-scope .settings-row {
-  margin-bottom: 0;
 }
 
 /* --- Practice action zone (bottom-anchored, outside tabs) --- */
@@ -1447,7 +1386,6 @@ body {
 /* --- Practice config: suggested/custom toggle --- */
 .practice-config {
   padding: 0;
-  margin-top: var(--pad-region);
   display: flex;
   flex-direction: column;
   gap: var(--gap-group);
@@ -1760,7 +1698,6 @@ button {
 .quiz-countdown-bar {
   flex: 1;
   height: 6px;
-  margin: 0 var(--gap-related);
   background: var(--color-surface-raised);
 }
 .quiz-countdown-fill {
@@ -2772,9 +2709,8 @@ button {
   outline-color: white;
 }
 
-/* Baseline, recommendation buttons */
-.baseline-rerun-btn:focus-visible,
-.suggestion-card-accept:focus-visible {
+/* Baseline button */
+.baseline-rerun-btn:focus-visible {
   outline-offset: 2px;
 }
 
@@ -2800,6 +2736,11 @@ body.native-app {
   border-left: none;
   border-right: none;
 }
+body.native-app .answer-input,
+body.native-app .keyboard-hint,
+body.native-app .hint {
+  display: none;
+}
 
 /* ==========================================================================
    19. MOBILE LAYOUT
@@ -2807,6 +2748,8 @@ body.native-app {
 @media (max-width: 599px) {
   :root {
     --size-content-inset: var(--gap-group);
+    --size-answer-grid: 220px;
+    --type-answer-size: 1.1rem;
   }
 
   body {
@@ -2825,10 +2768,19 @@ body.native-app {
   }
 
   .next-btn,
+  .start-btn {
+    margin: var(--gap-group) auto var(--gap-group);
+  }
+
+  .next-btn,
   .start-btn,
   .feedback-notice,
   .page-action-row {
     width: 80%;
+  }
+
+  .hint {
+    margin-top: var(--gap-group);
   }
 
   /* Prevent iOS zoom on input focus */
@@ -2841,7 +2793,12 @@ body.native-app {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1323"></div>
+  <div class="home-screen" id="home-screen" data-version="#1341"></div>
+  <div class="mode-screen phase-idle" id="mode-fretboard"></div>
+  <div class="mode-screen phase-idle" id="mode-speedTap"></div>
+  <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
+  <div class="mode-screen phase-idle" id="mode-ukulele"></div>
+  <div class="mode-screen phase-idle" id="mode-ukuleleChordShapes"></div>
   <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
   <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
@@ -2850,11 +2807,6 @@ body.native-app {
   <div class="mode-screen phase-idle" id="mode-diatonicChords"></div>
   <div class="mode-screen phase-idle" id="mode-chordSpelling"></div>
   <div class="mode-screen phase-idle" id="mode-keySignatures"></div>
-  <div class="mode-screen phase-idle" id="mode-fretboard"></div>
-  <div class="mode-screen phase-idle" id="mode-speedTap"></div>
-  <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
-  <div class="mode-screen phase-idle" id="mode-ukulele"></div>
-  <div class="mode-screen phase-idle" id="mode-ukuleleChordShapes"></div>
   </div>
 
   <script>
@@ -4077,6 +4029,10 @@ body.native-app {
     if (key.accidentalType === "sharps") return key.accidentalCount + "#";
     return key.accidentalCount + "b";
   }
+  function displayKeysigLabel(sigLabel) {
+    if (sigLabel === "0") return "0\u266F/\u266D";
+    return sigLabel.replace(/#/g, "\u266F").replace(/b/g, "\u266D");
+  }
   var DIATONIC_CHORDS = [
     { degree: 1, numeral: "I", quality: "major", qualityLabel: "" },
     { degree: 2, numeral: "ii", quality: "minor", qualityLabel: "m" },
@@ -4970,6 +4926,16 @@ body.native-app {
   };
   var TRACKS = [
     {
+      id: "guitar",
+      label: "Guitar",
+      skills: ["fretboard", "speedTap", "guitarChordShapes"]
+    },
+    {
+      id: "ukulele",
+      label: "Ukulele",
+      skills: ["ukulele", "ukuleleChordShapes"]
+    },
+    {
       id: "core",
       label: "Music theory",
       skills: [
@@ -4986,16 +4952,6 @@ body.native-app {
       id: "reading",
       label: "Reading music",
       skills: ["keySignatures"]
-    },
-    {
-      id: "guitar",
-      label: "Guitar",
-      skills: ["fretboard", "speedTap", "guitarChordShapes"]
-    },
-    {
-      id: "ukulele",
-      label: "Ukulele",
-      skills: ["ukulele", "ukuleleChordShapes"]
     }
   ];
 
@@ -6788,24 +6744,18 @@ body.native-app {
     };
   }
   function getStatsRows3() {
-    const majorRows = MAJOR_KEYS.map((key) => ({
-      label: displayNote(key.root) + " major",
-      sublabel: keySignatureLabel(key),
-      _colHeader: "Key",
-      fwdItemId: key.root + ":fwd",
-      revItemId: key.root + ":rev"
-    }));
-    const minorRows = MINOR_ROOTS.map((minorRoot) => {
-      const majorKey = MINOR_ROOT_TO_MAJOR.get(minorRoot);
+    return MAJOR_KEYS.map((key, i3) => {
+      const minorRoot = MINOR_ROOTS[i3];
       return {
-        label: displayNote(minorRoot) + " minor",
-        sublabel: keySignatureLabel(majorKey),
+        label: displayNote(key.root) + " / " + displayNote(minorRoot) + "m",
+        sublabel: displayKeysigLabel(keySignatureLabel(key)),
         _colHeader: "Key",
-        fwdItemId: minorRoot + "m:fwd",
-        revItemId: minorRoot + "m:rev"
+        fwdItemId: key.root + ":fwd",
+        revItemId: key.root + ":rev",
+        fwd2ItemId: minorRoot + "m:fwd",
+        rev2ItemId: minorRoot + "m:rev"
       };
     });
-    return [...majorRows, ...minorRows];
   }
 
   // src/modes/key-signatures/definition.ts
@@ -6819,8 +6769,8 @@ body.native-app {
     itemNoun: "items",
     allItems: ALL_ITEMS5,
     getQuestion: getQuestion6,
-    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.root) + " " + q3.quality : q3.sigLabel + " " + q3.quality,
-    quizInstruction: (q3) => q3.dir === "fwd" ? "What key signature?" : "What key?",
+    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.root) + " " + q3.quality : displayKeysigLabel(q3.sigLabel) + ", " + q3.quality,
+    quizInstruction: (q3) => q3.dir === "fwd" ? "How many \u266F or \u266D?" : "Name the key",
     answer: {
       kind: "bidirectional",
       fwd: {
@@ -6834,7 +6784,7 @@ body.native-app {
     },
     validateInput: (q3, input) => q3.dir === "fwd" ? isValidKeysigInput(input) : isValidNoteInput(input),
     getDirection: (q3) => q3.dir,
-    getUseFlats: (q3) => rootUsesFlats(q3.root),
+    getUseFlats: (q3) => q3.sigLabel.includes("b"),
     inputPlaceholder: (q3) => q3.dir === "fwd" ? "Signature (e.g. 2#)" : "Note name",
     buttons: {
       kind: "bidirectional",
@@ -6858,8 +6808,10 @@ body.native-app {
     stats: {
       kind: "table",
       getRows: getStatsRows3,
-      fwdHeader: "Key\u2192Sig",
-      revHeader: "Sig\u2192Key"
+      fwdHeader: "Maj\u2192",
+      revHeader: "\u2190Maj",
+      fwd2Header: "Min\u2192",
+      rev2Header: "\u2190Min"
     }
   };
 
@@ -8047,6 +7999,23 @@ body.native-app {
     return /* @__PURE__ */ u3(Tag, { class: cls, ...rest, children });
   }
 
+  // src/ui/layout.tsx
+  function Stack({ gap, children, class: extra, as: Tag = "div" }) {
+    const cls = "stack stack-" + gap + (extra ? " " + extra : "");
+    return /* @__PURE__ */ u3(Tag, { class: cls, children });
+  }
+  function Bar({ gap, children, class: extra, as: Tag = "div" }) {
+    const cls = "bar bar-" + gap + (extra ? " " + extra : "");
+    return /* @__PURE__ */ u3(Tag, { class: cls, children });
+  }
+  function Section({ heading, headingRole = "heading-section", children, class: extra }) {
+    const cls = "section-block" + (extra ? " " + extra : "");
+    return /* @__PURE__ */ u3("section", { class: cls, children: [
+      /* @__PURE__ */ u3(Text, { role: headingRole, as: "h2", children: heading }),
+      children
+    ] });
+  }
+
   // src/ui/screen-layout.tsx
   function ScreenLayout({ children, class: extra }) {
     const cls = "screen-layout" + (extra ? " " + extra : "");
@@ -8171,39 +8140,6 @@ body.native-app {
       ] })
     ] }) });
   }
-  function PracticeCard(props) {
-    const statusLabel = props.statusLabel ?? (props.summary ? props.summary.statusLabel : void 0);
-    const statusDetail = props.statusDetail ?? (props.summary ? props.summary.statusDetail : void 0);
-    const recommendation = props.recommendation ?? (props.summary && props.summary.recommendationText ? props.summary.recommendationText : void 0);
-    const onApplyRecommendation = props.onApplyRecommendation;
-    const { scope } = props;
-    return /* @__PURE__ */ u3("div", { class: "practice-card", children: [
-      statusLabel && /* @__PURE__ */ u3("div", { class: "practice-status", children: [
-        /* @__PURE__ */ u3("div", { class: "practice-status-row", children: [
-          /* @__PURE__ */ u3(Text, { role: "label", children: "Status" }),
-          /* @__PURE__ */ u3("span", { class: "practice-status-label", children: statusLabel })
-        ] }),
-        statusDetail && /* @__PURE__ */ u3("span", { class: "practice-status-detail", children: statusDetail })
-      ] }),
-      recommendation && /* @__PURE__ */ u3(Recommendation, { text: recommendation, onApply: onApplyRecommendation }),
-      scope && /* @__PURE__ */ u3("div", { class: "practice-scope", children: scope })
-    ] });
-  }
-  function Recommendation({ text, onApply }) {
-    return /* @__PURE__ */ u3("div", { class: "suggestion-card", children: /* @__PURE__ */ u3("div", { class: "suggestion-card-body", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", class: "suggestion-card-header", children: text }),
-      onApply ? /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: "suggestion-card-accept",
-          onClick: onApply,
-          children: "Accept"
-        }
-      ) : null
-    ] }) });
-  }
   function StartButton({ onStart, disabled, validationMessage, label }) {
     const msgId = validationMessage ? "start-validation-msg" : void 0;
     return /* @__PURE__ */ u3(k, { children: [
@@ -8229,7 +8165,7 @@ body.native-app {
     isLastQuestion,
     onClose
   }) {
-    return /* @__PURE__ */ u3("div", { class: "quiz-session", children: /* @__PURE__ */ u3("div", { class: "quiz-session-header", children: [
+    return /* @__PURE__ */ u3("div", { class: "quiz-session", children: /* @__PURE__ */ u3(Bar, { gap: "component", class: "quiz-session-header", children: [
       /* @__PURE__ */ u3(
         CloseButton,
         {
@@ -8237,20 +8173,22 @@ body.native-app {
           onClick: onClose
         }
       ),
-      /* @__PURE__ */ u3(
-        "div",
-        {
-          class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
-          children: /* @__PURE__ */ u3(
-            "div",
-            {
-              class: "quiz-countdown-fill",
-              style: { width: `${timerPct ?? 100}%` }
-            }
-          )
-        }
-      ),
-      /* @__PURE__ */ u3(Text, { role: "metric-info", as: "span", class: "quiz-info-time", children: timeLeft || "" }),
+      /* @__PURE__ */ u3(Bar, { gap: "related", class: "quiz-countdown-group", children: [
+        /* @__PURE__ */ u3(
+          "div",
+          {
+            class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
+            children: /* @__PURE__ */ u3(
+              "div",
+              {
+                class: "quiz-countdown-fill",
+                style: { width: `${timerPct ?? 100}%` }
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ u3(Text, { role: "metric-info", as: "span", class: "quiz-info-time", children: timeLeft || "" })
+      ] }),
       count && /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", class: "quiz-info-count", children: [
         count,
         /* @__PURE__ */ u3(RepeatMark, { size: 13, class: "quiz-info-count-icon" })
@@ -8358,10 +8296,7 @@ body.native-app {
     ] });
   }
   function PracticeTab({
-    summary,
     onStart,
-    onApplyRecommendation,
-    scope,
     statsContent,
     statsHeading,
     onCalibrate,
@@ -8372,7 +8307,6 @@ body.native-app {
     validationMessage,
     aboutContent,
     practiceContent,
-    practiceIntro,
     progressExtra,
     startLabel
   }) {
@@ -8384,17 +8318,7 @@ body.native-app {
           /* @__PURE__ */ u3(RepeatMark, { size: 24 }),
           /* @__PURE__ */ u3("span", { class: "tab-icon-text", children: "Practice" })
         ] }),
-        content: /* @__PURE__ */ u3(k, { children: [
-          practiceIntro,
-          practiceContent ?? /* @__PURE__ */ u3(
-            PracticeCard,
-            {
-              summary,
-              onApplyRecommendation,
-              scope
-            }
-          )
-        ] })
+        content: practiceContent
       },
       {
         id: "progress",
@@ -8442,19 +8366,6 @@ body.native-app {
           }
         )
       ] })
-    ] });
-  }
-
-  // src/ui/layout.tsx
-  function Stack({ gap, children, class: extra, as: Tag = "div" }) {
-    const cls = "stack stack-" + gap + (extra ? " " + extra : "");
-    return /* @__PURE__ */ u3(Tag, { class: cls, children });
-  }
-  function Section({ heading, headingRole = "heading-section", children, class: extra }) {
-    const cls = "section-block" + (extra ? " " + extra : "");
-    return /* @__PURE__ */ u3("section", { class: cls, children: [
-      /* @__PURE__ */ u3(Text, { role: headingRole, as: "h2", children: heading }),
-      children
     ] });
   }
 
@@ -8938,7 +8849,7 @@ body.native-app {
         ] }),
         /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "home-tagline", children: "Make music fundamentals automatic so you can focus on playing." })
       ] }),
-      /* @__PURE__ */ u3("div", { class: "home-stats-bar", children: [
+      /* @__PURE__ */ u3(Bar, { gap: "group", class: "home-stats-bar", children: [
         /* @__PURE__ */ u3("span", { class: "home-stat", children: [
           /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", children: repsToday.toLocaleString() }),
           " today"
@@ -10852,7 +10763,7 @@ body.native-app {
   }
   function PracticeConfig({ mode, onModeChange, suggestedContent, customContent }) {
     return /* @__PURE__ */ u3("div", { class: "practice-config", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "div", class: "practice-config-label", children: "Practice setup" }),
+      /* @__PURE__ */ u3(Text, { role: "heading-section", class: "practice-config-label", children: "Practice setup" }),
       /* @__PURE__ */ u3(
         SegmentedControl,
         {
@@ -10869,14 +10780,17 @@ body.native-app {
   }
 
   // src/ui/stats.tsx
-  function StatsTable({ selector, rows, fwdHeader, revHeader }) {
+  function StatsTable({ selector, rows, fwdHeader, revHeader, fwd2Header, rev2Header }) {
     if (!rows || rows.length === 0) return null;
+    const hasPair = !!(fwd2Header && rev2Header);
     return /* @__PURE__ */ u3("table", { class: "stats-table", children: [
       /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
         /* @__PURE__ */ u3("th", { children: rows[0]._colHeader }),
         /* @__PURE__ */ u3("th", { children: "#" }),
         /* @__PURE__ */ u3("th", { children: fwdHeader }),
-        /* @__PURE__ */ u3("th", { children: revHeader })
+        /* @__PURE__ */ u3("th", { children: revHeader }),
+        hasPair && /* @__PURE__ */ u3("th", { children: fwd2Header }),
+        hasPair && /* @__PURE__ */ u3("th", { children: rev2Header })
       ] }) }),
       /* @__PURE__ */ u3("tbody", { children: rows.map((row) => {
         const fwdColor = getStatsCellColor(selector, row.fwdItemId);
@@ -10884,18 +10798,30 @@ body.native-app {
         return /* @__PURE__ */ u3("tr", { children: [
           /* @__PURE__ */ u3("td", { children: row.label }),
           /* @__PURE__ */ u3("td", { children: row.sublabel }),
-          /* @__PURE__ */ u3(
+          /* @__PURE__ */ u3("td", { class: "stats-cell", style: { background: fwdColor } }),
+          /* @__PURE__ */ u3("td", { class: "stats-cell", style: { background: revColor } }),
+          hasPair && /* @__PURE__ */ u3(
             "td",
             {
               class: "stats-cell",
-              style: { background: fwdColor }
+              style: {
+                background: getStatsCellColor(
+                  selector,
+                  row.fwd2ItemId ?? ""
+                )
+              }
             }
           ),
-          /* @__PURE__ */ u3(
+          hasPair && /* @__PURE__ */ u3(
             "td",
             {
               class: "stats-cell",
-              style: { background: revColor }
+              style: {
+                background: getStatsCellColor(
+                  selector,
+                  row.rev2ItemId ?? ""
+                )
+              }
             }
           )
         ] }, row.fwdItemId);
@@ -12115,9 +12041,7 @@ body.native-app {
     return /* @__PURE__ */ u3(
       PracticeTab,
       {
-        summary: ps.summary,
         onStart: engine.start,
-        onApplyRecommendation: ps.summary.showRecommendationButton && groupScopeResult ? groupScopeResult.applyRecommendation : void 0,
         scopeValid: !groupScopeResult || groupScopeResult.enabledGroups.size > 0,
         validationMessage: "Select at least one level",
         startLabel: customItemCount != null ? `Practice (${customItemCount} ${customItemCount === 1 ? "item" : "items"})` : void 0,
@@ -12128,7 +12052,7 @@ body.native-app {
             groupScopeResult
           }
         ) : /* @__PURE__ */ u3("div", { class: "practice-config", children: [
-          /* @__PURE__ */ u3(Text, { role: "heading-section", as: "div", class: "practice-config-label", children: "Recommendation" }),
+          /* @__PURE__ */ u3(Text, { role: "heading-section", class: "practice-config-label", children: "Recommendation" }),
           /* @__PURE__ */ u3(
             SuggestionLines,
             {
@@ -12154,7 +12078,9 @@ body.native-app {
                 selector: ps.statsSel,
                 rows: def.stats.getRows(),
                 fwdHeader: def.stats.fwdHeader,
-                revHeader: def.stats.revHeader
+                revHeader: def.stats.revHeader,
+                fwd2Header: def.stats.fwd2Header,
+                rev2Header: def.stats.rev2Header
               }
             )
           ] }),
@@ -12175,21 +12101,21 @@ body.native-app {
         onCalibrate,
         activeTab: ps.activeTab,
         onTabSwitch: ps.setActiveTab,
-        practiceIntro: /* @__PURE__ */ u3(
-          PracticeIntro,
+        aboutContent: /* @__PURE__ */ u3(
+          AboutTab,
           {
             description: def.description,
+            aboutDescription: def.aboutDescription,
             beforeAfter: def.beforeAfter
           }
-        ),
-        aboutContent: /* @__PURE__ */ u3(AboutTab, { description: def.aboutDescription ?? def.description })
+        )
       }
     );
   }
-  function PracticeIntro({ description, beforeAfter }) {
+  function AboutTab({ description, aboutDescription, beforeAfter }) {
     const beforeLines = typeof beforeAfter.before === "function" ? beforeAfter.before() : beforeAfter.before;
     const after = typeof beforeAfter.after === "function" ? beforeAfter.after() : beforeAfter.after;
-    return /* @__PURE__ */ u3("div", { class: "practice-intro", children: [
+    return /* @__PURE__ */ u3("div", { class: "about-tab", children: [
       /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: "What you're automating" }),
       /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "practice-intro-description", children: description }),
       /* @__PURE__ */ u3("div", { class: "about-columns", children: [
@@ -12201,13 +12127,11 @@ body.native-app {
           /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", class: "about-col-header", children: "After" }),
           /* @__PURE__ */ u3("p", { class: "about-col-text", children: after })
         ] })
-      ] })
-    ] });
-  }
-  function AboutTab({ description }) {
-    return /* @__PURE__ */ u3("div", { class: "about-tab", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: "Why automate this?" }),
-      /* @__PURE__ */ u3(Text, { role: "body", as: "p", class: "about-description", children: description }),
+      ] }),
+      aboutDescription && /* @__PURE__ */ u3(k, { children: [
+        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: "Why automate this?" }),
+        /* @__PURE__ */ u3(Text, { role: "body", as: "p", class: "about-description", children: aboutDescription })
+      ] }),
       /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "text-hint about-tab-tip", children: [
         "Start practicing on the",
         " ",
@@ -12621,7 +12545,7 @@ body.native-app {
   }
   async function boot() {
     await initStorage(Preferences);
-    const isNativeApp = !!window.Capacitor;
+    const isNativeApp = !!window.Capacitor?.isNativePlatform?.();
     if (isNativeApp) {
       await migrateFromLocalStorage();
     }
@@ -12641,7 +12565,10 @@ body.native-app {
         );
       }
     });
-    if (isNativeApp) document.body.classList.add("native-app");
+    const simulateNative = new URLSearchParams(globalThis.location?.search ?? "").has("native");
+    if (isNativeApp || simulateNative) {
+      document.body.classList.add("native-app");
+    }
     const homeRoot = document.getElementById("home-screen");
     const version = homeRoot.dataset.version || "";
     homeRoot.textContent = "";
