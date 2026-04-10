@@ -1286,12 +1286,6 @@ body {
 /* ==========================================================================
    5. PRACTICE CARD
    ========================================================================== */
-.practice-intro {
-  padding: 0;
-}
-.practice-intro > .text-heading-section {
-  margin-bottom: var(--gap-group);
-}
 .practice-intro-description {
   margin-bottom: var(--gap-group);
 }

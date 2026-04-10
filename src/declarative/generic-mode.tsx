@@ -992,27 +992,25 @@ function IdlePracticeView<Q>(
       onCalibrate={onCalibrate}
       activeTab={ps.activeTab}
       onTabSwitch={ps.setActiveTab}
-      practiceIntro={
-        <PracticeIntro
+      aboutContent={
+        <AboutTab
           description={def.description}
+          aboutDescription={def.aboutDescription}
           beforeAfter={def.beforeAfter}
         />
-      }
-      aboutContent={
-        <AboutTab description={def.aboutDescription ?? def.description} />
       }
     />
   );
 }
 
 // ---------------------------------------------------------------------------
-// PracticeIntro — description + before/after contrast
-// AboutTab — mode description + call-to-action
+// AboutTab — what you're automating + before/after + description
 // ---------------------------------------------------------------------------
 
-function PracticeIntro(
-  { description, beforeAfter }: {
+function AboutTab(
+  { description, aboutDescription, beforeAfter }: {
     description: string;
+    aboutDescription?: string;
     beforeAfter: {
       before: string[] | (() => string[]);
       after: string | (() => string);
@@ -1027,7 +1025,7 @@ function PracticeIntro(
     : beforeAfter.after;
 
   return (
-    <div class='practice-intro'>
+    <div class='about-tab'>
       <Text role='heading-section' as='h2'>What you're automating</Text>
       <Text role='body-secondary' as='p' class='practice-intro-description'>
         {description}
@@ -1048,17 +1046,14 @@ function PracticeIntro(
           <p class='about-col-text'>{after}</p>
         </div>
       </div>
-    </div>
-  );
-}
-
-function AboutTab({ description }: { description: string }) {
-  return (
-    <div class='about-tab'>
-      <Text role='heading-section' as='h2'>Why automate this?</Text>
-      <Text role='body' as='p' class='about-description'>
-        {description}
-      </Text>
+      {aboutDescription && (
+        <>
+          <Text role='heading-section' as='h2'>Why automate this?</Text>
+          <Text role='body' as='p' class='about-description'>
+            {aboutDescription}
+          </Text>
+        </>
+      )}
       <Text role='status' as='p' class='text-hint about-tab-tip'>
         Start practicing on the{' '}
         <RepeatMark size={16} class='about-tab-tip-icon' /> tab below.
