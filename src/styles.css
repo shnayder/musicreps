@@ -2806,7 +2806,7 @@ body.native-app .hint {
 
   .next-btn,
   .start-btn {
-    margin-top: var(--gap-group);
+    margin: var(--gap-group) auto var(--gap-group);
   }
 
   .next-btn,
