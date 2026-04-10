@@ -20,8 +20,8 @@ Poll GitHub Actions and Copilot code review until both complete, then report.
    ```
    **After the run completes, check the conclusion.** Do not assume success —
    read the actual conclusion field. CI includes E2E tests that may catch
-   regressions not covered by `deno task ok` (e.g., removed CSS classes used
-   as Playwright selectors).
+   regressions not covered by `deno task ok` (e.g., removed CSS classes used as
+   Playwright selectors).
 
 3. **Copilot code review** (claude/* branches only): If there is an open PR,
    poll for the Copilot review (it typically takes 3–7 minutes):
@@ -58,10 +58,11 @@ Poll GitHub Actions and Copilot code review until both complete, then report.
   fine" is not acceptable.
 - If CI fails, investigate the root cause before pushing a fix. Run
   `gh run view <run-id> --log-failed` and read the actual error output.
-- CI runs E2E tests via Playwright that are NOT covered by `deno task ok`.
-  A common failure mode: renaming or removing a CSS class that E2E tests use
-  as a selector. Always check CI after pushing, not just local tests.
-- If you push a fix, you must re-poll until the NEW run completes and confirm
-  it passes. Do not declare CI green based on a prior run.
+- CI runs E2E tests via Playwright that are NOT covered by `deno task ok`. A
+  common failure mode: renaming or removing a CSS class that E2E tests use as a
+  selector. Run `deno task prepush` locally if Playwright is available — it
+  includes E2E tests. Always check CI after pushing, not just local unit tests.
+- If you push a fix, you must re-poll until the NEW run completes and confirm it
+  passes. Do not declare CI green based on a prior run.
 - Address Copilot review comments before declaring the PR ready — they often
   catch real bugs (missing state handling, encoding issues, doc/code drift).
