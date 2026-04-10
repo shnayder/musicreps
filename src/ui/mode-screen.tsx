@@ -451,7 +451,9 @@ export function RoundCompleteInfo(
       </Text>
       {count != null && (
         <>
-          <Text role='metric-hero' as='div'>{count}</Text>
+          <Text role='metric-hero' as='div' class='round-complete-count'>
+            {count}
+          </Text>
           <Text
             role='body-secondary'
             as='div'
