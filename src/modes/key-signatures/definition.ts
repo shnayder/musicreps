@@ -5,7 +5,6 @@ import {
   displayNote,
   isValidKeysigInput,
   isValidNoteInput,
-  rootUsesFlats,
 } from '../../music-data.ts';
 import {
   MODE_ABOUT_DESCRIPTIONS,
@@ -53,7 +52,7 @@ export const KEY_SIGNATURES_DEF: ModeDefinition<Question> = {
   validateInput: (q, input) =>
     q.dir === 'fwd' ? isValidKeysigInput(input) : isValidNoteInput(input),
   getDirection: (q) => q.dir,
-  getUseFlats: (q) => rootUsesFlats(q.root),
+  getUseFlats: (q) => q.sigLabel.includes('b'),
 
   inputPlaceholder: (q) =>
     q.dir === 'fwd' ? 'Signature (e.g. 2#)' : 'Note name',
