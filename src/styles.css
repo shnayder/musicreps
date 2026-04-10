@@ -2773,6 +2773,10 @@ body.native-app {
   border-left: none;
   border-right: none;
 }
+body.native-app .answer-input,
+body.native-app .keyboard-hint {
+  display: none;
+}
 
 /* ==========================================================================
    19. MOBILE LAYOUT
