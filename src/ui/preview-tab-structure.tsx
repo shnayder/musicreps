@@ -16,7 +16,7 @@ import {
   StartButton,
   Tabs,
 } from './mode-screen.tsx';
-import { Card, Section as LayoutSection, Stack } from './layout.tsx';
+import { Bar, Card, Section as LayoutSection, Stack } from './layout.tsx';
 import { Text } from './text.tsx';
 import { PreviewGrid, Section } from './preview-shared.tsx';
 
@@ -49,6 +49,28 @@ function LayoutPrimitives({ tabId }: { tabId: string }) {
             <Text role='label'>component (16px)</Text>
             <Text role='body-secondary'>Card-internal sections</Text>
           </Stack>
+        </Section>
+        <Section title='Bar — gap variants' tabId={tabId}>
+          <Bar gap='related'>
+            <Text role='label'>A</Text>
+            <Text role='label'>B</Text>
+            <Text role='label'>C</Text>
+          </Bar>
+          <Text role='body-secondary'>related (4px)</Text>
+          <hr />
+          <Bar gap='group'>
+            <Text role='label'>A</Text>
+            <Text role='label'>B</Text>
+            <Text role='label'>C</Text>
+          </Bar>
+          <Text role='body-secondary'>group (12px)</Text>
+          <hr />
+          <Bar gap='component'>
+            <Text role='label'>A</Text>
+            <Text role='label'>B</Text>
+            <Text role='label'>C</Text>
+          </Bar>
+          <Text role='body-secondary'>component (16px)</Text>
         </Section>
         <Section title='Card' tabId={tabId}>
           <Card>

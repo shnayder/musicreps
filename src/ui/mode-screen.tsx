@@ -8,6 +8,7 @@ import { SkillIcon } from './icons.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
+import { Bar } from './layout.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
 import { ProgressBarLabeled } from './scope.tsx';
 
@@ -362,31 +363,33 @@ export function QuizSession(
 ) {
   return (
     <div class='quiz-session'>
-      <div class='quiz-session-header'>
+      <Bar gap='group' class='quiz-session-header'>
         <CloseButton
           ariaLabel='Stop quiz'
           onClick={onClose}
         />
-        <div
-          class={'quiz-countdown-bar' +
-            (isWarning ? ' round-timer-warning' : '') +
-            (isLastQuestion ? ' last-question' : '')}
-        >
+        <Bar gap='related' class='quiz-countdown-group'>
           <div
-            class='quiz-countdown-fill'
-            style={{ width: `${timerPct ?? 100}%` }}
-          />
-        </div>
-        <Text role='metric-info' as='span' class='quiz-info-time'>
-          {timeLeft || ''}
-        </Text>
+            class={'quiz-countdown-bar' +
+              (isWarning ? ' round-timer-warning' : '') +
+              (isLastQuestion ? ' last-question' : '')}
+          >
+            <div
+              class='quiz-countdown-fill'
+              style={{ width: `${timerPct ?? 100}%` }}
+            />
+          </div>
+          <Text role='metric-info' as='span' class='quiz-info-time'>
+            {timeLeft || ''}
+          </Text>
+        </Bar>
         {count && (
           <Text role='metric-effort' as='span' class='quiz-info-count'>
             {count}
             <RepeatMark size={13} class='quiz-info-count-icon' />
           </Text>
         )}
-      </div>
+      </Bar>
     </div>
   );
 }

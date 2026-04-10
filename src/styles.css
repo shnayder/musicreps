@@ -620,6 +620,31 @@ body {
   gap: var(--gap-section);
 }
 
+/* --- Bar: flex row with semantic gap (horizontal Stack) --- */
+.bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.bar-micro {
+  gap: var(--gap-micro);
+}
+.bar-related {
+  gap: var(--gap-related);
+}
+.bar-group {
+  gap: var(--gap-group);
+}
+.bar-component {
+  gap: var(--pad-component);
+}
+.bar-region {
+  gap: var(--pad-region);
+}
+.bar-section {
+  gap: var(--gap-section);
+}
+
 /* --- Card: container surface --- */
 .card {
   background: var(--color-card);
@@ -690,10 +715,7 @@ body {
 }
 /* --- Stats bar (home header) --- */
 .home-stats-bar {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  gap: var(--gap-group);
   margin-top: var(--gap-group);
   font-size: var(--type-status-size);
   color: var(--type-status-color);
@@ -1176,12 +1198,13 @@ body {
 }
 
 .quiz-session-header {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-related);
   padding: var(--gap-related) var(--size-content-inset) var(--gap-related)
     var(--gap-group);
   background: var(--color-chrome);
+}
+.quiz-countdown-group {
+  flex: 1;
+  min-width: 0;
 }
 
 /* Element-level visibility (replaces inline style="display: none;") */
@@ -1733,8 +1756,6 @@ button {
 .quiz-countdown-bar {
   flex: 1;
   height: 6px;
-  max-width: 60%;
-  margin: 0 var(--gap-related);
   background: var(--color-surface-raised);
 }
 .quiz-countdown-fill {
