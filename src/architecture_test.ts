@@ -157,9 +157,13 @@ function classifyLayer(file: string): Layer {
   if (file.startsWith('src/hooks/')) return 'hooks';
   if (file.startsWith('src/ui/')) return 'ui';
   if (file === 'src/declarative/types.ts') return 'hooks';
+  if (file === 'src/declarative/answer-utils.ts') return 'hooks';
   if (file === 'src/declarative/use-sequential-input.ts') return 'hooks';
   if (file === 'src/declarative/use-multi-tap-input.ts') return 'hooks';
+  if (file === 'src/declarative/generic-mode-hooks.ts') return 'hooks';
   if (file === 'src/declarative/generic-mode.tsx') return 'ui';
+  if (file === 'src/declarative/quiz-areas.tsx') return 'ui';
+  if (file === 'src/declarative/practice-views.tsx') return 'ui';
   if (file.match(/src\/modes\/[^/]+\/logic\.ts$/)) return 'mode-logic';
   if (file.startsWith('src/modes/')) return 'mode-component';
   if (file === 'src/mode-utils.ts') return 'mode-logic';

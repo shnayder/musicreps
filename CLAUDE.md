@@ -67,7 +67,11 @@ src/
   *_test.ts              # Tests (node:test)
   declarative/
     types.ts             # ModeDefinition, ButtonsDef, ScopeDef, StatsDef, MultiTapDef
-    generic-mode.tsx     # GenericMode: interprets ModeDefinition → full UI
+    answer-utils.ts      # Pure answer-checking and input utilities
+    generic-mode.tsx     # GenericMode: top-level orchestrator
+    generic-mode-hooks.ts  # Internal hooks + builder functions
+    quiz-areas.tsx       # Quiz area components (active quiz UI)
+    practice-views.tsx   # Idle/practice tab components
     use-sequential-input.ts  # Sequential (multi-note) collection hook
     use-multi-tap-input.ts   # Multi-tap (spatial set) collection hook
   modes/
@@ -136,6 +140,13 @@ at build time. Key patterns:
   functions. When a function grows past the limit, look for: standalone pure
   helpers, sub-components for JSX branches, custom hooks for related state, and
   standalone callbacks that close over refs.
+- **File Size** — Keep files under ~300 lines. Prefer one primary exported
+  component per `.tsx` file; groups of small related components in one file is
+  fine. Extract sub-components, helpers, and hooks into separate files rather
+  than growing a single file. When touching a file that's over ~300 lines,
+  suggest extracting related pieces into their own files as part of the change
+  (or as a follow-up). Don't refactor everything at once — split incrementally
+  alongside feature work.
 
 See the architecture guide in the docs vault for module dependency graph,
 algorithm details, and step-by-step "adding a new quiz mode" checklist.
