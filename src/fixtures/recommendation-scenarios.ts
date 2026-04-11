@@ -9,10 +9,11 @@
 //   Working (W)   — seen but speed < 0.9
 //   Unseen (U)    — no data yet
 //
-//   Per-level status: P10 speed → Automatic/Learned/Learning/Hesitant/Starting
+//   Per-level status: P10 speed → Automatic/Solid/Learning/Hesitant/Starting
 //   Per-level freshness: P10 freshness → Fresh (≥0.5) / Needs review (<0.5)
-//   Recs in priority order: review → practice → expand → automate
-//   Expansion gate: all started levels ≥ Learned (P10 speed ≥ 0.7), none stale.
+//   Recs in priority order: review (Solid+ stale) → practice → expand → automate
+//   Review only for stale levels with speed ≥ 0.7 (Solid+). Stale + slow = practice.
+//   Expansion gate: all started levels ≥ Solid (P10 speed ≥ 0.7), none stale.
 
 import type { ItemStats, RecommendationResult } from '../types.ts';
 import type { PracticeSummaryState } from '../types.ts';

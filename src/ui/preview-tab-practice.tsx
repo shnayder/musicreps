@@ -64,7 +64,7 @@ const MOCK_SUGGESTION_SINGLE: SuggestionLine[] = [
 
 const MOCK_SUGGESTION_REVIEW: SuggestionLine[] = [
   { verb: 'Review', levels: ['E string', 'A string', 'D string'] },
-  { verb: 'Keep practicing', levels: ['G string'] },
+  { verb: 'Practice', levels: ['G string'] },
 ];
 
 const MOCK_LEVEL_LABELS = [
@@ -248,6 +248,8 @@ function Phase1Cards({ tabId }: { tabId: string }) {
       <Section title='LevelProgressCard — review soon' tabId={tabId}>
         <LevelProgressCard
           label='E string'
+          statusLabel='Solid'
+          statusColor='--heatmap-4'
           pill='Review soon'
           colors={MOCK_LEVEL_COLORS[0]}
           status='normal'
@@ -256,6 +258,8 @@ function Phase1Cards({ tabId }: { tabId: string }) {
       <Section title='LevelProgressCard — review scheduled' tabId={tabId}>
         <LevelProgressCard
           label='A string'
+          statusLabel='Automatic'
+          statusColor='--heatmap-5'
           pill='Review in 5d'
           colors={MOCK_LEVEL_COLORS[1]}
           status='known'
@@ -264,6 +268,8 @@ function Phase1Cards({ tabId }: { tabId: string }) {
       <Section title='LevelProgressCard — skipped' tabId={tabId}>
         <LevelProgressCard
           label='D string'
+          statusLabel='Learning'
+          statusColor='--heatmap-3'
           colors={MOCK_LEVEL_COLORS[2]}
           status='skipped'
         />
@@ -385,6 +391,8 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
         <div style='padding: var(--gap-group) var(--pad-region)'>
           <LevelProgressCard
             label='E string'
+            statusLabel='Solid'
+            statusColor='--heatmap-4'
             pill='Review soon'
             colors={MOCK_LEVEL_COLORS[0]}
             status='normal'
@@ -393,6 +401,8 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
           />
           <LevelProgressCard
             label='A string'
+            statusLabel='Automatic'
+            statusColor='--heatmap-5'
             pill='Review in 5d'
             colors={MOCK_LEVEL_COLORS[1]}
             status='normal'
@@ -401,6 +411,8 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
           />
           <LevelProgressCard
             label='D string'
+            statusLabel='Learning'
+            statusColor='--heatmap-3'
             pill='Review in 3w'
             colors={MOCK_LEVEL_COLORS[2]}
             status='known'
