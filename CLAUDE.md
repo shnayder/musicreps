@@ -136,6 +136,12 @@ at build time. Key patterns:
   functions. When a function grows past the limit, look for: standalone pure
   helpers, sub-components for JSX branches, custom hooks for related state, and
   standalone callbacks that close over refs.
+- **File Size** — Keep files under ~300 lines. One exported component per `.tsx`
+  file. Extract sub-components, helpers, and hooks into separate files rather
+  than growing a single file. When touching a file that's over ~300 lines,
+  suggest extracting related pieces into their own files as part of the change
+  (or as a follow-up). Don't refactor everything at once — split incrementally
+  alongside feature work.
 
 See the architecture guide in the docs vault for module dependency graph,
 algorithm details, and step-by-step "adding a new quiz mode" checklist.
