@@ -1459,7 +1459,22 @@ body {
   flex: 1;
   min-width: 0;
 }
-/* level-progress-pill-row: margin replaced by Stack gap='related' */
+.level-progress-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+}
+.level-status-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+/* level-progress-pill-row, level-progress-status: margin replaced by Stack gap='related' */
 .level-progress-actions {
   display: flex;
   gap: 2px;
@@ -2734,7 +2749,7 @@ body.native-app .hint {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="be332c polish"></div>
+  <div class="home-screen" id="home-screen" data-version="d8a17f polish"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -4306,6 +4321,55 @@ body.native-app .hint {
     };
   }
 
+  // src/speed-levels.ts
+  var SPEED_LEVELS = [
+    {
+      key: "automatic",
+      label: "Automatic",
+      colorToken: "--heatmap-5",
+      minSpeed: 0.9,
+      meaning: "Fully memorized \u2014 instant recall"
+    },
+    {
+      key: "solid",
+      label: "Solid",
+      colorToken: "--heatmap-4",
+      minSpeed: 0.7,
+      meaning: "Solid recall, minor hesitation"
+    },
+    {
+      key: "learning",
+      label: "Learning",
+      colorToken: "--heatmap-3",
+      minSpeed: 0.3,
+      meaning: "Working on it \u2014 needs practice"
+    },
+    {
+      key: "hesitant",
+      label: "Hesitant",
+      colorToken: "--heatmap-2",
+      minSpeed: 0,
+      meaning: "Significant hesitation"
+    },
+    {
+      key: "starting",
+      label: "Starting",
+      colorToken: "--heatmap-1",
+      minSpeed: -Infinity,
+      meaning: "Not yet learned"
+    }
+  ];
+  function getSpeedLevel(speed) {
+    if (speed <= 0) return SPEED_LEVELS[SPEED_LEVELS.length - 1];
+    for (const level of SPEED_LEVELS) {
+      if (speed >= level.minSpeed) return level;
+    }
+    return SPEED_LEVELS[SPEED_LEVELS.length - 1];
+  }
+  function speedLabel(speed) {
+    return getSpeedLevel(speed).label;
+  }
+
   // src/quiz-engine.ts
   var NOTE_NAME_SET = new Set(NOTE_NAMES);
   var PENDING_DELAY_AMBIGUOUS = 600;
@@ -4508,39 +4572,19 @@ body.native-app .hint {
       }
     );
   }
+  var BASELINE_MULTIPLIERS = [1.5, 3, 4.5, 6, null];
+  if (BASELINE_MULTIPLIERS.length !== SPEED_LEVELS.length) {
+    throw new Error(
+      "BASELINE_MULTIPLIERS and SPEED_LEVELS must have same length"
+    );
+  }
   function getCalibrationThresholds(baseline) {
-    return [
-      {
-        label: "Automatic",
-        maxMs: Math.round(baseline * 1.5),
-        meaning: "Fully memorized \u2014 instant recall",
-        colorToken: "--heatmap-5"
-      },
-      {
-        label: "Solid",
-        maxMs: Math.round(baseline * 3),
-        meaning: "Solid recall, minor hesitation",
-        colorToken: "--heatmap-4"
-      },
-      {
-        label: "Learning",
-        maxMs: Math.round(baseline * 4.5),
-        meaning: "Working on it \u2014 needs practice",
-        colorToken: "--heatmap-3"
-      },
-      {
-        label: "Hesitant",
-        maxMs: Math.round(baseline * 6),
-        meaning: "Significant hesitation",
-        colorToken: "--heatmap-2"
-      },
-      {
-        label: "Starting",
-        maxMs: null,
-        meaning: "Not yet learned",
-        colorToken: "--heatmap-1"
-      }
-    ];
+    return SPEED_LEVELS.map((level, i3) => ({
+      label: level.label,
+      meaning: level.meaning,
+      colorToken: level.colorToken,
+      maxMs: BASELINE_MULTIPLIERS[i3] !== null ? Math.round(baseline * BASELINE_MULTIPLIERS[i3]) : null
+    }));
   }
   function pickCalibrationNote(prevNote, rng) {
     const rand = rng || Math.random;
@@ -5546,6 +5590,180 @@ body.native-app .hint {
     );
   }
 
+  // src/recommendations.ts
+  var FRESHNESS_THRESHOLD = 0.5;
+  function computeReviewTiming(avgStability, avgFreshness) {
+    if (avgFreshness < FRESHNESS_THRESHOLD) return { status: "soon", hours: 0 };
+    const hoursRemaining = avgStability * (1 + Math.log2(avgFreshness));
+    if (hoursRemaining <= 24) return { status: "soon", hours: hoursRemaining };
+    return { status: "scheduled", hours: hoursRemaining };
+  }
+  function computeAvgStabilityFreshness(selector, itemIds) {
+    let stabilitySum = 0, stabilityCount = 0;
+    let freshnessSum = 0, freshnessCount = 0;
+    for (const id of itemIds) {
+      const stats = selector.getStats(id);
+      if (stats?.stability != null) {
+        stabilitySum += stats.stability;
+        stabilityCount++;
+      }
+      const fr = selector.getFreshness(id);
+      if (fr !== null) {
+        freshnessSum += fr;
+        freshnessCount++;
+      }
+    }
+    if (stabilityCount === 0 || freshnessCount === 0) return null;
+    return {
+      avgStability: stabilitySum / stabilityCount,
+      avgFreshness: freshnessSum / freshnessCount
+    };
+  }
+  function classifyGroups(recs) {
+    const started = [];
+    const unstarted = [];
+    for (const r3 of recs) {
+      if (r3.unseenCount < r3.totalCount) {
+        started.push(r3);
+      } else {
+        unstarted.push(r3);
+      }
+    }
+    return { started, unstarted };
+  }
+  function freshStartResult(unstarted, sortFn) {
+    if (unstarted.length > 0) {
+      const sorted = sortFn ? [...unstarted].sort(sortFn) : unstarted;
+      const first = sorted[0];
+      return {
+        recommended: /* @__PURE__ */ new Set([first.groupId]),
+        enabled: /* @__PURE__ */ new Set([first.groupId]),
+        expandIndex: first.groupId,
+        expandNewCount: first.totalCount,
+        levelRecs: [{ groupId: first.groupId, type: "expand" }]
+      };
+    }
+    return {
+      recommended: /* @__PURE__ */ new Set(),
+      enabled: null,
+      expandIndex: null,
+      expandNewCount: 0,
+      levelRecs: []
+    };
+  }
+  function classifyLevelStatus(selector, groupId, getItemIds) {
+    const itemIds = getItemIds(groupId);
+    const { level: speed } = selector.getLevelSpeed(itemIds);
+    const speedLabel2 = getSpeedLevel(speed).key;
+    let reviewStatus = null;
+    let reviewInHours = null;
+    if (speedLabel2 === "solid" || speedLabel2 === "automatic") {
+      const avg = computeAvgStabilityFreshness(selector, itemIds);
+      if (avg) {
+        const timing = computeReviewTiming(avg.avgStability, avg.avgFreshness);
+        reviewStatus = timing.status;
+        reviewInHours = timing.hours;
+      }
+    }
+    return {
+      groupId,
+      speed,
+      speedLabel: speedLabel2,
+      reviewStatus,
+      reviewInHours
+    };
+  }
+  function computeLevelRecs(statuses) {
+    const recs = [];
+    for (const s3 of statuses) {
+      if (s3.reviewStatus === "soon" && (s3.speedLabel === "solid" || s3.speedLabel === "automatic")) {
+        recs.push({ groupId: s3.groupId, type: "review" });
+      }
+    }
+    for (const s3 of statuses) {
+      if (s3.speedLabel === "starting" || s3.speedLabel === "hesitant" || s3.speedLabel === "learning") {
+        recs.push({ groupId: s3.groupId, type: "practice" });
+      }
+    }
+    for (const s3 of statuses) {
+      if (s3.speedLabel === "solid" && s3.reviewStatus === null) {
+        recs.push({ groupId: s3.groupId, type: "automate" });
+      }
+    }
+    return recs;
+  }
+  function checkExpansionGate(statuses) {
+    if (statuses.length === 0) return false;
+    return statuses.every((s3) => s3.speed >= 0.7 && s3.reviewStatus !== "soon");
+  }
+  function shouldThrottleExpansion(statuses) {
+    const learnedCount = statuses.filter((s3) => s3.speedLabel === "solid").length;
+    return learnedCount >= 3;
+  }
+  function computeRecommendations(selector, allGroupIds, getItemIds, config, options) {
+    const sortFn = options?.sortUnstarted;
+    const recs = selector.getGroupRecommendations(allGroupIds, getItemIds);
+    const { started, unstarted } = classifyGroups(recs);
+    if (started.length === 0) return freshStartResult(unstarted, sortFn);
+    const statuses = started.map(
+      (r3) => classifyLevelStatus(selector, r3.groupId, getItemIds)
+    );
+    const levelRecs = computeLevelRecs(statuses);
+    const gateOpen = checkExpansionGate(statuses);
+    let expandIndex = null;
+    let expandNewCount = 0;
+    if (gateOpen && unstarted.length > 0) {
+      const sorted = sortFn ? [...unstarted].sort(sortFn) : unstarted;
+      expandIndex = sorted[0].groupId;
+      expandNewCount = sorted[0].totalCount;
+      const expandRec = {
+        groupId: expandIndex,
+        type: "expand"
+      };
+      if (shouldThrottleExpansion(statuses)) {
+        levelRecs.push(expandRec);
+      } else {
+        const automateStart = levelRecs.findIndex((r3) => r3.type === "automate");
+        if (automateStart === -1) {
+          levelRecs.push(expandRec);
+        } else {
+          levelRecs.splice(automateStart, 0, expandRec);
+        }
+      }
+    }
+    const maxWork = config.maxWorkItems ?? 30;
+    const recommended = /* @__PURE__ */ new Set();
+    const enabled = /* @__PURE__ */ new Set();
+    let budget = maxWork;
+    for (const rec of levelRecs) {
+      if (recommended.has(rec.groupId)) continue;
+      const itemCount = getItemIds(rec.groupId).length;
+      if (recommended.size > 0 && budget - itemCount < 0) continue;
+      recommended.add(rec.groupId);
+      enabled.add(rec.groupId);
+      budget -= itemCount;
+    }
+    if (recommended.size === 0) {
+      for (const s3 of statuses) {
+        recommended.add(s3.groupId);
+        enabled.add(s3.groupId);
+      }
+    }
+    const filteredRecs = levelRecs.filter((r3) => recommended.has(r3.groupId));
+    if (expandIndex !== null && !recommended.has(expandIndex)) {
+      expandIndex = null;
+      expandNewCount = 0;
+    }
+    return {
+      recommended,
+      enabled,
+      expandIndex,
+      expandNewCount,
+      levelRecs: filteredRecs,
+      levelStatuses: statuses
+    };
+  }
+
   // src/stats-display.ts
   var _heatmapColors = null;
   function cssVar(name) {
@@ -5634,7 +5852,6 @@ body.native-app .hint {
     const [h3, s3, l3] = SPEED_HSL[speedLevel(sp)];
     return `hsl(${h3}, ${s3}%, ${l3}%)`;
   }
-  var FRESHNESS_THRESHOLD = 0.5;
   function progressBarColors(selector, itemIds) {
     const c3 = heatmapColors();
     const items = itemIds.map((id) => {
@@ -5691,29 +5908,6 @@ body.native-app .hint {
     if (weeks <= 12) return `${weeks}w`;
     const months = Math.round(days / 30);
     return `${months}mo`;
-  }
-  function computeReviewPill(selector, itemIds) {
-    let stabilitySum = 0, stabilityCount = 0;
-    let freshnessSum = 0, freshnessCount = 0;
-    for (const id of itemIds) {
-      const stats = selector.getStats(id);
-      if (stats?.stability != null) {
-        stabilitySum += stats.stability;
-        stabilityCount++;
-      }
-      const fr = selector.getFreshness(id);
-      if (fr !== null) {
-        freshnessSum += fr;
-        freshnessCount++;
-      }
-    }
-    if (stabilityCount === 0 || freshnessCount === 0) return null;
-    const avgFreshness = freshnessSum / freshnessCount;
-    if (avgFreshness < FRESHNESS_THRESHOLD) return "Review soon";
-    const avgStability = stabilitySum / stabilityCount;
-    const hoursRemaining = avgStability * (1 + Math.log2(avgFreshness));
-    if (hoursRemaining <= 24) return "Review soon";
-    return `Review in ${formatReviewDuration(hoursRemaining)}`;
   }
   function buildStatsLegend() {
     let html = '<div class="heatmap-legend active">';
@@ -7524,152 +7718,6 @@ body.native-app .hint {
   }
   var MODE_PROGRESS_MANIFEST = ALL_MODE_DEFINITIONS.map(entryFromDef);
 
-  // src/recommendations.ts
-  function classifyGroups(recs) {
-    const started = [];
-    const unstarted = [];
-    for (const r3 of recs) {
-      if (r3.unseenCount < r3.totalCount) {
-        started.push(r3);
-      } else {
-        unstarted.push(r3);
-      }
-    }
-    return { started, unstarted };
-  }
-  function freshStartResult(unstarted, sortFn) {
-    if (unstarted.length > 0) {
-      const sorted = sortFn ? [...unstarted].sort(sortFn) : unstarted;
-      const first = sorted[0];
-      return {
-        recommended: /* @__PURE__ */ new Set([first.groupId]),
-        enabled: /* @__PURE__ */ new Set([first.groupId]),
-        expandIndex: first.groupId,
-        expandNewCount: first.totalCount,
-        levelRecs: [{ groupId: first.groupId, type: "expand" }]
-      };
-    }
-    return {
-      recommended: /* @__PURE__ */ new Set(),
-      enabled: null,
-      expandIndex: null,
-      expandNewCount: 0,
-      levelRecs: []
-    };
-  }
-  function classifyLevelStatus(selector, groupId, getItemIds, nowMs) {
-    const itemIds = getItemIds(groupId);
-    const { level: speed } = selector.getLevelSpeed(itemIds);
-    const { level: freshness } = selector.getLevelFreshness(
-      itemIds,
-      void 0,
-      nowMs
-    );
-    let speedLabel;
-    if (speed >= 0.9) speedLabel = "automatic";
-    else if (speed >= 0.7) speedLabel = "learned";
-    else if (speed >= 0.3) speedLabel = "learning";
-    else if (speed > 0) speedLabel = "hesitant";
-    else speedLabel = "starting";
-    return {
-      groupId,
-      speed,
-      freshness,
-      speedLabel,
-      needsReview: freshness < 0.5
-    };
-  }
-  function computeLevelRecs(statuses) {
-    const recs = [];
-    for (const s3 of statuses) {
-      if (s3.needsReview) {
-        recs.push({ groupId: s3.groupId, type: "review" });
-      }
-    }
-    for (const s3 of statuses) {
-      if (s3.speedLabel === "starting" || s3.speedLabel === "hesitant" || s3.speedLabel === "learning") {
-        recs.push({ groupId: s3.groupId, type: "practice" });
-      }
-    }
-    for (const s3 of statuses) {
-      if (s3.speedLabel === "learned") {
-        recs.push({ groupId: s3.groupId, type: "automate" });
-      }
-    }
-    return recs;
-  }
-  function checkExpansionGate(statuses) {
-    if (statuses.length === 0) return false;
-    return statuses.every((s3) => s3.speed >= 0.7 && !s3.needsReview);
-  }
-  function shouldThrottleExpansion(statuses) {
-    const learnedCount = statuses.filter((s3) => s3.speedLabel === "learned").length;
-    return learnedCount >= 3;
-  }
-  function computeRecommendations(selector, allGroupIds, getItemIds, config, options) {
-    const nowMs = Date.now();
-    const sortFn = options?.sortUnstarted;
-    const recs = selector.getGroupRecommendations(allGroupIds, getItemIds);
-    const { started, unstarted } = classifyGroups(recs);
-    if (started.length === 0) return freshStartResult(unstarted, sortFn);
-    const statuses = started.map(
-      (r3) => classifyLevelStatus(selector, r3.groupId, getItemIds, nowMs)
-    );
-    const levelRecs = computeLevelRecs(statuses);
-    const gateOpen = checkExpansionGate(statuses);
-    let expandIndex = null;
-    let expandNewCount = 0;
-    if (gateOpen && unstarted.length > 0) {
-      const sorted = sortFn ? [...unstarted].sort(sortFn) : unstarted;
-      expandIndex = sorted[0].groupId;
-      expandNewCount = sorted[0].totalCount;
-      const expandRec = {
-        groupId: expandIndex,
-        type: "expand"
-      };
-      if (shouldThrottleExpansion(statuses)) {
-        levelRecs.push(expandRec);
-      } else {
-        const automateStart = levelRecs.findIndex((r3) => r3.type === "automate");
-        if (automateStart === -1) {
-          levelRecs.push(expandRec);
-        } else {
-          levelRecs.splice(automateStart, 0, expandRec);
-        }
-      }
-    }
-    const maxWork = config.maxWorkItems ?? 30;
-    const recommended = /* @__PURE__ */ new Set();
-    const enabled = /* @__PURE__ */ new Set();
-    let budget = maxWork;
-    for (const rec of levelRecs) {
-      if (recommended.has(rec.groupId)) continue;
-      const itemCount = getItemIds(rec.groupId).length;
-      if (recommended.size > 0 && budget - itemCount < 0) continue;
-      recommended.add(rec.groupId);
-      enabled.add(rec.groupId);
-      budget -= itemCount;
-    }
-    if (recommended.size === 0) {
-      for (const s3 of statuses) {
-        recommended.add(s3.groupId);
-        enabled.add(s3.groupId);
-      }
-    }
-    const filteredRecs = levelRecs.filter((r3) => recommended.has(r3.groupId));
-    if (expandIndex !== null && !recommended.has(expandIndex)) {
-      expandIndex = null;
-      expandNewCount = 0;
-    }
-    return {
-      recommended,
-      enabled,
-      expandIndex,
-      expandNewCount,
-      levelRecs: filteredRecs
-    };
-  }
-
   // src/home-recommendations.ts
   function notStarted(modeId) {
     return { modeId, type: "not-started", urgency: 0, cueLabel: "", detail: "" };
@@ -7721,36 +7769,25 @@ body.native-app .hint {
         detail
       };
     }
-    if (firstType === "practice") {
-      const practiceIds = result.levelRecs.filter((r3) => r3.type === "practice").map((r3) => r3.groupId);
-      const detail = singleGroup ? "Keep practicing" : `Keep practicing ${groupLabelText(practiceIds, labelMap)}`;
+    if (firstType === "practice" || firstType === "automate") {
+      const practiceIds = result.levelRecs.filter((r3) => r3.type === "practice" || r3.type === "automate").map((r3) => r3.groupId);
+      const detail = singleGroup ? "Practice" : `Practice ${groupLabelText(practiceIds, labelMap)}`;
       return {
         modeId,
-        type: "keep-practicing",
+        type: "practice",
         urgency: practiceIds.length,
-        cueLabel: "Keep practicing",
+        cueLabel: "Practice",
         detail
       };
     }
     if (firstType === "expand") {
       const expandId = result.expandIndex;
-      const detail = singleGroup ? "Learn next level" : `Learn ${expandId ? labelMap.get(expandId) ?? expandId : "next level"}`;
+      const detail = singleGroup ? "Start" : `Start ${expandId ? labelMap.get(expandId) ?? expandId : "next level"}`;
       return {
         modeId,
-        type: "learn-next",
+        type: "start",
         urgency: 0,
-        cueLabel: "Learn next level",
-        detail
-      };
-    }
-    if (firstType === "automate") {
-      const automateIds = result.levelRecs.filter((r3) => r3.type === "automate").map((r3) => r3.groupId);
-      const detail = singleGroup ? "Almost there" : `Almost there \u2014 ${groupLabelText(automateIds, labelMap)}`;
-      return {
-        modeId,
-        type: "automate",
-        urgency: automateIds.length,
-        cueLabel: "Almost there",
+        cueLabel: "Start",
         detail
       };
     }
@@ -7758,15 +7795,14 @@ body.native-app .hint {
   }
   var TYPE_PRIORITY = {
     "review": 0,
-    "keep-practicing": 1,
-    "learn-next": 2,
-    "automate": 3,
-    "not-started": 4,
-    "automatic": 5
+    "practice": 1,
+    "start": 2,
+    "not-started": 3,
+    "automatic": 4
   };
   function rankSkillRecommendations(recommendations, definitionOrder, maxCount = 3) {
     const actionable = recommendations.filter(
-      (r3) => r3.type === "review" || r3.type === "keep-practicing" || r3.type === "learn-next" || r3.type === "automate"
+      (r3) => r3.type === "review" || r3.type === "practice" || r3.type === "start"
     );
     if (actionable.length > 0) {
       actionable.sort((a3, b) => {
@@ -7783,9 +7819,9 @@ body.native-app .hint {
         if (rec) {
           return [{
             ...rec,
-            type: "learn-next",
-            cueLabel: "Learn next level",
-            detail: "Get started"
+            type: "start",
+            cueLabel: "Ready to start",
+            detail: "Ready to start"
           }];
         }
       }
@@ -9241,12 +9277,7 @@ body.native-app .hint {
     }
     return { automatic, seen };
   }
-  function statusLabelFromLevel(level) {
-    if (level >= 0.9) return "Automatic";
-    if (level >= 0.7) return "Solid";
-    if (level >= 0.3) return "Learning";
-    return "Hesitant";
-  }
+  var statusLabelFromLevel = speedLabel;
   function groupRecsByType(levelRecs) {
     const seen = /* @__PURE__ */ new Set();
     const byType = {};
@@ -9278,7 +9309,7 @@ body.native-app .hint {
     }
     if (byType["automate"]) {
       const labels = byType["automate"].map(getGroupLabel);
-      lines.push({ verb: "Keep practicing", levels: labels });
+      lines.push({ verb: "Practice", levels: labels });
     }
     return lines;
   }
@@ -9290,8 +9321,6 @@ body.native-app .hint {
         return "practice";
       case "Start":
         return "start";
-      case "Keep practicing":
-        return "automate";
       default:
         return line.verb.toLowerCase();
     }
@@ -10677,7 +10706,16 @@ body.native-app .hint {
       }) })
     ] });
   }
-  function LevelProgressCard({ label, pill, colors, status, onToggleKnown, onToggleSkip }) {
+  function LevelProgressCard({
+    label,
+    statusLabel,
+    statusColor,
+    pill,
+    colors,
+    status,
+    onToggleKnown,
+    onToggleSkip
+  }) {
     const st = status ?? "normal";
     return /* @__PURE__ */ u3(
       Card,
@@ -10711,6 +10749,16 @@ body.native-app .hint {
                 }
               )
             ] })
+          ] }),
+          statusLabel && /* @__PURE__ */ u3("span", { class: "level-progress-status", children: [
+            statusColor && /* @__PURE__ */ u3(
+              "span",
+              {
+                class: "level-status-swatch",
+                style: `background-color: var(${statusColor})`
+              }
+            ),
+            statusLabel
           ] }),
           pill && /* @__PURE__ */ u3("div", { class: "level-progress-pill-row", children: /* @__PURE__ */ u3(Pill, { variant: "notice", children: pill }) }),
           /* @__PURE__ */ u3(ProgressBarLabeled, { colors, disabled: st === "skipped" })
@@ -11960,7 +12008,9 @@ body.native-app .hint {
       const g2 = groupScope.groups.find((g3) => g3.id === id);
       const itemIds = groupScope.getItemIdsForGroup(id);
       const colors = progressBarColors(learner.selector, itemIds);
-      const pill = computeReviewPill(learner.selector, itemIds);
+      const ls = groupScopeResult.recommendation.levelStatuses?.find((s3) => s3.groupId === id);
+      const sl = ls ? SPEED_LEVELS.find((l3) => l3.key === ls.speedLabel) ?? null : null;
+      const pill = ls?.reviewInHours != null ? ls.reviewStatus === "soon" ? "Review soon" : `Review in ${formatReviewDuration(ls.reviewInHours)}` : void 0;
       const skipReason = groupScopeResult.skippedGroups.get(id);
       const status = skipReason === "mastered" ? "known" : skipReason === "deferred" ? "skipped" : "normal";
       const label = g2 ? resolveGroupLabel(
@@ -11970,7 +12020,9 @@ body.native-app .hint {
         LevelProgressCard,
         {
           label,
-          pill: pill ?? void 0,
+          statusLabel: sl?.label,
+          statusColor: sl?.colorToken,
+          pill,
           colors,
           status,
           onToggleKnown: () => skipReason === "mastered" ? groupScopeResult.scopeActions.unskipGroup(id) : groupScopeResult.scopeActions.skipGroup(id, "mastered"),
@@ -11982,14 +12034,14 @@ body.native-app .hint {
   }
   function singleLevelSuggestion(selector, allItems2) {
     const anySeen = allItems2.some((id) => selector.getStats(id) !== null);
-    if (!anySeen) return { verb: "Start practicing", levels: [] };
+    if (!anySeen) return { verb: "Start", levels: [] };
     if (selector.checkAllAutomatic(allItems2)) {
-      return { verb: "All items mastered", levels: [] };
+      return { verb: "All items automatic! Practice something else", levels: [] };
     }
     if (selector.checkNeedsReview(allItems2)) {
       return { verb: "Review", levels: [] };
     }
-    return { verb: "Keep practicing", levels: [] };
+    return { verb: "Practice", levels: [] };
   }
   function IdlePracticeView({ def, engine, learner, ctrl, groupScopeResult, ps, onCalibrate }) {
     const hasGroups = def.scope.kind === "groups" && groupScopeResult;
