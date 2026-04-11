@@ -2749,7 +2749,7 @@ body.native-app .hint {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="d8a17f polish"></div>
+  <div class="home-screen" id="home-screen" data-version="d0bccc polish"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -12060,8 +12060,8 @@ body.native-app .hint {
             def,
             groupScopeResult
           }
-        ) : /* @__PURE__ */ u3("div", { class: "practice-config", children: [
-          /* @__PURE__ */ u3(Text, { role: "heading-section", class: "practice-config-label", children: "Recommendation" }),
+        ) : /* @__PURE__ */ u3(Stack, { gap: "group", class: "practice-config", children: [
+          /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Recommendation" }),
           /* @__PURE__ */ u3(
             SuggestionLines,
             {
@@ -12136,7 +12136,7 @@ body.native-app .hint {
         ] })
       ] }),
       aboutDescription && /* @__PURE__ */ u3(Section, { heading: "Why automate this?", gap: "group", children: /* @__PURE__ */ u3(Text, { role: "body", as: "p", children: aboutDescription }) }),
-      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "text-hint about-tab-tip", children: [
+      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "text-hint", children: [
         "Start practicing on the",
         " ",
         /* @__PURE__ */ u3(RepeatMark, { size: 16, class: "about-tab-tip-icon" }),
