@@ -1554,7 +1554,7 @@ body {
   height: 8px;
   border-radius: var(--radius-sm);
   overflow: hidden;
-  background: var(--color-surface);
+  background: var(--heatmap-none);
 }
 .group-progress-bar.skipped {
   opacity: var(--opacity-subtle);
