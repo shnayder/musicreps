@@ -1,8 +1,10 @@
 // Modal — reusable dialog overlay for the design system.
-// Renders a centered surface over a semi-transparent backdrop.
+// Renders via portal to document.body so it paints above all stacking
+// contexts (layout-main's isolation:isolate, footer, etc.).
 // Dismissed by clicking backdrop, pressing Escape, or the close button.
 
 import type { ComponentChildren } from 'preact';
+import { createPortal } from 'preact/compat';
 import { useCallback, useEffect, useRef } from 'preact/hooks';
 import { Text } from './text.tsx';
 
@@ -34,7 +36,7 @@ export function Modal(
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div class='modal-backdrop' ref={backdropRef} onClick={handleBackdrop}>
       <div class='modal-surface' role='dialog' aria-label={title}>
         <div class='modal-header'>
@@ -50,6 +52,7 @@ export function Modal(
         </div>
         <div class='modal-body'>{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

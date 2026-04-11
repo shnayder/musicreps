@@ -268,9 +268,11 @@
   --opacity-pressed: 0.8;
   --opacity-subtle: 0.3;
 
-  /* Z-index scale */
+  /* Z-index scale — modal uses createPortal to document.body,
+     bypassing all stacking contexts. These tokens are for
+     elements within the normal layout flow. */
   --z-raised: 1;
-  --z-popover: 100;
+  --z-modal: 100;
 
   /* Font weights */
   --font-normal: 400;
@@ -2651,7 +2653,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: var(--z-modal);
   padding: var(--pad-region);
 }
 .modal-surface {
