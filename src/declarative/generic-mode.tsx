@@ -67,6 +67,7 @@ import {
   computeProgressColors,
   formatReviewDuration,
   progressBarColors,
+  type ProgressSegment,
 } from '../stats-display.ts';
 import {
   type LevelProgressEntry,
@@ -1373,7 +1374,7 @@ function useProgressColors<Q>(
   learner: ReturnType<typeof useLearnerModel>,
   _phase: string,
   skippedGroups?: ReadonlyMap<string, unknown>,
-): string[] {
+): ProgressSegment[] {
   return useMemo(() => {
     if (def.scope.kind === 'groups') {
       const scope = def.scope;
@@ -1430,7 +1431,7 @@ function ModeHeader<Q>(
   { def, isIdle, progressColors, totalReps, navigateHome }: {
     def: ModeDefinition<Q>;
     isIdle: boolean;
-    progressColors: string[];
+    progressColors: ProgressSegment[];
     totalReps: number;
     navigateHome: () => void;
   },

@@ -71,12 +71,12 @@ describe('computeAllProgress', () => {
     }
   });
 
-  it('unstarted modes have empty groupColors', () => {
+  it('unstarted modes have empty segments', () => {
     const result = computeAllProgress(emptyStorageFactory());
     for (const entry of MODE_PROGRESS_MANIFEST) {
       const progress = result.get(entry.modeId)!;
       assert.equal(
-        progress.groupColors.length,
+        progress.segments.length,
         0,
         `${entry.modeId} should be empty when unstarted`,
       );
@@ -96,7 +96,7 @@ describe('computeAllProgress', () => {
       ns === 'keySignatures' ? skipped : new Set<string>();
     const result = computeAllProgress(emptyStorageFactory(), null, getSkipped);
     const ks = result.get('keySignatures')!;
-    assert.equal(ks.groupColors.length, 0); // all unseen → empty
+    assert.equal(ks.segments.length, 0); // all unseen → empty
   });
 });
 
@@ -109,7 +109,7 @@ describe('computeProgressForMode', () => {
     const entry = getModeProgress('noteSemitones')!;
     const storage = createMemoryStorage();
     const result = computeProgressForMode(entry, storage, null);
-    assert.equal(result.groupColors.length, 0);
+    assert.equal(result.segments.length, 0);
     assert.equal(result.activeGroupCount, 1);
   });
 
@@ -119,7 +119,7 @@ describe('computeProgressForMode', () => {
     const ids = entry.allItemIds();
     seedAutomatic(storage, ids.slice(0, 3), Date.now());
     const result = computeProgressForMode(entry, storage, null);
-    assert.equal(result.groupColors.length, ids.length);
+    assert.equal(result.segments.length, ids.length);
   });
 
   it('single-group mode skipped yields empty', () => {
@@ -127,7 +127,7 @@ describe('computeProgressForMode', () => {
     const storage = createMemoryStorage();
     const skipped = new Set(['all']);
     const result = computeProgressForMode(entry, storage, null, skipped);
-    assert.equal(result.groupColors.length, 0);
+    assert.equal(result.segments.length, 0);
     assert.equal(result.activeGroupCount, 0);
   });
 
@@ -135,7 +135,7 @@ describe('computeProgressForMode', () => {
     const entry = getModeProgress('semitoneMath')!;
     const storage = createMemoryStorage();
     const result = computeProgressForMode(entry, storage, null);
-    assert.equal(result.groupColors.length, 0);
+    assert.equal(result.segments.length, 0);
     assert.equal(result.activeGroupCount, entry.groups.length);
   });
 
@@ -153,9 +153,9 @@ describe('computeProgressForMode', () => {
     const result = computeProgressForMode(entry, storage, null);
 
     // 4 segments total. Group 0 (automatic) should sort first.
-    assert.equal(result.groupColors.length, 4);
+    assert.equal(result.segments.length, 4);
     // First color should differ from last (automatic vs grey)
-    assert.notEqual(result.groupColors[0], result.groupColors[3]);
+    assert.notEqual(result.segments[0].color, result.segments[3].color);
   });
 
   it('filters out skipped groups', () => {
@@ -168,7 +168,7 @@ describe('computeProgressForMode', () => {
     }
     const skipped = new Set(['major-hard', 'minor-hard']);
     const result = computeProgressForMode(entry, storage, null, skipped);
-    assert.equal(result.groupColors.length, 2); // 4 - 2 skipped
+    assert.equal(result.segments.length, 2); // 4 - 2 skipped
     assert.equal(result.activeGroupCount, 2);
   });
 
@@ -182,7 +182,7 @@ describe('computeProgressForMode', () => {
       'minor-hard',
     ]);
     const result = computeProgressForMode(entry, storage, null, skipped);
-    assert.equal(result.groupColors.length, 0);
+    assert.equal(result.segments.length, 0);
     assert.equal(result.activeGroupCount, 0);
   });
 
@@ -195,8 +195,8 @@ describe('computeProgressForMode', () => {
     const withBaseline = computeProgressForMode(entry, storage, 500);
     const withoutBaseline = computeProgressForMode(entry, storage, null);
     // Both should compute without error
-    assert.ok(withBaseline.groupColors.length > 0);
-    assert.ok(withoutBaseline.groupColors.length > 0);
+    assert.ok(withBaseline.segments.length > 0);
+    assert.ok(withoutBaseline.segments.length > 0);
   });
 });
 

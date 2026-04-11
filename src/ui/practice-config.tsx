@@ -4,6 +4,7 @@
 
 import type { ComponentChildren } from 'preact';
 import type { SuggestionLine } from '../types.ts';
+import type { ProgressSegment } from '../stats-display.ts';
 import { SkillIcon } from './icons.tsx';
 import { CloseButton } from './mode-screen.tsx';
 import { Pill } from './pill.tsx';
@@ -25,7 +26,7 @@ export function SkillHeader(
     modeId?: string;
     title: string;
     totalReps?: number;
-    progressColors?: string[];
+    progressColors?: ProgressSegment[];
     onBack?: () => void;
   },
 ) {
@@ -46,7 +47,7 @@ export function SkillHeader(
       </div>
       {progressColors && progressColors.length > 0 && (
         <div class='skill-header-progress'>
-          <ProgressBarLabeled label='Progress' colors={progressColors} />
+          <ProgressBarLabeled label='Progress' segments={progressColors} />
         </div>
       )}
     </div>
@@ -187,7 +188,10 @@ export function LevelProgressCard(
           {statusLabel}
         </span>
       )}
-      <ProgressBarLabeled colors={colors} disabled={st === 'skipped'} />
+      <ProgressBarLabeled
+        segments={colors.map((c) => ({ color: c, weight: 1 }))}
+        disabled={st === 'skipped'}
+      />
     </div>
   );
 }

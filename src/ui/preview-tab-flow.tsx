@@ -44,12 +44,12 @@ function FlowIdleSection(
           onToggleStar={() => {}}
           onSelectMode={() => {}}
           progress={{
-            groupColors: [
-              'hsl(125, 48%, 33%)',
-              'hsl(80, 35%, 40%)',
-              'hsl(48, 50%, 52%)',
-              'hsl(40, 60%, 58%)',
-              'hsl(30, 4%, 85%)',
+            segments: [
+              { color: 'hsl(125, 48%, 33%)', weight: 1 },
+              { color: 'hsl(80, 35%, 40%)', weight: 0.7 },
+              { color: 'hsl(48, 50%, 52%)', weight: 0.3 },
+              { color: 'hsl(40, 60%, 58%)', weight: 0.1 },
+              { color: 'hsl(30, 4%, 85%)', weight: 0 },
             ],
             activeGroupCount: 5,
           }}

@@ -54,10 +54,22 @@ function ScopeSection(
         <Section title='GroupProgressBar' tabId={tabId}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <GroupProgressBar
-              colors={['#4caf50', '#4caf50', '#ff9800', '#9e9e9e', '#9e9e9e']}
+              segments={[
+                { color: '#4caf50', weight: 1 },
+                { color: '#4caf50', weight: 0.6 },
+                { color: '#ff9800', weight: 0.2 },
+                { color: '#9e9e9e', weight: 0.1 },
+                { color: '#9e9e9e', weight: 0 },
+              ]}
             />
             <GroupProgressBar
-              colors={['#4caf50', '#4caf50', '#ff9800', '#9e9e9e', '#9e9e9e']}
+              segments={[
+                { color: '#4caf50', weight: 1 },
+                { color: '#4caf50', weight: 0.6 },
+                { color: '#ff9800', weight: 0.2 },
+                { color: '#9e9e9e', weight: 0.1 },
+                { color: '#9e9e9e', weight: 0 },
+              ]}
               disabled
             />
           </div>

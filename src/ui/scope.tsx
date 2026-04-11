@@ -1,19 +1,36 @@
 // Scope control components: progress bars for practice scope display.
 
+import type { ProgressSegment } from '../stats-display.ts';
 import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
-// GroupProgressBar — segmented bar showing per-item mastery colors
+// GroupProgressBar — segmented bar showing per-item mastery colors.
+// Segments pack left: each slice's flex = weight, and a trailing spacer
+// absorbs the remaining space so unfilled portions show as background.
 // ---------------------------------------------------------------------------
 
 export function GroupProgressBar(
-  { colors, disabled }: { colors: string[]; disabled?: boolean },
+  { segments, disabled }: { segments: ProgressSegment[]; disabled?: boolean },
 ) {
+  const totalSlots = segments.length;
+  const usedFlex = segments.reduce((sum, s) => sum + s.weight, 0);
+  const spacerFlex = totalSlots - usedFlex;
   return (
     <div class={'group-progress-bar' + (disabled ? ' skipped' : '')}>
-      {colors.map((color, i) => (
-        <div class='group-bar-slice' key={i} style={`background:${color}`} />
-      ))}
+      {segments.map((seg, i) =>
+        seg.weight > 0
+          ? (
+            <div
+              class='group-bar-slice'
+              key={i}
+              style={`flex:${seg.weight};background:${seg.color}`}
+            />
+          )
+          : null
+      )}
+      {spacerFlex > 0 && (
+        <div class='group-bar-slice' style={`flex:${spacerFlex}`} />
+      )}
     </div>
   );
 }
@@ -25,9 +42,9 @@ export function GroupProgressBar(
 // ---------------------------------------------------------------------------
 
 export function ProgressBarLabeled(
-  { label, colors, disabled, plain }: {
+  { label, segments, disabled, plain }: {
     label?: string;
-    colors: string[];
+    segments: ProgressSegment[];
     disabled?: boolean;
     plain?: boolean;
   },
@@ -40,7 +57,7 @@ export function ProgressBarLabeled(
           {label}
         </Text>
       )}
-      <GroupProgressBar colors={colors} disabled={disabled} />
+      <GroupProgressBar segments={segments} disabled={disabled} />
     </div>
   );
 }

@@ -399,7 +399,7 @@ export function RoundCompleteInfo(
             <ProgressBarLabeled
               key={entry.id}
               label={entry.label}
-              colors={entry.colors}
+              segments={entry.colors.map((c) => ({ color: c, weight: 1 }))}
               plain
             />
           ))}

@@ -1600,7 +1600,6 @@ body {
   opacity: var(--opacity-subtle);
 }
 .group-bar-slice {
-  flex: 1;
   min-width: 0;
 }
 .fretboard-container {
