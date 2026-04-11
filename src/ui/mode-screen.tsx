@@ -7,7 +7,7 @@ import { SkillIcon } from './icons.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
-import { Bar } from './layout.tsx';
+import { Bar, Stack } from './layout.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
 import { ProgressBarLabeled } from './scope.tsx';
 
@@ -375,26 +375,24 @@ export function RoundCompleteInfo(
         {heading || ''}
       </Text>
       {count != null && (
-        <>
+        <Stack gap='micro' class='round-complete-count-group'>
           <Text role='metric-hero' as='div' class='round-complete-count'>
             {count}
           </Text>
-          <Text
-            role='body-secondary'
-            as='div'
-            class='round-complete-count-label'
-          >
+          <Text role='body-secondary' as='div'>
             {count === 1 ? 'rep' : 'reps'}
           </Text>
-        </>
+        </Stack>
       )}
-      <div class='round-complete-stats'>
-        <Text role='status' as='div' class='round-stat-correct'>
-          {correct || ''}
-        </Text>
-      </div>
+      <Text
+        role='status'
+        as='div'
+        class='round-complete-stats round-stat-correct'
+      >
+        {correct || ''}
+      </Text>
       {levelBars && levelBars.length > 0 && (
-        <div class='round-complete-progress'>
+        <Stack gap='group' class='round-complete-progress'>
           {levelBars.map((entry) => (
             <ProgressBarLabeled
               key={entry.id}
@@ -403,7 +401,7 @@ export function RoundCompleteInfo(
               plain
             />
           ))}
-        </div>
+        </Stack>
       )}
     </div>
   );
