@@ -145,8 +145,6 @@ function speedOnlyColor(sp: number): string {
   return `hsl(${h}, ${s}%, ${l}%)`;
 }
 
-const FRESHNESS_THRESHOLD = 0.5;
-
 /**
  * Compute per-item progress bar colors (speed-only encoding):
  * - Seen: speed hue at full saturation (gold → green)
@@ -261,13 +259,15 @@ export function computeProgressColors(
 
 // --- Review timing pills ---
 
-type ReviewSelector = {
+import { computeReviewTiming } from './recommendations.ts';
+
+export type ReviewSelector = {
   getStats(id: string): ItemStats | null;
   getFreshness(id: string): number | null;
 };
 
 /** Format hours remaining until review as a human-readable duration. */
-function formatReviewDuration(hours: number): string {
+export function formatReviewDuration(hours: number): string {
   const days = Math.round(hours / 24);
   if (days <= 14) return `${days}d`;
   const weeks = Math.round(days / 7);
@@ -278,10 +278,7 @@ function formatReviewDuration(hours: number): string {
 
 /**
  * Compute a review-timing pill label for a group of items.
- * Returns null when stability or freshness data is missing (unseen items,
- * or legacy stats without stability/lastCorrectAt). For groups with data:
- * - "Review soon" if avg freshness < threshold or ≤24h remaining
- * - "Review in Xd/Xw/Xmo" based on estimated time until review
+ * Returns null when stability or freshness data is missing.
  */
 export function computeReviewPill(
   selector: ReviewSelector,
@@ -302,15 +299,11 @@ export function computeReviewPill(
     }
   }
   if (stabilityCount === 0 || freshnessCount === 0) return null;
-
-  const avgFreshness = freshnessSum / freshnessCount;
-  if (avgFreshness < FRESHNESS_THRESHOLD) return 'Review soon';
-
   const avgStability = stabilitySum / stabilityCount;
-  const hoursRemaining = avgStability * (1 + Math.log2(avgFreshness));
-  if (hoursRemaining <= 24) return 'Review soon';
-
-  return `Review in ${formatReviewDuration(hoursRemaining)}`;
+  const avgFreshness = freshnessSum / freshnessCount;
+  const timing = computeReviewTiming(avgStability, avgFreshness);
+  if (timing.status === 'soon') return 'Review soon';
+  return `Review in ${formatReviewDuration(timing.hours)}`;
 }
 
 // --- Legend ---

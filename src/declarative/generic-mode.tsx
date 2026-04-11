@@ -66,7 +66,7 @@ import {
 import { Card, Section, Stack } from '../ui/layout.tsx';
 import {
   computeProgressColors,
-  computeReviewPill,
+  formatReviewDuration,
   progressBarColors,
 } from '../stats-display.ts';
 import {
@@ -85,6 +85,7 @@ import {
   SuggestionLines,
 } from '../ui/practice-config.tsx';
 import { StatsGrid, StatsLegend, StatsTable } from '../ui/stats.tsx';
+import { SPEED_LEVELS } from '../speed-levels.ts';
 import {
   FeedbackDisplay,
   KeyboardHint,
@@ -847,7 +848,17 @@ function LevelProgressCards<Q>(
         const g = groupScope.groups.find((g) => g.id === id);
         const itemIds = groupScope.getItemIdsForGroup(id);
         const colors = progressBarColors(learner.selector, itemIds);
-        const pill = computeReviewPill(learner.selector, itemIds);
+        // Read speed + review timing from recommendation result (single source).
+        const ls = groupScopeResult.recommendation.levelStatuses
+          ?.find((s) => s.groupId === id);
+        const sl = ls
+          ? SPEED_LEVELS.find((l) => l.key === ls.speedLabel) ?? null
+          : null;
+        const pill = ls?.reviewInHours != null
+          ? (ls.reviewStatus === 'soon'
+            ? 'Review soon'
+            : `Review in ${formatReviewDuration(ls.reviewInHours)}`)
+          : undefined;
         const skipReason = groupScopeResult.skippedGroups.get(id);
         const status = skipReason === 'mastered'
           ? 'known' as const
@@ -863,7 +874,9 @@ function LevelProgressCards<Q>(
           <LevelProgressCard
             key={id}
             label={label}
-            pill={pill ?? undefined}
+            statusLabel={sl?.label}
+            statusColor={sl?.colorToken}
+            pill={pill}
             colors={colors}
             status={status}
             onToggleKnown={() =>
@@ -887,14 +900,14 @@ function singleLevelSuggestion(
   allItems: string[],
 ): SuggestionLine {
   const anySeen = allItems.some((id) => selector.getStats(id) !== null);
-  if (!anySeen) return { verb: 'Start practicing', levels: [] };
+  if (!anySeen) return { verb: 'Start', levels: [] };
   if (selector.checkAllAutomatic(allItems)) {
-    return { verb: 'All items mastered', levels: [] };
+    return { verb: 'All items automatic! Practice something else', levels: [] };
   }
   if (selector.checkNeedsReview(allItems)) {
     return { verb: 'Review', levels: [] };
   }
-  return { verb: 'Keep practicing', levels: [] };
+  return { verb: 'Practice', levels: [] };
 }
 
 function IdlePracticeView<Q>(

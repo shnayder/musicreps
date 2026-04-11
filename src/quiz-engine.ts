@@ -3,6 +3,7 @@
 // useQuizEngine hook.
 
 import { displayNote, getUseSolfege, NOTE_NAMES, NOTES } from './music-data.ts';
+import { SPEED_LEVELS } from './speed-levels.ts';
 import type { NoteKeyHandler } from './types.ts';
 
 /** Set of note names in the standard 12-button grid. */
@@ -342,41 +343,26 @@ export type CalibrationThreshold = {
   colorToken: string;
 };
 
+/** Baseline multipliers for each speed level (Automatic → Starting).
+ *  Must match SPEED_LEVELS length — verified at module load. */
+const BASELINE_MULTIPLIERS: (number | null)[] = [1.5, 3.0, 4.5, 6.0, null];
+if (BASELINE_MULTIPLIERS.length !== SPEED_LEVELS.length) {
+  throw new Error(
+    'BASELINE_MULTIPLIERS and SPEED_LEVELS must have same length',
+  );
+}
+
 export function getCalibrationThresholds(
   baseline: number,
 ): CalibrationThreshold[] {
-  return [
-    {
-      label: 'Automatic',
-      maxMs: Math.round(baseline * 1.5),
-      meaning: 'Fully memorized \u2014 instant recall',
-      colorToken: '--heatmap-5',
-    },
-    {
-      label: 'Solid',
-      maxMs: Math.round(baseline * 3.0),
-      meaning: 'Solid recall, minor hesitation',
-      colorToken: '--heatmap-4',
-    },
-    {
-      label: 'Learning',
-      maxMs: Math.round(baseline * 4.5),
-      meaning: 'Working on it \u2014 needs practice',
-      colorToken: '--heatmap-3',
-    },
-    {
-      label: 'Hesitant',
-      maxMs: Math.round(baseline * 6.0),
-      meaning: 'Significant hesitation',
-      colorToken: '--heatmap-2',
-    },
-    {
-      label: 'Starting',
-      maxMs: null,
-      meaning: 'Not yet learned',
-      colorToken: '--heatmap-1',
-    },
-  ];
+  return SPEED_LEVELS.map((level, i) => ({
+    label: level.label,
+    meaning: level.meaning,
+    colorToken: level.colorToken,
+    maxMs: BASELINE_MULTIPLIERS[i] !== null
+      ? Math.round(baseline * BASELINE_MULTIPLIERS[i]!)
+      : null,
+  }));
 }
 
 /**

@@ -124,7 +124,7 @@ describe('computeSkillRecommendation', () => {
     assert.ok(result.urgency > 0);
   });
 
-  it('returns keep-practicing when groups have working items', () => {
+  it('returns practice when groups have working items', () => {
     const entry = makeEntry('test', 3);
     const storage = createMemoryStorage();
     // Seed group 0 as slow (working, not automatic)
@@ -136,11 +136,11 @@ describe('computeSkillRecommendation', () => {
       NO_SKIPS,
       DEFAULT_CONFIG,
     );
-    assert.equal(result.type, 'keep-practicing');
-    assert.equal(result.cueLabel, 'Keep practicing');
+    assert.equal(result.type, 'practice');
+    assert.equal(result.cueLabel, 'Practice');
   });
 
-  it('returns learn-next when expansion gate is open', () => {
+  it('returns start when expansion gate is open', () => {
     const entry = makeEntry('test', 3);
     const storage = createMemoryStorage();
     // Seed group 0 as automatic → expansion gate should open
@@ -152,20 +152,18 @@ describe('computeSkillRecommendation', () => {
       NO_SKIPS,
       DEFAULT_CONFIG,
     );
-    assert.equal(result.type, 'learn-next');
-    assert.equal(result.cueLabel, 'Learn next level');
-    assert.equal(result.detail, 'Learn Group 1');
+    assert.equal(result.type, 'start');
+    assert.equal(result.cueLabel, 'Start');
+    assert.equal(result.detail, 'Start Group 1');
   });
 
-  it('returns automate when levels are learned but not automatic', () => {
+  it('solid + fresh level gets no active rec (practiced enough)', () => {
     const entry = makeEntry('test', 1, 10);
     const storage = createMemoryStorage();
-    // Seed items with speed that produces P10 in the "learned" range (0.7-0.9).
-    // Need most items fast but a few slightly below automatic.
+    // Seed items with speed in solid range + good stability → scheduled review.
     const ids = entry.groups[0].getItemIds();
     const now = Date.now();
     for (let i = 0; i < ids.length; i++) {
-      // 8 items at ~800ms (automatic), 2 at ~1800ms (learned-ish)
       const ewma = i < 8 ? 800 : 1800;
       storage.saveStats(ids[i], {
         recentTimes: [ewma],
@@ -183,9 +181,8 @@ describe('computeSkillRecommendation', () => {
       NO_SKIPS,
       DEFAULT_CONFIG,
     );
-    // With P10 in learned range (0.7 ≤ speed < 0.9), should get automate
-    assert.equal(result.type, 'automate');
-    assert.equal(result.cueLabel, 'Almost there');
+    // Solid + fresh (scheduled review) → no active rec → automatic
+    assert.equal(result.type, 'automatic');
   });
 
   it('returns automatic when all groups mastered', () => {
@@ -216,8 +213,8 @@ describe('computeSkillRecommendation', () => {
       NO_SKIPS,
       DEFAULT_CONFIG,
     );
-    assert.equal(result.type, 'keep-practicing');
-    assert.equal(result.detail, 'Keep practicing');
+    assert.equal(result.type, 'practice');
+    assert.equal(result.detail, 'Practice');
   });
 
   it('excludes skipped groups', () => {
@@ -237,7 +234,7 @@ describe('computeSkillRecommendation', () => {
     assert.equal(result.type, 'not-started');
   });
 
-  it('review takes priority over keep-practicing', () => {
+  it('review takes priority over practice', () => {
     const entry = makeEntry('test', 3);
     const storage = createMemoryStorage();
     // Group 0: stale. Group 1: slow (working).
@@ -268,9 +265,8 @@ describe('rankSkillRecommendations', () => {
   ): SkillRecommendation {
     const labels: Record<string, string> = {
       review: 'Review',
-      'keep-practicing': 'Keep practicing',
-      'learn-next': 'Learn next level',
-      'automate': 'Almost there',
+      practice: 'Practice',
+      start: 'Start',
     };
     return {
       modeId,
@@ -283,18 +279,18 @@ describe('rankSkillRecommendations', () => {
 
   it('returns top 3 by priority', () => {
     const recs = [
-      rec('modeA', 'learn-next'),
+      rec('modeA', 'start'),
       rec('modeB', 'review', 2),
-      rec('modeC', 'keep-practicing', 5),
+      rec('modeC', 'practice', 5),
       rec('modeD', 'review', 3),
-      rec('modeE', 'learn-next'),
+      rec('modeE', 'start'),
     ];
     const result = rankSkillRecommendations(recs, order);
     assert.equal(result.length, 3);
-    // Reviews first (higher urgency first), then keep-practicing
+    // Reviews first (higher urgency first), then practice
     assert.equal(result[0].modeId, 'modeD'); // review, urgency 3
     assert.equal(result[1].modeId, 'modeB'); // review, urgency 2
-    assert.equal(result[2].modeId, 'modeC'); // keep-practicing, urgency 5
+    assert.equal(result[2].modeId, 'modeC'); // practice, urgency 5
   });
 
   it('cold start: all not-started → first in definition order', () => {
@@ -306,8 +302,8 @@ describe('rankSkillRecommendations', () => {
     const result = rankSkillRecommendations(recs, order);
     assert.equal(result.length, 1);
     assert.equal(result[0].modeId, 'modeA'); // first in definition order
-    assert.equal(result[0].type, 'learn-next');
-    assert.equal(result[0].cueLabel, 'Learn next level');
+    assert.equal(result[0].type, 'start');
+    assert.equal(result[0].cueLabel, 'Ready to start');
   });
 
   it('all automatic → empty list', () => {
@@ -336,7 +332,7 @@ describe('rankSkillRecommendations', () => {
     const recs = [
       rec('modeA', 'automatic'),
       rec('modeB', 'not-started'),
-      rec('modeC', 'keep-practicing', 5),
+      rec('modeC', 'practice', 5),
     ];
     const result = rankSkillRecommendations(recs, order);
     assert.equal(result.length, 1);
@@ -352,18 +348,18 @@ describe('rankSkillRecommendations', () => {
     const result = rankSkillRecommendations(recs, order);
     assert.equal(result.length, 1);
     assert.equal(result[0].modeId, 'modeC');
-    assert.equal(result[0].type, 'learn-next');
-    assert.equal(result[0].detail, 'Get started');
+    assert.equal(result[0].type, 'start');
+    assert.equal(result[0].detail, 'Ready to start');
   });
 
-  it('automate is actionable and ranked after learn-next', () => {
+  it('start is actionable and ranked after practice', () => {
     const recs = [
-      rec('modeA', 'automate', 2),
-      rec('modeB', 'learn-next'),
+      rec('modeA', 'start'),
+      rec('modeB', 'practice', 2),
     ];
     const result = rankSkillRecommendations(recs, order);
     assert.equal(result.length, 2);
-    assert.equal(result[0].modeId, 'modeB'); // learn-next before automate
+    assert.equal(result[0].modeId, 'modeB'); // practice before start
     assert.equal(result[1].modeId, 'modeA');
   });
 });

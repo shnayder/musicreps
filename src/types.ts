@@ -167,6 +167,19 @@ export type LevelRecommendation = {
   type: 'review' | 'practice' | 'expand' | 'automate';
 };
 
+/** Per-level status included in RecommendationResult for UI consumption. */
+export type LevelStatusSummary = {
+  groupId: string;
+  speedLabel:
+    | 'automatic'
+    | 'solid'
+    | 'learning'
+    | 'hesitant'
+    | 'starting';
+  reviewStatus: 'soon' | 'scheduled' | null;
+  reviewInHours: number | null;
+};
+
 export type RecommendationResult = {
   recommended: Set<string>;
   enabled: Set<string> | null;
@@ -174,6 +187,8 @@ export type RecommendationResult = {
   expandNewCount: number;
   /** Per-level recommendations in priority order. */
   levelRecs: LevelRecommendation[];
+  /** Per-level statuses (speed, review timing). Empty for fresh-start. */
+  levelStatuses?: LevelStatusSummary[];
 };
 
 // ---------------------------------------------------------------------------

@@ -30,12 +30,13 @@ import {
   deriveScaledConfig,
 } from '../src/adaptive.ts';
 import { computeRecommendations } from '../src/recommendations.ts';
+import type { RecommendationResult } from '../src/types.ts';
 import {
   buildRecommendationText,
   computePracticeSummary,
 } from '../src/mode-ui-state.ts';
 import {
-  ALL_GROUP_INDICES,
+  ALL_GROUP_IDS,
   ALL_ITEMS,
   DISTANCE_GROUPS,
   getItemIdsForGroup,
@@ -69,15 +70,15 @@ type SerializedRow = {
   levelFreshness: number;
   gateOpen: boolean;
   groupRecs: {
-    index: number;
+    groupId: string;
     automatic: number;
     working: number;
     unseen: number;
   }[];
-  recommendedIndices: number[];
-  expandIndex: number | null;
+  recommendedIds: string[];
+  expandIndex: string | null;
   expandNewCount: number;
-  levelRecs: { index: number; type: string }[];
+  levelRecs: { groupId: string; type: string }[];
   recommendationText: string;
   statusLabel: string;
   statusDetail: string;
@@ -153,17 +154,22 @@ function analyzeScenario(
     }
   }
 
-  // Run recommendation algorithm (sort unstarted by index, matching use-group-scope)
+  // Sort unstarted by definition order (matching use-group-scope).
+  const idOrder = new Map(ALL_GROUP_IDS.map((id, i) => [id, i]));
   const recommendation = computeRecommendations(
     selector,
-    ALL_GROUP_INDICES,
+    ALL_GROUP_IDS,
     getItemIdsForGroup,
     {},
-    { sortUnstarted: (a, b) => a.string - b.string },
+    {
+      sortUnstarted: (a, b) =>
+        (idOrder.get(a.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0),
+    },
   );
 
   // Build recommendation text
-  const getGroupLabel = (idx: number) => DISTANCE_GROUPS[idx].label;
+  const groupById = new Map(DISTANCE_GROUPS.map((g) => [g.id, g]));
+  const getGroupLabel = (id: string) => groupById.get(id)?.label ?? id;
   const recommendationText = buildRecommendationText(
     recommendation,
     getGroupLabel,
@@ -181,13 +187,13 @@ function analyzeScenario(
   });
 
   // Compute algorithm internals
-  const recs = selector.getStringRecommendations(
-    ALL_GROUP_INDICES,
+  const recs = selector.getGroupRecommendations(
+    ALL_GROUP_IDS,
     getItemIdsForGroup,
   );
   const started = recs.filter((r) => r.unseenCount < r.totalCount);
 
-  const startedItemIds = started.flatMap((r) => getItemIdsForGroup(r.string));
+  const startedItemIds = started.flatMap((r) => getItemIdsForGroup(r.groupId));
   const { level: levelSpeed } = selector.getLevelSpeed(startedItemIds);
   const { level: levelFreshness } = selector.getLevelFreshness(
     startedItemIds,
@@ -196,7 +202,7 @@ function analyzeScenario(
   );
 
   const groupRecs = recs.map((r) => ({
-    index: r.string,
+    groupId: r.groupId,
     automatic: r.automaticCount,
     working: r.workingCount,
     unseen: r.unseenCount,
@@ -207,7 +213,7 @@ function analyzeScenario(
     levelFreshness,
     gateOpen: recommendation.expandIndex !== null,
     groupRecs,
-    recommendedIndices: [...recommendation.recommended],
+    recommendedIds: [...recommendation.recommended],
     expandIndex: recommendation.expandIndex,
     expandNewCount: recommendation.expandNewCount,
     levelRecs: recommendation.levelRecs,
@@ -323,11 +329,11 @@ async function captureRound(
       // --- 3. Run checks ---
       // Reconstruct RecommendationResult with Sets for check functions
       const recommendation = {
-        recommended: new Set(analysis.recommendedIndices),
-        enabled: null as Set<number> | null,
+        recommended: new Set(analysis.recommendedIds),
+        enabled: null as Set<string> | null,
         expandIndex: analysis.expandIndex,
         expandNewCount: analysis.expandNewCount,
-        levelRecs: analysis.levelRecs,
+        levelRecs: analysis.levelRecs as RecommendationResult['levelRecs'],
       };
 
       const output: ScenarioOutput = {
@@ -434,7 +440,7 @@ function generateReviewHTML(sessionName: string, session: Session): void {
         .map(
           (g) =>
             `<div class="group-row">` +
-            `<span class="group-label">G${g.index}</span> ` +
+            `<span class="group-label">${g.groupId}</span> ` +
             `<span class="automatic">${g.automatic}A</span> ` +
             `<span class="working">${g.working}W</span> ` +
             `<span class="unseen">${g.unseen}U</span>` +
@@ -451,11 +457,10 @@ function generateReviewHTML(sessionName: string, session: Session): void {
           row.gateOpen ? 'gate-open' : 'gate-closed'
         }">${row.gateOpen ? 'OPEN' : 'CLOSED'}</strong></div>`;
 
-      const recommendedLabels = row.recommendedIndices
-        .map((i) => `G${i}`)
+      const recommendedLabels = row.recommendedIds
         .join(', ');
       const levelRecLabels = row.levelRecs
-        .map((r) => `${r.type}(G${r.index})`)
+        .map((r) => `${r.type}(${r.groupId})`)
         .join(', ');
       const recHtml =
         `<div>Recommended: <strong>${

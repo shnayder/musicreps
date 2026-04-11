@@ -15,9 +15,8 @@ import { createAdaptiveSelector, deriveScaledConfig } from './adaptive.ts';
 
 export type SkillRecommendationType =
   | 'review'
-  | 'keep-practicing'
-  | 'learn-next'
-  | 'automate'
+  | 'practice'
+  | 'start'
   | 'not-started'
   | 'automatic';
 
@@ -131,18 +130,18 @@ function classifySkill(
     };
   }
 
-  if (firstType === 'practice') {
+  if (firstType === 'practice' || firstType === 'automate') {
     const practiceIds = result.levelRecs
-      .filter((r) => r.type === 'practice')
+      .filter((r) => r.type === 'practice' || r.type === 'automate')
       .map((r) => r.groupId);
     const detail = singleGroup
-      ? 'Keep practicing'
-      : `Keep practicing ${groupLabelText(practiceIds, labelMap)}`;
+      ? 'Practice'
+      : `Practice ${groupLabelText(practiceIds, labelMap)}`;
     return {
       modeId,
-      type: 'keep-practicing',
+      type: 'practice',
       urgency: practiceIds.length,
-      cueLabel: 'Keep practicing',
+      cueLabel: 'Practice',
       detail,
     };
   }
@@ -150,31 +149,15 @@ function classifySkill(
   if (firstType === 'expand') {
     const expandId = result.expandIndex;
     const detail = singleGroup
-      ? 'Learn next level'
-      : `Learn ${
+      ? 'Start'
+      : `Start ${
         expandId ? (labelMap.get(expandId) ?? expandId) : 'next level'
       }`;
     return {
       modeId,
-      type: 'learn-next',
+      type: 'start',
       urgency: 0,
-      cueLabel: 'Learn next level',
-      detail,
-    };
-  }
-
-  if (firstType === 'automate') {
-    const automateIds = result.levelRecs
-      .filter((r) => r.type === 'automate')
-      .map((r) => r.groupId);
-    const detail = singleGroup
-      ? 'Almost there'
-      : `Almost there \u2014 ${groupLabelText(automateIds, labelMap)}`;
-    return {
-      modeId,
-      type: 'automate',
-      urgency: automateIds.length,
-      cueLabel: 'Almost there',
+      cueLabel: 'Start',
       detail,
     };
   }
@@ -188,16 +171,15 @@ function classifySkill(
 
 const TYPE_PRIORITY: Record<SkillRecommendationType, number> = {
   'review': 0,
-  'keep-practicing': 1,
-  'learn-next': 2,
-  'automate': 3,
-  'not-started': 4,
-  'automatic': 5,
+  'practice': 1,
+  'start': 2,
+  'not-started': 3,
+  'automatic': 4,
 };
 
 /**
  * Rank skill recommendations and return the top N (default 3).
- * Priority: review > keep-practicing > learn-next > automate.
+ * Priority: review > practice > start.
  * Within a tier, higher urgency wins. "not-started" and "automatic" are
  * excluded unless cold-start applies.
  *
@@ -211,9 +193,7 @@ export function rankSkillRecommendations(
 ): SkillRecommendation[] {
   // Filter to actionable types.
   const actionable = recommendations.filter(
-    (r) =>
-      r.type === 'review' || r.type === 'keep-practicing' ||
-      r.type === 'learn-next' || r.type === 'automate',
+    (r) => r.type === 'review' || r.type === 'practice' || r.type === 'start',
   );
 
   if (actionable.length > 0) {
@@ -235,9 +215,9 @@ export function rankSkillRecommendations(
       if (rec) {
         return [{
           ...rec,
-          type: 'learn-next',
-          cueLabel: 'Learn next level',
-          detail: 'Get started',
+          type: 'start',
+          cueLabel: 'Ready to start',
+          detail: 'Ready to start',
         }];
       }
     }
