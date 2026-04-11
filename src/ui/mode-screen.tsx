@@ -7,7 +7,7 @@ import { SkillIcon } from './icons.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
-import { Bar } from './layout.tsx';
+import { Bar, Section, Stack } from './layout.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
 import type { ProgressSegment } from '../stats-display.ts';
 import { ProgressBarLabeled } from './scope.tsx';
@@ -582,12 +582,11 @@ export function PracticeTab(
         </span>
       ),
       content: (
-        <div>
+        <Stack gap='region'>
           {hasSummary && (
-            <div class='progress-section'>
-              <Text role='heading-section'>Summary</Text>
+            <Section heading='Summary'>
               {description && (
-                <Text role='body-secondary' as='p' class='summary-description'>
+                <Text role='body-secondary' as='p'>
                   {description}
                 </Text>
               )}
@@ -597,25 +596,24 @@ export function PracticeTab(
                   segments={progressSegments}
                 />
               )}
-            </div>
+            </Section>
           )}
           {practiceContent}
-        </div>
+        </Stack>
       ),
     },
     {
       id: 'progress',
       label: <TabIcon icon='progress' text='Progress' />,
       content: (
-        <div>
+        <Stack gap='region'>
           {hasProgress && (
-            <div class='progress-section'>
-              <Text role='heading-section'>Overall</Text>
+            <Section heading='Overall'>
               <ProgressBarLabeled
                 label='Progress'
                 segments={progressSegments}
               />
-            </div>
+            </Section>
           )}
           {progressExtra && <div class='progress-section'>{progressExtra}</div>}
           <div class='progress-section'>
@@ -628,7 +626,7 @@ export function PracticeTab(
               <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
             </div>
           )}
-        </div>
+        </Stack>
       ),
     },
   ];
