@@ -39,6 +39,10 @@ export type ReviewTiming = {
 /**
  * Pure review timing from avg stability and avg freshness.
  * Single source of truth for whether a level needs review.
+ *
+ * Note: FRESHNESS_THRESHOLD is hard-coded at 0.5 here. If
+ * AdaptiveConfig.freshnessThreshold is ever tuned, this should
+ * accept the threshold as a parameter.
  */
 export function computeReviewTiming(
   avgStability: number,
@@ -282,8 +286,7 @@ export function shouldThrottleExpansion(statuses: LevelStatus[]): boolean {
 
 /**
  * Compute which item groups to recommend and enable.
- * Orchestrates the pipeline steps above. Captures a single timestamp at
- * entry so all selector calls see consistent freshness values.
+ * Orchestrates the pipeline steps above.
  */
 export function computeRecommendations(
   selector: RecommendationSelector,
