@@ -82,7 +82,17 @@ function LayoutPrimitives({ tabId }: { tabId: string }) {
           <Card variant='well'>
             <Stack gap='related'>
               <Text role='heading-subsection'>Well card</Text>
-              <Text role='body'>Inset background for recessed areas</Text>
+              <Text role='body'>Inset background, no border</Text>
+            </Stack>
+          </Card>
+        </Section>
+        <Section title='Card — compact padding' tabId={tabId}>
+          <Card padding='compact'>
+            <Stack gap='related'>
+              <Text role='heading-subsection'>Compact card</Text>
+              <Text role='body'>
+                Tighter vertical padding for dense content
+              </Text>
             </Stack>
           </Card>
         </Section>

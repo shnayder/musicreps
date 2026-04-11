@@ -5,6 +5,7 @@
 // reserves space so the card never jumps on feedback.
 
 import type { SequentialEntryResult } from '../declarative/types.ts';
+import { Card } from './layout.tsx';
 
 /**
  * Render the user's sequential entries with deferred per-entry feedback.
@@ -43,7 +44,7 @@ export function SequentialSlots(
     : 0;
 
   return (
-    <div class='seq-slots-container seq-card'>
+    <Card variant='well' padding='compact' class='seq-slots-container seq-card'>
       <div class='seq-slots'>
         {entries.map((entry, i) => {
           let cls = 'seq-slot';
@@ -86,6 +87,6 @@ export function SequentialSlots(
             <span class='seq-correct-note'>&nbsp;</span>
           </div>
         )}
-    </div>
+    </Card>
   );
 }

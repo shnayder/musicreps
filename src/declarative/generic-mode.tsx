@@ -63,6 +63,7 @@ import {
   QuizStage,
   ScreenLayout,
 } from '../ui/screen-layout.tsx';
+import { Card, Section, Stack } from '../ui/layout.tsx';
 import {
   computeProgressColors,
   formatReviewDuration,
@@ -843,7 +844,7 @@ function LevelProgressCards<Q>(
   const groupScope = def.scope.kind === 'groups' ? def.scope : null;
   if (!groupScope) return null;
   return (
-    <div class='level-progress-cards'>
+    <Stack gap='related' class='level-progress-cards'>
       {groupScope.allGroupIds.map((id) => {
         const g = groupScope.groups.find((g) => g.id === id);
         const itemIds = groupScope.getItemIdsForGroup(id);
@@ -890,7 +891,7 @@ function LevelProgressCards<Q>(
           />
         );
       })}
-    </div>
+    </Stack>
   );
 }
 
@@ -958,18 +959,16 @@ function IdlePracticeView<Q>(
           />
         )
         : (
-          <div class='practice-config'>
-            <Text role='heading-section' class='practice-config-label'>
+          <Stack gap='group' class='practice-config'>
+            <Text role='heading-section'>
               Recommendation
             </Text>
             <SuggestionLines
               lines={[singleLevelSuggestion(learner.selector, def.allItems)]}
             />
-          </div>
+          </Stack>
         )}
-      statsHeading={hasStats
-        ? <Text role='heading-section'>Speed by item</Text>
-        : undefined}
+      statsHeading={hasStats ? 'Speed by item' : undefined}
       statsContent={
         <>
           {ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : (
@@ -999,14 +998,13 @@ function IdlePracticeView<Q>(
       }
       progressExtra={hasGroups
         ? (
-          <>
-            <Text role='heading-section'>Level progress</Text>
+          <Section heading='Level progress' gap='group'>
             <LevelProgressCards
               def={def}
               learner={learner}
               groupScopeResult={groupScopeResult}
             />
-          </>
+          </Section>
         )
         : undefined}
       baseline={onCalibrate ? learner.motorBaseline : undefined}
@@ -1046,40 +1044,44 @@ function AboutTab(
     : beforeAfter.after;
 
   return (
-    <div class='about-tab'>
-      <Text role='heading-section' as='h2'>What you're automating</Text>
-      <Text role='body-secondary' as='p' class='practice-intro-description'>
-        {description}
-      </Text>
-      <div class='about-columns'>
-        <div class='about-col about-col-before'>
-          <Text role='heading-subsection' as='div' class='about-col-header'>
-            Before
-          </Text>
-          {beforeLines.map((line, i) => (
-            <p key={i} class='about-col-text'>{line}</p>
-          ))}
+    <Stack gap='section' class='about-tab'>
+      <Section heading="What you're automating" gap='group'>
+        <Text role='body-secondary' as='p'>
+          {description}
+        </Text>
+        <div class='about-columns'>
+          <Card variant='well' class='about-col'>
+            <Stack gap='related'>
+              <Text role='heading-subsection' as='div'>
+                Before
+              </Text>
+              {beforeLines.map((line, i) => (
+                <p key={i} class='about-col-text'>{line}</p>
+              ))}
+            </Stack>
+          </Card>
+          <Card class='about-col about-col-after'>
+            <Stack gap='related'>
+              <Text role='heading-subsection' as='div'>
+                After
+              </Text>
+              <p class='about-col-text'>{after}</p>
+            </Stack>
+          </Card>
         </div>
-        <div class='about-col about-col-after'>
-          <Text role='heading-subsection' as='div' class='about-col-header'>
-            After
-          </Text>
-          <p class='about-col-text'>{after}</p>
-        </div>
-      </div>
+      </Section>
       {aboutDescription && (
-        <>
-          <Text role='heading-section' as='h2'>Why automate this?</Text>
-          <Text role='body' as='p' class='about-description'>
+        <Section heading='Why automate this?' gap='group'>
+          <Text role='body' as='p'>
             {aboutDescription}
           </Text>
-        </>
+        </Section>
       )}
-      <Text role='status' as='p' class='text-hint about-tab-tip'>
+      <Text role='status' as='p' class='text-hint'>
         Start practicing on the{' '}
         <RepeatMark size={16} class='about-tab-tip-icon' /> tab below.
       </Text>
-    </div>
+    </Stack>
   );
 }
 

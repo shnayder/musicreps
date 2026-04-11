@@ -654,6 +654,10 @@ body {
 }
 .card-well {
   background: var(--color-well);
+  border: none;
+}
+.card-compact {
+  padding: var(--gap-group) var(--pad-component);
 }
 .card-accent-brand {
   border-left: 3px solid var(--color-brand);
@@ -668,7 +672,24 @@ body {
 .section-block {
   display: flex;
   flex-direction: column;
+}
+.section-gap-micro {
+  gap: var(--gap-micro);
+}
+.section-gap-related {
   gap: var(--gap-related);
+}
+.section-gap-group {
+  gap: var(--gap-group);
+}
+.section-gap-component {
+  gap: var(--pad-component);
+}
+.section-gap-region {
+  gap: var(--pad-region);
+}
+.section-gap-section {
+  gap: var(--gap-section);
 }
 
 /* ==========================================================================
@@ -1048,11 +1069,7 @@ body {
   padding: var(--gap-group) var(--size-content-inset);
   background: var(--color-chrome);
 }
-.mode-top-bar-row {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
-}
+/* mode-top-bar-row: replaced by Bar gap='group' */
 .mode-top-bar .skill-icon {
   flex-shrink: 0;
   color: var(--color-text-muted);
@@ -1231,18 +1248,9 @@ body {
 }
 
 /* --- About tab --- */
-.about-tab {
-  padding: 0;
-}
-.about-tab > .text-heading-section {
-  margin-bottom: var(--gap-group);
-}
-.about-description {
-  margin: 0;
-}
-.about-tab-tip {
-  margin: var(--gap-section) 0 0;
-}
+/* about-tab: Stack gap='section' handles outer spacing.
+   Section gap='group' handles heading-to-content gaps.
+   about-tab-tip margin replaced by Stack gap. */
 .about-tab-tip-icon {
   vertical-align: -0.15em;
 }
@@ -1252,20 +1260,12 @@ body {
   gap: var(--gap-group);
 }
 .about-col {
-  padding: var(--pad-component);
-  border-radius: var(--radius-md);
   line-height: var(--leading-normal);
 }
-.about-col-before {
-  background: var(--color-well);
-}
 .about-col-after {
-  background: var(--color-card);
   border: 1px solid var(--color-border);
 }
-.about-col-header {
-  margin-bottom: var(--gap-related);
-}
+/* about-col-header margin: replaced by Stack gap='related' inside Card */
 .about-col-text {
   margin: 0;
   font-size: var(--type-body-size);
@@ -1274,9 +1274,7 @@ body {
   color: var(--type-body-color);
   font-style: italic;
 }
-.about-col-text + .about-col-text {
-  margin-top: var(--gap-related);
-}
+/* about-col-text sibling margin: replaced by Stack gap='related' */
 .about-col-after .about-col-text {
   font-style: normal;
   font-weight: var(--font-semibold);
@@ -1286,9 +1284,7 @@ body {
 /* ==========================================================================
    5. PRACTICE CARD
    ========================================================================== */
-.practice-intro-description {
-  margin-bottom: var(--gap-group);
-}
+/* practice-intro-description margin: replaced by Section gap='group' */
 
 /* --- Practice action zone (bottom-anchored, outside tabs) --- */
 .practice-zone-action {
@@ -1320,11 +1316,7 @@ body {
   padding: var(--gap-micro) var(--size-content-inset);
   background: var(--color-chrome);
 }
-.skill-header-row {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
-}
+/* skill-header-row: replaced by Bar gap='group' */
 .skill-header-title {
   flex: 1;
   display: flex;
@@ -1351,19 +1343,14 @@ body {
   color: var(--type-metric-effort-color);
   flex-shrink: 0;
 }
+/* skill-header-progress: removed — progress bar moved to tab content */
+
 /* --- Practice config: suggested/custom toggle --- */
 .practice-config {
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-group);
 }
-.practice-config-label {
-  margin-bottom: var(--gap-micro);
-}
-.practice-config-content {
-  margin-top: var(--gap-related);
-}
+/* practice-config-label margin, practice-config-content margin:
+   replaced by Stack gap='group' */
 
 /* --- Suggestion lines (suggested mode) --- */
 .suggestion-lines {
@@ -1391,9 +1378,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--gap-group);
-  background: var(--color-well);
-  border-radius: var(--radius-md);
-  padding: var(--pad-component);
 }
 .level-toggles-header {
   margin-bottom: calc(-1 * var(--gap-related));
@@ -1430,13 +1414,6 @@ body {
   border-color: var(--color-toggle-active);
 }
 /* --- Level progress card (progress tab) --- */
-.level-progress-card {
-  padding: var(--gap-group) var(--pad-component);
-  border: 1px solid var(--color-border-lighter);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--gap-related);
-  background: var(--color-card);
-}
 .level-progress-card.skipped {
   opacity: 0.5;
 }
@@ -1447,7 +1424,6 @@ body {
   display: flex;
   align-items: center;
   gap: var(--gap-group);
-  margin-bottom: var(--gap-related);
 }
 .level-progress-label {
   font-size: var(--text-sm);
@@ -1459,7 +1435,6 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-bottom: var(--gap-related);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: var(--color-text-secondary);
@@ -1471,9 +1446,7 @@ body {
   border-radius: 2px;
   flex-shrink: 0;
 }
-.level-progress-pill-row {
-  margin-bottom: var(--gap-related);
-}
+/* level-progress-pill-row, level-progress-status: margin replaced by Stack gap='related' */
 .level-progress-actions {
   display: flex;
   gap: 2px;
@@ -1520,16 +1493,7 @@ body {
 /* ==========================================================================
    6. PROGRESS TAB
    ========================================================================== */
-.progress-section {
-  margin-top: var(--pad-region);
-}
-.progress-section:first-child {
-  margin-top: 0;
-}
-.progress-section > .text-heading-section {
-  display: block;
-  margin-bottom: var(--gap-group);
-}
+/* progress-section: replaced by Stack gap='region' + Section gap='group' */
 .baseline-info:empty {
   display: none;
 }
@@ -1642,12 +1606,7 @@ body {
   pointer-events: all;
 }
 
-.settings-row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-group);
-  margin-bottom: var(--gap-group);
-}
+/* settings-row: removed — no JSX references */
 button {
   padding: var(--gap-group) var(--gap-section);
   font-size: var(--text-base);
@@ -1790,24 +1749,14 @@ button {
   align-items: center;
   text-align: center;
 }
-.round-complete-heading {
-  margin-bottom: var(--pad-component);
-}
-.round-complete-count-label {
-  margin-bottom: var(--gap-group);
-}
-.round-complete-stats {
-  margin: var(--gap-group) 0 var(--pad-region);
-}
+/* round-complete-heading margin, round-complete-stats margin:
+   replaced by Stack gap='component' */
 .round-complete-progress {
   width: 100%;
   max-width: 200px;
   margin: 0 auto;
   padding-top: var(--pad-component);
   border-top: 1px solid var(--color-border-lighter);
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-group);
   text-align: left;
 }
 /* ==========================================================================
@@ -1988,9 +1937,7 @@ button {
    12. CALIBRATION
    ========================================================================== */
 .speed-check-header {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
+  /* Bar gap='group' handles flex + gap */
   padding: var(--gap-group) var(--gap-group) var(--gap-group)
     var(--size-content-inset);
   background: var(--color-chrome);
@@ -2589,10 +2536,7 @@ button {
 }
 /* Card container — wraps slots + correction row in all phases */
 .seq-card {
-  background: var(--color-well);
   border: 1px solid var(--color-border-lighter);
-  border-radius: var(--radius-md);
-  padding: var(--gap-group) var(--pad-component);
   min-width: 20rem;
   max-width: 24rem;
   margin: 0 auto var(--gap-group);

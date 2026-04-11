@@ -53,17 +53,20 @@ export function Bar(
 
 export type CardVariant = 'card' | 'well';
 export type CardAccent = 'brand' | 'notice';
+export type CardPadding = 'default' | 'compact';
 
 export function Card(
-  { children, variant = 'card', accent, class: extra }: {
+  { children, variant = 'card', accent, padding = 'default', class: extra }: {
     children: ComponentChildren;
     variant?: CardVariant;
     accent?: CardAccent;
+    padding?: CardPadding;
     class?: string;
   },
 ) {
   let cls = 'card';
   if (variant === 'well') cls += ' card-well';
+  if (padding === 'compact') cls += ' card-compact';
   if (accent) cls += ' card-accent-' + accent;
   if (extra) cls += ' ' + extra;
   return <div class={cls}>{children}</div>;
@@ -74,14 +77,23 @@ export function Card(
 // ---------------------------------------------------------------------------
 
 export function Section(
-  { heading, headingRole = 'heading-section', children, class: extra }: {
+  {
+    heading,
+    headingRole = 'heading-section',
+    gap = 'related',
+    children,
+    class: extra,
+  }: {
     heading: string;
     headingRole?: TextRole;
+    /** Gap between heading and content (default: 'related' = 4px). */
+    gap?: StackGap;
     children: ComponentChildren;
     class?: string;
   },
 ) {
-  const cls = 'section-block' + (extra ? ' ' + extra : '');
+  const cls = 'section-block section-gap-' + gap +
+    (extra ? ' ' + extra : '');
   return (
     <section class={cls}>
       <Text role={headingRole} as='h2'>{heading}</Text>

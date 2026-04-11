@@ -201,7 +201,7 @@ export function ModeTopBar(
 ) {
   return (
     <div class='mode-top-bar'>
-      <div class='mode-top-bar-row'>
+      <Bar gap='group'>
         {showBack && (
           <CloseButton
             ariaLabel='Back to home'
@@ -217,7 +217,7 @@ export function ModeTopBar(
             </Text>
           )}
         </div>
-      </div>
+      </Bar>
     </div>
   );
 }
@@ -371,31 +371,29 @@ export function RoundCompleteInfo(
   },
 ) {
   return (
-    <div class='round-complete'>
+    <Stack gap='component' class='round-complete'>
       <Text role='heading-page' as='div' class='round-complete-heading'>
         {heading || ''}
       </Text>
       {count != null && (
-        <>
+        <Stack gap='micro' class='round-complete-count-group'>
           <Text role='metric-hero' as='div' class='round-complete-count'>
             {count}
           </Text>
-          <Text
-            role='body-secondary'
-            as='div'
-            class='round-complete-count-label'
-          >
+          <Text role='body-secondary' as='div'>
             {count === 1 ? 'rep' : 'reps'}
           </Text>
-        </>
+        </Stack>
       )}
-      <div class='round-complete-stats'>
-        <Text role='status' as='div' class='round-stat-correct'>
-          {correct || ''}
-        </Text>
-      </div>
+      <Text
+        role='status'
+        as='div'
+        class='round-complete-stats round-stat-correct'
+      >
+        {correct || ''}
+      </Text>
       {levelBars && levelBars.length > 0 && (
-        <div class='round-complete-progress'>
+        <Stack gap='group' class='round-complete-progress'>
           {levelBars.map((entry) => (
             <ProgressBarLabeled
               key={entry.id}
@@ -404,9 +402,9 @@ export function RoundCompleteInfo(
               plain
             />
           ))}
-        </div>
+        </Stack>
       )}
-    </div>
+    </Stack>
   );
 }
 
@@ -549,8 +547,8 @@ export function PracticeTab(
   }: {
     onStart: () => void;
     statsContent: ComponentChildren;
-    /** Heading rendered outside the centered stats container. */
-    statsHeading?: ComponentChildren;
+    /** Heading for the stats section in the progress tab. */
+    statsHeading?: string;
     onCalibrate?: () => void;
     baseline?: number | null;
     activeTab: ModeTab;
@@ -559,7 +557,7 @@ export function PracticeTab(
     validationMessage?: string;
     aboutContent?: ComponentChildren;
     practiceContent: ComponentChildren;
-    /** Extra content inserted above baseline in the progress tab. */
+    /** Extra content inserted above stats in the progress tab. */
     progressExtra?: ComponentChildren;
     /** Overall progress bar segments (shown on practice + progress tabs). */
     progressSegments?: ProgressSegment[];
@@ -606,29 +604,28 @@ export function PracticeTab(
       id: 'progress',
       label: <TabIcon icon='progress' text='Progress' />,
       content: (
-        <div>
+        <Stack gap='region'>
           {hasProgress && (
-            <div class='progress-section'>
-              <Section heading='Overall'>
-                <ProgressBarLabeled
-                  label='Progress'
-                  segments={progressSegments}
-                />
-              </Section>
-            </div>
+            <Section heading='Overall'>
+              <ProgressBarLabeled
+                label='Progress'
+                segments={progressSegments}
+              />
+            </Section>
           )}
-          {progressExtra && <div class='progress-section'>{progressExtra}</div>}
-          <div class='progress-section'>
-            {statsHeading}
-            <div class='stats-container'>{statsContent}</div>
-          </div>
+          {progressExtra}
+          {statsHeading && (
+            <Section heading={statsHeading} gap='group'>
+              <div class='stats-container'>{statsContent}</div>
+            </Section>
+          )}
+          {!statsHeading && <div class='stats-container'>{statsContent}</div>}
           {onCalibrate && (
-            <div class='progress-section'>
-              <Text role='heading-section'>Speed check</Text>
+            <Section heading='Speed check' gap='group'>
               <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
-            </div>
+            </Section>
           )}
-        </div>
+        </Stack>
       ),
     },
   ];
