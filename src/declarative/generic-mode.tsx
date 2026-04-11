@@ -63,6 +63,7 @@ import {
   QuizStage,
   ScreenLayout,
 } from '../ui/screen-layout.tsx';
+import { Card, Stack } from '../ui/layout.tsx';
 import {
   computeProgressColors,
   formatReviewDuration,
@@ -842,7 +843,7 @@ function LevelProgressCards<Q>(
   const groupScope = def.scope.kind === 'groups' ? def.scope : null;
   if (!groupScope) return null;
   return (
-    <div class='level-progress-cards'>
+    <Stack gap='related' class='level-progress-cards'>
       {groupScope.allGroupIds.map((id) => {
         const g = groupScope.groups.find((g) => g.id === id);
         const itemIds = groupScope.getItemIdsForGroup(id);
@@ -889,7 +890,7 @@ function LevelProgressCards<Q>(
           />
         );
       })}
-    </div>
+    </Stack>
   );
 }
 
@@ -1039,20 +1040,20 @@ function AboutTab(
         {description}
       </Text>
       <div class='about-columns'>
-        <div class='about-col about-col-before'>
+        <Card variant='well' class='about-col'>
           <Text role='heading-subsection' as='div' class='about-col-header'>
             Before
           </Text>
           {beforeLines.map((line, i) => (
             <p key={i} class='about-col-text'>{line}</p>
           ))}
-        </div>
-        <div class='about-col about-col-after'>
+        </Card>
+        <Card class='about-col about-col-after'>
           <Text role='heading-subsection' as='div' class='about-col-header'>
             After
           </Text>
           <p class='about-col-text'>{after}</p>
-        </div>
+        </Card>
       </div>
       {aboutDescription && (
         <>

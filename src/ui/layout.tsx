@@ -53,17 +53,20 @@ export function Bar(
 
 export type CardVariant = 'card' | 'well';
 export type CardAccent = 'brand' | 'notice';
+export type CardPadding = 'default' | 'compact';
 
 export function Card(
-  { children, variant = 'card', accent, class: extra }: {
+  { children, variant = 'card', accent, padding = 'default', class: extra }: {
     children: ComponentChildren;
     variant?: CardVariant;
     accent?: CardAccent;
+    padding?: CardPadding;
     class?: string;
   },
 ) {
   let cls = 'card';
   if (variant === 'well') cls += ' card-well';
+  if (padding === 'compact') cls += ' card-compact';
   if (accent) cls += ' card-accent-' + accent;
   if (extra) cls += ' ' + extra;
   return <div class={cls}>{children}</div>;

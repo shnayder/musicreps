@@ -5,6 +5,7 @@
 import type { ComponentChildren } from 'preact';
 import type { SuggestionLine } from '../types.ts';
 import { SkillIcon } from './icons.tsx';
+import { Card } from './layout.tsx';
 import { CloseButton } from './mode-screen.tsx';
 import { Pill } from './pill.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
@@ -88,7 +89,7 @@ export function LevelToggles(
   },
 ) {
   return (
-    <div class='level-toggles-section'>
+    <Card variant='well' class='level-toggles-section'>
       <Text role='heading-subsection' as='div' class='level-toggles-header'>
         Choose levels
       </Text>
@@ -109,7 +110,7 @@ export function LevelToggles(
           );
         })}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -143,7 +144,10 @@ export function LevelProgressCard(
 ) {
   const st = status ?? 'normal';
   return (
-    <div class={'level-progress-card' + (st !== 'normal' ? ' ' + st : '')}>
+    <Card
+      padding='compact'
+      class={'level-progress-card' + (st !== 'normal' ? ' ' + st : '')}
+    >
       <div class='level-progress-header'>
         <span class='level-progress-label'>{label}</span>
         {(onToggleKnown || onToggleSkip) && (
@@ -188,7 +192,7 @@ export function LevelProgressCard(
         </span>
       )}
       <ProgressBarLabeled colors={colors} disabled={st === 'skipped'} />
-    </div>
+    </Card>
   );
 }
 
