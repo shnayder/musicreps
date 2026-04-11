@@ -2749,7 +2749,7 @@ body.native-app .hint {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1353"></div>
+  <div class="home-screen" id="home-screen" data-version="#1358"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -9688,6 +9688,1674 @@ body.native-app .hint {
     };
   }
 
+  // src/ui/practice-config.tsx
+  function SkillHeader({ modeId, title, totalReps, progressColors, onBack }) {
+    return /* @__PURE__ */ u3(Stack, { gap: "group", class: "skill-header", children: [
+      /* @__PURE__ */ u3(Bar, { gap: "group", children: [
+        onBack && /* @__PURE__ */ u3(CloseButton, { ariaLabel: "Back to home", onClick: onBack }),
+        /* @__PURE__ */ u3("div", { class: "skill-header-title", children: [
+          modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
+          /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", class: "mode-title", children: title })
+        ] }),
+        totalReps != null && /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", class: "skill-header-reps", children: [
+          totalReps.toLocaleString(),
+          /* @__PURE__ */ u3(RepeatMark, { size: 18, class: "skill-header-reps-icon" })
+        ] })
+      ] }),
+      progressColors && progressColors.length > 0 && /* @__PURE__ */ u3(ProgressBarLabeled, { label: "Progress", colors: progressColors })
+    ] });
+  }
+  function SuggestionLines({ lines }) {
+    if (lines.length === 0) return null;
+    return /* @__PURE__ */ u3("div", { class: "suggestion-lines", children: lines.map((line, i3) => /* @__PURE__ */ u3("div", { class: "suggestion-line", children: [
+      /* @__PURE__ */ u3("span", { class: "suggestion-verb", children: line.verb }),
+      " ",
+      line.levels.join(", ")
+    ] }, i3)) });
+  }
+  function LevelToggles({ labels, groupIds, active, onToggle }) {
+    return /* @__PURE__ */ u3(Card, { variant: "well", class: "level-toggles-section", children: [
+      /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", class: "level-toggles-header", children: "Choose levels" }),
+      /* @__PURE__ */ u3("div", { class: "level-toggles", children: labels.map((label, i3) => {
+        const id = groupIds[i3];
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: "level-toggle-btn" + (active.has(id) ? " active" : ""),
+            "aria-pressed": active.has(id),
+            onClick: () => onToggle(id),
+            children: label
+          },
+          id
+        );
+      }) })
+    ] });
+  }
+  function LevelProgressCard({
+    label,
+    statusLabel,
+    statusColor,
+    pill,
+    colors,
+    status,
+    onToggleKnown,
+    onToggleSkip
+  }) {
+    const st = status ?? "normal";
+    return /* @__PURE__ */ u3(
+      Card,
+      {
+        padding: "compact",
+        class: "level-progress-card" + (st !== "normal" ? " " + st : ""),
+        children: /* @__PURE__ */ u3(Stack, { gap: "related", children: [
+          /* @__PURE__ */ u3("div", { class: "level-progress-header", children: [
+            /* @__PURE__ */ u3("span", { class: "level-progress-label", children: label }),
+            (onToggleKnown || onToggleSkip) && /* @__PURE__ */ u3("span", { class: "level-progress-actions", children: [
+              /* @__PURE__ */ u3(
+                "button",
+                {
+                  type: "button",
+                  class: "level-action-btn known" + (st === "known" ? " active" : ""),
+                  "aria-label": `Mark ${label} as known`,
+                  "aria-pressed": st === "known",
+                  onClick: onToggleKnown,
+                  children: "\u2713"
+                }
+              ),
+              /* @__PURE__ */ u3(
+                "button",
+                {
+                  type: "button",
+                  class: "level-action-btn skip" + (st === "skipped" ? " active" : ""),
+                  "aria-label": `Skip ${label}`,
+                  "aria-pressed": st === "skipped",
+                  onClick: onToggleSkip,
+                  children: "\u2717"
+                }
+              )
+            ] })
+          ] }),
+          statusLabel && /* @__PURE__ */ u3("span", { class: "level-progress-status", children: [
+            statusColor && /* @__PURE__ */ u3(
+              "span",
+              {
+                class: "level-status-swatch",
+                style: `background-color: var(${statusColor})`
+              }
+            ),
+            statusLabel
+          ] }),
+          pill && /* @__PURE__ */ u3("div", { class: "level-progress-pill-row", children: /* @__PURE__ */ u3(Pill, { variant: "notice", children: pill }) }),
+          /* @__PURE__ */ u3(ProgressBarLabeled, { colors, disabled: st === "skipped" })
+        ] })
+      }
+    );
+  }
+  function PracticeConfig({ mode, onModeChange, suggestedContent, customContent }) {
+    return /* @__PURE__ */ u3(Stack, { gap: "group", class: "practice-config", children: [
+      /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Practice setup" }),
+      /* @__PURE__ */ u3(
+        SegmentedControl,
+        {
+          options: [
+            { value: "suggested", label: "Suggested" },
+            { value: "custom", label: "Custom" }
+          ],
+          value: mode,
+          onChange: onModeChange
+        }
+      ),
+      mode === "suggested" ? suggestedContent : customContent
+    ] });
+  }
+
+  // src/ui/buttons.tsx
+  function feedbackClass(feedback, buttonValue, buttonLabel) {
+    if (!feedback) return "";
+    if (feedback.correct && buttonValue === feedback.userInput) {
+      return " btn-feedback-correct";
+    }
+    if (!feedback.correct) {
+      if (buttonValue === feedback.userInput) return " btn-feedback-wrong";
+      if (buttonValue === feedback.displayAnswer || buttonLabel === feedback.displayAnswer) {
+        return " btn-feedback-reveal";
+      }
+    }
+    return "";
+  }
+  function NoteButtons({ onAnswer, useFlats, hideAccidentals, narrowing, feedback, columns }) {
+    const notes = hideAccidentals ? NATURAL_NOTES : NOTE_NAMES;
+    const gridCls = columns === 6 ? "answer-grid answer-grid-6" : "answer-grid";
+    return /* @__PURE__ */ u3("div", { class: gridCls, children: notes.map((n2) => {
+      let label;
+      if (useFlats !== void 0) {
+        const note = NOTES.find((x2) => x2.name === n2);
+        label = note ? displayNote(pickAccidentalName(note.displayName, useFlats)) : displayNote(n2);
+      } else {
+        label = displayNote(n2);
+      }
+      let btnCls = "answer-btn";
+      if (narrowing) {
+        btnCls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
+      }
+      btnCls += feedbackClass(feedback ?? null, n2, label);
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: btnCls,
+          "data-note": n2,
+          onClick: onAnswer ? () => onAnswer(n2) : void 0,
+          children: label
+        },
+        n2
+      );
+    }) });
+  }
+  function SplitButtons({
+    primaryItems,
+    secondaryItems,
+    shortcut,
+    combine,
+    answered,
+    onAnswer,
+    primaryFeedback,
+    secondaryFeedback
+  }) {
+    const [pendingPri, setPendingPri] = d2(null);
+    const [pendingSec, setPendingSec] = d2(null);
+    const onAnswerRef = A2(onAnswer);
+    onAnswerRef.current = onAnswer;
+    y2(() => {
+      if (answered) {
+        setPendingPri(null);
+        setPendingSec(null);
+      }
+    }, [answered]);
+    y2(() => {
+      if (pendingPri && pendingSec !== null) {
+        onAnswerRef.current(combine(pendingPri, pendingSec));
+        setPendingPri(null);
+        setPendingSec(null);
+      }
+    }, [pendingPri, pendingSec, combine]);
+    const handlePri = q2((value) => {
+      if (shortcut && value === shortcut.value) {
+        onAnswerRef.current(shortcut.submit);
+        setPendingPri(null);
+        setPendingSec(null);
+        return;
+      }
+      setPendingPri((prev) => prev === value ? null : value);
+    }, [shortcut]);
+    const handleSec = q2((value) => {
+      setPendingSec((prev) => prev === value ? null : value);
+    }, []);
+    const isAnswered = !!answered || !!primaryFeedback || !!secondaryFeedback;
+    return /* @__PURE__ */ u3("div", { class: "answer-grid-stack", children: [
+      /* @__PURE__ */ u3("div", { class: "answer-grid", children: primaryItems.map(({ label, value }) => {
+        let cls = "answer-btn";
+        if (!isAnswered) {
+          if (pendingPri === value) cls += " answer-btn-pending";
+          else if (pendingPri) cls += " answer-btn-dimmed";
+        }
+        const disabled = isAnswered || shortcut && value === shortcut.value && pendingSec !== null;
+        if (primaryFeedback) {
+          cls += feedbackClass(primaryFeedback, value, label);
+        }
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            disabled: !!disabled,
+            onClick: () => handlePri(value),
+            children: label
+          },
+          value
+        );
+      }) }),
+      /* @__PURE__ */ u3("div", { class: "answer-grid", children: secondaryItems.map(({ label, value }) => {
+        let cls = "answer-btn";
+        if (!isAnswered) {
+          if (pendingSec === value) cls += " answer-btn-pending";
+          else if (pendingSec) cls += " answer-btn-dimmed";
+        }
+        const disabled = isAnswered || shortcut && pendingPri === shortcut.value;
+        if (secondaryFeedback) {
+          cls += feedbackClass(secondaryFeedback, value, label);
+        }
+        return /* @__PURE__ */ u3(
+          "button",
+          {
+            type: "button",
+            tabIndex: 0,
+            class: cls,
+            disabled: !!disabled,
+            onClick: () => handleSec(value),
+            children: label
+          },
+          value
+        );
+      }) })
+    ] });
+  }
+  var NOTE_ITEMS = NATURAL_NOTES.map((n2) => ({
+    label: displayNote(n2),
+    value: n2
+  }));
+  var ACCIDENTAL_ITEMS = [
+    { label: "\u266D", value: "b" },
+    // ♭
+    { label: "\u266E", value: "" },
+    // ♮ (natural)
+    { label: "\u266F", value: "#" }
+    // ♯
+  ];
+  var combineNote = (base, acc) => acc ? base + acc : base;
+  function SplitNoteButtons({ onAnswer, answered }) {
+    return /* @__PURE__ */ u3(
+      SplitButtons,
+      {
+        primaryItems: NOTE_ITEMS,
+        secondaryItems: ACCIDENTAL_ITEMS,
+        combine: combineNote,
+        answered,
+        onAnswer
+      }
+    );
+  }
+  function NumberButtons({ start, end, onAnswer, narrowing, feedback }) {
+    const nums = [];
+    for (let i3 = start; i3 <= end; i3++) nums.push(i3);
+    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: nums.map((i3) => {
+      const val = String(i3);
+      let btnCls = "answer-btn";
+      if (narrowing) {
+        btnCls += narrowing.has(val) ? " kb-match" : " kb-dimmed";
+      }
+      btnCls += feedbackClass(feedback ?? null, val, val);
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: btnCls,
+          "data-num": val,
+          onClick: onAnswer ? () => onAnswer(i3) : void 0,
+          children: i3
+        },
+        i3
+      );
+    }) });
+  }
+  function IntervalButtons({ onAnswer, feedback }) {
+    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: INTERVAL_ABBREVS.map((iv) => {
+      let btnCls = "answer-btn";
+      btnCls += feedbackClass(feedback ?? null, iv, iv);
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: btnCls,
+          "data-interval": iv,
+          onClick: onAnswer ? () => onAnswer(iv) : void 0,
+          children: iv
+        },
+        iv
+      );
+    }) });
+  }
+  var KEYSIG_NUMBER_ITEMS = [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7"
+  ].map((n2) => ({ label: n2, value: n2 }));
+  var KEYSIG_ACC_ITEMS = [
+    { label: "\u266D", value: "b" },
+    // ♭
+    { label: "\u266F", value: "#" }
+    // ♯
+  ];
+  var combineKeysig = (num, acc) => num + acc;
+  function parseKeysig(val) {
+    if (val === "0") return { primary: "0", secondary: "" };
+    return { primary: val.slice(0, -1), secondary: val.slice(-1) };
+  }
+  function SplitKeysigButtons({ onAnswer, feedback }) {
+    let primaryFb = null;
+    let secondaryFb = null;
+    if (feedback) {
+      const parsed = parseKeysig(feedback.userInput);
+      const correct = parseKeysig(feedback.displayAnswer);
+      primaryFb = {
+        correct: parsed.primary === correct.primary,
+        userInput: parsed.primary,
+        displayAnswer: correct.primary
+      };
+      secondaryFb = {
+        correct: parsed.secondary === correct.secondary,
+        userInput: parsed.secondary,
+        displayAnswer: correct.secondary
+      };
+    }
+    return /* @__PURE__ */ u3(
+      SplitButtons,
+      {
+        primaryItems: KEYSIG_NUMBER_ITEMS,
+        secondaryItems: KEYSIG_ACC_ITEMS,
+        shortcut: { value: "0", submit: "0" },
+        combine: combineKeysig,
+        answered: !!feedback,
+        onAnswer: onAnswer ?? (() => {
+        }),
+        primaryFeedback: primaryFb,
+        secondaryFeedback: secondaryFb
+      }
+    );
+  }
+  function DegreeButtons({ onAnswer, feedback }) {
+    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: DEGREE_LABELS.map(([val, label]) => {
+      let btnCls = "answer-btn";
+      btnCls += feedbackClass(feedback ?? null, val, label);
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: btnCls,
+          "data-degree": val,
+          onClick: onAnswer ? () => onAnswer(val) : void 0,
+          children: label
+        },
+        val
+      );
+    }) });
+  }
+  function NumeralButtons({ onAnswer, feedback }) {
+    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: ROMAN_NUMERALS.map((n2) => {
+      let btnCls = "answer-btn";
+      btnCls += feedbackClass(feedback ?? null, n2, n2);
+      return /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          tabIndex: 0,
+          class: btnCls,
+          "data-numeral": n2,
+          onClick: onAnswer ? () => onAnswer(n2) : void 0,
+          children: n2
+        },
+        n2
+      );
+    }) });
+  }
+
+  // src/ui/quiz-ui.tsx
+  function FeedbackDisplay({ text, className, hint, correct, onNext, onCheck, label = "Next", notice }) {
+    let extraCls = "next-btn";
+    if (correct === true) extraCls += " page-action-correct";
+    else if (correct === false) extraCls += " page-action-wrong";
+    let button;
+    if (notice && !onNext && !onCheck) {
+      button = /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice });
+    } else if (onNext) {
+      button = /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: extraCls, onClick: onNext, children: label });
+    } else if (onCheck) {
+      button = notice ? /* @__PURE__ */ u3("div", { class: "page-action-row", children: [
+        /* @__PURE__ */ u3("span", { class: "page-action-notice", children: notice }),
+        /* @__PURE__ */ u3(ActionButton, { variant: "primary", onClick: onCheck, children: "Check" })
+      ] }) : /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: "next-btn", onClick: onCheck, children: "Check" });
+    } else {
+      button = /* @__PURE__ */ u3(
+        ActionButton,
+        {
+          variant: "primary",
+          class: "next-btn",
+          onClick: () => {
+          },
+          style: { visibility: "hidden" },
+          children: label
+        }
+      );
+    }
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
+      button,
+      /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "hint",
+          style: hint ? void 0 : { visibility: "hidden" },
+          children: hint || "\xA0"
+        }
+      )
+    ] });
+  }
+  var NOTE_HINT_LETTER = "C D E, c d e, C#, fs (=F#), Db, bb (=Bb)";
+  var NOTE_HINT_SOLFEGE = "do re mi, Do Re Mi, do#, reb";
+  var HINT_TEXT = {
+    "number-0-11": "0\u20139, 10, 11",
+    "number-1-12": "1\u20139, 10, 11, 12"
+  };
+  function KeyboardHint({ type }) {
+    if (!type) return null;
+    const text = type === "note" ? getUseSolfege() ? NOTE_HINT_SOLFEGE : NOTE_HINT_LETTER : HINT_TEXT[type];
+    return /* @__PURE__ */ u3("div", { class: "keyboard-hint", children: text });
+  }
+
+  // src/ui/speed-check.tsx
+  function noteAnswerMatches(input, expected) {
+    if (input === expected) return true;
+    const resolved = resolveNoteInput(input);
+    return resolved === expected;
+  }
+  var NOTE_BUTTON_CONFIG = {
+    taskType: "note-button",
+    introTitle: "Measuring note button entry times",
+    introText: "We\u2019ll show you the answer \u2014 enter it as fast as you can. This measures your entry speed so the app can set personalized timing targets. 10 quick trials.",
+    trialPrompt: (note) => `Press ${note}`,
+    generateAnswer: pickCalibrationNote,
+    checkAnswer: noteAnswerMatches,
+    label: "note button entry"
+  };
+  var IMPLEMENTED_TASK_TYPES = /* @__PURE__ */ new Set([
+    "note-button"
+  ]);
+  var TOTAL_TRIALS = 10;
+  var WARMUP_TRIALS = 2;
+  var PAUSE_MS = 400;
+  var WRONG_FEEDBACK_MS = 800;
+  function SpeedCheckHeader({ count, onClose }) {
+    return /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(Bar, { gap: "group", class: "speed-check-header", children: [
+      /* @__PURE__ */ u3(Text, { role: "heading-page", class: "speed-check-label", children: "Speed Check" }),
+      count && /* @__PURE__ */ u3(Text, { role: "metric-info", children: count }),
+      /* @__PURE__ */ u3(CloseButton, { ariaLabel: "Cancel speed check", onClick: onClose })
+    ] }) });
+  }
+  function useTrialLoop(config, onDone) {
+    const trialRef = A2({
+      active: false,
+      trialIndex: 0,
+      startTime: 0,
+      times: [],
+      prevAnswer: null,
+      targetNote: null,
+      trialTimeout: null
+    });
+    const [trialProgress, setTrialProgress] = d2("");
+    const [promptText, setPromptText] = d2("");
+    const [feedback, setFeedback] = d2(null);
+    const feedbackTimerRef = A2(null);
+    const onDoneRef = A2(onDone);
+    onDoneRef.current = onDone;
+    y2(() => {
+      return () => {
+        trialRef.current.active = false;
+        if (trialRef.current.trialTimeout) {
+          clearTimeout(trialRef.current.trialTimeout);
+        }
+        if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+      };
+    }, []);
+    const presentNextTrial = q2(() => {
+      const state = trialRef.current;
+      if (!state.active) return;
+      const answer = config.generateAnswer(state.prevAnswer);
+      state.prevAnswer = answer;
+      state.targetNote = answer;
+      state.startTime = performance.now();
+      setTrialProgress(state.trialIndex + 1 + " / " + TOTAL_TRIALS);
+      setPromptText(config.trialPrompt(answer));
+      setFeedback(null);
+    }, [config]);
+    const handleTrialResponse = q2((input) => {
+      const state = trialRef.current;
+      if (!state.active || !state.targetNote) return;
+      if (feedbackTimerRef.current) return;
+      const buttonValue = resolveNoteInput(input) ?? input;
+      if (!config.checkAnswer(input, state.targetNote)) {
+        setFeedback({
+          correct: false,
+          userInput: buttonValue,
+          displayAnswer: state.targetNote
+        });
+        setPromptText("\u2717");
+        feedbackTimerRef.current = setTimeout(() => {
+          feedbackTimerRef.current = null;
+          presentNextTrial();
+        }, WRONG_FEEDBACK_MS);
+        return;
+      }
+      const elapsed = performance.now() - state.startTime;
+      if (state.trialIndex >= WARMUP_TRIALS) state.times.push(elapsed);
+      state.trialIndex++;
+      state.targetNote = null;
+      setPromptText("\u2713");
+      setFeedback(null);
+      if (state.trialIndex >= TOTAL_TRIALS) {
+        state.active = false;
+        onDoneRef.current(computeMedian(state.times) ?? 500);
+      } else {
+        state.trialTimeout = setTimeout(
+          () => presentNextTrial(),
+          PAUSE_MS
+        );
+      }
+    }, [presentNextTrial, config]);
+    const startTrials = q2(() => {
+      const state = trialRef.current;
+      state.active = true;
+      state.trialIndex = 0;
+      state.startTime = 0;
+      state.times = [];
+      state.prevAnswer = null;
+      state.targetNote = null;
+      const timeout = setTimeout(() => presentNextTrial(), 300);
+      return () => {
+        clearTimeout(timeout);
+        state.active = false;
+        if (state.trialTimeout) clearTimeout(state.trialTimeout);
+      };
+    }, [presentNextTrial]);
+    return {
+      trialRef,
+      trialProgress,
+      promptText,
+      feedback,
+      handleTrialResponse,
+      startTrials,
+      setTrialProgress,
+      setPromptText
+    };
+  }
+  function SpeedCheckInput({ onSubmit, wrongFlash }) {
+    const inputRef = A2(null);
+    const [shake, setShake] = d2(false);
+    const shakeTimerRef = A2(null);
+    y2(() => {
+      if (inputRef.current) inputRef.current.focus();
+    }, []);
+    y2(() => {
+      return () => {
+        if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      };
+    }, []);
+    const triggerShake = q2(() => {
+      setShake(true);
+      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      shakeTimerRef.current = setTimeout(() => {
+        setShake(false);
+        shakeTimerRef.current = null;
+      }, 400);
+    }, []);
+    const handleKeyDown = q2(
+      (e3) => {
+        if (e3.key !== "Enter") return;
+        e3.preventDefault();
+        e3.stopPropagation();
+        const value = inputRef.current?.value.trim() ?? "";
+        if (!value || !isValidNoteInput(value)) {
+          triggerShake();
+          return;
+        }
+        onSubmit(value);
+        if (inputRef.current) inputRef.current.value = "";
+      },
+      [onSubmit, triggerShake]
+    );
+    let cls = "answer-input";
+    if (wrongFlash) cls += " answer-input-wrong answer-input-shake";
+    else if (shake) cls += " answer-input-shake";
+    return /* @__PURE__ */ u3(
+      "input",
+      {
+        ref: inputRef,
+        type: "text",
+        class: cls,
+        placeholder: "Type answer, press Enter",
+        "aria-label": "Type answer, press Enter",
+        onKeyDown: handleKeyDown,
+        autoComplete: "off",
+        autoCorrect: "off",
+        spellcheck: false
+      }
+    );
+  }
+  function SpeedCheckIntro({ title, text }) {
+    return /* @__PURE__ */ u3("div", { class: "calibration-results", children: [
+      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: title }),
+      /* @__PURE__ */ u3("p", { children: text })
+    ] });
+  }
+  function SpeedCheckResults({ baseline }) {
+    const thresholds = getCalibrationThresholds(baseline);
+    return /* @__PURE__ */ u3("div", { class: "calibration-results", children: [
+      /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h2", children: "Speed Check Complete" }),
+      /* @__PURE__ */ u3(Text, { role: "metric-primary", as: "div", class: "calibration-baseline", children: [
+        (baseline / 1e3).toFixed(2),
+        "s"
+      ] }),
+      /* @__PURE__ */ u3("table", { class: "calibration-thresholds", children: [
+        /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
+          /* @__PURE__ */ u3("th", {}),
+          /* @__PURE__ */ u3("th", { children: "Level" }),
+          /* @__PURE__ */ u3("th", { children: "Max time" }),
+          /* @__PURE__ */ u3("th", { children: "Meaning" })
+        ] }) }),
+        /* @__PURE__ */ u3("tbody", { children: thresholds.map((t3) => /* @__PURE__ */ u3("tr", { children: [
+          /* @__PURE__ */ u3("td", { children: /* @__PURE__ */ u3(
+            "span",
+            {
+              class: "heatmap-swatch",
+              style: `background-color: var(${t3.colorToken})`
+            }
+          ) }),
+          /* @__PURE__ */ u3("td", { children: t3.label }),
+          /* @__PURE__ */ u3("td", { children: t3.maxMs !== null ? (t3.maxMs / 1e3).toFixed(1) + "s" : "\u2014" }),
+          /* @__PURE__ */ u3("td", { children: t3.meaning })
+        ] }, t3.label)) })
+      ] })
+    ] });
+  }
+  function SpeedCheck({ config, onComplete, onCancel, fixture }) {
+    const [phase, setPhase] = d2(
+      fixture?.phase ?? "intro"
+    );
+    const [baseline, setBaseline] = d2(fixture?.baseline ?? 0);
+    const trials = useTrialLoop(config, (median) => {
+      setBaseline(Math.round(median));
+      setPhase("results");
+    });
+    y2(() => {
+      if (fixture?.trialProgress) trials.setTrialProgress(fixture.trialProgress);
+      if (fixture?.promptAnswer) {
+        trials.setPromptText(config.trialPrompt(fixture.promptAnswer));
+      }
+    }, [fixture]);
+    y2(() => {
+      if (fixture) return;
+      function onKeyDown(e3) {
+        if (e3.key === "Escape") {
+          e3.preventDefault();
+          trials.trialRef.current.active = false;
+          if (trials.trialRef.current.trialTimeout) {
+            clearTimeout(trials.trialRef.current.trialTimeout);
+          }
+          onCancel();
+        }
+      }
+      document.addEventListener("keydown", onKeyDown);
+      return () => document.removeEventListener("keydown", onKeyDown);
+    }, [fixture, onCancel]);
+    y2(() => {
+      if (fixture || phase !== "running") return;
+      return trials.startTrials();
+    }, [fixture, phase, trials.startTrials]);
+    if (phase === "intro") {
+      return /* @__PURE__ */ u3(ScreenLayout, { children: [
+        /* @__PURE__ */ u3(SpeedCheckHeader, { onClose: onCancel }),
+        /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(CenteredContent, { children: /* @__PURE__ */ u3(
+          SpeedCheckIntro,
+          {
+            title: config.introTitle,
+            text: config.introText
+          }
+        ) }) }),
+        /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+          ActionButton,
+          {
+            variant: "primary",
+            class: "next-btn",
+            onClick: () => setPhase("running"),
+            children: "Start"
+          }
+        ) })
+      ] });
+    }
+    if (phase === "running") {
+      return /* @__PURE__ */ u3(ScreenLayout, { children: [
+        /* @__PURE__ */ u3(
+          SpeedCheckHeader,
+          {
+            count: trials.trialProgress,
+            onClose: onCancel
+          }
+        ),
+        /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(
+          QuizStage,
+          {
+            prompt: /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: trials.promptText }),
+            response: /* @__PURE__ */ u3(k, { children: [
+              /* @__PURE__ */ u3(
+                NoteButtons,
+                {
+                  onAnswer: trials.handleTrialResponse,
+                  feedback: trials.feedback
+                }
+              ),
+              /* @__PURE__ */ u3(
+                SpeedCheckInput,
+                {
+                  onSubmit: trials.handleTrialResponse,
+                  wrongFlash: trials.feedback?.correct === false
+                }
+              ),
+              /* @__PURE__ */ u3(KeyboardHint, { type: "note" })
+            ] })
+          }
+        ) })
+      ] });
+    }
+    return /* @__PURE__ */ u3(ScreenLayout, { children: [
+      /* @__PURE__ */ u3(SpeedCheckHeader, { onClose: onCancel }),
+      /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(CenteredContent, { children: /* @__PURE__ */ u3(SpeedCheckResults, { baseline }) }) }),
+      /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+        ActionButton,
+        {
+          variant: "primary",
+          class: "next-btn",
+          onClick: () => onComplete(baseline),
+          children: "Done"
+        }
+      ) })
+    ] });
+  }
+
+  // src/declarative/answer-utils.ts
+  function resolveAnswerSpec(def, q3) {
+    const spec = def.answer;
+    if ("kind" in spec && spec.kind === "bidirectional") {
+      const dir = def.getDirection(q3);
+      return dir === "fwd" ? spec.fwd : spec.rev;
+    }
+    return spec;
+  }
+  function checkCorrectness(strategy, expected, input) {
+    switch (strategy) {
+      case "exact":
+        return input === expected;
+      case "integer":
+        return parseInt(input, 10) === parseInt(expected, 10);
+      case "note-enharmonic": {
+        const resolved = resolveNoteInput(input) ?? input;
+        return spelledNoteMatchesSemitone(expected, resolved);
+      }
+      case "interval": {
+        const iv = INTERVALS.find((i3) => i3.abbrev === expected);
+        return iv ? intervalMatchesInput(iv, input) : false;
+      }
+    }
+  }
+  function toButtonValue(strategy, value) {
+    if (strategy === "note-enharmonic") return resolveNoteInput(value) ?? value;
+    return value;
+  }
+  function defaultDisplayAnswer(strategy, expected) {
+    return strategy === "note-enharmonic" ? displayNote(expected) : expected;
+  }
+  function checkGenericAnswer(def, currentQRef, lastAnswerRef, isSequential, isMultiTap, _itemId, input) {
+    if (isSequential || isMultiTap) {
+      const sep = input.indexOf(":");
+      return {
+        correct: input.startsWith("__correct__"),
+        correctAnswer: sep >= 0 ? input.slice(sep + 1) : ""
+      };
+    }
+    const q3 = currentQRef.current;
+    const spec = resolveAnswerSpec(def, q3);
+    const expected = spec.getExpectedValue(q3);
+    const normalized = spec.normalizeInput?.(input) ?? input;
+    const correct = checkCorrectness(spec.comparison, expected, normalized);
+    const display = spec.getDisplayAnswer?.(q3) ?? defaultDisplayAnswer(spec.comparison, expected);
+    lastAnswerRef.current = {
+      expected,
+      comparison: spec.comparison,
+      normalizedInput: normalized
+    };
+    return { correct, correctAnswer: display };
+  }
+  function resolveGroupLabel(label) {
+    return typeof label === "function" ? label() : label;
+  }
+  function getInputPlaceholder(def, currentQ, isSequential) {
+    if (isSequential) {
+      const seq = def.sequential;
+      if (!seq.batchPlaceholder) return void 0;
+      return typeof seq.batchPlaceholder === "string" ? seq.batchPlaceholder : currentQ ? seq.batchPlaceholder(currentQ) : void 0;
+    }
+    if (!def.inputPlaceholder) return void 0;
+    return typeof def.inputPlaceholder === "string" ? def.inputPlaceholder : currentQ ? def.inputPlaceholder(currentQ) : void 0;
+  }
+
+  // src/ui/sequential-slots.tsx
+  function SequentialSlots({ entries, evaluated, correctTones }) {
+    const anyWrong = evaluated?.some((e3) => !e3.correct) ?? false;
+    const countMismatch = !!(evaluated && correctTones && entries.length !== correctTones.length);
+    const showCorrection = (anyWrong || countMismatch) && !!correctTones;
+    const tones = correctTones ?? [];
+    const correctionCount = showCorrection ? Math.max(entries.length, tones.length) : 0;
+    const missingCount = showCorrection ? Math.max(0, tones.length - entries.length) : 0;
+    return /* @__PURE__ */ u3(Card, { variant: "well", padding: "compact", class: "seq-slots-container seq-card", children: [
+      /* @__PURE__ */ u3("div", { class: "seq-slots", children: [
+        entries.map((entry, i3) => {
+          let cls = "seq-slot";
+          let content;
+          if (evaluated && i3 < evaluated.length) {
+            content = evaluated[i3].display;
+            cls += evaluated[i3].correct ? " correct" : " wrong";
+          } else {
+            content = entry.display;
+            cls += " filled";
+          }
+          return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
+        }),
+        Array.from(
+          { length: missingCount },
+          (_3, i3) => /* @__PURE__ */ u3("span", { class: "seq-slot", children: "\xA0" }, `m${i3}`)
+        ),
+        !evaluated && /* @__PURE__ */ u3("span", { class: "seq-slot seq-placeholder" })
+      ] }),
+      showCorrection ? /* @__PURE__ */ u3("div", { class: "seq-correct-row", children: Array.from({ length: correctionCount }, (_3, i3) => {
+        const tone = tones[i3];
+        const wasCorrect = evaluated && i3 < evaluated.length && evaluated[i3].correct;
+        return !tone || wasCorrect ? /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: "\xA0" }, i3) : /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: tone }, i3);
+      }) }) : /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "seq-correct-row",
+          "aria-hidden": "true",
+          style: "visibility:hidden",
+          children: /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: "\xA0" })
+        }
+      )
+    ] });
+  }
+
+  // src/ui/interactive-fretboard.tsx
+  function readCSSColor(prop, fallback) {
+    try {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+      return val || fallback;
+    } catch (_3) {
+      return fallback;
+    }
+  }
+  function setCircleFill2(root, posKey, color) {
+    const [s3, f4] = posKey.split("-");
+    const circle = root.querySelector(
+      'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
+    );
+    if (circle) circle.style.fill = color;
+  }
+  function setCircleRing(root, posKey, color) {
+    const [s3, f4] = posKey.split("-");
+    const circle = root.querySelector(
+      'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
+    );
+    if (!circle) return;
+    circle.style.fill = "none";
+    circle.style.stroke = color;
+    circle.style.strokeWidth = "3";
+  }
+  function clearAllCircles(root) {
+    root.querySelectorAll(".fb-pos").forEach((c3) => {
+      c3.style.fill = "";
+      c3.style.stroke = "";
+      c3.style.strokeWidth = "";
+    });
+  }
+  var MUTE_MARKER_CLASS = "fb-mute-marker";
+  function renderMuteMarkers(root, mutedStrings, sc) {
+    const svg = root.querySelector("svg.fretboard");
+    if (!svg) return;
+    svg.querySelectorAll("." + MUTE_MARKER_CLASS).forEach((el) => el.remove());
+    const colorMuted = readCSSColor("--color-text-secondary", "#888");
+    const cy = noteY(0);
+    const half = POSITION_CIRCLE_R * 0.7;
+    for (const s3 of mutedStrings) {
+      const cx = stringX(s3, sc);
+      const line1 = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
+      const line2 = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
+      for (const ln of [line1, line2]) {
+        ln.setAttribute("class", MUTE_MARKER_CLASS);
+        ln.setAttribute("stroke", colorMuted);
+        ln.setAttribute("stroke-width", "2.5");
+        ln.setAttribute("stroke-linecap", "round");
+        ln.setAttribute("pointer-events", "none");
+      }
+      line1.setAttribute("x1", String(cx - half));
+      line1.setAttribute("y1", String(cy - half));
+      line1.setAttribute("x2", String(cx + half));
+      line1.setAttribute("y2", String(cy + half));
+      line2.setAttribute("x1", String(cx + half));
+      line2.setAttribute("y1", String(cy - half));
+      line2.setAttribute("x2", String(cx - half));
+      line2.setAttribute("y2", String(cy + half));
+      svg.appendChild(line1);
+      svg.appendChild(line2);
+    }
+  }
+  function clearMuteMarkers(root) {
+    root.querySelectorAll("." + MUTE_MARKER_CLASS).forEach((el) => el.remove());
+  }
+  function InteractiveFretboard({
+    onTap,
+    tappedPositions,
+    evaluated,
+    stringCount = 6,
+    fretCount = 13,
+    mutedStrings
+  }) {
+    const wrapperRef = A2(null);
+    const svgHTML = T2(
+      () => fretboardSVG({ tapTargets: true, stringCount, fretCount }),
+      [stringCount, fretCount]
+    );
+    const handleClick = q2((e3) => {
+      const el = e3.target.closest(
+        ".fb-tap[data-string][data-fret]"
+      );
+      if (!el) return;
+      const s3 = el.dataset.string;
+      const f4 = el.dataset.fret;
+      onTap(s3 + "-" + f4);
+    }, [onTap]);
+    y2(() => {
+      const root = wrapperRef.current;
+      if (!root) return;
+      clearAllCircles(root);
+      clearMuteMarkers(root);
+      if (evaluated) {
+        const colorOk = readCSSColor("--color-success", "#2e7d32");
+        const colorBad = readCSSColor("--color-error", "#d32f2f");
+        const colorMissed = readCSSColor("--color-success-reveal", "#66bb6a");
+        const tappedSet = new Set(evaluated.perEntry.map((e3) => e3.positionKey));
+        for (const entry of evaluated.perEntry) {
+          if (entry.correct) {
+            setCircleFill2(root, entry.positionKey, colorOk);
+          } else {
+            setCircleRing(root, entry.positionKey, colorBad);
+          }
+        }
+        for (const missed of evaluated.missed) {
+          if (!tappedSet.has(missed)) {
+            setCircleFill2(root, missed, colorMissed);
+          }
+        }
+        if (mutedStrings && mutedStrings.size > 0) {
+          renderMuteMarkers(root, mutedStrings, stringCount);
+        }
+      } else {
+        const colorSel = readCSSColor(
+          "--color-tap-selected",
+          "hsl(210, 60%, 50%)"
+        );
+        for (const posKey of tappedPositions) {
+          setCircleFill2(root, posKey, colorSel);
+        }
+      }
+    }, [tappedPositions, evaluated, svgHTML, mutedStrings, stringCount]);
+    return /* @__PURE__ */ u3("div", { class: "interactive-fretboard", children: /* @__PURE__ */ u3(
+      "div",
+      {
+        ref: wrapperRef,
+        onClick: handleClick,
+        dangerouslySetInnerHTML: { __html: svgHTML }
+      }
+    ) });
+  }
+
+  // src/declarative/quiz-areas.tsx
+  function getHintType(buttons) {
+    switch (buttons.kind) {
+      case "note":
+      case "split-note":
+        return "note";
+      case "number":
+        return buttons.start === 0 ? "number-0-11" : "number-1-12";
+      default:
+        return null;
+    }
+  }
+  function AnswerInput({ onSubmit, disabled, placeholder, onInvalid, feedbackCorrect }) {
+    const inputRef = A2(null);
+    const [shake, setShake] = d2(false);
+    const shakeTimerRef = A2(null);
+    y2(() => {
+      return () => {
+        if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      };
+    }, []);
+    y2(() => {
+      if (!disabled && inputRef.current) {
+        inputRef.current.value = "";
+        inputRef.current.focus();
+      }
+    }, [disabled]);
+    const triggerShake = q2(() => {
+      setShake(true);
+      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      shakeTimerRef.current = setTimeout(() => {
+        setShake(false);
+        shakeTimerRef.current = null;
+      }, 400);
+    }, []);
+    const handleKeyDown = q2(
+      (e3) => {
+        if (e3.key !== "Enter") return;
+        e3.preventDefault();
+        e3.stopPropagation();
+        const value = inputRef.current?.value.trim() ?? "";
+        if (!value) {
+          triggerShake();
+          onInvalid?.();
+          return;
+        }
+        if (!onSubmit(value)) triggerShake();
+      },
+      [onSubmit, onInvalid, triggerShake]
+    );
+    let cls = "answer-input";
+    if (shake) cls += " answer-input-shake";
+    if (feedbackCorrect === false) cls += " answer-input-wrong";
+    else if (feedbackCorrect === true) cls += " answer-input-correct";
+    const label = placeholder ?? "Type answer, press Enter";
+    return /* @__PURE__ */ u3(
+      "input",
+      {
+        ref: inputRef,
+        type: "text",
+        class: cls,
+        placeholder: label,
+        "aria-label": label,
+        disabled,
+        onKeyDown: handleKeyDown,
+        autoComplete: "off",
+        autoCorrect: "off",
+        spellcheck: false
+      }
+    );
+  }
+  function ResponseButtons({
+    buttonsDef,
+    onAnswer,
+    useFlats,
+    narrowing,
+    hideAccidentalsOverride,
+    columnsOverride,
+    feedback,
+    answered
+  }) {
+    switch (buttonsDef.kind) {
+      case "note":
+        return /* @__PURE__ */ u3(
+          NoteButtons,
+          {
+            onAnswer,
+            useFlats,
+            hideAccidentals: hideAccidentalsOverride,
+            narrowing,
+            feedback,
+            columns: columnsOverride ?? buttonsDef.columns
+          }
+        );
+      case "split-note":
+        return /* @__PURE__ */ u3(
+          SplitNoteButtons,
+          {
+            onAnswer,
+            answered
+          }
+        );
+      case "number":
+        return /* @__PURE__ */ u3(
+          NumberButtons,
+          {
+            start: buttonsDef.start,
+            end: buttonsDef.end,
+            onAnswer: (n2) => onAnswer(String(n2)),
+            feedback
+          }
+        );
+      case "degree":
+        return /* @__PURE__ */ u3(
+          DegreeButtons,
+          {
+            onAnswer,
+            feedback
+          }
+        );
+      case "numeral":
+        return /* @__PURE__ */ u3(
+          NumeralButtons,
+          {
+            onAnswer,
+            feedback
+          }
+        );
+      case "interval":
+        return /* @__PURE__ */ u3(
+          IntervalButtons,
+          {
+            onAnswer,
+            feedback
+          }
+        );
+      case "split-keysig":
+        return /* @__PURE__ */ u3(
+          SplitKeysigButtons,
+          {
+            onAnswer,
+            feedback
+          }
+        );
+      case "none":
+        return null;
+    }
+  }
+  function SequentialQuizArea({
+    def,
+    engine,
+    ctrl,
+    currentQ,
+    activeButtons,
+    seq,
+    placeholder,
+    promptText,
+    instruction
+  }) {
+    return /* @__PURE__ */ u3(
+      QuizStage,
+      {
+        prompt: /* @__PURE__ */ u3(k, { children: [
+          instruction && /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
+          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText })
+        ] }),
+        response: /* @__PURE__ */ u3(k, { children: [
+          /* @__PURE__ */ u3(
+            SequentialSlots,
+            {
+              entries: seq.entries,
+              evaluated: seq.evaluated,
+              correctTones: seq.correctAnswer ? seq.correctAnswer.split(" ") : null
+            }
+          ),
+          /* @__PURE__ */ u3(
+            ResponseButtons,
+            {
+              buttonsDef: activeButtons,
+              onAnswer: seq.handleInput,
+              answered: engine.state.answered
+            }
+          ),
+          def.sequential?.parseBatchInput && /* @__PURE__ */ u3(
+            AnswerInput,
+            {
+              onSubmit: seq.handleBatch,
+              disabled: engine.state.answered,
+              placeholder
+            }
+          )
+        ] })
+      }
+    );
+  }
+  function MultiTapQuizArea({ multiTapInput, promptText, instruction, stringCount, mutedStrings }) {
+    return /* @__PURE__ */ u3(
+      QuizStage,
+      {
+        prompt: /* @__PURE__ */ u3(k, { children: [
+          instruction && /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
+          /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText }),
+          /* @__PURE__ */ u3(
+            InteractiveFretboard,
+            {
+              onTap: multiTapInput.handleTap,
+              tappedPositions: multiTapInput.tappedPositions,
+              evaluated: multiTapInput.evaluated,
+              stringCount,
+              mutedStrings
+            }
+          )
+        ] }),
+        response: null
+      }
+    );
+  }
+  function StandardQuizArea({
+    engine,
+    ctrl,
+    currentQ,
+    activeButtons,
+    handleSubmit,
+    useFlats,
+    placeholder,
+    promptText,
+    lastAnswerRef,
+    instruction
+  }) {
+    return /* @__PURE__ */ u3(
+      QuizStage,
+      {
+        prompt: /* @__PURE__ */ u3(k, { children: [
+          instruction && /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
+          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText })
+        ] }),
+        response: /* @__PURE__ */ u3(k, { children: [
+          /* @__PURE__ */ u3(
+            ResponseButtons,
+            {
+              buttonsDef: activeButtons,
+              onAnswer: handleSubmit,
+              useFlats,
+              narrowing: ctrl.narrowing,
+              hideAccidentalsOverride: ctrl.hideAccidentals,
+              columnsOverride: ctrl.buttonColumns,
+              feedback: engine.state.feedbackCorrect !== null && lastAnswerRef.current ? {
+                correct: engine.state.feedbackCorrect,
+                userInput: toButtonValue(
+                  lastAnswerRef.current.comparison,
+                  lastAnswerRef.current.normalizedInput
+                ),
+                displayAnswer: toButtonValue(
+                  lastAnswerRef.current.comparison,
+                  lastAnswerRef.current.expected
+                )
+              } : null
+            }
+          ),
+          /* @__PURE__ */ u3(
+            AnswerInput,
+            {
+              onSubmit: handleSubmit,
+              disabled: engine.state.answered,
+              placeholder,
+              feedbackCorrect: engine.state.feedbackCorrect
+            }
+          ),
+          /* @__PURE__ */ u3(KeyboardHint, { type: getHintType(activeButtons) })
+        ] })
+      }
+    );
+  }
+  function QuizActiveView({
+    def,
+    engine,
+    ctrl,
+    currentQ,
+    round,
+    levelBars,
+    handleSubmit,
+    seq,
+    multiTapInput,
+    activeButtons,
+    promptText,
+    useFlats,
+    placeholder,
+    lastAnswerRef
+  }) {
+    const phase = engine.state.phase;
+    if (phase === "round-complete") {
+      return /* @__PURE__ */ u3(ScreenLayout, { children: [
+        /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3("div", {}) }),
+        /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(CenteredContent, { children: /* @__PURE__ */ u3(
+          RoundCompleteInfo,
+          {
+            heading: "Round complete",
+            count: engine.state.roundAnswered,
+            correct: round.roundCorrect,
+            levelBars
+          }
+        ) }) }),
+        /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+          RoundCompleteActions,
+          {
+            onContinue: engine.continueQuiz,
+            onStop: engine.stop
+          }
+        ) })
+      ] });
+    }
+    const instruction = currentQ && def.quizInstruction ? typeof def.quizInstruction === "function" ? def.quizInstruction(currentQ) : def.quizInstruction : void 0;
+    const mtMutedStrings = T2(() => {
+      if (!def.multiTap?.getMutedStrings || !currentQ) return void 0;
+      return new Set(def.multiTap.getMutedStrings(currentQ));
+    }, [def, currentQ]);
+    const quizContent = def.multiTap ? /* @__PURE__ */ u3(
+      MultiTapQuizArea,
+      {
+        multiTapInput,
+        promptText,
+        instruction,
+        stringCount: def.multiTap.stringCount,
+        mutedStrings: mtMutedStrings
+      }
+    ) : def.sequential ? /* @__PURE__ */ u3(
+      SequentialQuizArea,
+      {
+        def,
+        engine,
+        ctrl,
+        currentQ,
+        activeButtons,
+        seq,
+        placeholder,
+        promptText,
+        instruction
+      }
+    ) : /* @__PURE__ */ u3(
+      StandardQuizArea,
+      {
+        engine,
+        ctrl,
+        currentQ,
+        activeButtons,
+        handleSubmit,
+        useFlats,
+        placeholder,
+        promptText,
+        lastAnswerRef,
+        instruction
+      }
+    );
+    return /* @__PURE__ */ u3(ScreenLayout, { children: [
+      /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
+        QuizSession,
+        {
+          timeLeft: engine.timerText,
+          timerPct: engine.timerPct,
+          count: round.countLabel,
+          isWarning: engine.timerWarning,
+          isLastQuestion: engine.timerLastQuestion,
+          onClose: engine.stop
+        }
+      ) }),
+      /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: quizContent }),
+      /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+        FeedbackDisplay,
+        {
+          text: engine.state.feedbackText,
+          className: engine.state.feedbackClass,
+          hint: engine.state.hintText || void 0,
+          correct: engine.state.feedbackCorrect,
+          onNext: engine.state.answered ? engine.nextQuestion : void 0,
+          onCheck: !engine.state.answered ? def.sequential && !seq.evaluated && seq.entries.length > 0 ? seq.handleCheck : def.multiTap && !multiTapInput.evaluated && multiTapInput.tappedPositions.size > 0 ? multiTapInput.handleCheck : void 0 : void 0,
+          label: engine.state.roundTimerExpired ? "Continue" : "Next",
+          notice: engine.state.roundTimerExpired && !engine.state.answered ? "Last question" : void 0
+        }
+      ) })
+    ] });
+  }
+
+  // src/ui/stats.tsx
+  function StatsTable({ selector, rows, fwdHeader, revHeader, fwd2Header, rev2Header }) {
+    if (!rows || rows.length === 0) return null;
+    const hasPair = !!(fwd2Header && rev2Header);
+    return /* @__PURE__ */ u3("table", { class: "stats-table", children: [
+      /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
+        /* @__PURE__ */ u3("th", { children: rows[0]._colHeader }),
+        /* @__PURE__ */ u3("th", { children: "#" }),
+        /* @__PURE__ */ u3("th", { children: fwdHeader }),
+        /* @__PURE__ */ u3("th", { children: revHeader }),
+        hasPair && /* @__PURE__ */ u3("th", { children: fwd2Header }),
+        hasPair && /* @__PURE__ */ u3("th", { children: rev2Header })
+      ] }) }),
+      /* @__PURE__ */ u3("tbody", { children: rows.map((row) => {
+        const fwdColor = getStatsCellColor(selector, row.fwdItemId);
+        const revColor = getStatsCellColor(selector, row.revItemId);
+        return /* @__PURE__ */ u3("tr", { children: [
+          /* @__PURE__ */ u3("td", { children: row.label }),
+          /* @__PURE__ */ u3("td", { children: row.sublabel }),
+          /* @__PURE__ */ u3("td", { class: "stats-cell", style: { background: fwdColor } }),
+          /* @__PURE__ */ u3("td", { class: "stats-cell", style: { background: revColor } }),
+          hasPair && /* @__PURE__ */ u3(
+            "td",
+            {
+              class: "stats-cell",
+              style: {
+                background: getStatsCellColor(
+                  selector,
+                  row.fwd2ItemId ?? ""
+                )
+              }
+            }
+          ),
+          hasPair && /* @__PURE__ */ u3(
+            "td",
+            {
+              class: "stats-cell",
+              style: {
+                background: getStatsCellColor(
+                  selector,
+                  row.rev2ItemId ?? ""
+                )
+              }
+            }
+          )
+        ] }, row.fwdItemId);
+      }) })
+    ] });
+  }
+  function StatsGrid({ selector, colLabels, getItemId, notes }) {
+    const noteList = notes || NOTES;
+    return /* @__PURE__ */ u3("table", { class: "stats-grid", children: [
+      /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
+        /* @__PURE__ */ u3("th", {}),
+        colLabels.map((c3) => /* @__PURE__ */ u3("th", { children: c3 }, c3))
+      ] }) }),
+      /* @__PURE__ */ u3("tbody", { children: noteList.map((note) => /* @__PURE__ */ u3("tr", { children: [
+        /* @__PURE__ */ u3("td", { class: "stats-grid-row-label", children: displayNote(note.name || note.displayName) }),
+        colLabels.map((_3, i3) => {
+          const itemId2 = getItemId(note.name, i3);
+          const color = Array.isArray(itemId2) ? getStatsCellColorMerged(selector, itemId2) : getStatsCellColor(selector, itemId2);
+          const light = heatmapNeedsLightText(color);
+          return /* @__PURE__ */ u3(
+            "td",
+            {
+              class: "stats-cell",
+              style: {
+                background: color,
+                color: light ? "white" : void 0
+              }
+            },
+            i3
+          );
+        })
+      ] }, note.name)) })
+    ] });
+  }
+  function StatsLegend() {
+    const html = buildStatsLegend();
+    return /* @__PURE__ */ u3("div", { dangerouslySetInnerHTML: { __html: html } });
+  }
+
+  // src/declarative/practice-views.tsx
+  function singleLevelSuggestion(selector, allItems2) {
+    const anySeen = allItems2.some((id) => selector.getStats(id) !== null);
+    if (!anySeen) return { verb: "Start", levels: [] };
+    if (selector.checkAllAutomatic(allItems2)) {
+      return { verb: "All items automatic! Practice something else", levels: [] };
+    }
+    if (selector.checkNeedsReview(allItems2)) {
+      return { verb: "Review", levels: [] };
+    }
+    return { verb: "Practice", levels: [] };
+  }
+  function GroupPracticeContent({ def, groupScopeResult }) {
+    const groupScope = def.scope.kind === "groups" ? def.scope : null;
+    if (!groupScope) return null;
+    const groupLabels = groupScope.allGroupIds.map((id) => {
+      const g2 = groupScope.groups.find((g3) => g3.id === id);
+      return g2 ? resolveGroupLabel(g2.label) : id;
+    });
+    return /* @__PURE__ */ u3(k, { children: /* @__PURE__ */ u3(
+      PracticeConfig,
+      {
+        mode: groupScopeResult.practiceMode,
+        onModeChange: groupScopeResult.setPracticeMode,
+        suggestedContent: /* @__PURE__ */ u3(SuggestionLines, { lines: groupScopeResult.suggestionLines }),
+        customContent: /* @__PURE__ */ u3(
+          LevelToggles,
+          {
+            labels: groupLabels,
+            groupIds: groupScope.allGroupIds,
+            active: groupScopeResult.practiceMode === "custom" ? groupScopeResult.enabledGroups : groupScopeResult.suggestedScope,
+            onToggle: groupScopeResult.scopeActions.toggleGroup
+          }
+        )
+      }
+    ) });
+  }
+  function LevelProgressCards({ def, learner, groupScopeResult }) {
+    const groupScope = def.scope.kind === "groups" ? def.scope : null;
+    if (!groupScope) return null;
+    return /* @__PURE__ */ u3(Stack, { gap: "related", class: "level-progress-cards", children: groupScope.allGroupIds.map((id) => {
+      const g2 = groupScope.groups.find((g3) => g3.id === id);
+      const itemIds = groupScope.getItemIdsForGroup(id);
+      const colors = progressBarColors(learner.selector, itemIds);
+      const ls = groupScopeResult.recommendation.levelStatuses?.find((s3) => s3.groupId === id);
+      const sl = ls ? SPEED_LEVELS.find((l3) => l3.key === ls.speedLabel) ?? null : null;
+      const pill = ls?.reviewInHours != null ? ls.reviewStatus === "soon" ? "Review soon" : `Review in ${formatReviewDuration(ls.reviewInHours)}` : void 0;
+      const skipReason = groupScopeResult.skippedGroups.get(id);
+      const status = skipReason === "mastered" ? "known" : skipReason === "deferred" ? "skipped" : "normal";
+      const label = g2 ? resolveGroupLabel(
+        g2.longLabel ?? g2.label
+      ) : id;
+      return /* @__PURE__ */ u3(
+        LevelProgressCard,
+        {
+          label,
+          statusLabel: sl?.label,
+          statusColor: sl?.colorToken,
+          pill,
+          colors,
+          status,
+          onToggleKnown: () => skipReason === "mastered" ? groupScopeResult.scopeActions.unskipGroup(id) : groupScopeResult.scopeActions.skipGroup(id, "mastered"),
+          onToggleSkip: () => skipReason === "deferred" ? groupScopeResult.scopeActions.unskipGroup(id) : groupScopeResult.scopeActions.skipGroup(id, "deferred")
+        },
+        id
+      );
+    }) });
+  }
+  function AboutTab({ description, aboutDescription, beforeAfter }) {
+    const beforeLines = typeof beforeAfter.before === "function" ? beforeAfter.before() : beforeAfter.before;
+    const after = typeof beforeAfter.after === "function" ? beforeAfter.after() : beforeAfter.after;
+    return /* @__PURE__ */ u3(Stack, { gap: "section", class: "about-tab", children: [
+      /* @__PURE__ */ u3(Section, { heading: "What you're automating", gap: "group", children: [
+        /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", children: description }),
+        /* @__PURE__ */ u3("div", { class: "about-columns", children: [
+          /* @__PURE__ */ u3(Card, { variant: "well", class: "about-col", children: /* @__PURE__ */ u3(Stack, { gap: "related", children: [
+            /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "Before" }),
+            beforeLines.map((line, i3) => /* @__PURE__ */ u3("p", { class: "about-col-text", children: line }, i3))
+          ] }) }),
+          /* @__PURE__ */ u3(Card, { class: "about-col about-col-after", children: /* @__PURE__ */ u3(Stack, { gap: "related", children: [
+            /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "After" }),
+            /* @__PURE__ */ u3("p", { class: "about-col-text", children: after })
+          ] }) })
+        ] })
+      ] }),
+      aboutDescription && /* @__PURE__ */ u3(Section, { heading: "Why automate this?", gap: "group", children: /* @__PURE__ */ u3(Text, { role: "body", as: "p", children: aboutDescription }) }),
+      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "text-hint", children: [
+        "Start practicing on the",
+        " ",
+        /* @__PURE__ */ u3(RepeatMark, { size: 16, class: "about-tab-tip-icon" }),
+        " tab below."
+      ] })
+    ] });
+  }
+  function IdlePracticeView({ def, engine, learner, ctrl, groupScopeResult, ps, onCalibrate }) {
+    const hasGroups = def.scope.kind === "groups" && groupScopeResult;
+    const hasStats = def.stats.kind !== "none" || !!ctrl.renderStats;
+    const customItemCount = hasGroups && groupScopeResult.practiceMode === "custom" ? groupScopeResult.enabledItems.length : null;
+    return /* @__PURE__ */ u3(
+      PracticeTab,
+      {
+        onStart: engine.start,
+        scopeValid: !groupScopeResult || groupScopeResult.enabledGroups.size > 0,
+        validationMessage: "Select at least one level",
+        startLabel: customItemCount != null ? `Practice (${customItemCount} ${customItemCount === 1 ? "item" : "items"})` : void 0,
+        practiceContent: hasGroups ? /* @__PURE__ */ u3(
+          GroupPracticeContent,
+          {
+            def,
+            groupScopeResult
+          }
+        ) : /* @__PURE__ */ u3(Stack, { gap: "group", class: "practice-config", children: [
+          /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Recommendation" }),
+          /* @__PURE__ */ u3(
+            SuggestionLines,
+            {
+              lines: [singleLevelSuggestion(learner.selector, def.allItems)]
+            }
+          )
+        ] }),
+        statsHeading: hasStats ? "Speed by item" : void 0,
+        statsContent: /* @__PURE__ */ u3(k, { children: [
+          ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : /* @__PURE__ */ u3(k, { children: [
+            def.stats.kind === "grid" && /* @__PURE__ */ u3(
+              StatsGrid,
+              {
+                selector: ps.statsSel,
+                colLabels: def.stats.colLabels,
+                getItemId: def.stats.getItemId,
+                notes: def.stats.notes
+              }
+            ),
+            def.stats.kind === "table" && /* @__PURE__ */ u3(
+              StatsTable,
+              {
+                selector: ps.statsSel,
+                rows: def.stats.getRows(),
+                fwdHeader: def.stats.fwdHeader,
+                revHeader: def.stats.revHeader,
+                fwd2Header: def.stats.fwd2Header,
+                rev2Header: def.stats.rev2Header
+              }
+            )
+          ] }),
+          hasStats && /* @__PURE__ */ u3(StatsLegend, {})
+        ] }),
+        progressExtra: hasGroups ? /* @__PURE__ */ u3(Section, { heading: "Level progress", gap: "group", children: /* @__PURE__ */ u3(
+          LevelProgressCards,
+          {
+            def,
+            learner,
+            groupScopeResult
+          }
+        ) }) : void 0,
+        baseline: onCalibrate ? learner.motorBaseline : void 0,
+        onCalibrate,
+        activeTab: ps.activeTab,
+        onTabSwitch: ps.setActiveTab,
+        aboutContent: /* @__PURE__ */ u3(
+          AboutTab,
+          {
+            description: def.description,
+            aboutDescription: def.aboutDescription,
+            beforeAfter: def.beforeAfter
+          }
+        )
+      }
+    );
+  }
+
   // src/quiz-engine-state.ts
   function initialEngineState() {
     return {
@@ -10327,1056 +11995,6 @@ body.native-app .hint {
     };
   }
 
-  // src/ui/buttons.tsx
-  function feedbackClass(feedback, buttonValue, buttonLabel) {
-    if (!feedback) return "";
-    if (feedback.correct && buttonValue === feedback.userInput) {
-      return " btn-feedback-correct";
-    }
-    if (!feedback.correct) {
-      if (buttonValue === feedback.userInput) return " btn-feedback-wrong";
-      if (buttonValue === feedback.displayAnswer || buttonLabel === feedback.displayAnswer) {
-        return " btn-feedback-reveal";
-      }
-    }
-    return "";
-  }
-  function NoteButtons({ onAnswer, useFlats, hideAccidentals, narrowing, feedback, columns }) {
-    const notes = hideAccidentals ? NATURAL_NOTES : NOTE_NAMES;
-    const gridCls = columns === 6 ? "answer-grid answer-grid-6" : "answer-grid";
-    return /* @__PURE__ */ u3("div", { class: gridCls, children: notes.map((n2) => {
-      let label;
-      if (useFlats !== void 0) {
-        const note = NOTES.find((x2) => x2.name === n2);
-        label = note ? displayNote(pickAccidentalName(note.displayName, useFlats)) : displayNote(n2);
-      } else {
-        label = displayNote(n2);
-      }
-      let btnCls = "answer-btn";
-      if (narrowing) {
-        btnCls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
-      }
-      btnCls += feedbackClass(feedback ?? null, n2, label);
-      return /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: btnCls,
-          "data-note": n2,
-          onClick: onAnswer ? () => onAnswer(n2) : void 0,
-          children: label
-        },
-        n2
-      );
-    }) });
-  }
-  function SplitButtons({
-    primaryItems,
-    secondaryItems,
-    shortcut,
-    combine,
-    answered,
-    onAnswer,
-    primaryFeedback,
-    secondaryFeedback
-  }) {
-    const [pendingPri, setPendingPri] = d2(null);
-    const [pendingSec, setPendingSec] = d2(null);
-    const onAnswerRef = A2(onAnswer);
-    onAnswerRef.current = onAnswer;
-    y2(() => {
-      if (answered) {
-        setPendingPri(null);
-        setPendingSec(null);
-      }
-    }, [answered]);
-    y2(() => {
-      if (pendingPri && pendingSec !== null) {
-        onAnswerRef.current(combine(pendingPri, pendingSec));
-        setPendingPri(null);
-        setPendingSec(null);
-      }
-    }, [pendingPri, pendingSec, combine]);
-    const handlePri = q2((value) => {
-      if (shortcut && value === shortcut.value) {
-        onAnswerRef.current(shortcut.submit);
-        setPendingPri(null);
-        setPendingSec(null);
-        return;
-      }
-      setPendingPri((prev) => prev === value ? null : value);
-    }, [shortcut]);
-    const handleSec = q2((value) => {
-      setPendingSec((prev) => prev === value ? null : value);
-    }, []);
-    const isAnswered = !!answered || !!primaryFeedback || !!secondaryFeedback;
-    return /* @__PURE__ */ u3("div", { class: "answer-grid-stack", children: [
-      /* @__PURE__ */ u3("div", { class: "answer-grid", children: primaryItems.map(({ label, value }) => {
-        let cls = "answer-btn";
-        if (!isAnswered) {
-          if (pendingPri === value) cls += " answer-btn-pending";
-          else if (pendingPri) cls += " answer-btn-dimmed";
-        }
-        const disabled = isAnswered || shortcut && value === shortcut.value && pendingSec !== null;
-        if (primaryFeedback) {
-          cls += feedbackClass(primaryFeedback, value, label);
-        }
-        return /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: cls,
-            disabled: !!disabled,
-            onClick: () => handlePri(value),
-            children: label
-          },
-          value
-        );
-      }) }),
-      /* @__PURE__ */ u3("div", { class: "answer-grid", children: secondaryItems.map(({ label, value }) => {
-        let cls = "answer-btn";
-        if (!isAnswered) {
-          if (pendingSec === value) cls += " answer-btn-pending";
-          else if (pendingSec) cls += " answer-btn-dimmed";
-        }
-        const disabled = isAnswered || shortcut && pendingPri === shortcut.value;
-        if (secondaryFeedback) {
-          cls += feedbackClass(secondaryFeedback, value, label);
-        }
-        return /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: cls,
-            disabled: !!disabled,
-            onClick: () => handleSec(value),
-            children: label
-          },
-          value
-        );
-      }) })
-    ] });
-  }
-  var NOTE_ITEMS = NATURAL_NOTES.map((n2) => ({
-    label: displayNote(n2),
-    value: n2
-  }));
-  var ACCIDENTAL_ITEMS = [
-    { label: "\u266D", value: "b" },
-    // ♭
-    { label: "\u266E", value: "" },
-    // ♮ (natural)
-    { label: "\u266F", value: "#" }
-    // ♯
-  ];
-  var combineNote = (base, acc) => acc ? base + acc : base;
-  function SplitNoteButtons({ onAnswer, answered }) {
-    return /* @__PURE__ */ u3(
-      SplitButtons,
-      {
-        primaryItems: NOTE_ITEMS,
-        secondaryItems: ACCIDENTAL_ITEMS,
-        combine: combineNote,
-        answered,
-        onAnswer
-      }
-    );
-  }
-  function NumberButtons({ start, end, onAnswer, narrowing, feedback }) {
-    const nums = [];
-    for (let i3 = start; i3 <= end; i3++) nums.push(i3);
-    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: nums.map((i3) => {
-      const val = String(i3);
-      let btnCls = "answer-btn";
-      if (narrowing) {
-        btnCls += narrowing.has(val) ? " kb-match" : " kb-dimmed";
-      }
-      btnCls += feedbackClass(feedback ?? null, val, val);
-      return /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: btnCls,
-          "data-num": val,
-          onClick: onAnswer ? () => onAnswer(i3) : void 0,
-          children: i3
-        },
-        i3
-      );
-    }) });
-  }
-  function IntervalButtons({ onAnswer, feedback }) {
-    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: INTERVAL_ABBREVS.map((iv) => {
-      let btnCls = "answer-btn";
-      btnCls += feedbackClass(feedback ?? null, iv, iv);
-      return /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: btnCls,
-          "data-interval": iv,
-          onClick: onAnswer ? () => onAnswer(iv) : void 0,
-          children: iv
-        },
-        iv
-      );
-    }) });
-  }
-  var KEYSIG_NUMBER_ITEMS = [
-    "0",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7"
-  ].map((n2) => ({ label: n2, value: n2 }));
-  var KEYSIG_ACC_ITEMS = [
-    { label: "\u266D", value: "b" },
-    // ♭
-    { label: "\u266F", value: "#" }
-    // ♯
-  ];
-  var combineKeysig = (num, acc) => num + acc;
-  function parseKeysig(val) {
-    if (val === "0") return { primary: "0", secondary: "" };
-    return { primary: val.slice(0, -1), secondary: val.slice(-1) };
-  }
-  function SplitKeysigButtons({ onAnswer, feedback }) {
-    let primaryFb = null;
-    let secondaryFb = null;
-    if (feedback) {
-      const parsed = parseKeysig(feedback.userInput);
-      const correct = parseKeysig(feedback.displayAnswer);
-      primaryFb = {
-        correct: parsed.primary === correct.primary,
-        userInput: parsed.primary,
-        displayAnswer: correct.primary
-      };
-      secondaryFb = {
-        correct: parsed.secondary === correct.secondary,
-        userInput: parsed.secondary,
-        displayAnswer: correct.secondary
-      };
-    }
-    return /* @__PURE__ */ u3(
-      SplitButtons,
-      {
-        primaryItems: KEYSIG_NUMBER_ITEMS,
-        secondaryItems: KEYSIG_ACC_ITEMS,
-        shortcut: { value: "0", submit: "0" },
-        combine: combineKeysig,
-        answered: !!feedback,
-        onAnswer: onAnswer ?? (() => {
-        }),
-        primaryFeedback: primaryFb,
-        secondaryFeedback: secondaryFb
-      }
-    );
-  }
-  function DegreeButtons({ onAnswer, feedback }) {
-    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: DEGREE_LABELS.map(([val, label]) => {
-      let btnCls = "answer-btn";
-      btnCls += feedbackClass(feedback ?? null, val, label);
-      return /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: btnCls,
-          "data-degree": val,
-          onClick: onAnswer ? () => onAnswer(val) : void 0,
-          children: label
-        },
-        val
-      );
-    }) });
-  }
-  function NumeralButtons({ onAnswer, feedback }) {
-    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: ROMAN_NUMERALS.map((n2) => {
-      let btnCls = "answer-btn";
-      btnCls += feedbackClass(feedback ?? null, n2, n2);
-      return /* @__PURE__ */ u3(
-        "button",
-        {
-          type: "button",
-          tabIndex: 0,
-          class: btnCls,
-          "data-numeral": n2,
-          onClick: onAnswer ? () => onAnswer(n2) : void 0,
-          children: n2
-        },
-        n2
-      );
-    }) });
-  }
-
-  // src/ui/sequential-slots.tsx
-  function SequentialSlots({ entries, evaluated, correctTones }) {
-    const anyWrong = evaluated?.some((e3) => !e3.correct) ?? false;
-    const countMismatch = !!(evaluated && correctTones && entries.length !== correctTones.length);
-    const showCorrection = (anyWrong || countMismatch) && !!correctTones;
-    const tones = correctTones ?? [];
-    const correctionCount = showCorrection ? Math.max(entries.length, tones.length) : 0;
-    const missingCount = showCorrection ? Math.max(0, tones.length - entries.length) : 0;
-    return /* @__PURE__ */ u3(Card, { variant: "well", padding: "compact", class: "seq-slots-container seq-card", children: [
-      /* @__PURE__ */ u3("div", { class: "seq-slots", children: [
-        entries.map((entry, i3) => {
-          let cls = "seq-slot";
-          let content;
-          if (evaluated && i3 < evaluated.length) {
-            content = evaluated[i3].display;
-            cls += evaluated[i3].correct ? " correct" : " wrong";
-          } else {
-            content = entry.display;
-            cls += " filled";
-          }
-          return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
-        }),
-        Array.from(
-          { length: missingCount },
-          (_3, i3) => /* @__PURE__ */ u3("span", { class: "seq-slot", children: "\xA0" }, `m${i3}`)
-        ),
-        !evaluated && /* @__PURE__ */ u3("span", { class: "seq-slot seq-placeholder" })
-      ] }),
-      showCorrection ? /* @__PURE__ */ u3("div", { class: "seq-correct-row", children: Array.from({ length: correctionCount }, (_3, i3) => {
-        const tone = tones[i3];
-        const wasCorrect = evaluated && i3 < evaluated.length && evaluated[i3].correct;
-        return !tone || wasCorrect ? /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: "\xA0" }, i3) : /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: tone }, i3);
-      }) }) : /* @__PURE__ */ u3(
-        "div",
-        {
-          class: "seq-correct-row",
-          "aria-hidden": "true",
-          style: "visibility:hidden",
-          children: /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: "\xA0" })
-        }
-      )
-    ] });
-  }
-
-  // src/ui/practice-config.tsx
-  function SkillHeader({ modeId, title, totalReps, progressColors, onBack }) {
-    return /* @__PURE__ */ u3(Stack, { gap: "group", class: "skill-header", children: [
-      /* @__PURE__ */ u3(Bar, { gap: "group", children: [
-        onBack && /* @__PURE__ */ u3(CloseButton, { ariaLabel: "Back to home", onClick: onBack }),
-        /* @__PURE__ */ u3("div", { class: "skill-header-title", children: [
-          modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
-          /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", class: "mode-title", children: title })
-        ] }),
-        totalReps != null && /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", class: "skill-header-reps", children: [
-          totalReps.toLocaleString(),
-          /* @__PURE__ */ u3(RepeatMark, { size: 18, class: "skill-header-reps-icon" })
-        ] })
-      ] }),
-      progressColors && progressColors.length > 0 && /* @__PURE__ */ u3(ProgressBarLabeled, { label: "Progress", colors: progressColors })
-    ] });
-  }
-  function SuggestionLines({ lines }) {
-    if (lines.length === 0) return null;
-    return /* @__PURE__ */ u3("div", { class: "suggestion-lines", children: lines.map((line, i3) => /* @__PURE__ */ u3("div", { class: "suggestion-line", children: [
-      /* @__PURE__ */ u3("span", { class: "suggestion-verb", children: line.verb }),
-      " ",
-      line.levels.join(", ")
-    ] }, i3)) });
-  }
-  function LevelToggles({ labels, groupIds, active, onToggle }) {
-    return /* @__PURE__ */ u3(Card, { variant: "well", class: "level-toggles-section", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", class: "level-toggles-header", children: "Choose levels" }),
-      /* @__PURE__ */ u3("div", { class: "level-toggles", children: labels.map((label, i3) => {
-        const id = groupIds[i3];
-        return /* @__PURE__ */ u3(
-          "button",
-          {
-            type: "button",
-            tabIndex: 0,
-            class: "level-toggle-btn" + (active.has(id) ? " active" : ""),
-            "aria-pressed": active.has(id),
-            onClick: () => onToggle(id),
-            children: label
-          },
-          id
-        );
-      }) })
-    ] });
-  }
-  function LevelProgressCard({
-    label,
-    statusLabel,
-    statusColor,
-    pill,
-    colors,
-    status,
-    onToggleKnown,
-    onToggleSkip
-  }) {
-    const st = status ?? "normal";
-    return /* @__PURE__ */ u3(
-      Card,
-      {
-        padding: "compact",
-        class: "level-progress-card" + (st !== "normal" ? " " + st : ""),
-        children: /* @__PURE__ */ u3(Stack, { gap: "related", children: [
-          /* @__PURE__ */ u3("div", { class: "level-progress-header", children: [
-            /* @__PURE__ */ u3("span", { class: "level-progress-label", children: label }),
-            (onToggleKnown || onToggleSkip) && /* @__PURE__ */ u3("span", { class: "level-progress-actions", children: [
-              /* @__PURE__ */ u3(
-                "button",
-                {
-                  type: "button",
-                  class: "level-action-btn known" + (st === "known" ? " active" : ""),
-                  "aria-label": `Mark ${label} as known`,
-                  "aria-pressed": st === "known",
-                  onClick: onToggleKnown,
-                  children: "\u2713"
-                }
-              ),
-              /* @__PURE__ */ u3(
-                "button",
-                {
-                  type: "button",
-                  class: "level-action-btn skip" + (st === "skipped" ? " active" : ""),
-                  "aria-label": `Skip ${label}`,
-                  "aria-pressed": st === "skipped",
-                  onClick: onToggleSkip,
-                  children: "\u2717"
-                }
-              )
-            ] })
-          ] }),
-          statusLabel && /* @__PURE__ */ u3("span", { class: "level-progress-status", children: [
-            statusColor && /* @__PURE__ */ u3(
-              "span",
-              {
-                class: "level-status-swatch",
-                style: `background-color: var(${statusColor})`
-              }
-            ),
-            statusLabel
-          ] }),
-          pill && /* @__PURE__ */ u3("div", { class: "level-progress-pill-row", children: /* @__PURE__ */ u3(Pill, { variant: "notice", children: pill }) }),
-          /* @__PURE__ */ u3(ProgressBarLabeled, { colors, disabled: st === "skipped" })
-        ] })
-      }
-    );
-  }
-  function PracticeConfig({ mode, onModeChange, suggestedContent, customContent }) {
-    return /* @__PURE__ */ u3(Stack, { gap: "group", class: "practice-config", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Practice setup" }),
-      /* @__PURE__ */ u3(
-        SegmentedControl,
-        {
-          options: [
-            { value: "suggested", label: "Suggested" },
-            { value: "custom", label: "Custom" }
-          ],
-          value: mode,
-          onChange: onModeChange
-        }
-      ),
-      mode === "suggested" ? suggestedContent : customContent
-    ] });
-  }
-
-  // src/ui/stats.tsx
-  function StatsTable({ selector, rows, fwdHeader, revHeader, fwd2Header, rev2Header }) {
-    if (!rows || rows.length === 0) return null;
-    const hasPair = !!(fwd2Header && rev2Header);
-    return /* @__PURE__ */ u3("table", { class: "stats-table", children: [
-      /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
-        /* @__PURE__ */ u3("th", { children: rows[0]._colHeader }),
-        /* @__PURE__ */ u3("th", { children: "#" }),
-        /* @__PURE__ */ u3("th", { children: fwdHeader }),
-        /* @__PURE__ */ u3("th", { children: revHeader }),
-        hasPair && /* @__PURE__ */ u3("th", { children: fwd2Header }),
-        hasPair && /* @__PURE__ */ u3("th", { children: rev2Header })
-      ] }) }),
-      /* @__PURE__ */ u3("tbody", { children: rows.map((row) => {
-        const fwdColor = getStatsCellColor(selector, row.fwdItemId);
-        const revColor = getStatsCellColor(selector, row.revItemId);
-        return /* @__PURE__ */ u3("tr", { children: [
-          /* @__PURE__ */ u3("td", { children: row.label }),
-          /* @__PURE__ */ u3("td", { children: row.sublabel }),
-          /* @__PURE__ */ u3("td", { class: "stats-cell", style: { background: fwdColor } }),
-          /* @__PURE__ */ u3("td", { class: "stats-cell", style: { background: revColor } }),
-          hasPair && /* @__PURE__ */ u3(
-            "td",
-            {
-              class: "stats-cell",
-              style: {
-                background: getStatsCellColor(
-                  selector,
-                  row.fwd2ItemId ?? ""
-                )
-              }
-            }
-          ),
-          hasPair && /* @__PURE__ */ u3(
-            "td",
-            {
-              class: "stats-cell",
-              style: {
-                background: getStatsCellColor(
-                  selector,
-                  row.rev2ItemId ?? ""
-                )
-              }
-            }
-          )
-        ] }, row.fwdItemId);
-      }) })
-    ] });
-  }
-  function StatsGrid({ selector, colLabels, getItemId, notes }) {
-    const noteList = notes || NOTES;
-    return /* @__PURE__ */ u3("table", { class: "stats-grid", children: [
-      /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
-        /* @__PURE__ */ u3("th", {}),
-        colLabels.map((c3) => /* @__PURE__ */ u3("th", { children: c3 }, c3))
-      ] }) }),
-      /* @__PURE__ */ u3("tbody", { children: noteList.map((note) => /* @__PURE__ */ u3("tr", { children: [
-        /* @__PURE__ */ u3("td", { class: "stats-grid-row-label", children: displayNote(note.name || note.displayName) }),
-        colLabels.map((_3, i3) => {
-          const itemId2 = getItemId(note.name, i3);
-          const color = Array.isArray(itemId2) ? getStatsCellColorMerged(selector, itemId2) : getStatsCellColor(selector, itemId2);
-          const light = heatmapNeedsLightText(color);
-          return /* @__PURE__ */ u3(
-            "td",
-            {
-              class: "stats-cell",
-              style: {
-                background: color,
-                color: light ? "white" : void 0
-              }
-            },
-            i3
-          );
-        })
-      ] }, note.name)) })
-    ] });
-  }
-  function StatsLegend() {
-    const html = buildStatsLegend();
-    return /* @__PURE__ */ u3("div", { dangerouslySetInnerHTML: { __html: html } });
-  }
-
-  // src/ui/quiz-ui.tsx
-  function FeedbackDisplay({ text, className, hint, correct, onNext, onCheck, label = "Next", notice }) {
-    let extraCls = "next-btn";
-    if (correct === true) extraCls += " page-action-correct";
-    else if (correct === false) extraCls += " page-action-wrong";
-    let button;
-    if (notice && !onNext && !onCheck) {
-      button = /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice });
-    } else if (onNext) {
-      button = /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: extraCls, onClick: onNext, children: label });
-    } else if (onCheck) {
-      button = notice ? /* @__PURE__ */ u3("div", { class: "page-action-row", children: [
-        /* @__PURE__ */ u3("span", { class: "page-action-notice", children: notice }),
-        /* @__PURE__ */ u3(ActionButton, { variant: "primary", onClick: onCheck, children: "Check" })
-      ] }) : /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: "next-btn", onClick: onCheck, children: "Check" });
-    } else {
-      button = /* @__PURE__ */ u3(
-        ActionButton,
-        {
-          variant: "primary",
-          class: "next-btn",
-          onClick: () => {
-          },
-          style: { visibility: "hidden" },
-          children: label
-        }
-      );
-    }
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
-      button,
-      /* @__PURE__ */ u3(
-        "div",
-        {
-          class: "hint",
-          style: hint ? void 0 : { visibility: "hidden" },
-          children: hint || "\xA0"
-        }
-      )
-    ] });
-  }
-  var NOTE_HINT_LETTER = "C D E, c d e, C#, fs (=F#), Db, bb (=Bb)";
-  var NOTE_HINT_SOLFEGE = "do re mi, Do Re Mi, do#, reb";
-  var HINT_TEXT = {
-    "number-0-11": "0\u20139, 10, 11",
-    "number-1-12": "1\u20139, 10, 11, 12"
-  };
-  function KeyboardHint({ type }) {
-    if (!type) return null;
-    const text = type === "note" ? getUseSolfege() ? NOTE_HINT_SOLFEGE : NOTE_HINT_LETTER : HINT_TEXT[type];
-    return /* @__PURE__ */ u3("div", { class: "keyboard-hint", children: text });
-  }
-
-  // src/ui/interactive-fretboard.tsx
-  function readCSSColor(prop, fallback) {
-    try {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
-      return val || fallback;
-    } catch (_3) {
-      return fallback;
-    }
-  }
-  function setCircleFill2(root, posKey, color) {
-    const [s3, f4] = posKey.split("-");
-    const circle = root.querySelector(
-      'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
-    );
-    if (circle) circle.style.fill = color;
-  }
-  function setCircleRing(root, posKey, color) {
-    const [s3, f4] = posKey.split("-");
-    const circle = root.querySelector(
-      'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
-    );
-    if (!circle) return;
-    circle.style.fill = "none";
-    circle.style.stroke = color;
-    circle.style.strokeWidth = "3";
-  }
-  function clearAllCircles(root) {
-    root.querySelectorAll(".fb-pos").forEach((c3) => {
-      c3.style.fill = "";
-      c3.style.stroke = "";
-      c3.style.strokeWidth = "";
-    });
-  }
-  var MUTE_MARKER_CLASS = "fb-mute-marker";
-  function renderMuteMarkers(root, mutedStrings, sc) {
-    const svg = root.querySelector("svg.fretboard");
-    if (!svg) return;
-    svg.querySelectorAll("." + MUTE_MARKER_CLASS).forEach((el) => el.remove());
-    const colorMuted = readCSSColor("--color-text-secondary", "#888");
-    const cy = noteY(0);
-    const half = POSITION_CIRCLE_R * 0.7;
-    for (const s3 of mutedStrings) {
-      const cx = stringX(s3, sc);
-      const line1 = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "line"
-      );
-      const line2 = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "line"
-      );
-      for (const ln of [line1, line2]) {
-        ln.setAttribute("class", MUTE_MARKER_CLASS);
-        ln.setAttribute("stroke", colorMuted);
-        ln.setAttribute("stroke-width", "2.5");
-        ln.setAttribute("stroke-linecap", "round");
-        ln.setAttribute("pointer-events", "none");
-      }
-      line1.setAttribute("x1", String(cx - half));
-      line1.setAttribute("y1", String(cy - half));
-      line1.setAttribute("x2", String(cx + half));
-      line1.setAttribute("y2", String(cy + half));
-      line2.setAttribute("x1", String(cx + half));
-      line2.setAttribute("y1", String(cy - half));
-      line2.setAttribute("x2", String(cx - half));
-      line2.setAttribute("y2", String(cy + half));
-      svg.appendChild(line1);
-      svg.appendChild(line2);
-    }
-  }
-  function clearMuteMarkers(root) {
-    root.querySelectorAll("." + MUTE_MARKER_CLASS).forEach((el) => el.remove());
-  }
-  function InteractiveFretboard({
-    onTap,
-    tappedPositions,
-    evaluated,
-    stringCount = 6,
-    fretCount = 13,
-    mutedStrings
-  }) {
-    const wrapperRef = A2(null);
-    const svgHTML = T2(
-      () => fretboardSVG({ tapTargets: true, stringCount, fretCount }),
-      [stringCount, fretCount]
-    );
-    const handleClick = q2((e3) => {
-      const el = e3.target.closest(
-        ".fb-tap[data-string][data-fret]"
-      );
-      if (!el) return;
-      const s3 = el.dataset.string;
-      const f4 = el.dataset.fret;
-      onTap(s3 + "-" + f4);
-    }, [onTap]);
-    y2(() => {
-      const root = wrapperRef.current;
-      if (!root) return;
-      clearAllCircles(root);
-      clearMuteMarkers(root);
-      if (evaluated) {
-        const colorOk = readCSSColor("--color-success", "#2e7d32");
-        const colorBad = readCSSColor("--color-error", "#d32f2f");
-        const colorMissed = readCSSColor("--color-success-reveal", "#66bb6a");
-        const tappedSet = new Set(evaluated.perEntry.map((e3) => e3.positionKey));
-        for (const entry of evaluated.perEntry) {
-          if (entry.correct) {
-            setCircleFill2(root, entry.positionKey, colorOk);
-          } else {
-            setCircleRing(root, entry.positionKey, colorBad);
-          }
-        }
-        for (const missed of evaluated.missed) {
-          if (!tappedSet.has(missed)) {
-            setCircleFill2(root, missed, colorMissed);
-          }
-        }
-        if (mutedStrings && mutedStrings.size > 0) {
-          renderMuteMarkers(root, mutedStrings, stringCount);
-        }
-      } else {
-        const colorSel = readCSSColor(
-          "--color-tap-selected",
-          "hsl(210, 60%, 50%)"
-        );
-        for (const posKey of tappedPositions) {
-          setCircleFill2(root, posKey, colorSel);
-        }
-      }
-    }, [tappedPositions, evaluated, svgHTML, mutedStrings, stringCount]);
-    return /* @__PURE__ */ u3("div", { class: "interactive-fretboard", children: /* @__PURE__ */ u3(
-      "div",
-      {
-        ref: wrapperRef,
-        onClick: handleClick,
-        dangerouslySetInnerHTML: { __html: svgHTML }
-      }
-    ) });
-  }
-
-  // src/ui/speed-check.tsx
-  function noteAnswerMatches(input, expected) {
-    if (input === expected) return true;
-    const resolved = resolveNoteInput(input);
-    return resolved === expected;
-  }
-  var NOTE_BUTTON_CONFIG = {
-    taskType: "note-button",
-    introTitle: "Measuring note button entry times",
-    introText: "We\u2019ll show you the answer \u2014 enter it as fast as you can. This measures your entry speed so the app can set personalized timing targets. 10 quick trials.",
-    trialPrompt: (note) => `Press ${note}`,
-    generateAnswer: pickCalibrationNote,
-    checkAnswer: noteAnswerMatches,
-    label: "note button entry"
-  };
-  var IMPLEMENTED_TASK_TYPES = /* @__PURE__ */ new Set([
-    "note-button"
-  ]);
-  var TOTAL_TRIALS = 10;
-  var WARMUP_TRIALS = 2;
-  var PAUSE_MS = 400;
-  var WRONG_FEEDBACK_MS = 800;
-  function SpeedCheckHeader({ count, onClose }) {
-    return /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(Bar, { gap: "group", class: "speed-check-header", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-page", class: "speed-check-label", children: "Speed Check" }),
-      count && /* @__PURE__ */ u3(Text, { role: "metric-info", children: count }),
-      /* @__PURE__ */ u3(CloseButton, { ariaLabel: "Cancel speed check", onClick: onClose })
-    ] }) });
-  }
-  function useTrialLoop(config, onDone) {
-    const trialRef = A2({
-      active: false,
-      trialIndex: 0,
-      startTime: 0,
-      times: [],
-      prevAnswer: null,
-      targetNote: null,
-      trialTimeout: null
-    });
-    const [trialProgress, setTrialProgress] = d2("");
-    const [promptText, setPromptText] = d2("");
-    const [feedback, setFeedback] = d2(null);
-    const feedbackTimerRef = A2(null);
-    const onDoneRef = A2(onDone);
-    onDoneRef.current = onDone;
-    y2(() => {
-      return () => {
-        trialRef.current.active = false;
-        if (trialRef.current.trialTimeout) {
-          clearTimeout(trialRef.current.trialTimeout);
-        }
-        if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
-      };
-    }, []);
-    const presentNextTrial = q2(() => {
-      const state = trialRef.current;
-      if (!state.active) return;
-      const answer = config.generateAnswer(state.prevAnswer);
-      state.prevAnswer = answer;
-      state.targetNote = answer;
-      state.startTime = performance.now();
-      setTrialProgress(state.trialIndex + 1 + " / " + TOTAL_TRIALS);
-      setPromptText(config.trialPrompt(answer));
-      setFeedback(null);
-    }, [config]);
-    const handleTrialResponse = q2((input) => {
-      const state = trialRef.current;
-      if (!state.active || !state.targetNote) return;
-      if (feedbackTimerRef.current) return;
-      const buttonValue = resolveNoteInput(input) ?? input;
-      if (!config.checkAnswer(input, state.targetNote)) {
-        setFeedback({
-          correct: false,
-          userInput: buttonValue,
-          displayAnswer: state.targetNote
-        });
-        setPromptText("\u2717");
-        feedbackTimerRef.current = setTimeout(() => {
-          feedbackTimerRef.current = null;
-          presentNextTrial();
-        }, WRONG_FEEDBACK_MS);
-        return;
-      }
-      const elapsed = performance.now() - state.startTime;
-      if (state.trialIndex >= WARMUP_TRIALS) state.times.push(elapsed);
-      state.trialIndex++;
-      state.targetNote = null;
-      setPromptText("\u2713");
-      setFeedback(null);
-      if (state.trialIndex >= TOTAL_TRIALS) {
-        state.active = false;
-        onDoneRef.current(computeMedian(state.times) ?? 500);
-      } else {
-        state.trialTimeout = setTimeout(
-          () => presentNextTrial(),
-          PAUSE_MS
-        );
-      }
-    }, [presentNextTrial, config]);
-    const startTrials = q2(() => {
-      const state = trialRef.current;
-      state.active = true;
-      state.trialIndex = 0;
-      state.startTime = 0;
-      state.times = [];
-      state.prevAnswer = null;
-      state.targetNote = null;
-      const timeout = setTimeout(() => presentNextTrial(), 300);
-      return () => {
-        clearTimeout(timeout);
-        state.active = false;
-        if (state.trialTimeout) clearTimeout(state.trialTimeout);
-      };
-    }, [presentNextTrial]);
-    return {
-      trialRef,
-      trialProgress,
-      promptText,
-      feedback,
-      handleTrialResponse,
-      startTrials,
-      setTrialProgress,
-      setPromptText
-    };
-  }
-  function SpeedCheckInput({ onSubmit, wrongFlash }) {
-    const inputRef = A2(null);
-    const [shake, setShake] = d2(false);
-    const shakeTimerRef = A2(null);
-    y2(() => {
-      if (inputRef.current) inputRef.current.focus();
-    }, []);
-    y2(() => {
-      return () => {
-        if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
-      };
-    }, []);
-    const triggerShake = q2(() => {
-      setShake(true);
-      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
-      shakeTimerRef.current = setTimeout(() => {
-        setShake(false);
-        shakeTimerRef.current = null;
-      }, 400);
-    }, []);
-    const handleKeyDown = q2(
-      (e3) => {
-        if (e3.key !== "Enter") return;
-        e3.preventDefault();
-        e3.stopPropagation();
-        const value = inputRef.current?.value.trim() ?? "";
-        if (!value || !isValidNoteInput(value)) {
-          triggerShake();
-          return;
-        }
-        onSubmit(value);
-        if (inputRef.current) inputRef.current.value = "";
-      },
-      [onSubmit, triggerShake]
-    );
-    let cls = "answer-input";
-    if (wrongFlash) cls += " answer-input-wrong answer-input-shake";
-    else if (shake) cls += " answer-input-shake";
-    return /* @__PURE__ */ u3(
-      "input",
-      {
-        ref: inputRef,
-        type: "text",
-        class: cls,
-        placeholder: "Type answer, press Enter",
-        "aria-label": "Type answer, press Enter",
-        onKeyDown: handleKeyDown,
-        autoComplete: "off",
-        autoCorrect: "off",
-        spellcheck: false
-      }
-    );
-  }
-  function SpeedCheckIntro({ title, text }) {
-    return /* @__PURE__ */ u3("div", { class: "calibration-results", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: title }),
-      /* @__PURE__ */ u3("p", { children: text })
-    ] });
-  }
-  function SpeedCheckResults({ baseline }) {
-    const thresholds = getCalibrationThresholds(baseline);
-    return /* @__PURE__ */ u3("div", { class: "calibration-results", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h2", children: "Speed Check Complete" }),
-      /* @__PURE__ */ u3(Text, { role: "metric-primary", as: "div", class: "calibration-baseline", children: [
-        (baseline / 1e3).toFixed(2),
-        "s"
-      ] }),
-      /* @__PURE__ */ u3("table", { class: "calibration-thresholds", children: [
-        /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
-          /* @__PURE__ */ u3("th", {}),
-          /* @__PURE__ */ u3("th", { children: "Level" }),
-          /* @__PURE__ */ u3("th", { children: "Max time" }),
-          /* @__PURE__ */ u3("th", { children: "Meaning" })
-        ] }) }),
-        /* @__PURE__ */ u3("tbody", { children: thresholds.map((t3) => /* @__PURE__ */ u3("tr", { children: [
-          /* @__PURE__ */ u3("td", { children: /* @__PURE__ */ u3(
-            "span",
-            {
-              class: "heatmap-swatch",
-              style: `background-color: var(${t3.colorToken})`
-            }
-          ) }),
-          /* @__PURE__ */ u3("td", { children: t3.label }),
-          /* @__PURE__ */ u3("td", { children: t3.maxMs !== null ? (t3.maxMs / 1e3).toFixed(1) + "s" : "\u2014" }),
-          /* @__PURE__ */ u3("td", { children: t3.meaning })
-        ] }, t3.label)) })
-      ] })
-    ] });
-  }
-  function SpeedCheck({ config, onComplete, onCancel, fixture }) {
-    const [phase, setPhase] = d2(
-      fixture?.phase ?? "intro"
-    );
-    const [baseline, setBaseline] = d2(fixture?.baseline ?? 0);
-    const trials = useTrialLoop(config, (median) => {
-      setBaseline(Math.round(median));
-      setPhase("results");
-    });
-    y2(() => {
-      if (fixture?.trialProgress) trials.setTrialProgress(fixture.trialProgress);
-      if (fixture?.promptAnswer) {
-        trials.setPromptText(config.trialPrompt(fixture.promptAnswer));
-      }
-    }, [fixture]);
-    y2(() => {
-      if (fixture) return;
-      function onKeyDown(e3) {
-        if (e3.key === "Escape") {
-          e3.preventDefault();
-          trials.trialRef.current.active = false;
-          if (trials.trialRef.current.trialTimeout) {
-            clearTimeout(trials.trialRef.current.trialTimeout);
-          }
-          onCancel();
-        }
-      }
-      document.addEventListener("keydown", onKeyDown);
-      return () => document.removeEventListener("keydown", onKeyDown);
-    }, [fixture, onCancel]);
-    y2(() => {
-      if (fixture || phase !== "running") return;
-      return trials.startTrials();
-    }, [fixture, phase, trials.startTrials]);
-    if (phase === "intro") {
-      return /* @__PURE__ */ u3(ScreenLayout, { children: [
-        /* @__PURE__ */ u3(SpeedCheckHeader, { onClose: onCancel }),
-        /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(CenteredContent, { children: /* @__PURE__ */ u3(
-          SpeedCheckIntro,
-          {
-            title: config.introTitle,
-            text: config.introText
-          }
-        ) }) }),
-        /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
-          ActionButton,
-          {
-            variant: "primary",
-            class: "next-btn",
-            onClick: () => setPhase("running"),
-            children: "Start"
-          }
-        ) })
-      ] });
-    }
-    if (phase === "running") {
-      return /* @__PURE__ */ u3(ScreenLayout, { children: [
-        /* @__PURE__ */ u3(
-          SpeedCheckHeader,
-          {
-            count: trials.trialProgress,
-            onClose: onCancel
-          }
-        ),
-        /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(
-          QuizStage,
-          {
-            prompt: /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: trials.promptText }),
-            response: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
-                NoteButtons,
-                {
-                  onAnswer: trials.handleTrialResponse,
-                  feedback: trials.feedback
-                }
-              ),
-              /* @__PURE__ */ u3(
-                SpeedCheckInput,
-                {
-                  onSubmit: trials.handleTrialResponse,
-                  wrongFlash: trials.feedback?.correct === false
-                }
-              ),
-              /* @__PURE__ */ u3(KeyboardHint, { type: "note" })
-            ] })
-          }
-        ) })
-      ] });
-    }
-    return /* @__PURE__ */ u3(ScreenLayout, { children: [
-      /* @__PURE__ */ u3(SpeedCheckHeader, { onClose: onCancel }),
-      /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(CenteredContent, { children: /* @__PURE__ */ u3(SpeedCheckResults, { baseline }) }) }),
-      /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
-        ActionButton,
-        {
-          variant: "primary",
-          class: "next-btn",
-          onClick: () => onComplete(baseline),
-          children: "Done"
-        }
-      ) })
-    ] });
-  }
-
   // src/declarative/use-sequential-input.ts
   function useSequentialInput(def, currentQRef, submitRef) {
     const [seqEntries, setSeqEntries] = d2([]);
@@ -11531,619 +12149,7 @@ body.native-app .hint {
     };
   }
 
-  // src/declarative/generic-mode.tsx
-  function getHintType(buttons) {
-    switch (buttons.kind) {
-      case "note":
-      case "split-note":
-        return "note";
-      case "number":
-        return buttons.start === 0 ? "number-0-11" : "number-1-12";
-      default:
-        return null;
-    }
-  }
-  function resolveAnswerSpec(def, q3) {
-    const spec = def.answer;
-    if ("kind" in spec && spec.kind === "bidirectional") {
-      const dir = def.getDirection(q3);
-      return dir === "fwd" ? spec.fwd : spec.rev;
-    }
-    return spec;
-  }
-  function checkCorrectness(strategy, expected, input) {
-    switch (strategy) {
-      case "exact":
-        return input === expected;
-      case "integer":
-        return parseInt(input, 10) === parseInt(expected, 10);
-      case "note-enharmonic": {
-        const resolved = resolveNoteInput(input) ?? input;
-        return spelledNoteMatchesSemitone(expected, resolved);
-      }
-      case "interval": {
-        const iv = INTERVALS.find((i3) => i3.abbrev === expected);
-        return iv ? intervalMatchesInput(iv, input) : false;
-      }
-    }
-  }
-  function toButtonValue(strategy, value) {
-    if (strategy === "note-enharmonic") return resolveNoteInput(value) ?? value;
-    return value;
-  }
-  function defaultDisplayAnswer(strategy, expected) {
-    return strategy === "note-enharmonic" ? displayNote(expected) : expected;
-  }
-  function checkGenericAnswer(def, currentQRef, lastAnswerRef, isSequential, isMultiTap, _itemId, input) {
-    if (isSequential || isMultiTap) {
-      const sep = input.indexOf(":");
-      return {
-        correct: input.startsWith("__correct__"),
-        correctAnswer: sep >= 0 ? input.slice(sep + 1) : ""
-      };
-    }
-    const q3 = currentQRef.current;
-    const spec = resolveAnswerSpec(def, q3);
-    const expected = spec.getExpectedValue(q3);
-    const normalized = spec.normalizeInput?.(input) ?? input;
-    const correct = checkCorrectness(spec.comparison, expected, normalized);
-    const display = spec.getDisplayAnswer?.(q3) ?? defaultDisplayAnswer(spec.comparison, expected);
-    lastAnswerRef.current = {
-      expected,
-      comparison: spec.comparison,
-      normalizedInput: normalized
-    };
-    return { correct, correctAnswer: display };
-  }
-  function getInputPlaceholder(def, currentQ, isSequential) {
-    if (isSequential) {
-      const seq = def.sequential;
-      if (!seq.batchPlaceholder) return void 0;
-      return typeof seq.batchPlaceholder === "string" ? seq.batchPlaceholder : currentQ ? seq.batchPlaceholder(currentQ) : void 0;
-    }
-    if (!def.inputPlaceholder) return void 0;
-    return typeof def.inputPlaceholder === "string" ? def.inputPlaceholder : currentQ ? def.inputPlaceholder(currentQ) : void 0;
-  }
-  function AnswerInput({ onSubmit, disabled, placeholder, onInvalid, feedbackCorrect }) {
-    const inputRef = A2(null);
-    const [shake, setShake] = d2(false);
-    const shakeTimerRef = A2(null);
-    y2(() => {
-      return () => {
-        if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
-      };
-    }, []);
-    y2(() => {
-      if (!disabled && inputRef.current) {
-        inputRef.current.value = "";
-        inputRef.current.focus();
-      }
-    }, [disabled]);
-    const triggerShake = q2(() => {
-      setShake(true);
-      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
-      shakeTimerRef.current = setTimeout(() => {
-        setShake(false);
-        shakeTimerRef.current = null;
-      }, 400);
-    }, []);
-    const handleKeyDown = q2(
-      (e3) => {
-        if (e3.key !== "Enter") return;
-        e3.preventDefault();
-        e3.stopPropagation();
-        const value = inputRef.current?.value.trim() ?? "";
-        if (!value) {
-          triggerShake();
-          onInvalid?.();
-          return;
-        }
-        if (!onSubmit(value)) triggerShake();
-      },
-      [onSubmit, onInvalid, triggerShake]
-    );
-    let cls = "answer-input";
-    if (shake) cls += " answer-input-shake";
-    if (feedbackCorrect === false) cls += " answer-input-wrong";
-    else if (feedbackCorrect === true) cls += " answer-input-correct";
-    const label = placeholder ?? "Type answer, press Enter";
-    return /* @__PURE__ */ u3(
-      "input",
-      {
-        ref: inputRef,
-        type: "text",
-        class: cls,
-        placeholder: label,
-        "aria-label": label,
-        disabled,
-        onKeyDown: handleKeyDown,
-        autoComplete: "off",
-        autoCorrect: "off",
-        spellcheck: false
-      }
-    );
-  }
-  function ResponseButtons({
-    buttonsDef,
-    onAnswer,
-    useFlats,
-    narrowing,
-    hideAccidentalsOverride,
-    columnsOverride,
-    feedback,
-    answered
-  }) {
-    switch (buttonsDef.kind) {
-      case "note":
-        return /* @__PURE__ */ u3(
-          NoteButtons,
-          {
-            onAnswer,
-            useFlats,
-            hideAccidentals: hideAccidentalsOverride,
-            narrowing,
-            feedback,
-            columns: columnsOverride ?? buttonsDef.columns
-          }
-        );
-      case "split-note":
-        return /* @__PURE__ */ u3(
-          SplitNoteButtons,
-          {
-            onAnswer,
-            answered
-          }
-        );
-      case "number":
-        return /* @__PURE__ */ u3(
-          NumberButtons,
-          {
-            start: buttonsDef.start,
-            end: buttonsDef.end,
-            onAnswer: (n2) => onAnswer(String(n2)),
-            feedback
-          }
-        );
-      case "degree":
-        return /* @__PURE__ */ u3(
-          DegreeButtons,
-          {
-            onAnswer,
-            feedback
-          }
-        );
-      case "numeral":
-        return /* @__PURE__ */ u3(
-          NumeralButtons,
-          {
-            onAnswer,
-            feedback
-          }
-        );
-      case "interval":
-        return /* @__PURE__ */ u3(
-          IntervalButtons,
-          {
-            onAnswer,
-            feedback
-          }
-        );
-      case "split-keysig":
-        return /* @__PURE__ */ u3(
-          SplitKeysigButtons,
-          {
-            onAnswer,
-            feedback
-          }
-        );
-      case "none":
-        return null;
-    }
-  }
-  function SequentialQuizArea({
-    def,
-    engine,
-    ctrl,
-    currentQ,
-    activeButtons,
-    seq,
-    placeholder,
-    promptText,
-    instruction
-  }) {
-    return /* @__PURE__ */ u3(
-      QuizStage,
-      {
-        prompt: /* @__PURE__ */ u3(k, { children: [
-          instruction && /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
-          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText })
-        ] }),
-        response: /* @__PURE__ */ u3(k, { children: [
-          /* @__PURE__ */ u3(
-            SequentialSlots,
-            {
-              entries: seq.entries,
-              evaluated: seq.evaluated,
-              correctTones: seq.correctAnswer ? seq.correctAnswer.split(" ") : null
-            }
-          ),
-          /* @__PURE__ */ u3(
-            ResponseButtons,
-            {
-              buttonsDef: activeButtons,
-              onAnswer: seq.handleInput,
-              answered: engine.state.answered
-            }
-          ),
-          def.sequential?.parseBatchInput && /* @__PURE__ */ u3(
-            AnswerInput,
-            {
-              onSubmit: seq.handleBatch,
-              disabled: engine.state.answered,
-              placeholder
-            }
-          )
-        ] })
-      }
-    );
-  }
-  function MultiTapQuizArea({ multiTapInput, promptText, instruction, stringCount, mutedStrings }) {
-    return /* @__PURE__ */ u3(
-      QuizStage,
-      {
-        prompt: /* @__PURE__ */ u3(k, { children: [
-          instruction && /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
-          /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText }),
-          /* @__PURE__ */ u3(
-            InteractiveFretboard,
-            {
-              onTap: multiTapInput.handleTap,
-              tappedPositions: multiTapInput.tappedPositions,
-              evaluated: multiTapInput.evaluated,
-              stringCount,
-              mutedStrings
-            }
-          )
-        ] }),
-        response: null
-      }
-    );
-  }
-  function StandardQuizArea({
-    engine,
-    ctrl,
-    currentQ,
-    activeButtons,
-    handleSubmit,
-    useFlats,
-    placeholder,
-    promptText,
-    lastAnswerRef,
-    instruction
-  }) {
-    return /* @__PURE__ */ u3(
-      QuizStage,
-      {
-        prompt: /* @__PURE__ */ u3(k, { children: [
-          instruction && /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
-          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText })
-        ] }),
-        response: /* @__PURE__ */ u3(k, { children: [
-          /* @__PURE__ */ u3(
-            ResponseButtons,
-            {
-              buttonsDef: activeButtons,
-              onAnswer: handleSubmit,
-              useFlats,
-              narrowing: ctrl.narrowing,
-              hideAccidentalsOverride: ctrl.hideAccidentals,
-              columnsOverride: ctrl.buttonColumns,
-              feedback: engine.state.feedbackCorrect !== null && lastAnswerRef.current ? {
-                correct: engine.state.feedbackCorrect,
-                userInput: toButtonValue(
-                  lastAnswerRef.current.comparison,
-                  lastAnswerRef.current.normalizedInput
-                ),
-                displayAnswer: toButtonValue(
-                  lastAnswerRef.current.comparison,
-                  lastAnswerRef.current.expected
-                )
-              } : null
-            }
-          ),
-          /* @__PURE__ */ u3(
-            AnswerInput,
-            {
-              onSubmit: handleSubmit,
-              disabled: engine.state.answered,
-              placeholder,
-              feedbackCorrect: engine.state.feedbackCorrect
-            }
-          ),
-          /* @__PURE__ */ u3(KeyboardHint, { type: getHintType(activeButtons) })
-        ] })
-      }
-    );
-  }
-  function QuizActiveView({
-    def,
-    engine,
-    ctrl,
-    currentQ,
-    round,
-    levelBars,
-    handleSubmit,
-    seq,
-    multiTapInput,
-    activeButtons,
-    promptText,
-    useFlats,
-    placeholder,
-    lastAnswerRef
-  }) {
-    const phase = engine.state.phase;
-    if (phase === "round-complete") {
-      return /* @__PURE__ */ u3(ScreenLayout, { children: [
-        /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3("div", {}) }),
-        /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(CenteredContent, { children: /* @__PURE__ */ u3(
-          RoundCompleteInfo,
-          {
-            heading: "Round complete",
-            count: engine.state.roundAnswered,
-            correct: round.roundCorrect,
-            levelBars
-          }
-        ) }) }),
-        /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
-          RoundCompleteActions,
-          {
-            onContinue: engine.continueQuiz,
-            onStop: engine.stop
-          }
-        ) })
-      ] });
-    }
-    const instruction = currentQ && def.quizInstruction ? typeof def.quizInstruction === "function" ? def.quizInstruction(currentQ) : def.quizInstruction : void 0;
-    const mtMutedStrings = T2(() => {
-      if (!def.multiTap?.getMutedStrings || !currentQ) return void 0;
-      return new Set(def.multiTap.getMutedStrings(currentQ));
-    }, [def, currentQ]);
-    const quizContent = def.multiTap ? /* @__PURE__ */ u3(
-      MultiTapQuizArea,
-      {
-        multiTapInput,
-        promptText,
-        instruction,
-        stringCount: def.multiTap.stringCount,
-        mutedStrings: mtMutedStrings
-      }
-    ) : def.sequential ? /* @__PURE__ */ u3(
-      SequentialQuizArea,
-      {
-        def,
-        engine,
-        ctrl,
-        currentQ,
-        activeButtons,
-        seq,
-        placeholder,
-        promptText,
-        instruction
-      }
-    ) : /* @__PURE__ */ u3(
-      StandardQuizArea,
-      {
-        engine,
-        ctrl,
-        currentQ,
-        activeButtons,
-        handleSubmit,
-        useFlats,
-        placeholder,
-        promptText,
-        lastAnswerRef,
-        instruction
-      }
-    );
-    return /* @__PURE__ */ u3(ScreenLayout, { children: [
-      /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
-        QuizSession,
-        {
-          timeLeft: engine.timerText,
-          timerPct: engine.timerPct,
-          count: round.countLabel,
-          isWarning: engine.timerWarning,
-          isLastQuestion: engine.timerLastQuestion,
-          onClose: engine.stop
-        }
-      ) }),
-      /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: quizContent }),
-      /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
-        FeedbackDisplay,
-        {
-          text: engine.state.feedbackText,
-          className: engine.state.feedbackClass,
-          hint: engine.state.hintText || void 0,
-          correct: engine.state.feedbackCorrect,
-          onNext: engine.state.answered ? engine.nextQuestion : void 0,
-          onCheck: !engine.state.answered ? def.sequential && !seq.evaluated && seq.entries.length > 0 ? seq.handleCheck : def.multiTap && !multiTapInput.evaluated && multiTapInput.tappedPositions.size > 0 ? multiTapInput.handleCheck : void 0 : void 0,
-          label: engine.state.roundTimerExpired ? "Continue" : "Next",
-          notice: engine.state.roundTimerExpired && !engine.state.answered ? "Last question" : void 0
-        }
-      ) })
-    ] });
-  }
-  function resolveGroupLabel(label) {
-    return typeof label === "function" ? label() : label;
-  }
-  function GroupPracticeContent({ def, groupScopeResult }) {
-    const groupScope = def.scope.kind === "groups" ? def.scope : null;
-    if (!groupScope) return null;
-    const groupLabels = groupScope.allGroupIds.map((id) => {
-      const g2 = groupScope.groups.find((g3) => g3.id === id);
-      return g2 ? resolveGroupLabel(g2.label) : id;
-    });
-    return /* @__PURE__ */ u3(k, { children: /* @__PURE__ */ u3(
-      PracticeConfig,
-      {
-        mode: groupScopeResult.practiceMode,
-        onModeChange: groupScopeResult.setPracticeMode,
-        suggestedContent: /* @__PURE__ */ u3(SuggestionLines, { lines: groupScopeResult.suggestionLines }),
-        customContent: /* @__PURE__ */ u3(
-          LevelToggles,
-          {
-            labels: groupLabels,
-            groupIds: groupScope.allGroupIds,
-            active: groupScopeResult.practiceMode === "custom" ? groupScopeResult.enabledGroups : groupScopeResult.suggestedScope,
-            onToggle: groupScopeResult.scopeActions.toggleGroup
-          }
-        )
-      }
-    ) });
-  }
-  function LevelProgressCards({ def, learner, groupScopeResult }) {
-    const groupScope = def.scope.kind === "groups" ? def.scope : null;
-    if (!groupScope) return null;
-    return /* @__PURE__ */ u3(Stack, { gap: "related", class: "level-progress-cards", children: groupScope.allGroupIds.map((id) => {
-      const g2 = groupScope.groups.find((g3) => g3.id === id);
-      const itemIds = groupScope.getItemIdsForGroup(id);
-      const colors = progressBarColors(learner.selector, itemIds);
-      const ls = groupScopeResult.recommendation.levelStatuses?.find((s3) => s3.groupId === id);
-      const sl = ls ? SPEED_LEVELS.find((l3) => l3.key === ls.speedLabel) ?? null : null;
-      const pill = ls?.reviewInHours != null ? ls.reviewStatus === "soon" ? "Review soon" : `Review in ${formatReviewDuration(ls.reviewInHours)}` : void 0;
-      const skipReason = groupScopeResult.skippedGroups.get(id);
-      const status = skipReason === "mastered" ? "known" : skipReason === "deferred" ? "skipped" : "normal";
-      const label = g2 ? resolveGroupLabel(
-        g2.longLabel ?? g2.label
-      ) : id;
-      return /* @__PURE__ */ u3(
-        LevelProgressCard,
-        {
-          label,
-          statusLabel: sl?.label,
-          statusColor: sl?.colorToken,
-          pill,
-          colors,
-          status,
-          onToggleKnown: () => skipReason === "mastered" ? groupScopeResult.scopeActions.unskipGroup(id) : groupScopeResult.scopeActions.skipGroup(id, "mastered"),
-          onToggleSkip: () => skipReason === "deferred" ? groupScopeResult.scopeActions.unskipGroup(id) : groupScopeResult.scopeActions.skipGroup(id, "deferred")
-        },
-        id
-      );
-    }) });
-  }
-  function singleLevelSuggestion(selector, allItems2) {
-    const anySeen = allItems2.some((id) => selector.getStats(id) !== null);
-    if (!anySeen) return { verb: "Start", levels: [] };
-    if (selector.checkAllAutomatic(allItems2)) {
-      return { verb: "All items automatic! Practice something else", levels: [] };
-    }
-    if (selector.checkNeedsReview(allItems2)) {
-      return { verb: "Review", levels: [] };
-    }
-    return { verb: "Practice", levels: [] };
-  }
-  function IdlePracticeView({ def, engine, learner, ctrl, groupScopeResult, ps, onCalibrate }) {
-    const hasGroups = def.scope.kind === "groups" && groupScopeResult;
-    const hasStats = def.stats.kind !== "none" || !!ctrl.renderStats;
-    const customItemCount = hasGroups && groupScopeResult.practiceMode === "custom" ? groupScopeResult.enabledItems.length : null;
-    return /* @__PURE__ */ u3(
-      PracticeTab,
-      {
-        onStart: engine.start,
-        scopeValid: !groupScopeResult || groupScopeResult.enabledGroups.size > 0,
-        validationMessage: "Select at least one level",
-        startLabel: customItemCount != null ? `Practice (${customItemCount} ${customItemCount === 1 ? "item" : "items"})` : void 0,
-        practiceContent: hasGroups ? /* @__PURE__ */ u3(
-          GroupPracticeContent,
-          {
-            def,
-            groupScopeResult
-          }
-        ) : /* @__PURE__ */ u3(Stack, { gap: "group", class: "practice-config", children: [
-          /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Recommendation" }),
-          /* @__PURE__ */ u3(
-            SuggestionLines,
-            {
-              lines: [singleLevelSuggestion(learner.selector, def.allItems)]
-            }
-          )
-        ] }),
-        statsHeading: hasStats ? "Speed by item" : void 0,
-        statsContent: /* @__PURE__ */ u3(k, { children: [
-          ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : /* @__PURE__ */ u3(k, { children: [
-            def.stats.kind === "grid" && /* @__PURE__ */ u3(
-              StatsGrid,
-              {
-                selector: ps.statsSel,
-                colLabels: def.stats.colLabels,
-                getItemId: def.stats.getItemId,
-                notes: def.stats.notes
-              }
-            ),
-            def.stats.kind === "table" && /* @__PURE__ */ u3(
-              StatsTable,
-              {
-                selector: ps.statsSel,
-                rows: def.stats.getRows(),
-                fwdHeader: def.stats.fwdHeader,
-                revHeader: def.stats.revHeader,
-                fwd2Header: def.stats.fwd2Header,
-                rev2Header: def.stats.rev2Header
-              }
-            )
-          ] }),
-          hasStats && /* @__PURE__ */ u3(StatsLegend, {})
-        ] }),
-        progressExtra: hasGroups ? /* @__PURE__ */ u3(Section, { heading: "Level progress", gap: "group", children: /* @__PURE__ */ u3(
-          LevelProgressCards,
-          {
-            def,
-            learner,
-            groupScopeResult
-          }
-        ) }) : void 0,
-        baseline: onCalibrate ? learner.motorBaseline : void 0,
-        onCalibrate,
-        activeTab: ps.activeTab,
-        onTabSwitch: ps.setActiveTab,
-        aboutContent: /* @__PURE__ */ u3(
-          AboutTab,
-          {
-            description: def.description,
-            aboutDescription: def.aboutDescription,
-            beforeAfter: def.beforeAfter
-          }
-        )
-      }
-    );
-  }
-  function AboutTab({ description, aboutDescription, beforeAfter }) {
-    const beforeLines = typeof beforeAfter.before === "function" ? beforeAfter.before() : beforeAfter.before;
-    const after = typeof beforeAfter.after === "function" ? beforeAfter.after() : beforeAfter.after;
-    return /* @__PURE__ */ u3(Stack, { gap: "section", class: "about-tab", children: [
-      /* @__PURE__ */ u3(Section, { heading: "What you're automating", gap: "group", children: [
-        /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", children: description }),
-        /* @__PURE__ */ u3("div", { class: "about-columns", children: [
-          /* @__PURE__ */ u3(Card, { variant: "well", class: "about-col", children: /* @__PURE__ */ u3(Stack, { gap: "related", children: [
-            /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "Before" }),
-            beforeLines.map((line, i3) => /* @__PURE__ */ u3("p", { class: "about-col-text", children: line }, i3))
-          ] }) }),
-          /* @__PURE__ */ u3(Card, { class: "about-col about-col-after", children: /* @__PURE__ */ u3(Stack, { gap: "related", children: [
-            /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "After" }),
-            /* @__PURE__ */ u3("p", { class: "about-col-text", children: after })
-          ] }) })
-        ] })
-      ] }),
-      aboutDescription && /* @__PURE__ */ u3(Section, { heading: "Why automate this?", gap: "group", children: /* @__PURE__ */ u3(Text, { role: "body", as: "p", children: aboutDescription }) }),
-      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "text-hint", children: [
-        "Start practicing on the",
-        " ",
-        /* @__PURE__ */ u3(RepeatMark, { size: 16, class: "about-tab-tip-icon" }),
-        " tab below."
-      ] })
-    ] });
-  }
+  // src/declarative/generic-mode-hooks.ts
   var EMPTY_GROUPS = /* @__PURE__ */ new Set();
   function useGenericEngine(def, ctrl, ctrlRef, groupScopeResult, learner, container) {
     const currentQRef = A2(null);
@@ -12335,6 +12341,8 @@ body.native-app .hint {
       return colors.length > 0 ? [{ id: "_all", label: "", colors }] : [];
     }, [def, learner.selector, learner.selector.version, _phase, enabledGroups]);
   }
+
+  // src/declarative/generic-mode.tsx
   function ModeHeader({ def, isIdle, progressColors, totalReps, navigateHome }) {
     if (isIdle) {
       return /* @__PURE__ */ u3(
