@@ -7,7 +7,7 @@ import { SkillIcon } from './icons.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
-import { Bar, Stack } from './layout.tsx';
+import { Bar, Section, Stack } from './layout.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
 import { ProgressBarLabeled } from './scope.tsx';
 
@@ -200,7 +200,7 @@ export function ModeTopBar(
 ) {
   return (
     <div class='mode-top-bar'>
-      <div class='mode-top-bar-row'>
+      <Bar gap='group'>
         {showBack && (
           <CloseButton
             ariaLabel='Back to home'
@@ -216,7 +216,7 @@ export function ModeTopBar(
             </Text>
           )}
         </div>
-      </div>
+      </Bar>
     </div>
   );
 }
@@ -370,7 +370,7 @@ export function RoundCompleteInfo(
   },
 ) {
   return (
-    <div class='round-complete'>
+    <Stack gap='component' class='round-complete'>
       <Text role='heading-page' as='div' class='round-complete-heading'>
         {heading || ''}
       </Text>
@@ -403,7 +403,7 @@ export function RoundCompleteInfo(
           ))}
         </Stack>
       )}
-    </div>
+    </Stack>
   );
 }
 
@@ -544,8 +544,8 @@ export function PracticeTab(
   }: {
     onStart: () => void;
     statsContent: ComponentChildren;
-    /** Heading rendered outside the centered stats container. */
-    statsHeading?: ComponentChildren;
+    /** Heading for the stats section in the progress tab. */
+    statsHeading?: string;
     onCalibrate?: () => void;
     baseline?: number | null;
     activeTab: ModeTab;
@@ -554,7 +554,7 @@ export function PracticeTab(
     validationMessage?: string;
     aboutContent?: ComponentChildren;
     practiceContent: ComponentChildren;
-    /** Extra content inserted above baseline in the progress tab. */
+    /** Extra content inserted above stats in the progress tab. */
     progressExtra?: ComponentChildren;
     /** Custom label for the start button (e.g. "Practice (32 items)"). */
     startLabel?: string;
@@ -576,19 +576,20 @@ export function PracticeTab(
       id: 'progress',
       label: <TabIcon icon='progress' text='Progress' />,
       content: (
-        <div>
-          {progressExtra && <div class='progress-section'>{progressExtra}</div>}
-          <div class='progress-section'>
-            {statsHeading}
-            <div class='stats-container'>{statsContent}</div>
-          </div>
-          {onCalibrate && (
-            <div class='progress-section'>
-              <Text role='heading-section'>Speed check</Text>
-              <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
-            </div>
+        <Stack gap='region'>
+          {progressExtra}
+          {statsHeading && (
+            <Section heading={statsHeading} gap='group'>
+              <div class='stats-container'>{statsContent}</div>
+            </Section>
           )}
-        </div>
+          {!statsHeading && <div class='stats-container'>{statsContent}</div>}
+          {onCalibrate && (
+            <Section heading='Speed check' gap='group'>
+              <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
+            </Section>
+          )}
+        </Stack>
       ),
     },
   ];

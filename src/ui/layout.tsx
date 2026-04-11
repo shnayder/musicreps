@@ -77,14 +77,23 @@ export function Card(
 // ---------------------------------------------------------------------------
 
 export function Section(
-  { heading, headingRole = 'heading-section', children, class: extra }: {
+  {
+    heading,
+    headingRole = 'heading-section',
+    gap = 'related',
+    children,
+    class: extra,
+  }: {
     heading: string;
     headingRole?: TextRole;
+    /** Gap between heading and content (default: 'related' = 4px). */
+    gap?: StackGap;
     children: ComponentChildren;
     class?: string;
   },
 ) {
-  const cls = 'section-block' + (extra ? ' ' + extra : '');
+  const cls = 'section-block section-gap-' + gap +
+    (extra ? ' ' + extra : '');
   return (
     <section class={cls}>
       <Text role={headingRole} as='h2'>{heading}</Text>

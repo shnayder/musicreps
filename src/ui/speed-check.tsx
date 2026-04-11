@@ -14,6 +14,7 @@ import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 import { KeyboardHint } from './quiz-ui.tsx';
 import { isValidNoteInput, resolveNoteInput } from '../music-data.ts';
+import { Bar } from './layout.tsx';
 import { CloseButton } from './mode-screen.tsx';
 import {
   CenteredContent,
@@ -81,11 +82,11 @@ function SpeedCheckHeader(
 ) {
   return (
     <LayoutHeader>
-      <div class='speed-check-header'>
+      <Bar gap='group' class='speed-check-header'>
         <Text role='heading-page' class='speed-check-label'>Speed Check</Text>
         {count && <Text role='metric-info'>{count}</Text>}
         <CloseButton ariaLabel='Cancel speed check' onClick={onClose} />
-      </div>
+      </Bar>
     </LayoutHeader>
   );
 }
