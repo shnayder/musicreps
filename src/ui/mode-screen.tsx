@@ -568,7 +568,12 @@ export function PracticeTab(
   },
 ) {
   const prefix = useTabsPrefix();
-  const segs = progressSegments ?? [];
+  const EMPTY_BAR: ProgressSegment[] = [
+    { color: 'var(--heatmap-none)', weight: 1 },
+  ];
+  const segs = progressSegments && progressSegments.length > 0
+    ? progressSegments
+    : EMPTY_BAR;
   const hasProgressBar = progressSegments != null;
   const hasSummary = hasProgressBar || description;
   const tabs: TabDef<ModeTab>[] = [
