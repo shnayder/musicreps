@@ -568,8 +568,9 @@ export function PracticeTab(
   },
 ) {
   const prefix = useTabsPrefix();
-  const hasProgress = progressSegments && progressSegments.length > 0;
-  const hasSummary = hasProgress || description;
+  const segs = progressSegments ?? [];
+  const hasProgressBar = progressSegments != null;
+  const hasSummary = hasProgressBar || description;
   const tabs: TabDef<ModeTab>[] = [
     {
       id: 'practice',
@@ -588,10 +589,10 @@ export function PracticeTab(
                   {description}
                 </Text>
               )}
-              {hasProgress && (
+              {hasProgressBar && (
                 <ProgressBarLabeled
                   label='Progress'
-                  segments={progressSegments}
+                  segments={segs}
                 />
               )}
             </Section>
@@ -605,11 +606,11 @@ export function PracticeTab(
       label: <TabIcon icon='progress' text='Progress' />,
       content: (
         <Stack gap='region'>
-          {hasProgress && (
+          {hasProgressBar && (
             <Section heading='Overall'>
               <ProgressBarLabeled
                 label='Progress'
-                segments={progressSegments}
+                segments={segs}
               />
             </Section>
           )}
