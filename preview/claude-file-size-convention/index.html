@@ -2749,7 +2749,7 @@ body.native-app .hint {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="34fc85 file-size-convention"></div>
+  <div class="home-screen" id="home-screen" data-version="ce2736 file-size-convention"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -10536,6 +10536,9 @@ body.native-app .hint {
     };
     return { correct, correctAnswer: display };
   }
+  function resolveGroupLabel(label) {
+    return typeof label === "function" ? label() : label;
+  }
   function getInputPlaceholder(def, currentQ, isSequential) {
     if (isSequential) {
       const seq = def.sequential;
@@ -11184,9 +11187,6 @@ body.native-app .hint {
   }
 
   // src/declarative/practice-views.tsx
-  function resolveGroupLabel(label) {
-    return typeof label === "function" ? label() : label;
-  }
   function singleLevelSuggestion(selector, allItems2) {
     const anySeen = allItems2.some((id) => selector.getStats(id) !== null);
     if (!anySeen) return { verb: "Start", levels: [] };
