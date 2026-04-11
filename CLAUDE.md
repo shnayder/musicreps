@@ -67,7 +67,11 @@ src/
   *_test.ts              # Tests (node:test)
   declarative/
     types.ts             # ModeDefinition, ButtonsDef, ScopeDef, StatsDef, MultiTapDef
-    generic-mode.tsx     # GenericMode: interprets ModeDefinition → full UI
+    answer-utils.ts      # Pure answer-checking and input utilities
+    generic-mode.tsx     # GenericMode: top-level orchestrator
+    generic-mode-hooks.ts  # Internal hooks + builder functions
+    quiz-areas.tsx       # Quiz area components (active quiz UI)
+    practice-views.tsx   # Idle/practice tab components
     use-sequential-input.ts  # Sequential (multi-note) collection hook
     use-multi-tap-input.ts   # Multi-tap (spatial set) collection hook
   modes/

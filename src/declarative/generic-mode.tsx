@@ -37,9 +37,6 @@ import {
   useSpeedCheckOverlay,
 } from './generic-mode-hooks.ts';
 
-// Re-export for external consumers (answer-checking_test.ts).
-export { checkCorrectness, toButtonValue } from './answer-utils.ts';
-
 // ---------------------------------------------------------------------------
 // ModeHeader — SkillHeader (idle) or minimal ModeTopBar (active/calibration)
 // ---------------------------------------------------------------------------

@@ -38,8 +38,7 @@ import {
   type MultiTapInputHandle,
   useMultiTapInput,
 } from './use-multi-tap-input.ts';
-import { checkGenericAnswer } from './answer-utils.ts';
-import { resolveGroupLabel } from './practice-views.tsx';
+import { checkGenericAnswer, resolveGroupLabel } from './answer-utils.ts';
 
 // ---------------------------------------------------------------------------
 // Constants

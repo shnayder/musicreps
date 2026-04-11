@@ -123,6 +123,11 @@ export function checkGenericAnswer<Q>(
   return { correct, correctAnswer: display };
 }
 
+/** Resolve a group label that may be a string or a function. */
+export function resolveGroupLabel(label: string | (() => string)): string {
+  return typeof label === 'function' ? label() : label;
+}
+
 export function getInputPlaceholder<Q>(
   def: ModeDefinition<Q>,
   currentQ: Q | null,

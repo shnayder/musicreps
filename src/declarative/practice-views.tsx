@@ -24,15 +24,11 @@ import { Text } from '../ui/text.tsx';
 import { RepeatMark } from '../ui/repeat-mark.tsx';
 
 import type { ModeController, ModeDefinition } from './types.ts';
+import { resolveGroupLabel } from './answer-utils.ts';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/** Resolve a group label that may be a string or a function. */
-export function resolveGroupLabel(label: string | (() => string)): string {
-  return typeof label === 'function' ? label() : label;
-}
 
 /** Compute a suggestion line for single-level (no groups) modes. */
 export function singleLevelSuggestion(
