@@ -946,14 +946,14 @@ function IdlePracticeView<Q>(
           />
         )
         : (
-          <div class='practice-config'>
-            <Text role='heading-section' class='practice-config-label'>
+          <Stack gap='group' class='practice-config'>
+            <Text role='heading-section'>
               Recommendation
             </Text>
             <SuggestionLines
               lines={[singleLevelSuggestion(learner.selector, def.allItems)]}
             />
-          </div>
+          </Stack>
         )}
       statsHeading={hasStats ? 'Speed by item' : undefined}
       statsContent={
@@ -1064,7 +1064,7 @@ function AboutTab(
           </Text>
         </Section>
       )}
-      <Text role='status' as='p' class='text-hint about-tab-tip'>
+      <Text role='status' as='p' class='text-hint'>
         Start practicing on the{' '}
         <RepeatMark size={16} class='about-tab-tip-icon' /> tab below.
       </Text>
