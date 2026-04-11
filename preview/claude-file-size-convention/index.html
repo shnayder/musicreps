@@ -2749,7 +2749,7 @@ body.native-app .hint {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="ce2736 file-size-convention"></div>
+  <div class="home-screen" id="home-screen" data-version="1c171b file-size-convention"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -10473,17 +10473,6 @@ body.native-app .hint {
   }
 
   // src/declarative/answer-utils.ts
-  function getHintType(buttons) {
-    switch (buttons.kind) {
-      case "note":
-      case "split-note":
-        return "note";
-      case "number":
-        return buttons.start === 0 ? "number-0-11" : "number-1-12";
-      default:
-        return null;
-    }
-  }
   function resolveAnswerSpec(def, q3) {
     const spec = def.answer;
     if ("kind" in spec && spec.kind === "bidirectional") {
@@ -10734,6 +10723,17 @@ body.native-app .hint {
   }
 
   // src/declarative/quiz-areas.tsx
+  function getHintType(buttons) {
+    switch (buttons.kind) {
+      case "note":
+      case "split-note":
+        return "note";
+      case "number":
+        return buttons.start === 0 ? "number-0-11" : "number-1-12";
+      default:
+        return null;
+    }
+  }
   function AnswerInput({ onSubmit, disabled, placeholder, onInvalid, feedbackCorrect }) {
     const inputRef = A2(null);
     const [shake, setShake] = d2(false);
