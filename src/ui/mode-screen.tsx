@@ -606,14 +606,16 @@ export function PracticeTab(
       id: 'progress',
       label: <TabIcon icon='progress' text='Progress' />,
       content: (
-        <Stack gap='region'>
+        <div>
           {hasProgress && (
-            <Section heading='Overall'>
-              <ProgressBarLabeled
-                label='Progress'
-                segments={progressSegments}
-              />
-            </Section>
+            <div class='progress-section'>
+              <Section heading='Overall'>
+                <ProgressBarLabeled
+                  label='Progress'
+                  segments={progressSegments}
+                />
+              </Section>
+            </div>
           )}
           {progressExtra && <div class='progress-section'>{progressExtra}</div>}
           <div class='progress-section'>
@@ -626,7 +628,7 @@ export function PracticeTab(
               <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
             </div>
           )}
-        </Stack>
+        </div>
       ),
     },
   ];
