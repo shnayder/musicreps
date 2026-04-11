@@ -3,7 +3,8 @@
 import { NOTES } from '../music-data.ts';
 import type { StatsSelector } from './stats.tsx';
 import { StatsGrid, StatsLegend, StatsTable } from './stats.tsx';
-import { GroupProgressBar } from './scope.tsx';
+import { GroupProgressBar, ProgressBarLabeled } from './scope.tsx';
+import { SpeedLevelLegend } from './speed-level-legend.tsx';
 import { PreviewGrid, Section } from './preview-shared.tsx';
 
 // ---------------------------------------------------------------------------
@@ -73,6 +74,19 @@ function ScopeSection(
               disabled
             />
           </div>
+        </Section>
+        <Section title='ProgressBarLabeled (tap to open modal)' tabId={tabId}>
+          <ProgressBarLabeled
+            label='Progress'
+            segments={[
+              { color: 'var(--heatmap-5)', weight: 1 },
+              { color: 'var(--heatmap-4)', weight: 0.6 },
+              { color: 'var(--heatmap-3)', weight: 0.2 },
+            ]}
+          />
+        </Section>
+        <Section title='SpeedLevelLegend' tabId={tabId}>
+          <SpeedLevelLegend />
         </Section>
       </PreviewGrid>
     </>

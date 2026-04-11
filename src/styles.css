@@ -2642,7 +2642,79 @@ button {
 }
 
 /* ==========================================================================
-   18. REDUCED MOTION
+   18. MODAL
+   ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: var(--pad-region);
+}
+.modal-surface {
+  background: var(--color-overlay-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--pad-component);
+  max-width: 400px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--gap-group);
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: var(--gap-related);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+}
+
+/* --- Speed level legend (progress bar modal) --- */
+.speed-legend-table {
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  width: 100%;
+  margin-top: var(--gap-group);
+}
+.speed-legend-table th,
+.speed-legend-table td {
+  border: 1px solid var(--color-border-light);
+  padding: 0.35rem var(--gap-group);
+  text-align: left;
+}
+.speed-legend-table th {
+  background: var(--color-surface);
+  font-weight: var(--font-semibold);
+}
+.speed-legend-table td:first-child {
+  width: 1.5rem;
+  text-align: center;
+  padding: 0.35rem var(--gap-related);
+}
+.speed-legend-table td:nth-child(2) {
+  font-weight: var(--font-semibold);
+  white-space: nowrap;
+}
+
+/* --- Tappable progress bar cursor --- */
+.progress-bar-tappable {
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   19. REDUCED MOTION
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

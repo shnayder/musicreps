@@ -1,6 +1,8 @@
 // Scope control components: progress bars for practice scope display.
 
+import { useState } from 'preact/hooks';
 import type { ProgressSegment } from '../stats-display.ts';
+import { SpeedLevelModal } from './speed-level-legend.tsx';
 import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
@@ -37,8 +39,7 @@ export function GroupProgressBar(
 
 // ---------------------------------------------------------------------------
 // ProgressBarLabeled — labeled progress bar with border, for skill header
-// and level progress cards. Distinct from the bare GroupProgressBar used
-// on home screen cards.
+// and level progress cards. Tapping opens a speed level legend modal.
 // ---------------------------------------------------------------------------
 
 export function ProgressBarLabeled(
@@ -49,15 +50,27 @@ export function ProgressBarLabeled(
     plain?: boolean;
   },
 ) {
+  const [legendOpen, setLegendOpen] = useState(false);
   const cls = plain ? 'progress-bar-plain' : 'progress-bar-labeled';
   return (
-    <div class={cls}>
-      {label && (
-        <Text role='label' as='div' class='progress-bar-label'>
-          {label}
-        </Text>
-      )}
-      <GroupProgressBar segments={segments} disabled={disabled} />
-    </div>
+    <>
+      <div
+        class={cls + ' progress-bar-tappable'}
+        onClick={() => setLegendOpen(true)}
+        role='button'
+        tabIndex={0}
+      >
+        {label && (
+          <Text role='label' as='div' class='progress-bar-label'>
+            {label}
+          </Text>
+        )}
+        <GroupProgressBar segments={segments} disabled={disabled} />
+      </div>
+      <SpeedLevelModal
+        open={legendOpen}
+        onClose={() => setLegendOpen(false)}
+      />
+    </>
   );
 }
