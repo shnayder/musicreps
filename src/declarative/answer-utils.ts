@@ -8,30 +8,12 @@ import {
   resolveNoteInput,
   spelledNoteMatchesSemitone,
 } from '../music-data.ts';
-import type { KeyboardHintType } from '../ui/quiz-ui.tsx';
 
 import type {
   AnswerSpec,
-  ButtonsDef,
   ComparisonStrategy,
   ModeDefinition,
 } from './types.ts';
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-export function getHintType(buttons: ButtonsDef): KeyboardHintType {
-  switch (buttons.kind) {
-    case 'note':
-    case 'split-note':
-      return 'note';
-    case 'number':
-      return buttons.start === 0 ? 'number-0-11' : 'number-1-12';
-    default:
-      return null;
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Answer specification helpers

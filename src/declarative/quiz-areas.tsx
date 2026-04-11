@@ -37,7 +37,11 @@ import {
   RoundCompleteActions,
   RoundCompleteInfo,
 } from '../ui/mode-screen.tsx';
-import { FeedbackDisplay, KeyboardHint } from '../ui/quiz-ui.tsx';
+import {
+  FeedbackDisplay,
+  KeyboardHint,
+  type KeyboardHintType,
+} from '../ui/quiz-ui.tsx';
 import { InteractiveFretboard } from '../ui/interactive-fretboard.tsx';
 import { Text } from '../ui/text.tsx';
 
@@ -49,7 +53,23 @@ import type {
   SequentialEntryResult,
 } from './types.ts';
 import type { MultiTapInputHandle } from './use-multi-tap-input.ts';
-import { getHintType, toButtonValue } from './answer-utils.ts';
+import { toButtonValue } from './answer-utils.ts';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function getHintType(buttons: ButtonsDef): KeyboardHintType {
+  switch (buttons.kind) {
+    case 'note':
+    case 'split-note':
+      return 'note';
+    case 'number':
+      return buttons.start === 0 ? 'number-0-11' : 'number-1-12';
+    default:
+      return null;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // AnswerInput — text field for keyboard answers
