@@ -4,7 +4,6 @@
 
 import type { ComponentChildren } from 'preact';
 import type { SuggestionLine } from '../types.ts';
-import type { ProgressSegment } from '../stats-display.ts';
 import { SkillIcon } from './icons.tsx';
 import { CloseButton } from './mode-screen.tsx';
 import { Pill } from './pill.tsx';
@@ -22,11 +21,10 @@ export { ProgressBarLabeled };
 // ---------------------------------------------------------------------------
 
 export function SkillHeader(
-  { modeId, title, totalReps, progressColors, onBack }: {
+  { modeId, title, totalReps, onBack }: {
     modeId?: string;
     title: string;
     totalReps?: number;
-    progressColors?: ProgressSegment[];
     onBack?: () => void;
   },
 ) {
@@ -45,11 +43,6 @@ export function SkillHeader(
           </Text>
         )}
       </div>
-      {progressColors && progressColors.length > 0 && (
-        <div class='skill-header-progress'>
-          <ProgressBarLabeled label='Progress' segments={progressColors} />
-        </div>
-      )}
     </div>
   );
 }

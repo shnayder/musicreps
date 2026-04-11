@@ -911,13 +911,23 @@ function singleLevelSuggestion(
 }
 
 function IdlePracticeView<Q>(
-  { def, engine, learner, ctrl, groupScopeResult, ps, onCalibrate }: {
+  {
+    def,
+    engine,
+    learner,
+    ctrl,
+    groupScopeResult,
+    ps,
+    progressSegments,
+    onCalibrate,
+  }: {
     def: ModeDefinition<Q>;
     engine: ReturnType<typeof useQuizEngine>;
     learner: ReturnType<typeof useLearnerModel>;
     ctrl: ModeController<Q>;
     groupScopeResult: ReturnType<typeof useGroupScope> | null;
     ps: ReturnType<typeof usePracticeSummary>;
+    progressSegments: ProgressSegment[];
     onCalibrate?: () => void;
   },
 ) {
@@ -931,6 +941,7 @@ function IdlePracticeView<Q>(
   return (
     <PracticeTab
       onStart={engine.start}
+      progressSegments={progressSegments}
       scopeValid={!groupScopeResult || groupScopeResult.enabledGroups.size > 0}
       validationMessage='Select at least one level'
       startLabel={customItemCount != null
@@ -1428,10 +1439,9 @@ function useLevelBars<Q>(
 
 /** Render SkillHeader (idle) or minimal ModeTopBar (active/calibration). */
 function ModeHeader<Q>(
-  { def, isIdle, progressColors, totalReps, navigateHome }: {
+  { def, isIdle, totalReps, navigateHome }: {
     def: ModeDefinition<Q>;
     isIdle: boolean;
-    progressColors: ProgressSegment[];
     totalReps: number;
     navigateHome: () => void;
   },
@@ -1442,7 +1452,6 @@ function ModeHeader<Q>(
         modeId={def.id}
         title={def.name}
         totalReps={totalReps}
-        progressColors={progressColors}
         onBack={navigateHome}
       />
     );
@@ -1496,7 +1505,6 @@ function GenericModeBody<Q>(
           <ModeHeader
             def={def}
             isIdle
-            progressColors={progressColors}
             totalReps={totalReps}
             navigateHome={navigateHome}
           />
@@ -1508,6 +1516,7 @@ function GenericModeBody<Q>(
           ctrl={ctrl}
           groupScopeResult={groupScopeResult}
           ps={ps}
+          progressSegments={progressColors}
           onCalibrate={sc.hasSpeedCheck
             ? () => sc.setSpeedCheck('active')
             : undefined}

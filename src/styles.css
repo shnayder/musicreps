@@ -1351,10 +1351,6 @@ body {
   color: var(--type-metric-effort-color);
   flex-shrink: 0;
 }
-.skill-header-progress {
-  margin-top: var(--gap-group);
-}
-
 /* --- Practice config: suggested/custom toggle --- */
 .practice-config {
   padding: 0;

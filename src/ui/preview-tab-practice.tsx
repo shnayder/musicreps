@@ -42,18 +42,6 @@ import {
 // Mock data constants
 // ---------------------------------------------------------------------------
 
-const MOCK_PROGRESS_SEGMENTS: import('../stats-display.ts').ProgressSegment[] =
-  [
-    { color: 'hsl(125, 48%, 33%)', weight: 1 },
-    { color: 'hsl(125, 48%, 33%)', weight: 0.8 },
-    { color: 'hsl(80, 35%, 40%)', weight: 0.5 },
-    { color: 'hsl(60, 40%, 46%)', weight: 0.3 },
-    { color: 'hsl(48, 50%, 52%)', weight: 0.1 },
-    { color: 'var(--heatmap-1)', weight: 0 },
-    { color: 'var(--heatmap-1)', weight: 0 },
-    { color: 'var(--heatmap-1)', weight: 0 },
-  ];
-
 const MOCK_SUGGESTION_LINES: SuggestionLine[] = [
   { verb: 'Review', levels: ['E string', 'A string'] },
   { verb: 'Start', levels: ['D string'] },
@@ -167,7 +155,6 @@ function Phase1Components(
             modeId='fretboard'
             title='Guitar Fretboard'
             totalReps={3473}
-            progressColors={MOCK_PROGRESS_SEGMENTS}
             onBack={() => {}}
           />
         </Section>
@@ -176,7 +163,6 @@ function Phase1Components(
             modeId='noteSemitones'
             title='Note ↔ Semitones'
             totalReps={0}
-            progressColors={[]}
             onBack={() => {}}
           />
         </Section>
@@ -305,7 +291,6 @@ function Phase2MultiLevel(
           <SkillHeader
             modeId='fretboard'
             title='Guitar Fretboard'
-            progressColors={MOCK_PROGRESS_SEGMENTS}
             onBack={() => {}}
           />
           <PracticeConfig
@@ -333,7 +318,6 @@ function Phase2MultiLevel(
           <SkillHeader
             modeId='fretboard'
             title='Guitar Fretboard'
-            progressColors={MOCK_PROGRESS_SEGMENTS}
             onBack={() => {}}
           />
           <PracticeConfig
@@ -374,7 +358,6 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
           <SkillHeader
             modeId='noteSemitones'
             title='Note ↔ Semitones'
-            progressColors={MOCK_PROGRESS_SEGMENTS.slice(0, 3)}
             onBack={() => {}}
           />
           <div
@@ -496,7 +479,6 @@ function ScreenLayoutIdleExamples(
             <SkillHeader
               modeId='fretboard'
               title='Guitar Fretboard'
-              progressColors={MOCK_PROGRESS_SEGMENTS}
             />
           </LayoutHeader>
           <LayoutMain>
@@ -526,7 +508,6 @@ function ScreenLayoutIdleExamples(
             <SkillHeader
               modeId='fretboard'
               title='Guitar Fretboard'
-              progressColors={MOCK_PROGRESS_SEGMENTS}
             />
           </LayoutHeader>
           <LayoutMain>
@@ -561,7 +542,6 @@ function ScreenLayoutIdleExamples(
             <SkillHeader
               modeId='noteSemitones'
               title='Note ↔ Semitones'
-              progressColors={MOCK_PROGRESS_SEGMENTS.slice(0, 3)}
             />
           </LayoutHeader>
           <LayoutMain>{null}</LayoutMain>
