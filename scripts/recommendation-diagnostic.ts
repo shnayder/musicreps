@@ -193,9 +193,7 @@ function analyzeScenario(
   );
   const started = recs.filter((r) => r.unseenCount < r.totalCount);
 
-  const startedItemIds = started.flatMap((r) =>
-    getItemIdsForGroup(r.groupId)
-  );
+  const startedItemIds = started.flatMap((r) => getItemIdsForGroup(r.groupId));
   const { level: levelSpeed } = selector.getLevelSpeed(startedItemIds);
   const { level: levelFreshness } = selector.getLevelFreshness(
     startedItemIds,

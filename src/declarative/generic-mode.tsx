@@ -65,7 +65,7 @@ import {
 } from '../ui/screen-layout.tsx';
 import {
   computeProgressColors,
-  computeReviewPill,
+  formatReviewDuration,
   progressBarColors,
 } from '../stats-display.ts';
 import {
@@ -84,7 +84,7 @@ import {
   SuggestionLines,
 } from '../ui/practice-config.tsx';
 import { StatsGrid, StatsLegend, StatsTable } from '../ui/stats.tsx';
-import { getSpeedLevel } from '../speed-levels.ts';
+import { SPEED_LEVELS } from '../speed-levels.ts';
 import {
   FeedbackDisplay,
   KeyboardHint,
@@ -847,11 +847,17 @@ function LevelProgressCards<Q>(
         const g = groupScope.groups.find((g) => g.id === id);
         const itemIds = groupScope.getItemIdsForGroup(id);
         const colors = progressBarColors(learner.selector, itemIds);
-        const pill = computeReviewPill(learner.selector, itemIds);
-        const { level: speedLevel, seen } = learner.selector.getLevelSpeed(
-          itemIds,
-        );
-        const sl = seen > 0 ? getSpeedLevel(speedLevel) : null;
+        // Read speed + review timing from recommendation result (single source).
+        const ls = groupScopeResult.recommendation.levelStatuses
+          ?.find((s) => s.groupId === id);
+        const sl = ls
+          ? SPEED_LEVELS.find((l) => l.key === ls.speedLabel) ?? null
+          : null;
+        const pill = ls?.reviewInHours != null
+          ? (ls.reviewStatus === 'soon'
+            ? 'Review soon'
+            : `Review in ${formatReviewDuration(ls.reviewInHours)}`)
+          : undefined;
         const skipReason = groupScopeResult.skippedGroups.get(id);
         const status = skipReason === 'mastered'
           ? 'known' as const
@@ -869,7 +875,7 @@ function LevelProgressCards<Q>(
             label={label}
             statusLabel={sl?.label}
             statusColor={sl?.colorToken}
-            pill={pill ?? undefined}
+            pill={pill}
             colors={colors}
             status={status}
             onToggleKnown={() =>

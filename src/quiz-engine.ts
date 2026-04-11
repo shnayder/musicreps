@@ -343,8 +343,14 @@ export type CalibrationThreshold = {
   colorToken: string;
 };
 
-/** Baseline multipliers for each speed level (Automatic → Starting). */
-const BASELINE_MULTIPLIERS = [1.5, 3.0, 4.5, 6.0, null];
+/** Baseline multipliers for each speed level (Automatic → Starting).
+ *  Must match SPEED_LEVELS length — verified at module load. */
+const BASELINE_MULTIPLIERS: (number | null)[] = [1.5, 3.0, 4.5, 6.0, null];
+if (BASELINE_MULTIPLIERS.length !== SPEED_LEVELS.length) {
+  throw new Error(
+    'BASELINE_MULTIPLIERS and SPEED_LEVELS must have same length',
+  );
+}
 
 export function getCalibrationThresholds(
   baseline: number,

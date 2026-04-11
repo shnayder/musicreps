@@ -34,7 +34,11 @@ import {
   NOTE_SEMI_SOLID_STALE,
 } from '../src/fixtures/recommendation-states.ts';
 
-const noteSemiStates = [NOTE_SEMI_LEARNING, NOTE_SEMI_SOLID_STALE, NOTE_SEMI_AUTOMATIC];
+const noteSemiStates = [
+  NOTE_SEMI_LEARNING,
+  NOTE_SEMI_SOLID_STALE,
+  NOTE_SEMI_AUTOMATIC,
+];
 import { GUITAR } from '../src/music-data.ts';
 import { MODE_NAMES } from '../src/mode-catalog.ts';
 import { getGroups, getItemIdsForGroup } from '../src/modes/fretboard/logic.ts';

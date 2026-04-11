@@ -157,15 +157,13 @@ describe('computeSkillRecommendation', () => {
     assert.equal(result.detail, 'Start Group 1');
   });
 
-  it('returns practice when levels are learned but not automatic', () => {
+  it('solid + fresh level gets no active rec (practiced enough)', () => {
     const entry = makeEntry('test', 1, 10);
     const storage = createMemoryStorage();
-    // Seed items with speed that produces P10 in the "learned" range (0.7-0.9).
-    // Need most items fast but a few slightly below automatic.
+    // Seed items with speed in solid range + good stability → scheduled review.
     const ids = entry.groups[0].getItemIds();
     const now = Date.now();
     for (let i = 0; i < ids.length; i++) {
-      // 8 items at ~800ms (automatic), 2 at ~1800ms (learned-ish)
       const ewma = i < 8 ? 800 : 1800;
       storage.saveStats(ids[i], {
         recentTimes: [ewma],
@@ -183,9 +181,8 @@ describe('computeSkillRecommendation', () => {
       NO_SKIPS,
       DEFAULT_CONFIG,
     );
-    // With P10 in learned range (0.7 ≤ speed < 0.9), automate maps to practice
-    assert.equal(result.type, 'practice');
-    assert.equal(result.cueLabel, 'Practice');
+    // Solid + fresh (scheduled review) → no active rec → automatic
+    assert.equal(result.type, 'automatic');
   });
 
   it('returns automatic when all groups mastered', () => {

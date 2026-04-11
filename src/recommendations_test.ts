@@ -88,20 +88,23 @@ function mockSelector(
       const seen = values.filter((v) => v > 0).length;
       return { level: values[index], seen };
     },
-    getLevelFreshness(
-      itemIds: string[],
-      percentile: number = 0.1,
-    ): { level: number; seen: number } {
-      // Mock: all seen items have high freshness (1.0)
-      const values = itemIds.map((id) => itemSpeed(id) > 0 ? 1.0 : 0);
-      values.sort((a, b) => a - b);
-      const index = Math.max(0, Math.ceil(values.length * percentile) - 1);
-      const seen = values.filter((v) => v > 0).length;
-      return { level: values[index], seen };
-    },
     getSpeedScore: (id: string) => {
       const s = itemSpeed(id);
       return s > 0 ? s : null;
+    },
+    getStats: (id: string) => {
+      const s = itemSpeed(id);
+      if (s === 0) return null;
+      // Default: high stability, recently practiced → fresh (not stale).
+      const now = Date.now();
+      return {
+        recentTimes: [1000],
+        ewma: 1000,
+        sampleCount: 10,
+        lastSeen: now - 3600_000,
+        stability: 168, // ~1 week half-life
+        lastCorrectAt: now - 3600_000,
+      };
     },
     getFreshness: () => 1.0,
     ...overrides,
@@ -185,79 +188,97 @@ describe('freshStartResult', () => {
 // ---------------------------------------------------------------------------
 
 describe('classifyLevelStatus', () => {
-  it('classifies automatic level', () => {
-    const data = {
-      0: {
-        workingCount: 0,
-        unseenCount: 0,
-        automaticCount: 10,
-        totalCount: 10,
-      },
+  /** Build a selector where all items have the given speed and stability. */
+  function selectorWithStats(
+    speed: number,
+    opts?: { stability?: number; hoursAgo?: number },
+  ): RecommendationSelector {
+    const stability = opts?.stability ?? 168;
+    const hoursAgo = opts?.hoursAgo ?? 1;
+    const now = Date.now();
+    return {
+      ...mockSelector({}),
+      getLevelSpeed: () => ({ level: speed, seen: speed > 0 ? 1 : 0 }),
+      getSpeedScore: () => speed > 0 ? speed : null,
+      getStats: () =>
+        speed > 0
+          ? {
+            recentTimes: [1000],
+            ewma: 1000,
+            sampleCount: 10,
+            lastSeen: now - hoursAgo * 3600_000,
+            stability,
+            lastCorrectAt: now - hoursAgo * 3600_000,
+          }
+          : null,
+      getFreshness: () => speed > 0 ? 1.0 : null,
     };
-    const sel = mockSelector(data);
-    const status = classifyLevelStatus(sel, '0', makeGetItemIds(data));
+  }
+
+  it('classifies automatic level', () => {
+    const status = classifyLevelStatus(
+      selectorWithStats(0.95),
+      '0',
+      () => ['a'],
+    );
     assert.equal(status.speedLabel, 'automatic');
-    assert.ok(!status.needsReview);
+    assert.notEqual(status.reviewStatus, 'soon');
   });
 
-  it('classifies learned level (0.7 ≤ speed < 0.9)', () => {
-    // 8 automatic + 2 working in 10 items: P10 = sorted[0] = 0.3 (working)
-    // Actually for P10 with 10 items: ceil(10*0.1)-1 = 0, sorted[0]
-    // With 8 auto (0.95) + 2 working (0.3): sorted = [0.3, 0.3, 0.95, ...]
-    // P10 index = max(0, ceil(10*0.1)-1) = 0 → 0.3. That's "learning".
-    // For "learned" we need P10 ≥ 0.7. Need ≥90% automatic.
-    // 9 auto + 1 working: sorted = [0.3, 0.95, 0.95, ...], P10 index = 0 → 0.3.
-    // Still learning. The mock gives 0.95 for auto and 0.3 for working.
-    // To get P10 ≥ 0.7 with this mock, we need ALL items automatic.
-    // Let's use a custom selector.
-    const sel: RecommendationSelector = {
-      ...mockSelector({}),
-      getLevelSpeed: () => ({ level: 0.75, seen: 10 }),
-      getLevelFreshness: () => ({ level: 0.8, seen: 10 }),
-    };
-    const status = classifyLevelStatus(sel, '0', () => ['a']);
+  it('classifies solid level (0.7 ≤ speed < 0.9)', () => {
+    const status = classifyLevelStatus(
+      selectorWithStats(0.75),
+      '0',
+      () => ['a'],
+    );
     assert.equal(status.speedLabel, 'solid');
-    assert.ok(!status.needsReview);
+    assert.notEqual(status.reviewStatus, 'soon');
   });
 
   it('classifies learning level', () => {
-    const sel: RecommendationSelector = {
-      ...mockSelector({}),
-      getLevelSpeed: () => ({ level: 0.5, seen: 10 }),
-      getLevelFreshness: () => ({ level: 0.8, seen: 10 }),
-    };
-    const status = classifyLevelStatus(sel, '0', () => ['a']);
+    const status = classifyLevelStatus(
+      selectorWithStats(0.5),
+      '0',
+      () => ['a'],
+    );
     assert.equal(status.speedLabel, 'learning');
   });
 
   it('classifies hesitant level', () => {
-    const sel: RecommendationSelector = {
-      ...mockSelector({}),
-      getLevelSpeed: () => ({ level: 0.1, seen: 5 }),
-      getLevelFreshness: () => ({ level: 0.8, seen: 5 }),
-    };
-    const status = classifyLevelStatus(sel, '0', () => ['a']);
+    const status = classifyLevelStatus(
+      selectorWithStats(0.1),
+      '0',
+      () => ['a'],
+    );
     assert.equal(status.speedLabel, 'hesitant');
   });
 
   it('classifies starting level', () => {
-    const sel: RecommendationSelector = {
-      ...mockSelector({}),
-      getLevelSpeed: () => ({ level: 0, seen: 0 }),
-      getLevelFreshness: () => ({ level: 0, seen: 0 }),
-    };
-    const status = classifyLevelStatus(sel, '0', () => ['a']);
+    const status = classifyLevelStatus(
+      selectorWithStats(0),
+      '0',
+      () => ['a'],
+    );
     assert.equal(status.speedLabel, 'starting');
   });
 
-  it('detects needs review (low freshness)', () => {
-    const sel: RecommendationSelector = {
-      ...mockSelector({}),
-      getLevelSpeed: () => ({ level: 0.8, seen: 10 }),
-      getLevelFreshness: () => ({ level: 0.3, seen: 10 }),
-    };
+  it('detects review soon when stability is low and time has passed', () => {
+    // Low stability + practiced long ago → freshness decayed → review soon.
+    const sel = selectorWithStats(0.8, { stability: 4, hoursAgo: 48 });
+    // Override getFreshness to return decayed value.
+    sel.getFreshness = () => 0.001; // very decayed
     const status = classifyLevelStatus(sel, '0', () => ['a']);
-    assert.ok(status.needsReview);
+    assert.equal(status.reviewStatus, 'soon');
+  });
+
+  it('returns scheduled review when fresh with stability data', () => {
+    const status = classifyLevelStatus(
+      selectorWithStats(0.8, { stability: 168, hoursAgo: 1 }),
+      '0',
+      () => ['a'],
+    );
+    assert.equal(status.reviewStatus, 'scheduled');
+    assert.ok(status.reviewInHours! > 24);
   });
 });
 
@@ -269,11 +290,11 @@ describe('computeLevelRecs', () => {
   function status(
     groupId: string,
     speedLabel: LevelStatus['speedLabel'],
-    needsReview: boolean = false,
+    reviewSoon: boolean = false,
   ): LevelStatus {
-    const speedMap = {
+    const speedMap: Record<string, number> = {
       automatic: 0.95,
-      learned: 0.75,
+      solid: 0.75,
       learning: 0.5,
       hesitant: 0.1,
       starting: 0,
@@ -281,9 +302,9 @@ describe('computeLevelRecs', () => {
     return {
       groupId,
       speed: speedMap[speedLabel],
-      freshness: needsReview ? 0.3 : 0.8,
       speedLabel,
-      needsReview,
+      reviewStatus: reviewSoon ? 'soon' : 'scheduled',
+      reviewInHours: reviewSoon ? 0 : 72,
     };
   }
 
@@ -304,8 +325,21 @@ describe('computeLevelRecs', () => {
     assert.equal(recs[0].type, 'practice');
   });
 
-  it('produces automate recs for learned fresh levels', () => {
+  it('solid level with scheduled review gets no rec (practiced enough)', () => {
     const recs = computeLevelRecs([status('0', 'solid')]);
+    assert.equal(recs.length, 0);
+  });
+
+  it('solid level with no stability data gets automate rec', () => {
+    const s: LevelStatus = {
+      groupId: '0',
+      speed: 0.75,
+      speedLabel: 'solid',
+      reviewStatus: null,
+      reviewInHours: null,
+    };
+    const recs = computeLevelRecs([s]);
+    assert.equal(recs.length, 1);
     assert.equal(recs[0].type, 'automate');
   });
 
@@ -326,11 +360,18 @@ describe('computeLevelRecs', () => {
     assert.equal(recs[0].type, 'review');
   });
 
-  it('review comes before practice and automate', () => {
+  it('review comes before practice', () => {
+    const solidNoData: LevelStatus = {
+      groupId: '2',
+      speed: 0.75,
+      speedLabel: 'solid',
+      reviewStatus: null,
+      reviewInHours: null,
+    };
     const recs = computeLevelRecs([
       status('0', 'solid', true), // review (Solid + stale)
       status('1', 'learning'), // practice
-      status('2', 'solid'), // automate (Solid + fresh)
+      solidNoData, // automate (Solid, no stability data)
     ]);
     assert.equal(recs[0].type, 'review');
     assert.equal(recs[1].type, 'practice');
@@ -345,18 +386,18 @@ describe('computeLevelRecs', () => {
 describe('checkExpansionGate', () => {
   function status(
     speed: number,
-    needsReview: boolean = false,
+    reviewSoon: boolean = false,
   ): LevelStatus {
     return {
       groupId: '0',
       speed,
-      freshness: needsReview ? 0.3 : 0.8,
       speedLabel: speed >= 0.9
         ? 'automatic'
         : speed >= 0.7
         ? 'solid'
         : 'learning',
-      needsReview,
+      reviewStatus: reviewSoon ? 'soon' : 'scheduled',
+      reviewInHours: reviewSoon ? 0 : 72,
     };
   }
 
@@ -390,9 +431,9 @@ describe('shouldThrottleExpansion', () => {
     return {
       groupId: '0',
       speed: 0.75,
-      freshness: 0.8,
       speedLabel: label,
-      needsReview: false,
+      reviewStatus: 'scheduled',
+      reviewInHours: 72,
     };
   }
 
@@ -653,7 +694,15 @@ describe('computeRecommendations', () => {
       },
     };
     const sel = mockSelector(data, {
-      getLevelFreshness: () => ({ level: 0.3, seen: 10 }), // stale → review
+      getStats: () => ({
+        recentTimes: [1000],
+        ewma: 1000,
+        sampleCount: 10,
+        lastSeen: Date.now() - 30 * 24 * 3600_000,
+        stability: 4,
+        lastCorrectAt: Date.now() - 30 * 24 * 3600_000,
+      }),
+      getFreshness: () => 0.01, // stale → review
     });
     const result = computeRecommendations(
       sel,
@@ -856,7 +905,15 @@ describe('computeRecommendations', () => {
       },
     };
     const sel = mockSelector(data, {
-      getLevelFreshness: () => ({ level: 0.3, seen: 10 }),
+      getStats: () => ({
+        recentTimes: [1000],
+        ewma: 1000,
+        sampleCount: 10,
+        lastSeen: Date.now() - 30 * 24 * 3600_000,
+        stability: 4,
+        lastCorrectAt: Date.now() - 30 * 24 * 3600_000,
+      }),
+      getFreshness: () => 0.01,
     });
     const result = computeRecommendations(
       sel,
@@ -878,7 +935,15 @@ describe('computeRecommendations', () => {
       },
     };
     const sel = mockSelector(data, {
-      getLevelFreshness: () => ({ level: 0.3, seen: 10 }),
+      getStats: () => ({
+        recentTimes: [1000],
+        ewma: 1000,
+        sampleCount: 10,
+        lastSeen: Date.now() - 30 * 24 * 3600_000,
+        stability: 4,
+        lastCorrectAt: Date.now() - 30 * 24 * 3600_000,
+      }),
+      getFreshness: () => 0.01,
     });
     const result = computeRecommendations(
       sel,
@@ -910,7 +975,7 @@ describe('computeRecommendations', () => {
 
   // --- Automate ---
 
-  it('produces automate rec for learned (not automatic) levels', () => {
+  it('solid + fresh level gets no rec (practiced enough)', () => {
     const data = {
       '0': {
         workingCount: 0,
@@ -919,9 +984,37 @@ describe('computeRecommendations', () => {
         totalCount: 10,
       },
     };
-    // Override to make P10 speed = 0.75 (learned range)
     const sel = mockSelector(data, {
       getLevelSpeed: () => ({ level: 0.75, seen: 10 }),
+    });
+    const result = computeRecommendations(
+      sel,
+      ['0'],
+      makeGetItemIds(data),
+      config,
+    );
+    // Solid + scheduled review → no rec (practiced enough).
+    assert.equal(result.levelRecs.length, 0);
+    // levelStatuses shows scheduled review — pill and rec agree.
+    const ls = result.levelStatuses?.find((s) => s.groupId === '0');
+    assert.ok(ls);
+    assert.equal(ls!.reviewStatus, 'scheduled');
+    assert.ok(ls!.reviewInHours! > 0);
+  });
+
+  it('solid level with no stability data gets automate rec', () => {
+    const data = {
+      '0': {
+        workingCount: 0,
+        unseenCount: 0,
+        automaticCount: 10,
+        totalCount: 10,
+      },
+    };
+    const sel = mockSelector(data, {
+      getLevelSpeed: () => ({ level: 0.75, seen: 10 }),
+      getStats: () => null,
+      getFreshness: () => null,
     });
     const result = computeRecommendations(
       sel,
@@ -989,35 +1082,36 @@ describe('computeRecommendations', () => {
 // Timestamp consistency — freshness calls receive consistent nowMs
 // ---------------------------------------------------------------------------
 
-describe('single-timestamp consistency', () => {
-  it('passes nowMs to getLevelFreshness', () => {
-    const freshnessTimestamps: number[] = [];
+describe('review timing consistency', () => {
+  it('review timing uses per-item freshness and stability', () => {
     const data = {
       '0': {
-        workingCount: 5,
+        workingCount: 0,
         unseenCount: 0,
-        automaticCount: 5,
+        automaticCount: 10,
         totalCount: 10,
       },
     };
-    const sel: RecommendationSelector = {
-      ...mockSelector(data),
-      getLevelFreshness: (
-        _ids: string[],
-        _p?: number,
-        nowMs?: number,
-      ) => {
-        if (nowMs !== undefined) freshnessTimestamps.push(nowMs);
-        return { level: 0.8, seen: 10 };
-      },
-    };
-    computeRecommendations(sel, ['0'], makeGetItemIds(data), config);
-    // All freshness calls should have received the same timestamp.
-    assert.ok(freshnessTimestamps.length > 0);
-    const first = freshnessTimestamps[0];
-    for (const ts of freshnessTimestamps) {
-      assert.equal(ts, first);
-    }
+    // Override to make items stale.
+    const sel = mockSelector(data, {
+      getStats: () => ({
+        recentTimes: [1000],
+        ewma: 1000,
+        sampleCount: 10,
+        lastSeen: Date.now() - 30 * 24 * 3600_000,
+        stability: 4,
+        lastCorrectAt: Date.now() - 30 * 24 * 3600_000,
+      }),
+      getFreshness: () => 0.01,
+    });
+    const result = computeRecommendations(
+      sel,
+      ['0'],
+      makeGetItemIds(data),
+      config,
+    );
+    // Should produce a review rec since items are automatic + stale.
+    assert.ok(result.levelRecs.some((r) => r.type === 'review'));
   });
 });
 

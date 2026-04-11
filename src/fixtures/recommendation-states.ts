@@ -8,18 +8,7 @@ import {
 } from './heatmap-scenarios.ts';
 import { getGroups, getItemIdsForGroup } from '../modes/fretboard/logic.ts';
 import { GUITAR } from '../music-data.ts';
-import {
-  ALL_ITEMS as NOTE_SEMI_ITEMS,
-} from '../modes/note-semitones/logic.ts';
-import {
-  ALL_GROUP_IDS as KEY_SIG_GROUP_IDS,
-  getItemIdsForGroup as keySigGetGroup,
-} from '../modes/key-signatures/logic.ts';
-import {
-  ALL_GROUP_IDS as SEMI_MATH_GROUP_IDS,
-  getItemIdsForGroup as semiMathGetGroup,
-} from '../modes/semitone-math/logic.ts';
-import { generateLocalStorageData } from './recommendation-scenarios.ts';
+import { ALL_ITEMS as NOTE_SEMI_ITEMS } from '../modes/note-semitones/logic.ts';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -149,11 +138,11 @@ export const FB_NEEDS_REVIEW = fbState(
 );
 
 /** Almost all groups automatic, last one mixed.
- *  Gets both 'practice' (from mixed items) and 'automate' (from nearly-done
- *  levels) which both map to verb 'Practice'. */
+ *  Automatic groups with scheduled review get no rec.
+ *  Only the last (mixed) group gets Practice. */
 export const FB_ALMOST_AUTOMATIC = fbState(
   'fb-almost-automatic',
-  ['Practice', 'Practice'],
+  ['Practice'],
   [
     ...fbItemIds.slice(0, -1).map((ids) => ({
       itemIds: ids,
@@ -202,56 +191,6 @@ export const NOTE_SEMI_AUTOMATIC: RecommendationState = {
   namespace: 'noteSemitones',
   kind: 'single-level',
   localStorageData: seedAllAutomatic('noteSemitones', NOTE_SEMI_ITEMS),
-};
-
-// ---------------------------------------------------------------------------
-// Home screen states
-// ---------------------------------------------------------------------------
-
-/** Mixed recs across starred skills: fretboard stale, semitoneMath working,
- *  keySignatures first group mastered. */
-export const HOME_RECS_MIXED: RecommendationState = {
-  name: 'home-recs-mixed',
-  expectedVerbs: ['Review', 'Practice', 'Start'],
-  namespace: 'home',
-  kind: 'multi-group',
-  localStorageData: {
-    starredSkills: JSON.stringify([
-      'fretboard',
-      'semitoneMath',
-      'keySignatures',
-      'intervalMath',
-    ]),
-    // fretboard: groups 0-2 mastered but stale → "Review"
-    ...perGroupScenario('fretboard', [
-      { itemIds: fbItemIds[0], state: 'stale' },
-      { itemIds: fbItemIds[1], state: 'stale' },
-      { itemIds: fbItemIds[2], state: 'stale' },
-      ...fbItemIds.slice(3).map(unseen),
-    ]),
-    // semitoneMath: first group slow → "Practice"
-    ...perGroupScenario('semitoneMath', [
-      {
-        itemIds: semiMathGetGroup(SEMI_MATH_GROUP_IDS[0]),
-        state: 'working',
-        seenFraction: 0.7,
-      },
-    ]),
-    // keySignatures: first group mastered → "Start" next
-    ...generateLocalStorageData(
-      'keySignatures',
-      {
-        [KEY_SIG_GROUP_IDS[0]]: {
-          automaticCount: 14,
-          workingCount: 0,
-          unseenCount: 0,
-          totalCount: 14,
-        },
-      },
-      Date.now(),
-      keySigGetGroup,
-    ),
-  },
 };
 
 // ---------------------------------------------------------------------------

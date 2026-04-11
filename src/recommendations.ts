@@ -9,7 +9,7 @@
 //   3. For each started level, compute speed/freshness status (P10).
 //   4. Build per-level recommendations in priority order:
 //      review (stale) → practice (slow) → automate (learned, not automatic).
-//   5. Check expansion gate: all started levels ≥ Learned (P10 speed ≥ 0.7)
+//   5. Check expansion gate: all started levels ≥ Solid (P10 speed ≥ 0.7)
 //      and none need review (P10 freshness ≥ 0.5). If open and not throttled,
 //      insert an expand rec after review + practice, before automate.
 //   6. Build recommended/enabled sets from recs, respecting maxWorkItems.
@@ -19,10 +19,62 @@
 
 import type {
   GroupRecommendation,
+  ItemStats,
   LevelRecommendation,
   RecommendationResult,
 } from './types.ts';
 import { getSpeedLevel, type SpeedLevel } from './speed-levels.ts';
+// ---------------------------------------------------------------------------
+// Review timing (pure math, shared with stats-display.ts)
+// ---------------------------------------------------------------------------
+
+const FRESHNESS_THRESHOLD = 0.5;
+
+/** Review timing result. */
+export type ReviewTiming = {
+  status: 'soon' | 'scheduled';
+  hours: number;
+};
+
+/**
+ * Pure review timing from avg stability and avg freshness.
+ * Single source of truth for whether a level needs review.
+ */
+export function computeReviewTiming(
+  avgStability: number,
+  avgFreshness: number,
+): ReviewTiming {
+  if (avgFreshness < FRESHNESS_THRESHOLD) return { status: 'soon', hours: 0 };
+  const hoursRemaining = avgStability * (1 + Math.log2(avgFreshness));
+  if (hoursRemaining <= 24) return { status: 'soon', hours: hoursRemaining };
+  return { status: 'scheduled', hours: hoursRemaining };
+}
+
+/** Compute avg stability and avg freshness across items. Null if no data. */
+function computeAvgStabilityFreshness(
+  selector: RecommendationSelector,
+  itemIds: string[],
+): { avgStability: number; avgFreshness: number } | null {
+  let stabilitySum = 0, stabilityCount = 0;
+  let freshnessSum = 0, freshnessCount = 0;
+  for (const id of itemIds) {
+    const stats = selector.getStats(id);
+    if (stats?.stability != null) {
+      stabilitySum += stats.stability;
+      stabilityCount++;
+    }
+    const fr = selector.getFreshness(id);
+    if (fr !== null) {
+      freshnessSum += fr;
+      freshnessCount++;
+    }
+  }
+  if (stabilityCount === 0 || freshnessCount === 0) return null;
+  return {
+    avgStability: stabilitySum / stabilityCount,
+    avgFreshness: freshnessSum / freshnessCount,
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -44,12 +96,8 @@ export type RecommendationSelector = {
     itemIds: string[],
     percentile?: number,
   ): { level: number; seen: number };
-  getLevelFreshness(
-    itemIds: string[],
-    percentile?: number,
-    nowMs?: number,
-  ): { level: number; seen: number };
   getSpeedScore(id: string): number | null;
+  getStats(id: string): ItemStats | null;
   getFreshness(id: string, nowMs?: number): number | null;
 };
 
@@ -112,36 +160,46 @@ export function freshStartResult(
 // Step 3: classifyLevelStatus
 // ---------------------------------------------------------------------------
 
-/** Per-level status computed from P10 speed and freshness. */
+/** Per-level status computed from P10 speed and review timing. */
 export type LevelStatus = {
   groupId: string;
   speed: number;
-  freshness: number;
   speedLabel: SpeedLevel['key'];
-  needsReview: boolean;
+  /** Review timing: 'soon' (stale), 'scheduled' (fresh), or null (no data). */
+  reviewStatus: ReviewTiming['status'] | null;
+  /** Hours until review needed, or null. UI formats into pill text. */
+  reviewInHours: number | null;
 };
 
-/** Classify a single level's speed and freshness status. */
+/** Classify a single level's speed and review timing status. */
 export function classifyLevelStatus(
   selector: RecommendationSelector,
   groupId: string,
   getItemIds: (id: string) => string[],
-  nowMs?: number,
 ): LevelStatus {
   const itemIds = getItemIds(groupId);
   const { level: speed } = selector.getLevelSpeed(itemIds);
-  const { level: freshness } = selector.getLevelFreshness(
-    itemIds,
-    undefined,
-    nowMs,
-  );
+  const speedLabel = getSpeedLevel(speed).key;
+
+  // Review timing only applies to Solid+ levels. Below-Solid levels just
+  // need practice — showing a review pill would be confusing.
+  let reviewStatus: ReviewTiming['status'] | null = null;
+  let reviewInHours: number | null = null;
+  if (speedLabel === 'solid' || speedLabel === 'automatic') {
+    const avg = computeAvgStabilityFreshness(selector, itemIds);
+    if (avg) {
+      const timing = computeReviewTiming(avg.avgStability, avg.avgFreshness);
+      reviewStatus = timing.status;
+      reviewInHours = timing.hours;
+    }
+  }
 
   return {
     groupId,
     speed,
-    freshness,
-    speedLabel: getSpeedLevel(speed).key,
-    needsReview: freshness < 0.5,
+    speedLabel,
+    reviewStatus,
+    reviewInHours,
   };
 }
 
@@ -158,20 +216,18 @@ export function computeLevelRecs(
 ): LevelRecommendation[] {
   const recs: LevelRecommendation[] = [];
 
-  // Priority 1: review — stale levels that were Solid+ (speed >= 0.7).
-  // Stale levels that are still slow get 'practice' instead — you're not
-  // reviewing something you once knew, just need more practice.
+  // Priority 1: review — Solid+ levels that need review soon.
   for (const s of statuses) {
     if (
-      s.needsReview &&
+      s.reviewStatus === 'soon' &&
       (s.speedLabel === 'solid' || s.speedLabel === 'automatic')
     ) {
       recs.push({ groupId: s.groupId, type: 'review' });
     }
   }
 
-  // Priority 2: practice — any level not yet Solid (Starting/Hesitant/Learning),
-  // regardless of freshness.
+  // Priority 2: practice — any level not yet Solid.
+  // Slow levels always need practice regardless of freshness.
   for (const s of statuses) {
     if (
       s.speedLabel === 'starting' || s.speedLabel === 'hesitant' ||
@@ -181,10 +237,11 @@ export function computeLevelRecs(
     }
   }
 
-  // Priority 3: automate — any level Learned (not yet Automatic), fresh.
-  // (Priority for expand is handled by the expansion gate in computeRecommendations)
+  // Priority 3: automate — Solid levels with no stability data yet.
+  // Solid + 'scheduled' = practiced enough, no rec needed.
+  // Solid + 'soon' = gets review (above), no automate.
   for (const s of statuses) {
-    if (s.speedLabel === 'solid' && !s.needsReview) {
+    if (s.speedLabel === 'solid' && s.reviewStatus === null) {
       recs.push({ groupId: s.groupId, type: 'automate' });
     }
   }
@@ -198,11 +255,12 @@ export function computeLevelRecs(
 
 /**
  * Check whether the expansion gate is open.
- * All started levels must be ≥ Learned (P10 speed ≥ 0.7) and none need review.
+ * All started levels must be ≥ Solid (P10 speed ≥ 0.7) and none need
+ * review soon.
  */
 export function checkExpansionGate(statuses: LevelStatus[]): boolean {
   if (statuses.length === 0) return false;
-  return statuses.every((s) => s.speed >= 0.7 && !s.needsReview);
+  return statuses.every((s) => s.speed >= 0.7 && s.reviewStatus !== 'soon');
 }
 
 // ---------------------------------------------------------------------------
@@ -211,11 +269,10 @@ export function checkExpansionGate(statuses: LevelStatus[]): boolean {
 
 /**
  * Check if expansion should be deprioritized (placed after automate).
- * When ≥3 levels are Learned (not Automatic), automating them takes priority.
+ * When ≥3 levels are Solid (not Automatic), automating them takes priority.
  */
 export function shouldThrottleExpansion(statuses: LevelStatus[]): boolean {
-  const learnedCount =
-    statuses.filter((s) => s.speedLabel === 'solid').length;
+  const learnedCount = statuses.filter((s) => s.speedLabel === 'solid').length;
   return learnedCount >= 3;
 }
 
@@ -235,8 +292,6 @@ export function computeRecommendations(
   config: { maxWorkItems?: number },
   options?: { sortUnstarted?: GroupSortFn },
 ): RecommendationResult {
-  // Single timestamp for consistent freshness across all calls.
-  const nowMs = Date.now();
   const sortFn = options?.sortUnstarted;
 
   const recs = selector.getGroupRecommendations(allGroupIds, getItemIds);
@@ -247,7 +302,7 @@ export function computeRecommendations(
 
   // Classify each started level.
   const statuses = started.map((r) =>
-    classifyLevelStatus(selector, r.groupId, getItemIds, nowMs)
+    classifyLevelStatus(selector, r.groupId, getItemIds)
   );
 
   // Build per-level recs (review → practice → automate).
@@ -323,5 +378,6 @@ export function computeRecommendations(
     expandIndex,
     expandNewCount,
     levelRecs: filteredRecs,
+    levelStatuses: statuses,
   };
 }

@@ -7,17 +7,12 @@ import {
   ALL_STATES,
   type RecommendationState,
 } from './recommendation-states.ts';
-import {
-  createAdaptiveSelector,
-  createMemoryStorage,
-} from '../adaptive.ts';
+import { createAdaptiveSelector, createMemoryStorage } from '../adaptive.ts';
 import { computeRecommendations } from '../recommendations.ts';
 import { buildRecommendationLines } from '../mode-ui-state.ts';
 import { getGroups, getItemIdsForGroup } from '../modes/fretboard/logic.ts';
 import { GUITAR } from '../music-data.ts';
-import {
-  ALL_ITEMS as NOTE_SEMI_ITEMS,
-} from '../modes/note-semitones/logic.ts';
+import { ALL_ITEMS as NOTE_SEMI_ITEMS } from '../modes/note-semitones/logic.ts';
 
 // ---------------------------------------------------------------------------
 // Helpers
