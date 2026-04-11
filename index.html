@@ -700,7 +700,24 @@ body {
 .section-block {
   display: flex;
   flex-direction: column;
+}
+.section-gap-micro {
+  gap: var(--gap-micro);
+}
+.section-gap-related {
   gap: var(--gap-related);
+}
+.section-gap-group {
+  gap: var(--gap-group);
+}
+.section-gap-component {
+  gap: var(--pad-component);
+}
+.section-gap-region {
+  gap: var(--pad-region);
+}
+.section-gap-section {
+  gap: var(--gap-section);
 }
 
 /* ==========================================================================
@@ -1080,11 +1097,7 @@ body {
   padding: var(--gap-group) var(--size-content-inset);
   background: var(--color-chrome);
 }
-.mode-top-bar-row {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
-}
+/* mode-top-bar-row: replaced by Bar gap='group' */
 .mode-top-bar .skill-icon {
   flex-shrink: 0;
   color: var(--color-text-muted);
@@ -1263,18 +1276,9 @@ body {
 }
 
 /* --- About tab --- */
-.about-tab {
-  padding: 0;
-}
-.about-tab > .text-heading-section {
-  margin-bottom: var(--gap-group);
-}
-.about-description {
-  margin: 0;
-}
-.about-tab-tip {
-  margin: var(--gap-section) 0 0;
-}
+/* about-tab: Stack gap='section' handles outer spacing.
+   Section gap='group' handles heading-to-content gaps.
+   about-tab-tip margin replaced by Stack gap. */
 .about-tab-tip-icon {
   vertical-align: -0.15em;
 }
@@ -1289,9 +1293,7 @@ body {
 .about-col-after {
   border: 1px solid var(--color-border);
 }
-.about-col-header {
-  margin-bottom: var(--gap-related);
-}
+/* about-col-header margin: replaced by Stack gap='related' inside Card */
 .about-col-text {
   margin: 0;
   font-size: var(--type-body-size);
@@ -1300,9 +1302,7 @@ body {
   color: var(--type-body-color);
   font-style: italic;
 }
-.about-col-text + .about-col-text {
-  margin-top: var(--gap-related);
-}
+/* about-col-text sibling margin: replaced by Stack gap='related' */
 .about-col-after .about-col-text {
   font-style: normal;
   font-weight: var(--font-semibold);
@@ -1312,9 +1312,7 @@ body {
 /* ==========================================================================
    5. PRACTICE CARD
    ========================================================================== */
-.practice-intro-description {
-  margin-bottom: var(--gap-group);
-}
+/* practice-intro-description margin: replaced by Section gap='group' */
 
 /* --- Practice action zone (bottom-anchored, outside tabs) --- */
 .practice-zone-action {
@@ -1346,11 +1344,7 @@ body {
   padding: var(--gap-micro) var(--size-content-inset);
   background: var(--color-chrome);
 }
-.skill-header-row {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
-}
+/* skill-header-row: replaced by Bar gap='group' */
 .skill-header-title {
   flex: 1;
   display: flex;
@@ -1377,23 +1371,14 @@ body {
   color: var(--type-metric-effort-color);
   flex-shrink: 0;
 }
-.skill-header-progress {
-  margin-top: var(--gap-group);
-}
+/* skill-header-progress: margin replaced by Stack gap='group' */
 
 /* --- Practice config: suggested/custom toggle --- */
 .practice-config {
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-group);
 }
-.practice-config-label {
-  margin-bottom: var(--gap-micro);
-}
-.practice-config-content {
-  margin-top: var(--gap-related);
-}
+/* practice-config-label margin, practice-config-content margin:
+   replaced by Stack gap='group' */
 
 /* --- Suggestion lines (suggested mode) --- */
 .suggestion-lines {
@@ -1467,7 +1452,6 @@ body {
   display: flex;
   align-items: center;
   gap: var(--gap-group);
-  margin-bottom: var(--gap-related);
 }
 .level-progress-label {
   font-size: var(--text-sm);
@@ -1479,7 +1463,6 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-bottom: var(--gap-related);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
   color: var(--color-text-secondary);
@@ -1491,9 +1474,7 @@ body {
   border-radius: 2px;
   flex-shrink: 0;
 }
-.level-progress-pill-row {
-  margin-bottom: var(--gap-related);
-}
+/* level-progress-pill-row, level-progress-status: margin replaced by Stack gap='related' */
 .level-progress-actions {
   display: flex;
   gap: 2px;
@@ -1540,16 +1521,7 @@ body {
 /* ==========================================================================
    6. PROGRESS TAB
    ========================================================================== */
-.progress-section {
-  margin-top: var(--pad-region);
-}
-.progress-section:first-child {
-  margin-top: 0;
-}
-.progress-section > .text-heading-section {
-  display: block;
-  margin-bottom: var(--gap-group);
-}
+/* progress-section: replaced by Stack gap='region' + Section gap='group' */
 .baseline-info:empty {
   display: none;
 }
@@ -1663,12 +1635,7 @@ body {
   pointer-events: all;
 }
 
-.settings-row {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-group);
-  margin-bottom: var(--gap-group);
-}
+/* settings-row: removed — no JSX references */
 button {
   padding: var(--gap-group) var(--gap-section);
   font-size: var(--text-base);
@@ -1811,12 +1778,8 @@ button {
   align-items: center;
   text-align: center;
 }
-.round-complete-heading {
-  margin-bottom: var(--pad-component);
-}
-.round-complete-stats {
-  margin: var(--gap-group) 0 var(--pad-region);
-}
+/* round-complete-heading margin, round-complete-stats margin:
+   replaced by Stack gap='component' */
 .round-complete-progress {
   width: 100%;
   max-width: 200px;
@@ -2003,9 +1966,7 @@ button {
    12. CALIBRATION
    ========================================================================== */
 .speed-check-header {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
+  /* Bar gap='group' handles flex + gap */
   padding: var(--gap-group) var(--gap-group) var(--gap-group)
     var(--size-content-inset);
   background: var(--color-chrome);
@@ -2788,7 +2749,7 @@ body.native-app .hint {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1349"></div>
+  <div class="home-screen" id="home-screen" data-version="#1353"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -8032,8 +7993,14 @@ body.native-app .hint {
     if (extra) cls += " " + extra;
     return /* @__PURE__ */ u3("div", { class: cls, children });
   }
-  function Section({ heading, headingRole = "heading-section", children, class: extra }) {
-    const cls = "section-block" + (extra ? " " + extra : "");
+  function Section({
+    heading,
+    headingRole = "heading-section",
+    gap = "related",
+    children,
+    class: extra
+  }) {
+    const cls = "section-block section-gap-" + gap + (extra ? " " + extra : "");
     return /* @__PURE__ */ u3("section", { class: cls, children: [
       /* @__PURE__ */ u3(Text, { role: headingRole, as: "h2", children: heading }),
       children
@@ -8149,7 +8116,7 @@ body.native-app .hint {
     )) });
   }
   function ModeTopBar({ modeId, title, description, onBack, showBack = true }) {
-    return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: /* @__PURE__ */ u3("div", { class: "mode-top-bar-row", children: [
+    return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: /* @__PURE__ */ u3(Bar, { gap: "group", children: [
       showBack && /* @__PURE__ */ u3(
         CloseButton,
         {
@@ -8220,7 +8187,7 @@ body.native-app .hint {
     ] }) });
   }
   function RoundCompleteInfo({ heading, count, correct, levelBars }) {
-    return /* @__PURE__ */ u3("div", { class: "round-complete", children: [
+    return /* @__PURE__ */ u3(Stack, { gap: "component", class: "round-complete", children: [
       /* @__PURE__ */ u3(Text, { role: "heading-page", as: "div", class: "round-complete-heading", children: heading || "" }),
       count != null && /* @__PURE__ */ u3(Stack, { gap: "micro", class: "round-complete-count-group", children: [
         /* @__PURE__ */ u3(Text, { role: "metric-hero", as: "div", class: "round-complete-count", children: count }),
@@ -8347,16 +8314,11 @@ body.native-app .hint {
       {
         id: "progress",
         label: /* @__PURE__ */ u3(TabIcon, { icon: "progress", text: "Progress" }),
-        content: /* @__PURE__ */ u3("div", { children: [
-          progressExtra && /* @__PURE__ */ u3("div", { class: "progress-section", children: progressExtra }),
-          /* @__PURE__ */ u3("div", { class: "progress-section", children: [
-            statsHeading,
-            /* @__PURE__ */ u3("div", { class: "stats-container", children: statsContent })
-          ] }),
-          onCalibrate && /* @__PURE__ */ u3("div", { class: "progress-section", children: [
-            /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Speed check" }),
-            /* @__PURE__ */ u3(BaselineInfo, { baseline: baseline ?? null, onRun: onCalibrate })
-          ] })
+        content: /* @__PURE__ */ u3(Stack, { gap: "region", children: [
+          progressExtra,
+          statsHeading && /* @__PURE__ */ u3(Section, { heading: statsHeading, gap: "group", children: /* @__PURE__ */ u3("div", { class: "stats-container", children: statsContent }) }),
+          !statsHeading && /* @__PURE__ */ u3("div", { class: "stats-container", children: statsContent }),
+          onCalibrate && /* @__PURE__ */ u3(Section, { heading: "Speed check", gap: "group", children: /* @__PURE__ */ u3(BaselineInfo, { baseline: baseline ?? null, onRun: onCalibrate }) })
         ] })
       }
     ];
@@ -10701,8 +10663,8 @@ body.native-app .hint {
 
   // src/ui/practice-config.tsx
   function SkillHeader({ modeId, title, totalReps, progressColors, onBack }) {
-    return /* @__PURE__ */ u3("div", { class: "skill-header", children: [
-      /* @__PURE__ */ u3("div", { class: "skill-header-row", children: [
+    return /* @__PURE__ */ u3(Stack, { gap: "group", class: "skill-header", children: [
+      /* @__PURE__ */ u3(Bar, { gap: "group", children: [
         onBack && /* @__PURE__ */ u3(CloseButton, { ariaLabel: "Back to home", onClick: onBack }),
         /* @__PURE__ */ u3("div", { class: "skill-header-title", children: [
           modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
@@ -10713,7 +10675,7 @@ body.native-app .hint {
           /* @__PURE__ */ u3(RepeatMark, { size: 18, class: "skill-header-reps-icon" })
         ] })
       ] }),
-      progressColors && progressColors.length > 0 && /* @__PURE__ */ u3("div", { class: "skill-header-progress", children: /* @__PURE__ */ u3(ProgressBarLabeled, { label: "Progress", colors: progressColors }) })
+      progressColors && progressColors.length > 0 && /* @__PURE__ */ u3(ProgressBarLabeled, { label: "Progress", colors: progressColors })
     ] });
   }
   function SuggestionLines({ lines }) {
@@ -10760,7 +10722,7 @@ body.native-app .hint {
       {
         padding: "compact",
         class: "level-progress-card" + (st !== "normal" ? " " + st : ""),
-        children: [
+        children: /* @__PURE__ */ u3(Stack, { gap: "related", children: [
           /* @__PURE__ */ u3("div", { class: "level-progress-header", children: [
             /* @__PURE__ */ u3("span", { class: "level-progress-label", children: label }),
             (onToggleKnown || onToggleSkip) && /* @__PURE__ */ u3("span", { class: "level-progress-actions", children: [
@@ -10788,7 +10750,6 @@ body.native-app .hint {
               )
             ] })
           ] }),
-          pill && /* @__PURE__ */ u3("div", { class: "level-progress-pill-row", children: /* @__PURE__ */ u3(Pill, { variant: "notice", children: pill }) }),
           statusLabel && /* @__PURE__ */ u3("span", { class: "level-progress-status", children: [
             statusColor && /* @__PURE__ */ u3(
               "span",
@@ -10799,14 +10760,15 @@ body.native-app .hint {
             ),
             statusLabel
           ] }),
+          pill && /* @__PURE__ */ u3("div", { class: "level-progress-pill-row", children: /* @__PURE__ */ u3(Pill, { variant: "notice", children: pill }) }),
           /* @__PURE__ */ u3(ProgressBarLabeled, { colors, disabled: st === "skipped" })
-        ]
+        ] })
       }
     );
   }
   function PracticeConfig({ mode, onModeChange, suggestedContent, customContent }) {
-    return /* @__PURE__ */ u3("div", { class: "practice-config", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", class: "practice-config-label", children: "Practice setup" }),
+    return /* @__PURE__ */ u3(Stack, { gap: "group", class: "practice-config", children: [
+      /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Practice setup" }),
       /* @__PURE__ */ u3(
         SegmentedControl,
         {
@@ -10818,7 +10780,7 @@ body.native-app .hint {
           onChange: onModeChange
         }
       ),
-      /* @__PURE__ */ u3("div", { class: "practice-config-content", children: mode === "suggested" ? suggestedContent : customContent })
+      mode === "suggested" ? suggestedContent : customContent
     ] });
   }
 
@@ -11120,7 +11082,7 @@ body.native-app .hint {
   var PAUSE_MS = 400;
   var WRONG_FEEDBACK_MS = 800;
   function SpeedCheckHeader({ count, onClose }) {
-    return /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3("div", { class: "speed-check-header", children: [
+    return /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(Bar, { gap: "group", class: "speed-check-header", children: [
       /* @__PURE__ */ u3(Text, { role: "heading-page", class: "speed-check-label", children: "Speed Check" }),
       count && /* @__PURE__ */ u3(Text, { role: "metric-info", children: count }),
       /* @__PURE__ */ u3(CloseButton, { ariaLabel: "Cancel speed check", onClick: onClose })
@@ -12098,8 +12060,8 @@ body.native-app .hint {
             def,
             groupScopeResult
           }
-        ) : /* @__PURE__ */ u3("div", { class: "practice-config", children: [
-          /* @__PURE__ */ u3(Text, { role: "heading-section", class: "practice-config-label", children: "Recommendation" }),
+        ) : /* @__PURE__ */ u3(Stack, { gap: "group", class: "practice-config", children: [
+          /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Recommendation" }),
           /* @__PURE__ */ u3(
             SuggestionLines,
             {
@@ -12107,7 +12069,7 @@ body.native-app .hint {
             }
           )
         ] }),
-        statsHeading: hasStats ? /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Speed by item" }) : void 0,
+        statsHeading: hasStats ? "Speed by item" : void 0,
         statsContent: /* @__PURE__ */ u3(k, { children: [
           ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : /* @__PURE__ */ u3(k, { children: [
             def.stats.kind === "grid" && /* @__PURE__ */ u3(
@@ -12133,17 +12095,14 @@ body.native-app .hint {
           ] }),
           hasStats && /* @__PURE__ */ u3(StatsLegend, {})
         ] }),
-        progressExtra: hasGroups ? /* @__PURE__ */ u3(k, { children: [
-          /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Level progress" }),
-          /* @__PURE__ */ u3(
-            LevelProgressCards,
-            {
-              def,
-              learner,
-              groupScopeResult
-            }
-          )
-        ] }) : void 0,
+        progressExtra: hasGroups ? /* @__PURE__ */ u3(Section, { heading: "Level progress", gap: "group", children: /* @__PURE__ */ u3(
+          LevelProgressCards,
+          {
+            def,
+            learner,
+            groupScopeResult
+          }
+        ) }) : void 0,
         baseline: onCalibrate ? learner.motorBaseline : void 0,
         onCalibrate,
         activeTab: ps.activeTab,
@@ -12162,24 +12121,22 @@ body.native-app .hint {
   function AboutTab({ description, aboutDescription, beforeAfter }) {
     const beforeLines = typeof beforeAfter.before === "function" ? beforeAfter.before() : beforeAfter.before;
     const after = typeof beforeAfter.after === "function" ? beforeAfter.after() : beforeAfter.after;
-    return /* @__PURE__ */ u3("div", { class: "about-tab", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: "What you're automating" }),
-      /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "practice-intro-description", children: description }),
-      /* @__PURE__ */ u3("div", { class: "about-columns", children: [
-        /* @__PURE__ */ u3(Card, { variant: "well", class: "about-col", children: [
-          /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", class: "about-col-header", children: "Before" }),
-          beforeLines.map((line, i3) => /* @__PURE__ */ u3("p", { class: "about-col-text", children: line }, i3))
-        ] }),
-        /* @__PURE__ */ u3(Card, { class: "about-col about-col-after", children: [
-          /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", class: "about-col-header", children: "After" }),
-          /* @__PURE__ */ u3("p", { class: "about-col-text", children: after })
+    return /* @__PURE__ */ u3(Stack, { gap: "section", class: "about-tab", children: [
+      /* @__PURE__ */ u3(Section, { heading: "What you're automating", gap: "group", children: [
+        /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", children: description }),
+        /* @__PURE__ */ u3("div", { class: "about-columns", children: [
+          /* @__PURE__ */ u3(Card, { variant: "well", class: "about-col", children: /* @__PURE__ */ u3(Stack, { gap: "related", children: [
+            /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "Before" }),
+            beforeLines.map((line, i3) => /* @__PURE__ */ u3("p", { class: "about-col-text", children: line }, i3))
+          ] }) }),
+          /* @__PURE__ */ u3(Card, { class: "about-col about-col-after", children: /* @__PURE__ */ u3(Stack, { gap: "related", children: [
+            /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "After" }),
+            /* @__PURE__ */ u3("p", { class: "about-col-text", children: after })
+          ] }) })
         ] })
       ] }),
-      aboutDescription && /* @__PURE__ */ u3(k, { children: [
-        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: "Why automate this?" }),
-        /* @__PURE__ */ u3(Text, { role: "body", as: "p", class: "about-description", children: aboutDescription })
-      ] }),
-      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "text-hint about-tab-tip", children: [
+      aboutDescription && /* @__PURE__ */ u3(Section, { heading: "Why automate this?", gap: "group", children: /* @__PURE__ */ u3(Text, { role: "body", as: "p", children: aboutDescription }) }),
+      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "text-hint", children: [
         "Start practicing on the",
         " ",
         /* @__PURE__ */ u3(RepeatMark, { size: 16, class: "about-tab-tip-icon" }),
