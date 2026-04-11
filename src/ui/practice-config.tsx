@@ -5,7 +5,7 @@
 import type { ComponentChildren } from 'preact';
 import type { SuggestionLine } from '../types.ts';
 import { SkillIcon } from './icons.tsx';
-import { Card } from './layout.tsx';
+import { Bar, Card, Stack } from './layout.tsx';
 import { CloseButton } from './mode-screen.tsx';
 import { Pill } from './pill.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
@@ -31,8 +31,8 @@ export function SkillHeader(
   },
 ) {
   return (
-    <div class='skill-header'>
-      <div class='skill-header-row'>
+    <Stack gap='group' class='skill-header'>
+      <Bar gap='group'>
         {onBack && <CloseButton ariaLabel='Back to home' onClick={onBack} />}
         <div class='skill-header-title'>
           {modeId && <SkillIcon modeId={modeId} />}
@@ -44,13 +44,11 @@ export function SkillHeader(
             <RepeatMark size={18} class='skill-header-reps-icon' />
           </Text>
         )}
-      </div>
+      </Bar>
       {progressColors && progressColors.length > 0 && (
-        <div class='skill-header-progress'>
-          <ProgressBarLabeled label='Progress' colors={progressColors} />
-        </div>
+        <ProgressBarLabeled label='Progress' colors={progressColors} />
       )}
-    </div>
+    </Stack>
   );
 }
 
@@ -148,50 +146,52 @@ export function LevelProgressCard(
       padding='compact'
       class={'level-progress-card' + (st !== 'normal' ? ' ' + st : '')}
     >
-      <div class='level-progress-header'>
-        <span class='level-progress-label'>{label}</span>
-        {(onToggleKnown || onToggleSkip) && (
-          <span class='level-progress-actions'>
-            <button
-              type='button'
-              class={'level-action-btn known' +
-                (st === 'known' ? ' active' : '')}
-              aria-label={`Mark ${label} as known`}
-              aria-pressed={st === 'known'}
-              onClick={onToggleKnown}
-            >
-              {'\u2713'}
-            </button>
-            <button
-              type='button'
-              class={'level-action-btn skip' +
-                (st === 'skipped' ? ' active' : '')}
-              aria-label={`Skip ${label}`}
-              aria-pressed={st === 'skipped'}
-              onClick={onToggleSkip}
-            >
-              {'\u2717'}
-            </button>
+      <Stack gap='related'>
+        <div class='level-progress-header'>
+          <span class='level-progress-label'>{label}</span>
+          {(onToggleKnown || onToggleSkip) && (
+            <span class='level-progress-actions'>
+              <button
+                type='button'
+                class={'level-action-btn known' +
+                  (st === 'known' ? ' active' : '')}
+                aria-label={`Mark ${label} as known`}
+                aria-pressed={st === 'known'}
+                onClick={onToggleKnown}
+              >
+                {'\u2713'}
+              </button>
+              <button
+                type='button'
+                class={'level-action-btn skip' +
+                  (st === 'skipped' ? ' active' : '')}
+                aria-label={`Skip ${label}`}
+                aria-pressed={st === 'skipped'}
+                onClick={onToggleSkip}
+              >
+                {'\u2717'}
+              </button>
+            </span>
+          )}
+        </div>
+        {statusLabel && (
+          <span class='level-progress-status'>
+            {statusColor && (
+              <span
+                class='level-status-swatch'
+                style={`background-color: var(${statusColor})`}
+              />
+            )}
+            {statusLabel}
           </span>
         )}
-      </div>
-      {pill && (
-        <div class='level-progress-pill-row'>
-          <Pill variant='notice'>{pill}</Pill>
-        </div>
-      )}
-      {statusLabel && (
-        <span class='level-progress-status'>
-          {statusColor && (
-            <span
-              class='level-status-swatch'
-              style={`background-color: var(${statusColor})`}
-            />
-          )}
-          {statusLabel}
-        </span>
-      )}
-      <ProgressBarLabeled colors={colors} disabled={st === 'skipped'} />
+        {pill && (
+          <div class='level-progress-pill-row'>
+            <Pill variant='notice'>{pill}</Pill>
+          </div>
+        )}
+        <ProgressBarLabeled colors={colors} disabled={st === 'skipped'} />
+      </Stack>
     </Card>
   );
 }
@@ -211,8 +211,8 @@ export function PracticeConfig(
   },
 ) {
   return (
-    <div class='practice-config'>
-      <Text role='heading-section' class='practice-config-label'>
+    <Stack gap='group' class='practice-config'>
+      <Text role='heading-section'>
         Practice setup
       </Text>
       <SegmentedControl
@@ -223,9 +223,7 @@ export function PracticeConfig(
         value={mode}
         onChange={onModeChange}
       />
-      <div class='practice-config-content'>
-        {mode === 'suggested' ? suggestedContent : customContent}
-      </div>
-    </div>
+      {mode === 'suggested' ? suggestedContent : customContent}
+    </Stack>
   );
 }
