@@ -1289,6 +1289,9 @@ body {
 .practice-intro-description {
   margin-bottom: var(--gap-group);
 }
+.summary-description {
+  margin-bottom: var(--gap-group);
+}
 
 /* --- Practice action zone (bottom-anchored, outside tabs) --- */
 .practice-zone-action {

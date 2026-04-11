@@ -544,6 +544,7 @@ export function PracticeTab(
     practiceContent,
     progressExtra,
     progressSegments,
+    description,
     startLabel,
   }: {
     onStart: () => void;
@@ -562,12 +563,15 @@ export function PracticeTab(
     progressExtra?: ComponentChildren;
     /** Overall progress bar segments (shown on practice + progress tabs). */
     progressSegments?: ProgressSegment[];
+    /** Short skill description shown in the practice tab summary. */
+    description?: string;
     /** Custom label for the start button (e.g. "Practice (32 items)"). */
     startLabel?: string;
   },
 ) {
   const prefix = useTabsPrefix();
   const hasProgress = progressSegments && progressSegments.length > 0;
+  const hasSummary = hasProgress || description;
   const tabs: TabDef<ModeTab>[] = [
     {
       id: 'practice',
@@ -579,12 +583,20 @@ export function PracticeTab(
       ),
       content: (
         <div>
-          {hasProgress && (
+          {hasSummary && (
             <div class='progress-section'>
-              <ProgressBarLabeled
-                label='Progress'
-                segments={progressSegments}
-              />
+              <Text role='heading-section'>Summary</Text>
+              {description && (
+                <Text role='body-secondary' as='p' class='summary-description'>
+                  {description}
+                </Text>
+              )}
+              {hasProgress && (
+                <ProgressBarLabeled
+                  label='Progress'
+                  segments={progressSegments}
+                />
+              )}
             </div>
           )}
           {practiceContent}
@@ -599,7 +611,10 @@ export function PracticeTab(
           {hasProgress && (
             <div class='progress-section'>
               <Text role='heading-section'>Overall</Text>
-              <ProgressBarLabeled segments={progressSegments} />
+              <ProgressBarLabeled
+                label='Progress'
+                segments={progressSegments}
+              />
             </div>
           )}
           {progressExtra && <div class='progress-section'>{progressExtra}</div>}
