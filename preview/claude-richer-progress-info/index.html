@@ -1371,9 +1371,9 @@ body {
   flex: none;
 }
 /* Spacer keeps the centered title balanced when close or right slot is absent.
-   Matches close-btn width (~32px) + whatever the right slot would occupy. */
+   Matches the close button touch-target width so centering stays consistent. */
 .screen-header-spacer {
-  width: 32px;
+  width: var(--size-touch-target);
   flex-shrink: 0;
 }
 .skill-header-reps {
@@ -2811,7 +2811,7 @@ body.native-app .hint {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="747765 richer-progress-info"></div>
+  <div class="home-screen" id="home-screen" data-version="6ce62c richer-progress-info"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -8322,9 +8322,12 @@ body.native-app .hint {
       previouslyFocusedRef.current = document.activeElement;
       const prevOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
+      const app = document.getElementById("app");
+      app?.setAttribute("inert", "");
       queueMicrotask(() => closeBtnRef.current?.focus());
       return () => {
         document.body.style.overflow = prevOverflow;
+        app?.removeAttribute("inert");
         previouslyFocusedRef.current?.focus?.();
       };
     }, [open]);
