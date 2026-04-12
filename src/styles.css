@@ -1343,9 +1343,9 @@ body {
   flex: none;
 }
 /* Spacer keeps the centered title balanced when close or right slot is absent.
-   Matches close-btn width (~32px) + whatever the right slot would occupy. */
+   Matches the close button touch-target width so centering stays consistent. */
 .screen-header-spacer {
-  width: 32px;
+  width: var(--size-touch-target);
   flex-shrink: 0;
 }
 .skill-header-reps {

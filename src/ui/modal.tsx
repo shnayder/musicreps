@@ -8,6 +8,8 @@
 // - Focus moves to the close button when opened
 // - Focus restores to the previously-focused element on close
 // - Body scroll is locked while open
+// - #app is marked `inert` while open, which traps focus inside the modal
+//   and hides background content from assistive tech
 
 import type { ComponentChildren } from 'preact';
 import { createPortal } from 'preact/compat';
@@ -36,17 +38,21 @@ export function Modal(
     return () => document.removeEventListener('keydown', handler);
   }, [open, onClose]);
 
-  // On open: remember focus, move focus to close button, lock body scroll.
-  // On close: restore focus and scroll.
+  // On open: remember focus, move focus to close button, lock body scroll,
+  //   mark #app inert (traps focus + hides background from AT).
+  // On close: restore focus, scroll, and inert state.
   useEffect(() => {
     if (!open) return;
     previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    const app = document.getElementById('app');
+    app?.setAttribute('inert', '');
     // Focus the close button after the portal mounts.
     queueMicrotask(() => closeBtnRef.current?.focus());
     return () => {
       document.body.style.overflow = prevOverflow;
+      app?.removeAttribute('inert');
       previouslyFocusedRef.current?.focus?.();
     };
   }, [open]);
