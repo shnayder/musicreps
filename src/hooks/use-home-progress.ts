@@ -17,6 +17,7 @@ import {
 import {
   computeProgressColors,
   type ProgressColorInput,
+  type ProgressSegment,
 } from '../stats-display.ts';
 import {
   computeSkillRecommendation,
@@ -29,7 +30,7 @@ import {
 // ---------------------------------------------------------------------------
 
 export type ModeProgress = {
-  groupColors: string[]; // HSL strings: one per group (multi-group modes) or one per item (single-group modes), sorted descending by speed
+  segments: ProgressSegment[]; // one per group (multi-group) or one per item (single-group), sorted descending by speed
   activeGroupCount: number; // active (non-skipped) groups, for rendering empty bars
 };
 
@@ -65,7 +66,7 @@ export function loadSkippedGroups(namespace: string): ReadonlySet<string> {
 }
 
 /** Compute progress for a single mode, filtering out skipped groups.
- *  Returns empty groupColors if no items have been practiced (not started). */
+ *  Returns empty segments if no items have been practiced (not started). */
 export function computeProgressForMode(
   entry: ModeProgressEntry,
   storage: StorageAdapter,
@@ -95,11 +96,11 @@ export function computeProgressForMode(
 
   // Single-group + skipped → not started
   if (entry.groups.length === 1 && skippedGroups?.has(entry.groups[0].id)) {
-    return { groupColors: [], activeGroupCount: 0 };
+    return { segments: [], activeGroupCount: 0 };
   }
 
   return {
-    groupColors: computeProgressColors(selector, input),
+    segments: computeProgressColors(selector, input),
     activeGroupCount,
   };
 }

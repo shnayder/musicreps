@@ -268,9 +268,11 @@
   --opacity-pressed: 0.8;
   --opacity-subtle: 0.3;
 
-  /* Z-index scale */
+  /* Z-index scale — modal uses createPortal to document.body,
+     bypassing all stacking contexts. These tokens are for
+     elements within the normal layout flow. */
   --z-raised: 1;
-  --z-popover: 100;
+  --z-modal: 100;
 
   /* Font weights */
   --font-normal: 400;
@@ -1320,13 +1322,13 @@ body {
   margin-bottom: var(--gap-related);
 }
 
-/* --- Skill header: X (left) + icon+title (centered) + reps (right) --- */
-.skill-header {
-  padding: var(--gap-micro) var(--size-content-inset);
+/* --- Screen header: X (left) + centered title + optional right slot ---
+   Shared chrome bar used by SkillHeader, SpeedCheckHeader, etc. */
+.screen-header {
+  padding: var(--gap-group) var(--size-content-inset);
   background: var(--color-chrome);
 }
-/* skill-header-row: replaced by Bar gap='group' */
-.skill-header-title {
+.screen-header-title {
   flex: 1;
   display: flex;
   align-items: center;
@@ -1334,11 +1336,17 @@ body {
   gap: var(--gap-related);
   min-width: 0;
 }
-.skill-header-title .skill-icon {
+.screen-header-title .skill-icon {
   color: var(--type-heading-page-color);
 }
-.skill-header-title .mode-title {
+.screen-header-title .mode-title {
   flex: none;
+}
+/* Spacer keeps the centered title balanced when close or right slot is absent.
+   Matches the close button touch-target width so centering stays consistent. */
+.screen-header-spacer {
+  width: var(--size-touch-target);
+  flex-shrink: 0;
 }
 .skill-header-reps {
   display: flex;
@@ -1352,7 +1360,6 @@ body {
   color: var(--type-metric-effort-color);
   flex-shrink: 0;
 }
-/* skill-header-progress: margin replaced by Stack gap='group' */
 
 /* --- Practice config: suggested/custom toggle --- */
 .practice-config {
@@ -1563,13 +1570,12 @@ body {
   height: 8px;
   border-radius: var(--radius-sm);
   overflow: hidden;
-  background: var(--color-surface);
+  background: var(--heatmap-none);
 }
 .group-progress-bar.skipped {
   opacity: var(--opacity-subtle);
 }
 .group-bar-slice {
-  flex: 1;
   min-width: 0;
 }
 .fretboard-container {
@@ -1947,15 +1953,6 @@ button {
 /* ==========================================================================
    12. CALIBRATION
    ========================================================================== */
-.speed-check-header {
-  /* Bar gap='group' handles flex + gap */
-  padding: var(--gap-group) var(--gap-group) var(--gap-group)
-    var(--size-content-inset);
-  background: var(--color-chrome);
-}
-.speed-check-label {
-  flex: 1;
-}
 .heatmap-swatch {
   display: inline-block;
   width: 1rem;
@@ -1971,39 +1968,6 @@ button {
   text-align: center;
   max-width: 420px;
   margin: 0 auto;
-}
-.calibration-baseline {
-  font-variant-numeric: tabular-nums;
-  margin: var(--gap-group) 0 var(--pad-region);
-}
-.calibration-thresholds {
-  border-collapse: collapse;
-  margin: 0 auto var(--pad-region);
-  font-size: var(--text-sm);
-  width: 100%;
-}
-.calibration-thresholds th,
-.calibration-thresholds td {
-  border: 1px solid var(--color-border-light);
-  padding: 0.35rem var(--gap-group);
-  text-align: left;
-}
-.calibration-thresholds th {
-  background: var(--color-surface);
-  font-weight: var(--font-semibold);
-}
-.calibration-thresholds td:first-child {
-  width: 1.5rem;
-  text-align: center;
-  padding: 0.35rem var(--gap-related);
-}
-.calibration-thresholds td:nth-child(2) {
-  font-weight: var(--font-semibold);
-  white-space: nowrap;
-}
-.calibration-thresholds td:nth-child(3) {
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
 }
 
 /* ==========================================================================
@@ -2653,7 +2617,95 @@ button {
 }
 
 /* ==========================================================================
-   18. REDUCED MOTION
+   18. MODAL
+   ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: var(--pad-region);
+}
+.modal-surface {
+  background: var(--color-overlay-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--pad-component);
+  max-width: 400px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--gap-group);
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: var(--gap-related);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+}
+
+/* --- Speed level legend (progress bar modal) --- */
+.speed-legend-table {
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  width: 100%;
+  margin-top: var(--gap-group);
+}
+.speed-legend-table th,
+.speed-legend-table td {
+  border: 1px solid var(--color-border-light);
+  padding: 0.35rem var(--gap-group);
+  text-align: left;
+}
+.speed-legend-table th {
+  background: var(--color-surface);
+  font-weight: var(--font-semibold);
+}
+.speed-legend-table td:first-child {
+  width: 1.5rem;
+  text-align: center;
+  padding: 0.35rem var(--gap-related);
+}
+.speed-legend-table td:nth-child(2) {
+  font-weight: var(--font-semibold);
+  white-space: nowrap;
+}
+.speed-legend-table td:nth-child(3) {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.speed-baseline-note {
+  margin-top: var(--gap-group);
+}
+
+/* --- Tappable progress bar (button reset) ---
+   `:where()` gives this rule zero specificity, so it only resets the
+   user-agent button defaults without competing with the variant class
+   (.progress-bar-labeled / .progress-bar-plain). Those classes can set
+   background/border/padding freely, regardless of source order. */
+button:where(.progress-bar-tappable) {
+  all: unset;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   19. REDUCED MOTION
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

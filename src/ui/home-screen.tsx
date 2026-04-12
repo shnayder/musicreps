@@ -17,6 +17,7 @@ import {
   type ModeProgress,
   useHomeProgress,
 } from '../hooks/use-home-progress.ts';
+import type { ProgressSegment } from '../stats-display.ts';
 import type { SkillRecommendation } from '../home-recommendations.ts';
 import {
   CloseButton,
@@ -190,9 +191,9 @@ export function SkillCard(
         {isStarred ? '\u2605' : '\u2606'}
       </button>
       <SkillCardHeader modeId={modeId} />
-      {progress && progress.groupColors.length > 0 && (
+      {progress && progress.segments.length > 0 && (
         <div class='skill-card-progress'>
-          <GroupProgressBar colors={progress.groupColors} />
+          <GroupProgressBar segments={progress.segments} />
         </div>
       )}
     </div>
@@ -274,14 +275,14 @@ function ActiveSkillCard(
           </span>
         </span>
         {progress &&
-          (progress.groupColors.length > 0 ||
+          (progress.segments.length > 0 ||
             progress.activeGroupCount > 0) &&
           (
             <div class='skill-card-progress'>
               <GroupProgressBar
-                colors={progress.groupColors.length > 0
-                  ? progress.groupColors
-                  : notStartedColors(progress.activeGroupCount)}
+                segments={progress.segments.length > 0
+                  ? progress.segments
+                  : notStartedSegments(progress.activeGroupCount)}
               />
             </div>
           )}
@@ -290,9 +291,12 @@ function ActiveSkillCard(
   );
 }
 
-/** Grey placeholder colors for not-started progress bars. */
-function notStartedColors(count: number): string[] {
-  return Array.from({ length: count }, () => 'var(--heatmap-none)');
+/** Grey placeholder segments for not-started progress bars. */
+function notStartedSegments(count: number): ProgressSegment[] {
+  return Array.from(
+    { length: count },
+    () => ({ color: 'var(--heatmap-none)', weight: 1 }),
+  );
 }
 
 // ---------------------------------------------------------------------------

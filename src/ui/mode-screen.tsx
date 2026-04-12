@@ -9,7 +9,9 @@ import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 import { Bar, Section, Stack } from './layout.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
+import type { ProgressSegment } from '../stats-display.ts';
 import { ProgressBarLabeled } from './scope.tsx';
+import type { ProgressBarKind } from './speed-level-legend.tsx';
 
 // ---------------------------------------------------------------------------
 // CloseButton — × dismiss button used in top bars and overlays
@@ -181,6 +183,44 @@ export function ModeScreen(
   return (
     <div class={`mode-screen phase-${phase}`} id={`mode-${id}`}>
       {children}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ScreenHeader — shared chrome bar for top-level screens.
+// Layout: [close button (left)] [centered title + optional icon] [right slot]
+// Used by SkillHeader (skill idle) and SpeedCheckHeader (calibration).
+// ---------------------------------------------------------------------------
+
+export function ScreenHeader(
+  { title, icon, onClose, closeAriaLabel, right, class: extra }: {
+    title: string;
+    icon?: ComponentChildren;
+    onClose?: () => void;
+    closeAriaLabel?: string;
+    right?: ComponentChildren;
+    class?: string;
+  },
+) {
+  const cls = 'screen-header' + (extra ? ' ' + extra : '');
+  return (
+    <div class={cls}>
+      <Bar gap='group'>
+        {onClose
+          ? (
+            <CloseButton
+              ariaLabel={closeAriaLabel ?? 'Close'}
+              onClick={onClose}
+            />
+          )
+          : <div class='screen-header-spacer' />}
+        <div class='screen-header-title'>
+          {icon}
+          <Text role='heading-page' as='h1' class='mode-title'>{title}</Text>
+        </div>
+        {right ?? <div class='screen-header-spacer' />}
+      </Bar>
     </div>
   );
 }
@@ -397,7 +437,7 @@ export function RoundCompleteInfo(
             <ProgressBarLabeled
               key={entry.id}
               label={entry.label}
-              colors={entry.colors}
+              segments={entry.colors.map((c) => ({ color: c, weight: 1 }))}
               plain
             />
           ))}
@@ -540,6 +580,10 @@ export function PracticeTab(
     aboutContent,
     practiceContent,
     progressExtra,
+    progressSegments,
+    progressKind,
+    progressBaseline,
+    description,
     startLabel,
   }: {
     onStart: () => void;
@@ -556,11 +600,27 @@ export function PracticeTab(
     practiceContent: ComponentChildren;
     /** Extra content inserted above stats in the progress tab. */
     progressExtra?: ComponentChildren;
+    /** Overall progress bar segments (shown on practice + progress tabs). */
+    progressSegments?: ProgressSegment[];
+    /** Whether the bar shows one segment per level or per item. */
+    progressKind?: ProgressBarKind;
+    /** Motor baseline in ms (null = default). Used in legend modal. */
+    progressBaseline?: number | null;
+    /** Short skill description shown in the practice tab summary. */
+    description?: string;
     /** Custom label for the start button (e.g. "Practice (32 items)"). */
     startLabel?: string;
   },
 ) {
   const prefix = useTabsPrefix();
+  const EMPTY_BAR: ProgressSegment[] = [
+    { color: 'var(--heatmap-none)', weight: 1 },
+  ];
+  const segs = progressSegments && progressSegments.length > 0
+    ? progressSegments
+    : EMPTY_BAR;
+  const hasProgressBar = progressSegments != null;
+  const hasSummary = hasProgressBar || description;
   const tabs: TabDef<ModeTab>[] = [
     {
       id: 'practice',
@@ -570,13 +630,44 @@ export function PracticeTab(
           <span class='tab-icon-text'>Practice</span>
         </span>
       ),
-      content: practiceContent,
+      content: (
+        <Stack gap='region'>
+          {hasSummary && (
+            <Section heading='Summary'>
+              {description && (
+                <Text role='body-secondary' as='p'>
+                  {description}
+                </Text>
+              )}
+              {hasProgressBar && (
+                <ProgressBarLabeled
+                  label='Progress'
+                  segments={segs}
+                  kind={progressKind}
+                  baseline={progressBaseline}
+                />
+              )}
+            </Section>
+          )}
+          {practiceContent}
+        </Stack>
+      ),
     },
     {
       id: 'progress',
       label: <TabIcon icon='progress' text='Progress' />,
       content: (
         <Stack gap='region'>
+          {hasProgressBar && (
+            <Section heading='Overall'>
+              <ProgressBarLabeled
+                label='Progress'
+                segments={segs}
+                kind={progressKind}
+                baseline={progressBaseline}
+              />
+            </Section>
+          )}
           {progressExtra}
           {statsHeading && (
             <Section heading={statsHeading} gap='group'>

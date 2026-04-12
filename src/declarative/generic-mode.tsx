@@ -42,10 +42,9 @@ import {
 // ---------------------------------------------------------------------------
 
 function ModeHeader<Q>(
-  { def, isIdle, progressColors, totalReps, navigateHome }: {
+  { def, isIdle, totalReps, navigateHome }: {
     def: ModeDefinition<Q>;
     isIdle: boolean;
-    progressColors: string[];
     totalReps: number;
     navigateHome: () => void;
   },
@@ -56,7 +55,6 @@ function ModeHeader<Q>(
         modeId={def.id}
         title={def.name}
         totalReps={totalReps}
-        progressColors={progressColors}
         onBack={navigateHome}
       />
     );
@@ -114,7 +112,6 @@ function GenericModeBody<Q>(
           <ModeHeader
             def={def}
             isIdle
-            progressColors={progressColors}
             totalReps={totalReps}
             navigateHome={navigateHome}
           />
@@ -126,6 +123,7 @@ function GenericModeBody<Q>(
           ctrl={ctrl}
           groupScopeResult={groupScopeResult}
           ps={ps}
+          progressSegments={progressColors}
           onCalibrate={sc.hasSpeedCheck
             ? () => sc.setSpeedCheck('active')
             : undefined}

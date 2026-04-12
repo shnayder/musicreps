@@ -5,8 +5,8 @@
 import type { ComponentChildren } from 'preact';
 import type { SuggestionLine } from '../types.ts';
 import { SkillIcon } from './icons.tsx';
-import { Bar, Card, Stack } from './layout.tsx';
-import { CloseButton } from './mode-screen.tsx';
+import { Card, Stack } from './layout.tsx';
+import { ScreenHeader } from './mode-screen.tsx';
 import { Pill } from './pill.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
 import { ProgressBarLabeled } from './scope.tsx';
@@ -22,33 +22,28 @@ export { ProgressBarLabeled };
 // ---------------------------------------------------------------------------
 
 export function SkillHeader(
-  { modeId, title, totalReps, progressColors, onBack }: {
+  { modeId, title, totalReps, onBack }: {
     modeId?: string;
     title: string;
     totalReps?: number;
-    progressColors?: string[];
     onBack?: () => void;
   },
 ) {
   return (
-    <Stack gap='group' class='skill-header'>
-      <Bar gap='group'>
-        {onBack && <CloseButton ariaLabel='Back to home' onClick={onBack} />}
-        <div class='skill-header-title'>
-          {modeId && <SkillIcon modeId={modeId} />}
-          <Text role='heading-page' as='h1' class='mode-title'>{title}</Text>
-        </div>
-        {totalReps != null && (
+    <ScreenHeader
+      title={title}
+      icon={modeId && <SkillIcon modeId={modeId} />}
+      onClose={onBack}
+      closeAriaLabel='Back to home'
+      right={totalReps != null
+        ? (
           <Text role='metric-effort' as='span' class='skill-header-reps'>
             {totalReps.toLocaleString()}
             <RepeatMark size={18} class='skill-header-reps-icon' />
           </Text>
-        )}
-      </Bar>
-      {progressColors && progressColors.length > 0 && (
-        <ProgressBarLabeled label='Progress' colors={progressColors} />
-      )}
-    </Stack>
+        )
+        : undefined}
+    />
   );
 }
 
@@ -126,6 +121,7 @@ export function LevelProgressCard(
     pill,
     colors,
     status,
+    baseline,
     onToggleKnown,
     onToggleSkip,
   }: {
@@ -136,6 +132,8 @@ export function LevelProgressCard(
     pill?: string;
     colors: string[];
     status?: LevelCardStatus;
+    /** Motor baseline in ms (null = default). Used in legend modal. */
+    baseline?: number | null;
     onToggleKnown?: () => void;
     onToggleSkip?: () => void;
   },
@@ -190,7 +188,11 @@ export function LevelProgressCard(
             <Pill variant='notice'>{pill}</Pill>
           </div>
         )}
-        <ProgressBarLabeled colors={colors} disabled={st === 'skipped'} />
+        <ProgressBarLabeled
+          segments={colors.map((c) => ({ color: c, weight: 1 }))}
+          disabled={st === 'skipped'}
+          baseline={baseline}
+        />
       </Stack>
     </Card>
   );

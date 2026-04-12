@@ -3,7 +3,8 @@
 import { NOTES } from '../music-data.ts';
 import type { StatsSelector } from './stats.tsx';
 import { StatsGrid, StatsLegend, StatsTable } from './stats.tsx';
-import { GroupProgressBar } from './scope.tsx';
+import { GroupProgressBar, ProgressBarLabeled } from './scope.tsx';
+import { SpeedLevelLegend } from './speed-level-legend.tsx';
 import { PreviewGrid, Section } from './preview-shared.tsx';
 
 // ---------------------------------------------------------------------------
@@ -54,13 +55,53 @@ function ScopeSection(
         <Section title='GroupProgressBar' tabId={tabId}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <GroupProgressBar
-              colors={['#4caf50', '#4caf50', '#ff9800', '#9e9e9e', '#9e9e9e']}
+              segments={[
+                { color: '#4caf50', weight: 1 },
+                { color: '#4caf50', weight: 0.6 },
+                { color: '#ff9800', weight: 0.2 },
+                { color: '#9e9e9e', weight: 0.1 },
+                { color: '#9e9e9e', weight: 0 },
+              ]}
             />
             <GroupProgressBar
-              colors={['#4caf50', '#4caf50', '#ff9800', '#9e9e9e', '#9e9e9e']}
+              segments={[
+                { color: '#4caf50', weight: 1 },
+                { color: '#4caf50', weight: 0.6 },
+                { color: '#ff9800', weight: 0.2 },
+                { color: '#9e9e9e', weight: 0.1 },
+                { color: '#9e9e9e', weight: 0 },
+              ]}
               disabled
             />
           </div>
+        </Section>
+        <Section title='ProgressBarLabeled — multi-level' tabId={tabId}>
+          <ProgressBarLabeled
+            label='Progress'
+            kind='multi-level'
+            segments={[
+              { color: 'var(--heatmap-5)', weight: 1 },
+              { color: 'var(--heatmap-4)', weight: 0.6 },
+              { color: 'var(--heatmap-3)', weight: 0.2 },
+            ]}
+          />
+        </Section>
+        <Section title='ProgressBarLabeled — single-level' tabId={tabId}>
+          <ProgressBarLabeled
+            label='Progress'
+            kind='single-level'
+            segments={[
+              { color: 'var(--heatmap-5)', weight: 1 },
+              { color: 'var(--heatmap-4)', weight: 1 },
+              { color: 'var(--heatmap-3)', weight: 1 },
+            ]}
+          />
+        </Section>
+        <Section title='SpeedLevelLegend (multi-level)' tabId={tabId}>
+          <SpeedLevelLegend kind='multi-level' />
+        </Section>
+        <Section title='SpeedLevelLegend (single-level)' tabId={tabId}>
+          <SpeedLevelLegend kind='single-level' />
         </Section>
       </PreviewGrid>
     </>

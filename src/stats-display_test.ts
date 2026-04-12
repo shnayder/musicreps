@@ -9,6 +9,7 @@ import {
   getStatsCellColorMerged,
   heatmapNeedsLightText,
   progressBarColors,
+  progressBarGroupSegment,
 } from './stats-display.ts';
 
 // Heatmap palette (matches fallback values in stats-display.ts)
@@ -385,43 +386,123 @@ describe('computeReviewPill', () => {
 });
 
 // ---------------------------------------------------------------------------
+// progressBarGroupSegment (weight = fraction of seen items)
+// ---------------------------------------------------------------------------
+
+describe('progressBarGroupSegment', () => {
+  it('returns weight 0 when no items are seen', () => {
+    const seg = progressBarGroupSegment(
+      { getSpeedScore: () => null },
+      ['a', 'b', 'c'],
+    );
+    assert.equal(seg.zone, 2);
+    assert.equal(seg.weight, 0);
+    assert.equal(seg.color, NONE);
+  });
+
+  it('returns weight 1 when all items are seen', () => {
+    const seg = progressBarGroupSegment(
+      { getSpeedScore: () => 0.7 },
+      ['a', 'b', 'c'],
+    );
+    assert.equal(seg.zone, 0);
+    assert.equal(seg.weight, 1);
+  });
+
+  it('returns fractional weight for partially seen group', () => {
+    const selector = {
+      getSpeedScore(id: string) {
+        return id === 'a' ? 0.5 : null;
+      },
+    };
+    const seg = progressBarGroupSegment(selector, [
+      'a',
+      'b',
+      'c',
+      'd',
+      'e',
+      'f',
+      'g',
+      'h',
+      'i',
+      'j',
+      'k',
+      'l',
+      'm',
+      'n',
+      'o',
+      'p',
+      'q',
+      'r',
+      's',
+      't',
+      'u',
+      'v',
+      'w',
+      'x',
+      'y',
+      'z',
+      'aa',
+      'ab',
+      'ac',
+      'ad',
+    ]);
+    assert.equal(seg.zone, 0);
+    assertClose(seg.weight, 1 / 30, 0.001);
+  });
+});
+
+function assertClose(actual: number, expected: number, tol: number) {
+  assert.ok(
+    Math.abs(actual - expected) <= tol,
+    `expected ~${expected}, got ${actual}`,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // computeProgressColors (unified progress bar logic)
 // ---------------------------------------------------------------------------
 
 describe('computeProgressColors', () => {
   it('returns [] for items mode when all unseen', () => {
     const selector = { getSpeedScore: () => null };
-    const colors = computeProgressColors(selector, {
+    const segs = computeProgressColors(selector, {
       kind: 'items',
       itemIds: ['a', 'b', 'c'],
     });
-    assert.deepEqual(colors, []);
+    assert.deepEqual(segs, []);
   });
 
-  it('returns sorted colors for items mode with seen items', () => {
+  it('returns sorted segments for items mode with seen items', () => {
     const selector = {
       getSpeedScore(id: string) {
         return ({ a: 0.2, b: 0.9 } as Record<string, number>)[id] ?? null;
       },
     };
-    const colors = computeProgressColors(selector, {
+    const segs = computeProgressColors(selector, {
       kind: 'items',
       itemIds: ['a', 'b'],
     });
-    assert.equal(colors.length, 2);
-    assert.ok(colors[0].startsWith('hsl(80,'), `fastest first: ${colors[0]}`);
+    assert.equal(segs.length, 2);
+    assert.ok(
+      segs[0].color.startsWith('hsl(80,'),
+      `fastest first: ${segs[0].color}`,
+    );
+    // Items mode: weight is always 1
+    assert.equal(segs[0].weight, 1);
+    assert.equal(segs[1].weight, 1);
   });
 
   it('returns [] for groups mode when all unseen', () => {
     const selector = { getSpeedScore: () => null };
-    const colors = computeProgressColors(selector, {
+    const segs = computeProgressColors(selector, {
       kind: 'groups',
       groups: [
         { id: 'g0', itemIds: ['a', 'b'] },
         { id: 'g1', itemIds: ['c', 'd'] },
       ],
     });
-    assert.deepEqual(colors, []);
+    assert.deepEqual(segs, []);
   });
 
   it('filters out skipped groups', () => {
@@ -433,7 +514,7 @@ describe('computeProgressColors', () => {
       },
     };
     const skipped = new Set(['g1']);
-    const colors = computeProgressColors(selector, {
+    const segs = computeProgressColors(selector, {
       kind: 'groups',
       groups: [
         { id: 'g0', itemIds: ['a', 'b'] },
@@ -442,17 +523,17 @@ describe('computeProgressColors', () => {
       skippedGroups: skipped,
     });
     // Only group 0 remains (speed ~0.5)
-    assert.equal(colors.length, 1);
+    assert.equal(segs.length, 1);
   });
 
   it('returns [] when all groups are skipped', () => {
     const selector = { getSpeedScore: () => 0.5 };
-    const colors = computeProgressColors(selector, {
+    const segs = computeProgressColors(selector, {
       kind: 'groups',
       groups: [{ id: 'g0', itemIds: ['a'] }],
       skippedGroups: new Set(['g0']),
     });
-    assert.deepEqual(colors, []);
+    assert.deepEqual(segs, []);
   });
 
   it('sorts groups: seen by speed desc, unseen last', () => {
@@ -463,26 +544,31 @@ describe('computeProgressColors', () => {
         ] ?? null;
       },
     };
-    const colors = computeProgressColors(selector, {
+    const segs = computeProgressColors(selector, {
       kind: 'groups',
       groups: [
-        { id: 'g0', itemIds: ['a', 'b'] }, // avg speed 0.3
+        { id: 'g0', itemIds: ['a', 'b'] }, // avg speed 0.3, 2/2 seen
         { id: 'g1', itemIds: ['c', 'd'] }, // all unseen
-        { id: 'g2', itemIds: ['e', 'f'] }, // avg speed 0.9
+        { id: 'g2', itemIds: ['e', 'f'] }, // avg speed 0.9, 2/2 seen
       ],
     });
-    // Unseen group filtered by all-unseen? No — only if ALL groups unseen.
-    // Here group 0 and 2 are seen, group 1 is unseen.
-    assert.equal(colors.length, 3);
+    assert.equal(segs.length, 3);
     // Fastest seen first (group 2, speed 0.9), then slower (group 0), then unseen
-    assert.ok(colors[0].startsWith('hsl(80,'), `fastest: ${colors[0]}`);
-    assert.equal(colors[2], NONE);
+    assert.ok(
+      segs[0].color.startsWith('hsl(80,'),
+      `fastest: ${segs[0].color}`,
+    );
+    assert.equal(segs[2].color, NONE);
+    // Weight: fully seen groups = 1, unseen = 0
+    assert.equal(segs[0].weight, 1);
+    assert.equal(segs[1].weight, 1);
+    assert.equal(segs[2].weight, 0);
   });
 
   it('works with Map as skippedGroups (skill screen compat)', () => {
     const selector = { getSpeedScore: () => 0.5 };
     const skipped = new Map([['g0', 'mastered']]);
-    const colors = computeProgressColors(selector, {
+    const segs = computeProgressColors(selector, {
       kind: 'groups',
       groups: [
         { id: 'g0', itemIds: ['a'] },
@@ -490,6 +576,21 @@ describe('computeProgressColors', () => {
       ],
       skippedGroups: skipped,
     });
-    assert.equal(colors.length, 1);
+    assert.equal(segs.length, 1);
+  });
+
+  it('weight reflects fraction of seen items in a group', () => {
+    // 1 of 4 items seen in group
+    const selector = {
+      getSpeedScore(id: string) {
+        return id === 'a' ? 0.6 : null;
+      },
+    };
+    const segs = computeProgressColors(selector, {
+      kind: 'groups',
+      groups: [{ id: 'g0', itemIds: ['a', 'b', 'c', 'd'] }],
+    });
+    assert.equal(segs.length, 1);
+    assert.equal(segs[0].weight, 0.25); // 1/4
   });
 });

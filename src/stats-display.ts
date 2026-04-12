@@ -170,11 +170,15 @@ export function progressBarColors(
   return items.map((item) => item.color);
 }
 
+/** A progress bar segment with color and coverage weight. */
+export type ProgressSegment = { color: string; weight: number };
+
 /** Speed-only classification for a group of items. */
 export type GroupBarSegment = {
   color: string;
   zone: 0 | 2; // 0 = seen, 2 = unseen
   speed: number; // average speed (for sort within seen zone)
+  weight: number; // fraction of items seen (seenCount / totalCount)
 };
 
 /**
@@ -196,10 +200,11 @@ export function progressBarGroupSegment(
     }
   }
   if (speedCount === 0) {
-    return { color: heatmapColors().none, zone: 2, speed: 0 };
+    return { color: heatmapColors().none, zone: 2, speed: 0, weight: 0 };
   }
   const avgSpeed = speedSum / speedCount;
-  return { color: speedOnlyColor(avgSpeed), zone: 0, speed: avgSpeed };
+  const weight = speedCount / itemIds.length;
+  return { color: speedOnlyColor(avgSpeed), zone: 0, speed: avgSpeed, weight };
 }
 
 /** Convenience wrapper returning just the color string. */
@@ -222,15 +227,16 @@ export type ProgressColorInput =
   };
 
 /**
- * Compute sorted progress bar colors. Shared by home and skill screens.
- * - Groups: filters out skipped groups, one color per active group, sorted.
- * - Items: per-item sorted colors via progressBarColors.
+ * Compute sorted progress bar segments. Shared by home and skill screens.
+ * - Groups: filters out skipped groups, one segment per active group, sorted.
+ *   Weight = fraction of items seen in that group.
+ * - Items: per-item sorted colors via progressBarColors (weight always 1).
  * Returns [] for "not started" (all unseen or all skipped).
  */
 export function computeProgressColors(
   selector: ProgressSelector,
   input: ProgressColorInput,
-): string[] {
+): ProgressSegment[] {
   if (input.kind === 'items') {
     const ids = input.itemIds;
     const colors = progressBarColors(selector, ids);
@@ -239,7 +245,7 @@ export function computeProgressColors(
       colors.length > 0 && colors[0] === colors[colors.length - 1] &&
       selector.getSpeedScore(ids[0]) === null
     ) return [];
-    return colors;
+    return colors.map((c) => ({ color: c, weight: 1 }));
   }
   const skipped = input.skippedGroups;
   const active = skipped
@@ -254,7 +260,7 @@ export function computeProgressColors(
     if (a.zone !== b.zone) return a.zone - b.zone;
     return b.speed - a.speed;
   });
-  return segments.map((s) => s.color);
+  return segments.map((s) => ({ color: s.color, weight: s.weight }));
 }
 
 // --- Review timing pills ---

@@ -4,18 +4,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { type ButtonFeedback, NoteButtons } from './buttons.tsx';
-import {
-  getCalibrationThresholds,
-  pickCalibrationNote,
-} from '../quiz-engine.ts';
+import { pickCalibrationNote } from '../quiz-engine.ts';
+import { SpeedThresholdTable } from './speed-level-legend.tsx';
 import { computeMedian } from '../adaptive.ts';
 import type { MotorTaskType, SpeedCheckFixture } from '../types.ts';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 import { KeyboardHint } from './quiz-ui.tsx';
 import { isValidNoteInput, resolveNoteInput } from '../music-data.ts';
-import { Bar } from './layout.tsx';
-import { CloseButton } from './mode-screen.tsx';
+import { ScreenHeader } from './mode-screen.tsx';
 import {
   CenteredContent,
   LayoutFooter,
@@ -82,11 +79,12 @@ function SpeedCheckHeader(
 ) {
   return (
     <LayoutHeader>
-      <Bar gap='group' class='speed-check-header'>
-        <Text role='heading-page' class='speed-check-label'>Speed Check</Text>
-        {count && <Text role='metric-info'>{count}</Text>}
-        <CloseButton ariaLabel='Cancel speed check' onClick={onClose} />
-      </Bar>
+      <ScreenHeader
+        title='Speed Check'
+        onClose={onClose}
+        closeAriaLabel='Cancel speed check'
+        right={count ? <Text role='metric-info'>{count}</Text> : undefined}
+      />
     </LayoutHeader>
   );
 }
@@ -310,42 +308,10 @@ function SpeedCheckIntro(
 function SpeedCheckResults(
   { baseline }: { baseline: number },
 ) {
-  const thresholds = getCalibrationThresholds(baseline);
   return (
     <div class='calibration-results'>
       <Text role='heading-page' as='h2'>Speed Check Complete</Text>
-      <Text role='metric-primary' as='div' class='calibration-baseline'>
-        {(baseline / 1000).toFixed(2)}s
-      </Text>
-      <table class='calibration-thresholds'>
-        <thead>
-          <tr>
-            <th></th>
-            <th>Level</th>
-            <th>Max time</th>
-            <th>Meaning</th>
-          </tr>
-        </thead>
-        <tbody>
-          {thresholds.map((t) => (
-            <tr key={t.label}>
-              <td>
-                <span
-                  class='heatmap-swatch'
-                  style={`background-color: var(${t.colorToken})`}
-                />
-              </td>
-              <td>{t.label}</td>
-              <td>
-                {t.maxMs !== null
-                  ? (t.maxMs / 1000).toFixed(1) + 's'
-                  : '\u2014'}
-              </td>
-              <td>{t.meaning}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <SpeedThresholdTable baseline={baseline} />
     </div>
   );
 }

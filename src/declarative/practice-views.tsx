@@ -9,7 +9,11 @@ import type { useGroupScope } from '../hooks/use-group-scope.ts';
 import type { useQuizEngine } from '../hooks/use-quiz-engine.ts';
 import type { usePracticeSummary } from '../hooks/use-practice-summary.ts';
 
-import { formatReviewDuration, progressBarColors } from '../stats-display.ts';
+import {
+  formatReviewDuration,
+  progressBarColors,
+  type ProgressSegment,
+} from '../stats-display.ts';
 import {
   LevelProgressCard,
   LevelToggles,
@@ -139,6 +143,7 @@ export function LevelProgressCards<Q>(
             pill={pill}
             colors={colors}
             status={status}
+            baseline={learner.motorBaseline}
             onToggleKnown={() =>
               skipReason === 'mastered'
                 ? groupScopeResult.scopeActions.unskipGroup(id)
@@ -222,13 +227,23 @@ export function AboutTab(
 // ---------------------------------------------------------------------------
 
 export function IdlePracticeView<Q>(
-  { def, engine, learner, ctrl, groupScopeResult, ps, onCalibrate }: {
+  {
+    def,
+    engine,
+    learner,
+    ctrl,
+    groupScopeResult,
+    ps,
+    progressSegments,
+    onCalibrate,
+  }: {
     def: ModeDefinition<Q>;
     engine: ReturnType<typeof useQuizEngine>;
     learner: ReturnType<typeof useLearnerModel>;
     ctrl: ModeController<Q>;
     groupScopeResult: ReturnType<typeof useGroupScope> | null;
     ps: ReturnType<typeof usePracticeSummary>;
+    progressSegments: ProgressSegment[];
     onCalibrate?: () => void;
   },
 ) {
@@ -242,6 +257,10 @@ export function IdlePracticeView<Q>(
   return (
     <PracticeTab
       onStart={engine.start}
+      progressSegments={progressSegments}
+      progressKind={hasGroups ? 'multi-level' : 'single-level'}
+      progressBaseline={learner.motorBaseline}
+      description={def.description}
       scopeValid={!groupScopeResult || groupScopeResult.enabledGroups.size > 0}
       validationMessage='Select at least one level'
       startLabel={customItemCount != null

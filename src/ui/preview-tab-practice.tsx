@@ -42,17 +42,6 @@ import {
 // Mock data constants
 // ---------------------------------------------------------------------------
 
-const MOCK_PROGRESS_COLORS = [
-  'hsl(125, 48%, 33%)',
-  'hsl(125, 48%, 33%)',
-  'hsl(80, 35%, 40%)',
-  'hsl(60, 40%, 46%)',
-  'hsl(48, 50%, 52%)',
-  'var(--heatmap-1)',
-  'var(--heatmap-1)',
-  'var(--heatmap-1)',
-];
-
 const MOCK_SUGGESTION_LINES: SuggestionLine[] = [
   { verb: 'Review', levels: ['E string', 'A string'] },
   { verb: 'Start', levels: ['D string'] },
@@ -166,7 +155,6 @@ function Phase1Components(
             modeId='fretboard'
             title='Guitar Fretboard'
             totalReps={3473}
-            progressColors={MOCK_PROGRESS_COLORS}
             onBack={() => {}}
           />
         </Section>
@@ -175,7 +163,6 @@ function Phase1Components(
             modeId='noteSemitones'
             title='Note ↔ Semitones'
             totalReps={0}
-            progressColors={[]}
             onBack={() => {}}
           />
         </Section>
@@ -304,7 +291,6 @@ function Phase2MultiLevel(
           <SkillHeader
             modeId='fretboard'
             title='Guitar Fretboard'
-            progressColors={MOCK_PROGRESS_COLORS}
             onBack={() => {}}
           />
           <PracticeConfig
@@ -332,7 +318,6 @@ function Phase2MultiLevel(
           <SkillHeader
             modeId='fretboard'
             title='Guitar Fretboard'
-            progressColors={MOCK_PROGRESS_COLORS}
             onBack={() => {}}
           />
           <PracticeConfig
@@ -373,7 +358,6 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
           <SkillHeader
             modeId='noteSemitones'
             title='Note ↔ Semitones'
-            progressColors={MOCK_PROGRESS_COLORS.slice(0, 3)}
             onBack={() => {}}
           />
           <div
@@ -495,7 +479,6 @@ function ScreenLayoutIdleExamples(
             <SkillHeader
               modeId='fretboard'
               title='Guitar Fretboard'
-              progressColors={MOCK_PROGRESS_COLORS}
             />
           </LayoutHeader>
           <LayoutMain>
@@ -525,7 +508,6 @@ function ScreenLayoutIdleExamples(
             <SkillHeader
               modeId='fretboard'
               title='Guitar Fretboard'
-              progressColors={MOCK_PROGRESS_COLORS}
             />
           </LayoutHeader>
           <LayoutMain>
@@ -560,7 +542,6 @@ function ScreenLayoutIdleExamples(
             <SkillHeader
               modeId='noteSemitones'
               title='Note ↔ Semitones'
-              progressColors={MOCK_PROGRESS_COLORS.slice(0, 3)}
             />
           </LayoutHeader>
           <LayoutMain>{null}</LayoutMain>

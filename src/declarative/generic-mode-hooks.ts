@@ -23,7 +23,11 @@ import { useModeLifecycle } from '../hooks/use-mode-lifecycle.ts';
 import { useRoundSummary } from '../hooks/use-round-summary.ts';
 import { usePracticeSummary } from '../hooks/use-practice-summary.ts';
 
-import { computeProgressColors, progressBarColors } from '../stats-display.ts';
+import {
+  computeProgressColors,
+  progressBarColors,
+  type ProgressSegment,
+} from '../stats-display.ts';
 import type { LevelProgressEntry } from '../ui/mode-screen.tsx';
 import { IMPLEMENTED_TASK_TYPES } from '../ui/speed-check.tsx';
 
@@ -355,7 +359,7 @@ export function useProgressColors<Q>(
   learner: ReturnType<typeof useLearnerModel>,
   _phase: string,
   skippedGroups?: ReadonlyMap<string, unknown>,
-): string[] {
+): ProgressSegment[] {
   return useMemo(() => {
     if (def.scope.kind === 'groups') {
       const scope = def.scope;
