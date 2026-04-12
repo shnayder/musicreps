@@ -526,6 +526,14 @@ body {
 .layout-footer {
   flex-shrink: 0;
   border-top: 1px solid var(--color-border-lighter);
+  /* Clearance below Next/Continue buttons: breathing room + iOS home
+     indicator / app switcher gesture area. */
+  padding-bottom: max(var(--gap-group), env(safe-area-inset-bottom, 0));
+}
+/* mode-nav owns its own bottom safe-area clearance and must stay flush
+   to the screen edge, so don't double up. */
+.layout-footer:has(> .mode-nav) {
+  padding-bottom: 0;
 }
 
 /* --- Main content patterns --- */
@@ -570,14 +578,15 @@ body {
   justify-content: center;
   min-height: 0;
 }
-/* When the prompt contains a fretboard, let it claim remaining space
-   and shrink the response zone to its natural height. */
+/* When the prompt contains a fretboard, split space 70/30 between
+   fretboard and response (buttons).  flex-basis: 0 distributes all
+   available height by ratio instead of letting the fretboard hog it. */
 .quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-prompt {
-  flex: 1;
+  flex: 7 2 0;
   justify-content: flex-start;
 }
 .quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-response {
-  flex: none;
+  flex: 3 1 0;
   padding-top: var(--gap-group);
 }
 
@@ -1574,6 +1583,7 @@ body {
   width: 100%;
   min-width: 0;
   max-width: 500px;
+  max-height: 450px;
   height: 100%;
   margin: 0 auto;
 }
