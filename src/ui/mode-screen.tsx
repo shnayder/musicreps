@@ -188,6 +188,44 @@ export function ModeScreen(
 }
 
 // ---------------------------------------------------------------------------
+// ScreenHeader — shared chrome bar for top-level screens.
+// Layout: [close button (left)] [centered title + optional icon] [right slot]
+// Used by SkillHeader (skill idle) and SpeedCheckHeader (calibration).
+// ---------------------------------------------------------------------------
+
+export function ScreenHeader(
+  { title, icon, onClose, closeAriaLabel, right, class: extra }: {
+    title: string;
+    icon?: ComponentChildren;
+    onClose?: () => void;
+    closeAriaLabel?: string;
+    right?: ComponentChildren;
+    class?: string;
+  },
+) {
+  const cls = 'screen-header' + (extra ? ' ' + extra : '');
+  return (
+    <div class={cls}>
+      <Bar gap='group'>
+        {onClose
+          ? (
+            <CloseButton
+              ariaLabel={closeAriaLabel ?? 'Close'}
+              onClick={onClose}
+            />
+          )
+          : <div class='screen-header-spacer' />}
+        <div class='screen-header-title'>
+          {icon}
+          <Text role='heading-page' as='h1' class='mode-title'>{title}</Text>
+        </div>
+        {right ?? <div class='screen-header-spacer' />}
+      </Bar>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // ModeTopBar — close button + mode title + description
 // ---------------------------------------------------------------------------
 

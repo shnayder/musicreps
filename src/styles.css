@@ -1313,13 +1313,13 @@ body {
   margin-bottom: var(--gap-related);
 }
 
-/* --- Skill header: X (left) + icon+title (centered) + reps (right) --- */
-.skill-header {
-  padding: var(--gap-micro) var(--size-content-inset);
+/* --- Screen header: X (left) + centered title + optional right slot ---
+   Shared chrome bar used by SkillHeader, SpeedCheckHeader, etc. */
+.screen-header {
+  padding: var(--gap-group) var(--size-content-inset);
   background: var(--color-chrome);
 }
-/* skill-header-row: replaced by Bar gap='group' */
-.skill-header-title {
+.screen-header-title {
   flex: 1;
   display: flex;
   align-items: center;
@@ -1327,11 +1327,17 @@ body {
   gap: var(--gap-related);
   min-width: 0;
 }
-.skill-header-title .skill-icon {
+.screen-header-title .skill-icon {
   color: var(--type-heading-page-color);
 }
-.skill-header-title .mode-title {
+.screen-header-title .mode-title {
   flex: none;
+}
+/* Spacer keeps the centered title balanced when close or right slot is absent.
+   Matches close-btn width (~32px) + whatever the right slot would occupy. */
+.screen-header-spacer {
+  width: 32px;
+  flex-shrink: 0;
 }
 .skill-header-reps {
   display: flex;
@@ -1345,7 +1351,6 @@ body {
   color: var(--type-metric-effort-color);
   flex-shrink: 0;
 }
-/* skill-header-progress: removed — progress bar moved to tab content */
 
 /* --- Practice config: suggested/custom toggle --- */
 .practice-config {
@@ -1938,15 +1943,6 @@ button {
 /* ==========================================================================
    12. CALIBRATION
    ========================================================================== */
-.speed-check-header {
-  /* Bar gap='group' handles flex + gap */
-  padding: var(--gap-group) var(--gap-group) var(--gap-group)
-    var(--size-content-inset);
-  background: var(--color-chrome);
-}
-.speed-check-label {
-  flex: 1;
-}
 .heatmap-swatch {
   display: inline-block;
   width: 1rem;
