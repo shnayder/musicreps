@@ -2720,12 +2720,11 @@ button {
 }
 
 /* --- Tappable progress bar (button reset) ---
-   `all: unset` wipes every user-agent button default (background, border,
-   padding, font, text-align, etc.) so the variant class
-   (.progress-bar-labeled / .progress-bar-plain) applies cleanly regardless
-   of source order. We then re-establish the few properties the element
-   needs regardless of variant: block layout, full width, cursor. */
-button.progress-bar-tappable {
+   `:where()` gives this rule zero specificity, so it only resets the
+   user-agent button defaults without competing with the variant class
+   (.progress-bar-labeled / .progress-bar-plain). Those classes can set
+   background/border/padding freely, regardless of source order. */
+button:where(.progress-bar-tappable) {
   all: unset;
   display: block;
   width: 100%;
@@ -2812,7 +2811,7 @@ body.native-app .hint {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="5ce5e5 richer-progress-info"></div>
+  <div class="home-screen" id="home-screen" data-version="747765 richer-progress-info"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
