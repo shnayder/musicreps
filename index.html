@@ -296,9 +296,11 @@
   --opacity-pressed: 0.8;
   --opacity-subtle: 0.3;
 
-  /* Z-index scale */
+  /* Z-index scale — modal uses createPortal to document.body,
+     bypassing all stacking contexts. These tokens are for
+     elements within the normal layout flow. */
   --z-raised: 1;
-  --z-popover: 100;
+  --z-modal: 100;
 
   /* Font weights */
   --font-normal: 400;
@@ -552,6 +554,14 @@ body {
 .layout-footer {
   flex-shrink: 0;
   border-top: 1px solid var(--color-border-lighter);
+  /* Clearance below Next/Continue buttons: breathing room + iOS home
+     indicator / app switcher gesture area. */
+  padding-bottom: max(var(--gap-group), env(safe-area-inset-bottom, 0));
+}
+/* mode-nav owns its own bottom safe-area clearance and must stay flush
+   to the screen edge, so don't double up. */
+.layout-footer:has(> .mode-nav) {
+  padding-bottom: 0;
 }
 
 /* --- Main content patterns --- */
@@ -596,14 +606,15 @@ body {
   justify-content: center;
   min-height: 0;
 }
-/* When the prompt contains a fretboard, let it claim remaining space
-   and shrink the response zone to its natural height. */
+/* When the prompt contains a fretboard, split space 70/30 between
+   fretboard and response (buttons).  flex-basis: 0 distributes all
+   available height by ratio instead of letting the fretboard hog it. */
 .quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-prompt {
-  flex: 1;
+  flex: 7 2 0;
   justify-content: flex-start;
 }
 .quiz-stage:has(.quiz-stage-prompt svg.fretboard) > .quiz-stage-response {
-  flex: none;
+  flex: 3 1 0;
   padding-top: var(--gap-group);
 }
 
@@ -1339,13 +1350,13 @@ body {
   margin-bottom: var(--gap-related);
 }
 
-/* --- Skill header: X (left) + icon+title (centered) + reps (right) --- */
-.skill-header {
-  padding: var(--gap-micro) var(--size-content-inset);
+/* --- Screen header: X (left) + centered title + optional right slot ---
+   Shared chrome bar used by SkillHeader, SpeedCheckHeader, etc. */
+.screen-header {
+  padding: var(--gap-group) var(--size-content-inset);
   background: var(--color-chrome);
 }
-/* skill-header-row: replaced by Bar gap='group' */
-.skill-header-title {
+.screen-header-title {
   flex: 1;
   display: flex;
   align-items: center;
@@ -1353,11 +1364,17 @@ body {
   gap: var(--gap-related);
   min-width: 0;
 }
-.skill-header-title .skill-icon {
+.screen-header-title .skill-icon {
   color: var(--type-heading-page-color);
 }
-.skill-header-title .mode-title {
+.screen-header-title .mode-title {
   flex: none;
+}
+/* Spacer keeps the centered title balanced when close or right slot is absent.
+   Matches the close button touch-target width so centering stays consistent. */
+.screen-header-spacer {
+  width: var(--size-touch-target);
+  flex-shrink: 0;
 }
 .skill-header-reps {
   display: flex;
@@ -1371,7 +1388,6 @@ body {
   color: var(--type-metric-effort-color);
   flex-shrink: 0;
 }
-/* skill-header-progress: margin replaced by Stack gap='group' */
 
 /* --- Practice config: suggested/custom toggle --- */
 .practice-config {
@@ -1582,13 +1598,12 @@ body {
   height: 8px;
   border-radius: var(--radius-sm);
   overflow: hidden;
-  background: var(--color-surface);
+  background: var(--heatmap-none);
 }
 .group-progress-bar.skipped {
   opacity: var(--opacity-subtle);
 }
 .group-bar-slice {
-  flex: 1;
   min-width: 0;
 }
 .fretboard-container {
@@ -1596,6 +1611,7 @@ body {
   width: 100%;
   min-width: 0;
   max-width: 500px;
+  max-height: 450px;
   height: 100%;
   margin: 0 auto;
 }
@@ -1965,15 +1981,6 @@ button {
 /* ==========================================================================
    12. CALIBRATION
    ========================================================================== */
-.speed-check-header {
-  /* Bar gap='group' handles flex + gap */
-  padding: var(--gap-group) var(--gap-group) var(--gap-group)
-    var(--size-content-inset);
-  background: var(--color-chrome);
-}
-.speed-check-label {
-  flex: 1;
-}
 .heatmap-swatch {
   display: inline-block;
   width: 1rem;
@@ -1989,39 +1996,6 @@ button {
   text-align: center;
   max-width: 420px;
   margin: 0 auto;
-}
-.calibration-baseline {
-  font-variant-numeric: tabular-nums;
-  margin: var(--gap-group) 0 var(--pad-region);
-}
-.calibration-thresholds {
-  border-collapse: collapse;
-  margin: 0 auto var(--pad-region);
-  font-size: var(--text-sm);
-  width: 100%;
-}
-.calibration-thresholds th,
-.calibration-thresholds td {
-  border: 1px solid var(--color-border-light);
-  padding: 0.35rem var(--gap-group);
-  text-align: left;
-}
-.calibration-thresholds th {
-  background: var(--color-surface);
-  font-weight: var(--font-semibold);
-}
-.calibration-thresholds td:first-child {
-  width: 1.5rem;
-  text-align: center;
-  padding: 0.35rem var(--gap-related);
-}
-.calibration-thresholds td:nth-child(2) {
-  font-weight: var(--font-semibold);
-  white-space: nowrap;
-}
-.calibration-thresholds td:nth-child(3) {
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
 }
 
 /* ==========================================================================
@@ -2671,7 +2645,95 @@ button {
 }
 
 /* ==========================================================================
-   18. REDUCED MOTION
+   18. MODAL
+   ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: var(--pad-region);
+}
+.modal-surface {
+  background: var(--color-overlay-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--pad-component);
+  max-width: 400px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--gap-group);
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: var(--gap-related);
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+}
+
+/* --- Speed level legend (progress bar modal) --- */
+.speed-legend-table {
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  width: 100%;
+  margin-top: var(--gap-group);
+}
+.speed-legend-table th,
+.speed-legend-table td {
+  border: 1px solid var(--color-border-light);
+  padding: 0.35rem var(--gap-group);
+  text-align: left;
+}
+.speed-legend-table th {
+  background: var(--color-surface);
+  font-weight: var(--font-semibold);
+}
+.speed-legend-table td:first-child {
+  width: 1.5rem;
+  text-align: center;
+  padding: 0.35rem var(--gap-related);
+}
+.speed-legend-table td:nth-child(2) {
+  font-weight: var(--font-semibold);
+  white-space: nowrap;
+}
+.speed-legend-table td:nth-child(3) {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.speed-baseline-note {
+  margin-top: var(--gap-group);
+}
+
+/* --- Tappable progress bar (button reset) ---
+   `:where()` gives this rule zero specificity, so it only resets the
+   user-agent button defaults without competing with the variant class
+   (.progress-bar-labeled / .progress-bar-plain). Those classes can set
+   background/border/padding freely, regardless of source order. */
+button:where(.progress-bar-tappable) {
+  all: unset;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   19. REDUCED MOTION
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -2749,7 +2811,7 @@ body.native-app .hint {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1358"></div>
+  <div class="home-screen" id="home-screen" data-version="#1382"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -2769,8 +2831,8 @@ body.native-app .hint {
 (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropNames = Object.getOwnPropertyNames;
-  var __esm = (fn, res) => function __init() {
-    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+  var __esm = (fn2, res) => function __init() {
+    return fn2 && (res = (0, fn2[__getOwnPropNames(fn2)[0]])(fn2 = 0)), res;
   };
   var __export = (target, all) => {
     for (var name in all)
@@ -2867,9 +2929,9 @@ body.native-app .hint {
             let remove;
             const wrapper = (...args) => {
               const p3 = loadPluginImplementation().then((impl) => {
-                const fn = createPluginMethod(impl, prop);
-                if (fn) {
-                  const p4 = fn(...args);
+                const fn2 = createPluginMethod(impl, prop);
+                if (fn2) {
+                  const p4 = fn2(...args);
                   remove = p4 === null || p4 === void 0 ? void 0 : p4.remove;
                   return p4;
                 } else {
@@ -3431,8 +3493,8 @@ body.native-app .hint {
     I.__r = 0;
   }
   function P(n2, l3, u4, t3, i3, r3, o3, e3, f4, c3, s3) {
-    var a3, h3, y3, d4, w3, g2, _3, m3 = t3 && t3.__k || v, b = l3.length;
-    for (f4 = A(u4, l3, m3, f4, b), a3 = 0; a3 < b; a3++) null != (y3 = u4.__k[a3]) && (h3 = -1 != y3.__i && m3[y3.__i] || p, y3.__i = a3, g2 = z(n2, y3, h3, i3, r3, o3, e3, f4, c3, s3), d4 = y3.__e, y3.ref && h3.ref != y3.ref && (h3.ref && D(h3.ref, null, y3), s3.push(y3.ref, y3.__c || d4, y3)), null == w3 && null != d4 && (w3 = d4), (_3 = !!(4 & y3.__u)) || h3.__k === y3.__k ? f4 = H(y3, f4, n2, _3) : "function" == typeof y3.type && void 0 !== g2 ? f4 = g2 : d4 && (f4 = d4.nextSibling), y3.__u &= -7);
+    var a3, h3, y3, d4, w3, g4, _3, m3 = t3 && t3.__k || v, b2 = l3.length;
+    for (f4 = A(u4, l3, m3, f4, b2), a3 = 0; a3 < b2; a3++) null != (y3 = u4.__k[a3]) && (h3 = -1 != y3.__i && m3[y3.__i] || p, y3.__i = a3, g4 = z(n2, y3, h3, i3, r3, o3, e3, f4, c3, s3), d4 = y3.__e, y3.ref && h3.ref != y3.ref && (h3.ref && D(h3.ref, null, y3), s3.push(y3.ref, y3.__c || d4, y3)), null == w3 && null != d4 && (w3 = d4), (_3 = !!(4 & y3.__u)) || h3.__k === y3.__k ? f4 = H(y3, f4, n2, _3) : "function" == typeof y3.type && void 0 !== g4 ? f4 = g4 : d4 && (f4 = d4.nextSibling), y3.__u &= -7);
     return u4.__e = w3, f4;
   }
   function A(n2, l3, u4, t3, i3) {
@@ -3452,6 +3514,11 @@ body.native-app .hint {
       l3 = l3 && l3.nextSibling;
     } while (null != l3 && 8 == l3.nodeType);
     return l3;
+  }
+  function L(n2, l3) {
+    return l3 = l3 || [], null == n2 || "boolean" == typeof n2 || (d(n2) ? n2.some(function(n3) {
+      L(n3, l3);
+    }) : l3.push(n2)), l3;
   }
   function T(n2, l3, u4, t3) {
     var i3, r3, o3, e3 = n2.key, f4 = n2.type, c3 = l3[u4], s3 = null != c3 && 0 == (2 & c3.__u);
@@ -3493,33 +3560,33 @@ body.native-app .hint {
     };
   }
   function z(n2, u4, t3, i3, r3, o3, e3, f4, c3, s3) {
-    var a3, h3, p3, y3, _3, m3, b, S2, C3, M2, $2, I2, A3, H2, L, T3 = u4.type;
+    var a3, h3, p3, y3, _3, m3, b2, S2, C3, M2, $3, I2, A4, H3, L2, T4 = u4.type;
     if (void 0 !== u4.constructor) return null;
     128 & t3.__u && (c3 = !!(32 & t3.__u), o3 = [f4 = u4.__e = t3.__e]), (a3 = l.__b) && a3(u4);
-    n: if ("function" == typeof T3) try {
-      if (S2 = u4.props, C3 = "prototype" in T3 && T3.prototype.render, M2 = (a3 = T3.contextType) && i3[a3.__c], $2 = a3 ? M2 ? M2.props.value : a3.__ : i3, t3.__c ? b = (h3 = u4.__c = t3.__c).__ = h3.__E : (C3 ? u4.__c = h3 = new T3(S2, $2) : (u4.__c = h3 = new x(S2, $2), h3.constructor = T3, h3.render = G), M2 && M2.sub(h3), h3.state || (h3.state = {}), h3.__n = i3, p3 = h3.__d = true, h3.__h = [], h3._sb = []), C3 && null == h3.__s && (h3.__s = h3.state), C3 && null != T3.getDerivedStateFromProps && (h3.__s == h3.state && (h3.__s = w({}, h3.__s)), w(h3.__s, T3.getDerivedStateFromProps(S2, h3.__s))), y3 = h3.props, _3 = h3.state, h3.__v = u4, p3) C3 && null == T3.getDerivedStateFromProps && null != h3.componentWillMount && h3.componentWillMount(), C3 && null != h3.componentDidMount && h3.__h.push(h3.componentDidMount);
+    n: if ("function" == typeof T4) try {
+      if (S2 = u4.props, C3 = "prototype" in T4 && T4.prototype.render, M2 = (a3 = T4.contextType) && i3[a3.__c], $3 = a3 ? M2 ? M2.props.value : a3.__ : i3, t3.__c ? b2 = (h3 = u4.__c = t3.__c).__ = h3.__E : (C3 ? u4.__c = h3 = new T4(S2, $3) : (u4.__c = h3 = new x(S2, $3), h3.constructor = T4, h3.render = G), M2 && M2.sub(h3), h3.state || (h3.state = {}), h3.__n = i3, p3 = h3.__d = true, h3.__h = [], h3._sb = []), C3 && null == h3.__s && (h3.__s = h3.state), C3 && null != T4.getDerivedStateFromProps && (h3.__s == h3.state && (h3.__s = w({}, h3.__s)), w(h3.__s, T4.getDerivedStateFromProps(S2, h3.__s))), y3 = h3.props, _3 = h3.state, h3.__v = u4, p3) C3 && null == T4.getDerivedStateFromProps && null != h3.componentWillMount && h3.componentWillMount(), C3 && null != h3.componentDidMount && h3.__h.push(h3.componentDidMount);
       else {
-        if (C3 && null == T3.getDerivedStateFromProps && S2 !== y3 && null != h3.componentWillReceiveProps && h3.componentWillReceiveProps(S2, $2), u4.__v == t3.__v || !h3.__e && null != h3.shouldComponentUpdate && false === h3.shouldComponentUpdate(S2, h3.__s, $2)) {
+        if (C3 && null == T4.getDerivedStateFromProps && S2 !== y3 && null != h3.componentWillReceiveProps && h3.componentWillReceiveProps(S2, $3), u4.__v == t3.__v || !h3.__e && null != h3.shouldComponentUpdate && false === h3.shouldComponentUpdate(S2, h3.__s, $3)) {
           u4.__v != t3.__v && (h3.props = S2, h3.state = h3.__s, h3.__d = false), u4.__e = t3.__e, u4.__k = t3.__k, u4.__k.some(function(n3) {
             n3 && (n3.__ = u4);
           }), v.push.apply(h3.__h, h3._sb), h3._sb = [], h3.__h.length && e3.push(h3);
           break n;
         }
-        null != h3.componentWillUpdate && h3.componentWillUpdate(S2, h3.__s, $2), C3 && null != h3.componentDidUpdate && h3.__h.push(function() {
+        null != h3.componentWillUpdate && h3.componentWillUpdate(S2, h3.__s, $3), C3 && null != h3.componentDidUpdate && h3.__h.push(function() {
           h3.componentDidUpdate(y3, _3, m3);
         });
       }
-      if (h3.context = $2, h3.props = S2, h3.__P = n2, h3.__e = false, I2 = l.__r, A3 = 0, C3) h3.state = h3.__s, h3.__d = false, I2 && I2(u4), a3 = h3.render(h3.props, h3.state, h3.context), v.push.apply(h3.__h, h3._sb), h3._sb = [];
+      if (h3.context = $3, h3.props = S2, h3.__P = n2, h3.__e = false, I2 = l.__r, A4 = 0, C3) h3.state = h3.__s, h3.__d = false, I2 && I2(u4), a3 = h3.render(h3.props, h3.state, h3.context), v.push.apply(h3.__h, h3._sb), h3._sb = [];
       else do {
         h3.__d = false, I2 && I2(u4), a3 = h3.render(h3.props, h3.state, h3.context), h3.state = h3.__s;
-      } while (h3.__d && ++A3 < 25);
-      h3.state = h3.__s, null != h3.getChildContext && (i3 = w(w({}, i3), h3.getChildContext())), C3 && !p3 && null != h3.getSnapshotBeforeUpdate && (m3 = h3.getSnapshotBeforeUpdate(y3, _3)), H2 = null != a3 && a3.type === k && null == a3.key ? q(a3.props.children) : a3, f4 = P(n2, d(H2) ? H2 : [H2], u4, t3, i3, r3, o3, e3, f4, c3, s3), h3.base = u4.__e, u4.__u &= -161, h3.__h.length && e3.push(h3), b && (h3.__E = h3.__ = null);
+      } while (h3.__d && ++A4 < 25);
+      h3.state = h3.__s, null != h3.getChildContext && (i3 = w(w({}, i3), h3.getChildContext())), C3 && !p3 && null != h3.getSnapshotBeforeUpdate && (m3 = h3.getSnapshotBeforeUpdate(y3, _3)), H3 = null != a3 && a3.type === k && null == a3.key ? q(a3.props.children) : a3, f4 = P(n2, d(H3) ? H3 : [H3], u4, t3, i3, r3, o3, e3, f4, c3, s3), h3.base = u4.__e, u4.__u &= -161, h3.__h.length && e3.push(h3), b2 && (h3.__E = h3.__ = null);
     } catch (n3) {
       if (u4.__v = null, c3 || null != o3) if (n3.then) {
         for (u4.__u |= c3 ? 160 : 128; f4 && 8 == f4.nodeType && f4.nextSibling; ) f4 = f4.nextSibling;
         o3[o3.indexOf(f4)] = null, u4.__e = f4;
       } else {
-        for (L = o3.length; L--; ) g(o3[L]);
+        for (L2 = o3.length; L2--; ) g(o3[L2]);
         N(u4);
       }
       else u4.__e = t3.__e, u4.__k = t3.__k, n3.then || N(u4);
@@ -3547,25 +3614,25 @@ body.native-app .hint {
     return "object" != typeof n2 || null == n2 || n2.__b > 0 ? n2 : d(n2) ? n2.map(q) : w({}, n2);
   }
   function B(u4, t3, i3, r3, o3, e3, f4, c3, s3) {
-    var a3, h3, v3, y3, w3, _3, m3, b = i3.props || p, k3 = t3.props, x2 = t3.type;
-    if ("svg" == x2 ? o3 = "http://www.w3.org/2000/svg" : "math" == x2 ? o3 = "http://www.w3.org/1998/Math/MathML" : o3 || (o3 = "http://www.w3.org/1999/xhtml"), null != e3) {
-      for (a3 = 0; a3 < e3.length; a3++) if ((w3 = e3[a3]) && "setAttribute" in w3 == !!x2 && (x2 ? w3.localName == x2 : 3 == w3.nodeType)) {
+    var a3, h3, v3, y3, w3, _3, m3, b2 = i3.props || p, k3 = t3.props, x3 = t3.type;
+    if ("svg" == x3 ? o3 = "http://www.w3.org/2000/svg" : "math" == x3 ? o3 = "http://www.w3.org/1998/Math/MathML" : o3 || (o3 = "http://www.w3.org/1999/xhtml"), null != e3) {
+      for (a3 = 0; a3 < e3.length; a3++) if ((w3 = e3[a3]) && "setAttribute" in w3 == !!x3 && (x3 ? w3.localName == x3 : 3 == w3.nodeType)) {
         u4 = w3, e3[a3] = null;
         break;
       }
     }
     if (null == u4) {
-      if (null == x2) return document.createTextNode(k3);
-      u4 = document.createElementNS(o3, x2, k3.is && k3), c3 && (l.__m && l.__m(t3, e3), c3 = false), e3 = null;
+      if (null == x3) return document.createTextNode(k3);
+      u4 = document.createElementNS(o3, x3, k3.is && k3), c3 && (l.__m && l.__m(t3, e3), c3 = false), e3 = null;
     }
-    if (null == x2) b === k3 || c3 && u4.data == k3 || (u4.data = k3);
+    if (null == x3) b2 === k3 || c3 && u4.data == k3 || (u4.data = k3);
     else {
-      if (e3 = e3 && n.call(u4.childNodes), !c3 && null != e3) for (b = {}, a3 = 0; a3 < u4.attributes.length; a3++) b[(w3 = u4.attributes[a3]).name] = w3.value;
-      for (a3 in b) w3 = b[a3], "dangerouslySetInnerHTML" == a3 ? v3 = w3 : "children" == a3 || a3 in k3 || "value" == a3 && "defaultValue" in k3 || "checked" == a3 && "defaultChecked" in k3 || F(u4, a3, null, w3, o3);
-      for (a3 in k3) w3 = k3[a3], "children" == a3 ? y3 = w3 : "dangerouslySetInnerHTML" == a3 ? h3 = w3 : "value" == a3 ? _3 = w3 : "checked" == a3 ? m3 = w3 : c3 && "function" != typeof w3 || b[a3] === w3 || F(u4, a3, w3, b[a3], o3);
+      if (e3 = e3 && n.call(u4.childNodes), !c3 && null != e3) for (b2 = {}, a3 = 0; a3 < u4.attributes.length; a3++) b2[(w3 = u4.attributes[a3]).name] = w3.value;
+      for (a3 in b2) w3 = b2[a3], "dangerouslySetInnerHTML" == a3 ? v3 = w3 : "children" == a3 || a3 in k3 || "value" == a3 && "defaultValue" in k3 || "checked" == a3 && "defaultChecked" in k3 || F(u4, a3, null, w3, o3);
+      for (a3 in k3) w3 = k3[a3], "children" == a3 ? y3 = w3 : "dangerouslySetInnerHTML" == a3 ? h3 = w3 : "value" == a3 ? _3 = w3 : "checked" == a3 ? m3 = w3 : c3 && "function" != typeof w3 || b2[a3] === w3 || F(u4, a3, w3, b2[a3], o3);
       if (h3) c3 || v3 && (h3.__html == v3.__html || h3.__html == u4.innerHTML) || (u4.innerHTML = h3.__html), t3.__k = [];
-      else if (v3 && (u4.innerHTML = ""), P("template" == t3.type ? u4.content : u4, d(y3) ? y3 : [y3], t3, i3, r3, "foreignObject" == x2 ? "http://www.w3.org/1999/xhtml" : o3, e3, f4, e3 ? e3[0] : i3.__k && S(i3, 0), c3, s3), null != e3) for (a3 = e3.length; a3--; ) g(e3[a3]);
-      c3 || (a3 = "value", "progress" == x2 && null == _3 ? u4.removeAttribute("value") : null != _3 && (_3 !== u4[a3] || "progress" == x2 && !_3 || "option" == x2 && _3 != b[a3]) && F(u4, a3, _3, b[a3], o3), a3 = "checked", null != m3 && m3 != u4[a3] && F(u4, a3, m3, b[a3], o3));
+      else if (v3 && (u4.innerHTML = ""), P("template" == t3.type ? u4.content : u4, d(y3) ? y3 : [y3], t3, i3, r3, "foreignObject" == x3 ? "http://www.w3.org/1999/xhtml" : o3, e3, f4, e3 ? e3[0] : i3.__k && S(i3, 0), c3, s3), null != e3) for (a3 = e3.length; a3--; ) g(e3[a3]);
+      c3 || (a3 = "value", "progress" == x3 && null == _3 ? u4.removeAttribute("value") : null != _3 && (_3 !== u4[a3] || "progress" == x3 && !_3 || "option" == x3 && _3 != b2[a3]) && F(u4, a3, _3, b2[a3], o3), a3 = "checked", null != m3 && m3 != u4[a3] && F(u4, a3, m3, b2[a3], o3));
     }
     return u4;
   }
@@ -5044,7 +5111,7 @@ body.native-app .hint {
   }
   function computeMedian(values) {
     if (values.length === 0) return null;
-    const sorted = [...values].sort((a3, b) => a3 - b);
+    const sorted = [...values].sort((a3, b2) => a3 - b2);
     const mid = Math.floor(sorted.length / 2);
     if (sorted.length % 2 === 1) return sorted[mid];
     return (sorted[mid - 1] + sorted[mid]) / 2;
@@ -5122,7 +5189,7 @@ body.native-app .hint {
         values.push(0);
       }
     }
-    values.sort((a3, b) => a3 - b);
+    values.sort((a3, b2) => a3 - b2);
     const rawIndex = Math.ceil(values.length * percentile) - 1;
     const index = Math.min(values.length - 1, Math.max(0, rawIndex));
     return { level: values[index], seen };
@@ -5151,10 +5218,10 @@ body.native-app .hint {
         totalCount: items.length
       };
     });
-    results.sort((a3, b) => {
-      const workDiff = b.workingCount + b.unseenCount - (a3.workingCount + a3.unseenCount);
+    results.sort((a3, b2) => {
+      const workDiff = b2.workingCount + b2.unseenCount - (a3.workingCount + a3.unseenCount);
       if (workDiff !== 0) return workDiff;
-      return a3.groupId.localeCompare(b.groupId);
+      return a3.groupId.localeCompare(b2.groupId);
     });
     return results;
   }
@@ -5432,7 +5499,7 @@ body.native-app .hint {
     );
     const daily = getDailyReps();
     const global2 = computeGlobalEffort(modeEfforts, daily);
-    const recentDays = Object.entries(global2.dailyReps).sort(([a3], [b]) => b.localeCompare(a3)).slice(0, 14).map(([date, count]) => ({ date, count }));
+    const recentDays = Object.entries(global2.dailyReps).sort(([a3], [b2]) => b2.localeCompare(a3)).slice(0, 14).map(([date, count]) => ({ date, count }));
     return {
       modeEfforts,
       totalReps: global2.totalReps,
@@ -5860,9 +5927,9 @@ body.native-app .hint {
       const color = zone === 2 ? c3.none : speedOnlyColor(sp);
       return { zone, level: sp !== null ? speedLevel(sp) : -1, color };
     });
-    items.sort((a3, b) => {
-      if (a3.zone !== b.zone) return a3.zone - b.zone;
-      return b.level - a3.level;
+    items.sort((a3, b2) => {
+      if (a3.zone !== b2.zone) return a3.zone - b2.zone;
+      return b2.level - a3.level;
     });
     return items.map((item) => item.color);
   }
@@ -5876,30 +5943,31 @@ body.native-app .hint {
       }
     }
     if (speedCount === 0) {
-      return { color: heatmapColors().none, zone: 2, speed: 0 };
+      return { color: heatmapColors().none, zone: 2, speed: 0, weight: 0 };
     }
     const avgSpeed = speedSum / speedCount;
-    return { color: speedOnlyColor(avgSpeed), zone: 0, speed: avgSpeed };
+    const weight = speedCount / itemIds.length;
+    return { color: speedOnlyColor(avgSpeed), zone: 0, speed: avgSpeed, weight };
   }
   function computeProgressColors(selector, input) {
     if (input.kind === "items") {
       const ids = input.itemIds;
       const colors = progressBarColors(selector, ids);
       if (colors.length > 0 && colors[0] === colors[colors.length - 1] && selector.getSpeedScore(ids[0]) === null) return [];
-      return colors;
+      return colors.map((c3) => ({ color: c3, weight: 1 }));
     }
     const skipped = input.skippedGroups;
-    const active = skipped ? input.groups.filter((g2) => !skipped.has(g2.id)) : input.groups;
+    const active = skipped ? input.groups.filter((g4) => !skipped.has(g4.id)) : input.groups;
     if (active.length === 0) return [];
     const segments = active.map(
-      (g2) => progressBarGroupSegment(selector, g2.itemIds)
+      (g4) => progressBarGroupSegment(selector, g4.itemIds)
     );
     if (segments.every((s3) => s3.zone === 2)) return [];
-    segments.sort((a3, b) => {
-      if (a3.zone !== b.zone) return a3.zone - b.zone;
-      return b.speed - a3.speed;
+    segments.sort((a3, b2) => {
+      if (a3.zone !== b2.zone) return a3.zone - b2.zone;
+      return b2.speed - a3.speed;
     });
-    return segments.map((s3) => s3.color);
+    return segments.map((s3) => ({ color: s3.color, weight: s3.weight }));
   }
   function formatReviewDuration(hours) {
     const days = Math.round(hours / 24);
@@ -5980,8 +6048,8 @@ body.native-app .hint {
   function stringLines(stringCount = 6) {
     return Array.from({ length: stringCount }, (_3, i3) => {
       const thickness = 1 + i3 * 0.4;
-      const x2 = stringX(i3, stringCount);
-      return `<line class="fb-string" x1="${x2}" y1="0" x2="${x2}" y2="${SVG_HEIGHT}" stroke-width="${thickness}"/>`;
+      const x3 = stringX(i3, stringCount);
+      return `<line class="fb-string" x1="${x3}" y1="0" x2="${x3}" y2="${SVG_HEIGHT}" stroke-width="${thickness}"/>`;
     }).join("\n      ");
   }
   function fretMarkerDots(stringCount = 6, markers = [3, 5, 7, 9, 12], fretCount = 13) {
@@ -5989,15 +6057,15 @@ body.native-app .hint {
     return markers.filter((fret) => fret < fretCount).map((fret) => {
       const cy = noteY(fret);
       if (fret === 12) {
-        let x1, x2;
+        let x1, x22;
         if (stringCount <= 4) {
           x1 = stringX(1, stringCount);
-          x2 = stringX(stringCount - 2, stringCount);
+          x22 = stringX(stringCount - 2, stringCount);
         } else {
           x1 = (stringX(1, stringCount) + stringX(2, stringCount)) / 2;
-          x2 = (stringX(stringCount - 3, stringCount) + stringX(stringCount - 2, stringCount)) / 2;
+          x22 = (stringX(stringCount - 3, stringCount) + stringX(stringCount - 2, stringCount)) / 2;
         }
-        return `<circle class="fb-marker" cx="${x1}" cy="${cy}" r="4"/><circle class="fb-marker" cx="${x2}" cy="${cy}" r="4"/>`;
+        return `<circle class="fb-marker" cx="${x1}" cy="${cy}" r="4"/><circle class="fb-marker" cx="${x22}" cy="${cy}" r="4"/>`;
       }
       return `<circle class="fb-marker" cx="${w3 / 2}" cy="${cy}" r="4"/>`;
     }).join("\n      ");
@@ -6022,11 +6090,11 @@ body.native-app .hint {
       { length: stringCount },
       (_3, string) => Array.from({ length: fretCount }, (_4, fret) => {
         const cx = stringX(string, stringCount);
-        const x2 = Math.max(0, cx - STRING_GAP / 2);
+        const x3 = Math.max(0, cx - STRING_GAP / 2);
         const right = Math.min(w3, cx + STRING_GAP / 2);
         const y3 = fret === 0 ? 0 : fretPositions[fret];
         const bottom = fretPositions[fret + 1] ?? fretPositions[fretPositions.length - 1];
-        return `<rect class="fb-tap" data-string="${string}" data-fret="${fret}" x="${x2}" y="${y3}" width="${right - x2}" height="${bottom - y3}"/>`;
+        return `<rect class="fb-tap" data-string="${string}" data-fret="${fret}" x="${x3}" y="${y3}" width="${right - x3}" height="${bottom - y3}"/>`;
       }).join("\n      ")
     ).join("\n      ");
   }
@@ -6200,7 +6268,7 @@ body.native-app .hint {
   }
   function getItemIdsForGroup(instrument, groupId) {
     const groups = getGroups(instrument);
-    const group = groups.find((g2) => g2.id === groupId);
+    const group = groups.find((g4) => g4.id === groupId);
     if (!group) return [];
     const fb = getHelpers(instrument);
     return fb.getItemIdsForFretRange(
@@ -6220,7 +6288,7 @@ body.native-app .hint {
     return items;
   }
   function getAllGroupIds(instrument) {
-    return getGroups(instrument).map((g2) => g2.id);
+    return getGroups(instrument).map((g4) => g4.id);
   }
   function getQuestion(instrument, itemId2) {
     const fb = getHelpers(instrument);
@@ -6229,7 +6297,7 @@ body.native-app .hint {
   function formatLabel(instrument, enabledGroups) {
     const groups = getGroups(instrument);
     if (enabledGroups.size === groups.length) return "all groups";
-    const labels = groups.filter((g2) => enabledGroups.has(g2.id)).map((g2) => g2.label());
+    const labels = groups.filter((g4) => enabledGroups.has(g4.id)).map((g4) => g4.label());
     return labels.join(", ");
   }
 
@@ -6263,7 +6331,7 @@ body.native-app .hint {
       getPromptText: () => "Name this note",
       quizInstruction: "What note is this?",
       answer: {
-        getExpectedValue: (q3) => q3.currentNote,
+        getExpectedValue: (q4) => q4.currentNote,
         comparison: "note-enharmonic"
       },
       validateInput: (_q, input) => isValidNoteInput(input),
@@ -6282,11 +6350,11 @@ body.native-app .hint {
       useController: (enabledGroups) => useFretboardController(instrument, groups, enabledGroups)
     };
   }
-  function renderFretboardPrompt(q3, quizFbRef, svgHTML) {
+  function renderFretboardPrompt(q4, quizFbRef, svgHTML) {
     const el = quizFbRef.current;
     if (el) {
       clearAll(el);
-      setCircleFill(el, q3.currentString, q3.currentFret, FB_QUIZ_HL);
+      setCircleFill(el, q4.currentString, q4.currentFret, FB_QUIZ_HL);
     }
     return /* @__PURE__ */ u3(
       "div",
@@ -6328,8 +6396,8 @@ body.native-app .hint {
     );
     const hasAccidentals = T2(() => {
       for (const id of enabledGroups) {
-        const g2 = groups.find((g3) => g3.id === id);
-        if (g2?.noteFilter === "sharps-flats") return true;
+        const g4 = groups.find((g5) => g5.id === id);
+        if (g4?.noteFilter === "sharps-flats") return true;
       }
       return false;
     }, [enabledGroups, groups]);
@@ -6351,7 +6419,7 @@ body.native-app .hint {
       [pendingNote]
     );
     const renderPrompt = q2(
-      (q3) => renderFretboardPrompt(q3, quizFbRef, svgHTML),
+      (q4) => renderFretboardPrompt(q4, quizFbRef, svgHTML),
       [svgHTML]
     );
     const renderStats = q2(
@@ -6363,9 +6431,9 @@ body.native-app .hint {
       renderStats,
       onAnswer: (itemId2, result) => {
         if (quizFbRef.current) {
-          const q3 = getQuestion(instrument, itemId2);
+          const q4 = getQuestion(instrument, itemId2);
           const color = result.correct ? "var(--color-success)" : "var(--color-error)";
-          setCircleFill(quizFbRef.current, q3.currentString, q3.currentFret, color);
+          setCircleFill(quizFbRef.current, q4.currentString, q4.currentFret, color);
         }
       },
       onStart: () => noteHandler.reset(),
@@ -6395,8 +6463,8 @@ body.native-app .hint {
   function buildMathIds(notes, values) {
     const ids = [];
     for (let i3 = 0; i3 < notes.length; i3++) {
-      for (let j3 = 0; j3 < values.length; j3++) {
-        ids.push(notes[i3] + "+" + values[j3], notes[i3] + "-" + values[j3]);
+      for (let j4 = 0; j4 < values.length; j4++) {
+        ids.push(notes[i3] + "+" + values[j4], notes[i3] + "-" + values[j4]);
       }
     }
     return ids;
@@ -6446,23 +6514,23 @@ body.native-app .hint {
     itemNoun: "items",
     allItems: ALL_ITEMS,
     getQuestion: getQuestion2,
-    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.accidentalChoice) : String(q3.noteNum),
-    quizInstruction: (q3) => q3.dir === "fwd" ? "What number?" : "What note?",
+    getPromptText: (q4) => q4.dir === "fwd" ? displayNote(q4.accidentalChoice) : String(q4.noteNum),
+    quizInstruction: (q4) => q4.dir === "fwd" ? "What number?" : "What note?",
     answer: {
       kind: "bidirectional",
       fwd: {
-        getExpectedValue: (q3) => String(q3.noteNum),
+        getExpectedValue: (q4) => String(q4.noteNum),
         comparison: "integer"
       },
       rev: {
-        getExpectedValue: (q3) => q3.noteName,
+        getExpectedValue: (q4) => q4.noteName,
         comparison: "note-enharmonic",
-        getDisplayAnswer: (q3) => displayNote(q3.accidentalChoice)
+        getDisplayAnswer: (q4) => displayNote(q4.accidentalChoice)
       }
     },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 0, 11) : isValidNoteInput(input),
-    getDirection: (q3) => q3.dir,
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "0\u201311" : "Note name",
+    validateInput: (q4, input) => q4.dir === "fwd" ? isValidNumberInput(input, 0, 11) : isValidNoteInput(input),
+    getDirection: (q4) => q4.dir,
+    inputPlaceholder: (q4) => q4.dir === "fwd" ? "0\u201311" : "Note name",
     buttons: {
       kind: "bidirectional",
       fwd: { kind: "number", start: 0, end: 11 },
@@ -6512,22 +6580,22 @@ body.native-app .hint {
     itemNoun: "items",
     allItems: ALL_ITEMS2,
     getQuestion: getQuestion3,
-    getPromptText: (q3) => q3.dir === "fwd" ? q3.name : String(q3.num),
-    quizInstruction: (q3) => q3.dir === "fwd" ? "How many semitones?" : "What interval?",
+    getPromptText: (q4) => q4.dir === "fwd" ? q4.name : String(q4.num),
+    quizInstruction: (q4) => q4.dir === "fwd" ? "How many semitones?" : "What interval?",
     answer: {
       kind: "bidirectional",
       fwd: {
-        getExpectedValue: (q3) => String(q3.num),
+        getExpectedValue: (q4) => String(q4.num),
         comparison: "integer"
       },
       rev: {
-        getExpectedValue: (q3) => q3.abbrev,
+        getExpectedValue: (q4) => q4.abbrev,
         comparison: "interval"
       }
     },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNumberInput(input, 1, 12) : isValidIntervalInput(input),
-    getDirection: (q3) => q3.dir,
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "1\u201312" : "Interval (e.g. P5)",
+    validateInput: (q4, input) => q4.dir === "fwd" ? isValidNumberInput(input, 1, 12) : isValidIntervalInput(input),
+    getDirection: (q4) => q4.dir,
+    inputPlaceholder: (q4) => q4.dir === "fwd" ? "1\u201312" : "Interval (e.g. P5)",
     buttons: {
       kind: "bidirectional",
       fwd: { kind: "number", start: 1, end: 12 },
@@ -6576,7 +6644,7 @@ body.native-app .hint {
     }
   ];
   function getItemIdsForGroup2(groupId) {
-    const group = DISTANCE_GROUPS.find((g2) => g2.id === groupId);
+    const group = DISTANCE_GROUPS.find((g4) => g4.id === groupId);
     if (!group) return [];
     const items = [];
     for (const note of NOTES) {
@@ -6591,7 +6659,7 @@ body.native-app .hint {
     NOTES.map((n2) => n2.name),
     Array.from({ length: 11 }, (_3, i3) => i3 + 1)
   );
-  var ALL_GROUP_IDS = DISTANCE_GROUPS.map((g2) => g2.id);
+  var ALL_GROUP_IDS = DISTANCE_GROUPS.map((g4) => g4.id);
   function getQuestion4(itemId2) {
     const parsed = parseMathId(itemId2);
     const noteName = parsed.note;
@@ -6632,15 +6700,15 @@ body.native-app .hint {
     itemNoun: "items",
     allItems: ALL_ITEMS3,
     getQuestion: getQuestion4,
-    getPromptText: (q3) => q3.promptText,
+    getPromptText: (q4) => q4.promptText,
     quizInstruction: "What note?",
     answer: {
-      getExpectedValue: (q3) => q3.answer.name,
+      getExpectedValue: (q4) => q4.answer.name,
       comparison: "note-enharmonic",
-      getDisplayAnswer: (q3) => displayNote(pickAccidentalName(q3.answer.displayName, q3.useFlats))
+      getDisplayAnswer: (q4) => displayNote(pickAccidentalName(q4.answer.displayName, q4.useFlats))
     },
     validateInput: (_q, input) => isValidNoteInput(input),
-    getUseFlats: (q3) => q3.useFlats,
+    getUseFlats: (q4) => q4.useFlats,
     inputPlaceholder: "Note name",
     buttons: { kind: "note" },
     scope: {
@@ -6653,7 +6721,7 @@ body.native-app .hint {
       defaultEnabled: [ALL_GROUP_IDS[0]],
       formatLabel: (groups) => {
         if (groups.size === DISTANCE_GROUPS.length) return "all distances";
-        const labels = DISTANCE_GROUPS.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
+        const labels = DISTANCE_GROUPS.filter((g4) => groups.has(g4.id)).map((g4) => g4.label);
         return labels.join(", ");
       }
     },
@@ -6701,7 +6769,7 @@ body.native-app .hint {
     }
   ];
   function getItemIdsForGroup3(groupId) {
-    const group = DISTANCE_GROUPS2.find((g2) => g2.id === groupId);
+    const group = DISTANCE_GROUPS2.find((g4) => g4.id === groupId);
     if (!group) return [];
     const intervals = MATH_INTERVALS.filter(
       (i3) => group.distances.includes(i3.num)
@@ -6719,7 +6787,7 @@ body.native-app .hint {
     NOTES.map((n2) => n2.name),
     MATH_INTERVALS.map((i3) => i3.abbrev)
   );
-  var ALL_GROUP_IDS2 = DISTANCE_GROUPS2.map((g2) => g2.id);
+  var ALL_GROUP_IDS2 = DISTANCE_GROUPS2.map((g4) => g4.id);
   function getQuestion5(itemId2) {
     const parsed = parseMathId(itemId2);
     const noteName = parsed.note;
@@ -6758,15 +6826,15 @@ body.native-app .hint {
     itemNoun: "items",
     allItems: ALL_ITEMS4,
     getQuestion: getQuestion5,
-    getPromptText: (q3) => q3.promptText,
+    getPromptText: (q4) => q4.promptText,
     quizInstruction: "What note?",
     answer: {
-      getExpectedValue: (q3) => q3.answer.name,
+      getExpectedValue: (q4) => q4.answer.name,
       comparison: "note-enharmonic",
-      getDisplayAnswer: (q3) => displayNote(pickAccidentalName(q3.answer.displayName, q3.useFlats))
+      getDisplayAnswer: (q4) => displayNote(pickAccidentalName(q4.answer.displayName, q4.useFlats))
     },
     validateInput: (_q, input) => isValidNoteInput(input),
-    getUseFlats: (q3) => q3.useFlats,
+    getUseFlats: (q4) => q4.useFlats,
     inputPlaceholder: "Note name",
     buttons: { kind: "note" },
     scope: {
@@ -6779,7 +6847,7 @@ body.native-app .hint {
       defaultEnabled: [ALL_GROUP_IDS2[0]],
       formatLabel: (groups) => {
         if (groups.size === DISTANCE_GROUPS2.length) return "all intervals";
-        const labels = DISTANCE_GROUPS2.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
+        const labels = DISTANCE_GROUPS2.filter((g4) => groups.has(g4.id)).map((g4) => g4.label);
         return labels.join(", ");
       }
     },
@@ -6838,7 +6906,7 @@ body.native-app .hint {
   ];
   var ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
   function getItemIdsForGroup4(groupId) {
-    const group = ALL_KEY_GROUPS.find((g2) => g2.id === groupId);
+    const group = ALL_KEY_GROUPS.find((g4) => g4.id === groupId);
     if (!group) return [];
     const items = [];
     for (const root of group.keys) {
@@ -6856,7 +6924,7 @@ body.native-app .hint {
     ALL_ITEMS5.push(minorRoot + "m:fwd");
     ALL_ITEMS5.push(minorRoot + "m:rev");
   }
-  var ALL_GROUP_IDS3 = ALL_KEY_GROUPS.map((g2) => g2.id);
+  var ALL_GROUP_IDS3 = ALL_KEY_GROUPS.map((g4) => g4.id);
   function getQuestion6(itemId2) {
     const [rootPart, dir] = itemId2.split(":");
     const isMinor = rootPart.endsWith("m") && rootPart.length > 1 && MINOR_ROOT_TO_MAJOR.has(rootPart.slice(0, -1));
@@ -6904,23 +6972,23 @@ body.native-app .hint {
     itemNoun: "items",
     allItems: ALL_ITEMS5,
     getQuestion: getQuestion6,
-    getPromptText: (q3) => q3.dir === "fwd" ? displayNote(q3.root) + " " + q3.quality : displayKeysigLabel(q3.sigLabel) + ", " + q3.quality,
-    quizInstruction: (q3) => q3.dir === "fwd" ? "How many \u266F or \u266D?" : "Name the key",
+    getPromptText: (q4) => q4.dir === "fwd" ? displayNote(q4.root) + " " + q4.quality : displayKeysigLabel(q4.sigLabel) + ", " + q4.quality,
+    quizInstruction: (q4) => q4.dir === "fwd" ? "How many \u266F or \u266D?" : "Name the key",
     answer: {
       kind: "bidirectional",
       fwd: {
-        getExpectedValue: (q3) => q3.sigLabel,
+        getExpectedValue: (q4) => q4.sigLabel,
         comparison: "exact"
       },
       rev: {
-        getExpectedValue: (q3) => q3.root,
+        getExpectedValue: (q4) => q4.root,
         comparison: "note-enharmonic"
       }
     },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidKeysigInput(input) : isValidNoteInput(input),
-    getDirection: (q3) => q3.dir,
-    getUseFlats: (q3) => q3.sigLabel.includes("b"),
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Signature (e.g. 2#)" : "Note name",
+    validateInput: (q4, input) => q4.dir === "fwd" ? isValidKeysigInput(input) : isValidNoteInput(input),
+    getDirection: (q4) => q4.dir,
+    getUseFlats: (q4) => q4.sigLabel.includes("b"),
+    inputPlaceholder: (q4) => q4.dir === "fwd" ? "Signature (e.g. 2#)" : "Note name",
     buttons: {
       kind: "bidirectional",
       fwd: { kind: "split-keysig" },
@@ -6936,7 +7004,7 @@ body.native-app .hint {
       defaultEnabled: [ALL_GROUP_IDS3[0]],
       formatLabel: (groups) => {
         if (groups.size === ALL_KEY_GROUPS.length) return "all keys";
-        const keys = ALL_KEY_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.keys).map((k3) => displayNote(k3));
+        const keys = ALL_KEY_GROUPS.filter((g4) => groups.has(g4.id)).flatMap((g4) => g4.keys).map((k3) => displayNote(k3));
         return keys.join(", ");
       }
     },
@@ -6974,7 +7042,7 @@ body.native-app .hint {
     }
   ];
   function getItemIdsForGroup5(groupId) {
-    const group = DEGREE_GROUPS.find((g2) => g2.id === groupId);
+    const group = DEGREE_GROUPS.find((g4) => g4.id === groupId);
     if (!group) return [];
     const items = [];
     for (const key of MAJOR_KEYS) {
@@ -6992,7 +7060,7 @@ body.native-app .hint {
       ALL_ITEMS6.push(key.root + ":" + d4 + ":rev");
     }
   }
-  var ALL_GROUP_IDS4 = DEGREE_GROUPS.map((g2) => g2.id);
+  var ALL_GROUP_IDS4 = DEGREE_GROUPS.map((g4) => g4.id);
   var GRID_NOTES = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
     displayName: k3.root
@@ -7021,24 +7089,24 @@ body.native-app .hint {
     itemNoun: "items",
     allItems: ALL_ITEMS6,
     getQuestion: getQuestion7,
-    getPromptText: (q3) => q3.dir === "fwd" ? DEGREE_LABELS2[q3.degree - 1] + " of " + displayNote(q3.keyRoot) + " major" : displayNote(q3.keyRoot) + " major: " + displayNote(q3.noteName),
-    quizInstruction: (q3) => q3.dir === "fwd" ? "What note?" : "What degree?",
+    getPromptText: (q4) => q4.dir === "fwd" ? DEGREE_LABELS2[q4.degree - 1] + " of " + displayNote(q4.keyRoot) + " major" : displayNote(q4.keyRoot) + " major: " + displayNote(q4.noteName),
+    quizInstruction: (q4) => q4.dir === "fwd" ? "What note?" : "What degree?",
     answer: {
       kind: "bidirectional",
       fwd: {
-        getExpectedValue: (q3) => q3.noteName,
+        getExpectedValue: (q4) => q4.noteName,
         comparison: "note-enharmonic"
       },
       rev: {
-        getExpectedValue: (q3) => String(q3.degree),
+        getExpectedValue: (q4) => String(q4.degree),
         comparison: "exact",
-        getDisplayAnswer: (q3) => DEGREE_LABELS2[q3.degree - 1]
+        getDisplayAnswer: (q4) => DEGREE_LABELS2[q4.degree - 1]
       }
     },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : /^[2-7]$/.test(input),
-    getDirection: (q3) => q3.dir,
-    getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Degree (2\u20137)",
+    validateInput: (q4, input) => q4.dir === "fwd" ? isValidNoteInput(input) : /^[2-7]$/.test(input),
+    getDirection: (q4) => q4.dir,
+    getUseFlats: (q4) => rootUsesFlats(q4.keyRoot),
+    inputPlaceholder: (q4) => q4.dir === "fwd" ? "Note name" : "Degree (2\u20137)",
     buttons: {
       kind: "bidirectional",
       fwd: { kind: "note" },
@@ -7054,7 +7122,7 @@ body.native-app .hint {
       defaultEnabled: [ALL_GROUP_IDS4[0]],
       formatLabel: (groups) => {
         if (groups.size === DEGREE_GROUPS.length) return "all degrees";
-        const degrees = DEGREE_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.degrees).sort((a3, b) => a3 - b);
+        const degrees = DEGREE_GROUPS.filter((g4) => groups.has(g4.id)).flatMap((g4) => g4.degrees).sort((a3, b2) => a3 - b2);
         return degrees.map((d4) => DEGREE_LABELS2[d4 - 1]).join(", ") + " degrees";
       }
     },
@@ -7089,7 +7157,7 @@ body.native-app .hint {
     }
   ];
   function getItemIdsForGroup6(groupId) {
-    const group = CHORD_GROUPS.find((g2) => g2.id === groupId);
+    const group = CHORD_GROUPS.find((g4) => g4.id === groupId);
     if (!group) return [];
     const items = [];
     for (const key of MAJOR_KEYS) {
@@ -7107,7 +7175,7 @@ body.native-app .hint {
       ALL_ITEMS7.push(key.root + ":" + d4 + ":rev");
     }
   }
-  var ALL_GROUP_IDS5 = CHORD_GROUPS.map((g2) => g2.id);
+  var ALL_GROUP_IDS5 = CHORD_GROUPS.map((g4) => g4.id);
   var GRID_NOTES2 = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
     displayName: k3.root
@@ -7143,25 +7211,25 @@ body.native-app .hint {
     itemNoun: "items",
     allItems: ALL_ITEMS7,
     getQuestion: getQuestion8,
-    getPromptText: (q3) => q3.dir === "fwd" ? q3.chord.numeral + " in " + displayNote(q3.keyRoot) + " major" : displayNote(q3.rootNote) + q3.chord.qualityLabel + " in " + displayNote(q3.keyRoot) + " major",
-    quizInstruction: (q3) => q3.dir === "fwd" ? "What chord root?" : "What numeral?",
+    getPromptText: (q4) => q4.dir === "fwd" ? q4.chord.numeral + " in " + displayNote(q4.keyRoot) + " major" : displayNote(q4.rootNote) + q4.chord.qualityLabel + " in " + displayNote(q4.keyRoot) + " major",
+    quizInstruction: (q4) => q4.dir === "fwd" ? "What chord root?" : "What numeral?",
     answer: {
       kind: "bidirectional",
       fwd: {
-        getExpectedValue: (q3) => q3.rootNote,
+        getExpectedValue: (q4) => q4.rootNote,
         comparison: "note-enharmonic",
-        getDisplayAnswer: (q3) => displayNote(q3.rootNote) + " " + q3.chord.quality
+        getDisplayAnswer: (q4) => displayNote(q4.rootNote) + " " + q4.chord.quality
       },
       rev: {
-        getExpectedValue: (q3) => q3.chord.numeral,
+        getExpectedValue: (q4) => q4.chord.numeral,
         comparison: "exact",
         normalizeInput: normalizeNumeralInput
       }
     },
-    validateInput: (q3, input) => q3.dir === "fwd" ? isValidNoteInput(input) : isValidNumeralInput(input) || /^[1-7]$/.test(input) || input === "vii",
-    getDirection: (q3) => q3.dir,
-    getUseFlats: (q3) => rootUsesFlats(q3.keyRoot),
-    inputPlaceholder: (q3) => q3.dir === "fwd" ? "Note name" : "Numeral (e.g. IV)",
+    validateInput: (q4, input) => q4.dir === "fwd" ? isValidNoteInput(input) : isValidNumeralInput(input) || /^[1-7]$/.test(input) || input === "vii",
+    getDirection: (q4) => q4.dir,
+    getUseFlats: (q4) => rootUsesFlats(q4.keyRoot),
+    inputPlaceholder: (q4) => q4.dir === "fwd" ? "Note name" : "Numeral (e.g. IV)",
     buttons: {
       kind: "bidirectional",
       fwd: { kind: "note" },
@@ -7177,7 +7245,7 @@ body.native-app .hint {
       defaultEnabled: [ALL_GROUP_IDS5[0]],
       formatLabel: (groups) => {
         if (groups.size === CHORD_GROUPS.length) return "all chords";
-        const numerals = CHORD_GROUPS.filter((g2) => groups.has(g2.id)).flatMap((g2) => g2.degrees).sort((a3, b) => a3 - b).map((d4) => ROMAN_NUMERALS[d4 - 1]);
+        const numerals = CHORD_GROUPS.filter((g4) => groups.has(g4.id)).flatMap((g4) => g4.degrees).sort((a3, b2) => a3 - b2).map((d4) => ROMAN_NUMERALS[d4 - 1]);
         return numerals.join(", ") + " chords";
       }
     },
@@ -7214,18 +7282,18 @@ body.native-app .hint {
       if (ct.group > maxGroup) maxGroup = ct.group;
     }
     const result = [];
-    for (let g2 = 0; g2 <= maxGroup; g2++) {
-      const types = CHORD_TYPES.filter((t3) => t3.group === g2);
+    for (let g4 = 0; g4 <= maxGroup; g4++) {
+      const types = CHORD_TYPES.filter((t3) => t3.group === g4);
       const label = types.map((t3) => t3.symbol || "maj").join(", ");
-      const longLabel = GROUP_LONG_LABELS[g2] ?? label;
-      const id = GROUP_IDS[g2] ?? String(g2);
+      const longLabel = GROUP_LONG_LABELS[g4] ?? label;
+      const id = GROUP_IDS[g4] ?? String(g4);
       result.push({ id, types, label, longLabel });
     }
     return result;
   }
   var SPELLING_GROUPS = buildGroups();
   function getItemIdsForGroup7(groupId) {
-    const group = SPELLING_GROUPS.find((g2) => g2.id === groupId);
+    const group = SPELLING_GROUPS.find((g4) => g4.id === groupId);
     if (!group) return [];
     const items = [];
     for (const root of CHORD_ROOTS) {
@@ -7241,7 +7309,7 @@ body.native-app .hint {
       ALL_ITEMS8.push(root + ":" + type.name);
     }
   }
-  var ALL_GROUP_IDS6 = SPELLING_GROUPS.map((g2) => g2.id);
+  var ALL_GROUP_IDS6 = SPELLING_GROUPS.map((g4) => g4.id);
   var GRID_NOTES3 = CHORD_ROOTS.map((r3) => ({
     name: r3,
     displayName: r3
@@ -7255,9 +7323,9 @@ body.native-app .hint {
     const tones = getChordTones(rootName, chordType);
     return { rootName, chordType, tones };
   }
-  function evaluate(q3, inputs) {
+  function evaluate(q4, inputs) {
     const perEntry = inputs.map((input, i3) => {
-      const expected = q3.tones[i3];
+      const expected = q4.tones[i3];
       const isCorrect = expected !== void 0 && spelledNoteMatchesInput(expected, input);
       return {
         display: isCorrect ? displayNote(expected) : displayNote(input),
@@ -7265,8 +7333,8 @@ body.native-app .hint {
       };
     });
     return {
-      correct: inputs.length === q3.tones.length && perEntry.every((e3) => e3.correct),
-      correctAnswer: q3.tones.map(displayNote).join(" "),
+      correct: inputs.length === q4.tones.length && perEntry.every((e3) => e3.correct),
+      correctAnswer: q4.tones.map(displayNote).join(" "),
       perEntry
     };
   }
@@ -7300,11 +7368,11 @@ body.native-app .hint {
     itemNoun: "items",
     allItems: ALL_ITEMS8,
     getQuestion: (itemId2) => parseItem(itemId2),
-    getPromptText: (q3) => displayNote(q3.rootName) + q3.chordType.symbol,
+    getPromptText: (q4) => displayNote(q4.rootName) + q4.chordType.symbol,
     quizInstruction: "Spell this chord",
     // Sequential: collect N notes, then evaluate all at once
     sequential: {
-      expectedCount: (q3) => q3.tones.length,
+      expectedCount: (q4) => q4.tones.length,
       evaluate,
       parseBatchInput: parseChordInput,
       batchPlaceholder: "e.g. C E G \u2014 Enter"
@@ -7320,7 +7388,7 @@ body.native-app .hint {
       defaultEnabled: [ALL_GROUP_IDS6[0]],
       formatLabel: (groups) => {
         if (groups.size === SPELLING_GROUPS.length) return "all chord types";
-        const labels = SPELLING_GROUPS.filter((g2) => groups.has(g2.id)).map((g2) => g2.label);
+        const labels = SPELLING_GROUPS.filter((g4) => groups.has(g4.id)).map((g4) => g4.label);
         return labels.join(", ") + " chords";
       }
     },
@@ -7362,8 +7430,8 @@ body.native-app .hint {
   function positionKey(pos) {
     return pos.string + "-" + pos.fret;
   }
-  function evaluate2(q3, tapped) {
-    const targetSet = new Set(q3.positions.map(positionKey));
+  function evaluate2(q4, tapped) {
+    const targetSet = new Set(q4.positions.map(positionKey));
     const tappedSet = new Set(tapped);
     const perEntry = tapped.map((pos) => ({
       positionKey: pos,
@@ -7373,7 +7441,7 @@ body.native-app .hint {
     const correct = perEntry.every((e3) => e3.correct) && missed.length === 0;
     return {
       correct,
-      correctAnswer: displayNote(q3.note),
+      correctAnswer: displayNote(q4.note),
       perEntry,
       missed
     };
@@ -7383,7 +7451,7 @@ body.native-app .hint {
     { id: "naturals", label: "Naturals", longLabel: "Natural notes" },
     { id: "sharps-flats", label: "\u266F/\u266D", longLabel: "Sharps & flats" }
   ];
-  var ALL_GROUP_IDS7 = NOTE_GROUPS.map((g2) => g2.id);
+  var ALL_GROUP_IDS7 = NOTE_GROUPS.map((g4) => g4.id);
   function getItemIdsForGroup8(groupId) {
     return groupId === "naturals" ? NATURAL_NOTES.slice() : ACCIDENTAL_NOTES.slice();
   }
@@ -7402,8 +7470,8 @@ body.native-app .hint {
           html += "<th>" + displayNote(NOTES[i3].name) + "</th>";
         }
         html += "</tr></thead><tbody><tr>";
-        for (let j3 = 0; j3 < NOTES.length; j3++) {
-          html += '<td class="stats-cell" style="background:' + getStatsCellColor(selector, NOTES[j3].name) + '"></td>';
+        for (let j4 = 0; j4 < NOTES.length; j4++) {
+          html += '<td class="stats-cell" style="background:' + getStatsCellColor(selector, NOTES[j4].name) + '"></td>';
         }
         html += "</tr></tbody></table>";
         return /* @__PURE__ */ u3(
@@ -7428,10 +7496,10 @@ body.native-app .hint {
     itemNoun: "notes",
     allItems: ALL_ITEMS9,
     getQuestion: parseItem2,
-    getPromptText: (q3) => q3.displayName,
+    getPromptText: (q4) => q4.displayName,
     quizInstruction: "Tap all note positions",
     multiTap: {
-      getTargets: (q3) => q3.positions.map(positionKey),
+      getTargets: (q4) => q4.positions.map(positionKey),
       evaluate: evaluate2
     },
     getExpectedResponseCount: (itemId2) => getPositionsForNote(itemId2).length,
@@ -7552,8 +7620,8 @@ body.native-app .hint {
   function allItems(instrument) {
     return getVoicings(instrument).map(itemId);
   }
-  function evaluate3(q3, tapped) {
-    const targetSet = new Set(q3.playedPositions);
+  function evaluate3(q4, tapped) {
+    const targetSet = new Set(q4.playedPositions);
     const tappedSet = new Set(tapped);
     const perEntry = tapped.map((pos) => ({
       positionKey: pos,
@@ -7563,7 +7631,7 @@ body.native-app .hint {
     const correct = perEntry.every((e3) => e3.correct) && missed.length === 0;
     return {
       correct,
-      correctAnswer: q3.displayName,
+      correctAnswer: q4.displayName,
       perEntry,
       missed
     };
@@ -7573,7 +7641,7 @@ body.native-app .hint {
     { id: "minor", label: "Minor", longLabel: "Minor chords" },
     { id: "dom7", label: "7th", longLabel: "Dominant 7th chords" }
   ];
-  var ALL_GROUP_IDS8 = QUALITY_GROUPS.map((g2) => g2.id);
+  var ALL_GROUP_IDS8 = QUALITY_GROUPS.map((g4) => g4.id);
   function getItemIdsForGroup9(instrument, groupId) {
     return getVoicings(instrument).filter((v3) => v3.quality === groupId).map(itemId);
   }
@@ -7605,17 +7673,17 @@ body.native-app .hint {
             qualities.push(v3.quality);
           }
         }
-        const symbolFor = (q3) => voicings.find((v3) => v3.quality === q3)?.symbol ?? q3;
+        const symbolFor = (q4) => voicings.find((v3) => v3.quality === q4)?.symbol ?? q4;
         let html = '<table class="stats-table chord-shapes-stats"><thead><tr>';
         html += "<th></th>";
         for (const r3 of roots) html += "<th>" + displayNote(r3) + "</th>";
         html += "</tr></thead><tbody>";
-        for (const q3 of qualities) {
-          html += "<tr><th>" + (symbolFor(q3) || "maj") + "</th>";
+        for (const q4 of qualities) {
+          html += "<tr><th>" + (symbolFor(q4) || "maj") + "</th>";
           for (const r3 of roots) {
-            const id = r3 + ":" + q3;
+            const id = r3 + ":" + q4;
             const exists = voicings.some(
-              (v3) => v3.root === r3 && v3.quality === q3
+              (v3) => v3.root === r3 && v3.quality === q4
             );
             if (exists) {
               html += '<td class="stats-cell" style="background:' + getStatsCellColor(selector, id) + '"></td>';
@@ -7653,18 +7721,18 @@ body.native-app .hint {
       itemNoun: "chords",
       allItems: items,
       getQuestion: (itemId2) => parseItem3(instrument, itemId2),
-      getPromptText: (q3) => q3.displayName,
+      getPromptText: (q4) => q4.displayName,
       quizInstruction: "Tap all played positions",
       multiTap: {
-        getTargets: (q3) => q3.playedPositions,
+        getTargets: (q4) => q4.playedPositions,
         evaluate: evaluate3,
         stringCount,
-        getMutedStrings: (q3) => q3.mutedStrings,
+        getMutedStrings: (q4) => q4.mutedStrings,
         onePerString: true
       },
       getExpectedResponseCount: (itemId2) => {
-        const q3 = parseItem3(instrument, itemId2);
-        return q3.playedPositions.length;
+        const q4 = parseItem3(instrument, itemId2);
+        return q4.playedPositions.length;
       },
       buttons: { kind: "none" },
       scope: {
@@ -7707,11 +7775,11 @@ body.native-app .hint {
     return {
       modeId: def.id,
       namespace: def.namespace,
-      groups: scope.kind === "groups" ? scope.groups.map((g2) => ({
-        id: g2.id,
-        label: g2.label,
-        longLabel: g2.longLabel,
-        getItemIds: () => scope.getItemIdsForGroup(g2.id)
+      groups: scope.kind === "groups" ? scope.groups.map((g4) => ({
+        id: g4.id,
+        label: g4.label,
+        longLabel: g4.longLabel,
+        getItemIds: () => scope.getItemIdsForGroup(g4.id)
       })) : [{ id: "all", label: "All", getItemIds: () => def.allItems }],
       allItemIds: () => def.allItems
     };
@@ -7728,21 +7796,21 @@ body.native-app .hint {
   function computeSkillRecommendation(entry, storage2, motorBaseline, skippedGroups, config) {
     const cfg = motorBaseline !== null ? deriveScaledConfig(motorBaseline) : void 0;
     const selector = createAdaptiveSelector(storage2, cfg);
-    const allGroupIds = entry.groups.filter((g2) => !skippedGroups.has(g2.id)).map((g2) => g2.id);
+    const allGroupIds = entry.groups.filter((g4) => !skippedGroups.has(g4.id)).map((g4) => g4.id);
     if (allGroupIds.length === 0) return notStarted(entry.modeId);
-    const groupById = new Map(entry.groups.map((g2) => [g2.id, g2]));
+    const groupById = new Map(entry.groups.map((g4) => [g4.id, g4]));
     const getItemIds = (id) => groupById.get(id)?.getItemIds() ?? [];
     const allItemIds = allGroupIds.flatMap(getItemIds);
     const { seen } = selector.getLevelSpeed(allItemIds);
     if (seen === 0) return notStarted(entry.modeId);
-    const idOrder = new Map(entry.groups.map((g2, i3) => [g2.id, i3]));
+    const idOrder = new Map(entry.groups.map((g4, i3) => [g4.id, i3]));
     const result = computeRecommendations(
       selector,
       allGroupIds,
       getItemIds,
       config,
       {
-        sortUnstarted: (a3, b) => (idOrder.get(a3.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0)
+        sortUnstarted: (a3, b2) => (idOrder.get(a3.groupId) ?? 0) - (idOrder.get(b2.groupId) ?? 0)
       }
     );
     return classifySkill(entry, result);
@@ -7752,7 +7820,7 @@ body.native-app .hint {
     const singleGroup = entry.groups.length <= 1;
     const resolve = (v3) => typeof v3 === "function" ? v3() : v3;
     const labelMap = new Map(
-      entry.groups.map((g2) => [g2.id, resolve(g2.longLabel ?? g2.label)])
+      entry.groups.map((g4) => [g4.id, resolve(g4.longLabel ?? g4.label)])
     );
     if (result.levelRecs.length === 0) {
       return { modeId, type: "automatic", urgency: 0, cueLabel: "", detail: "" };
@@ -7805,10 +7873,10 @@ body.native-app .hint {
       (r3) => r3.type === "review" || r3.type === "practice" || r3.type === "start"
     );
     if (actionable.length > 0) {
-      actionable.sort((a3, b) => {
-        const pd = TYPE_PRIORITY[a3.type] - TYPE_PRIORITY[b.type];
+      actionable.sort((a3, b2) => {
+        const pd = TYPE_PRIORITY[a3.type] - TYPE_PRIORITY[b2.type];
         if (pd !== 0) return pd;
-        return b.urgency - a3.urgency;
+        return b2.urgency - a3.urgency;
       });
       return actionable.slice(0, maxCount);
     }
@@ -7852,18 +7920,18 @@ body.native-app .hint {
     const selector = createAdaptiveSelector(storage2, cfg);
     const input = entry.groups.length === 1 ? { kind: "items", itemIds: entry.allItemIds() } : {
       kind: "groups",
-      groups: entry.groups.map((g2) => ({
-        id: g2.id,
-        itemIds: g2.getItemIds()
+      groups: entry.groups.map((g4) => ({
+        id: g4.id,
+        itemIds: g4.getItemIds()
       })),
       skippedGroups
     };
-    const activeGroupCount = skippedGroups ? entry.groups.filter((g2) => !skippedGroups.has(g2.id)).length : entry.groups.length;
+    const activeGroupCount = skippedGroups ? entry.groups.filter((g4) => !skippedGroups.has(g4.id)).length : entry.groups.length;
     if (entry.groups.length === 1 && skippedGroups?.has(entry.groups[0].id)) {
-      return { groupColors: [], activeGroupCount: 0 };
+      return { segments: [], activeGroupCount: 0 };
     }
     return {
-      groupColors: computeProgressColors(selector, input),
+      segments: computeProgressColors(selector, input),
       activeGroupCount
     };
   }
@@ -8036,15 +8104,376 @@ body.native-app .hint {
     return /* @__PURE__ */ u3("div", { class: cls, children });
   }
 
-  // src/ui/scope.tsx
-  function GroupProgressBar({ colors, disabled }) {
-    return /* @__PURE__ */ u3("div", { class: "group-progress-bar" + (disabled ? " skipped" : ""), children: colors.map((color, i3) => /* @__PURE__ */ u3("div", { class: "group-bar-slice", style: `background:${color}` }, i3)) });
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/compat/dist/compat.module.js
+  function g3(n2, t3) {
+    for (var e3 in t3) n2[e3] = t3[e3];
+    return n2;
   }
-  function ProgressBarLabeled({ label, colors, disabled, plain }) {
+  function E2(n2, t3) {
+    for (var e3 in n2) if ("__source" !== e3 && !(e3 in t3)) return true;
+    for (var r3 in t3) if ("__source" !== r3 && n2[r3] !== t3[r3]) return true;
+    return false;
+  }
+  function N2(n2, t3) {
+    this.props = n2, this.context = t3;
+  }
+  (N2.prototype = new x()).isPureReactComponent = true, N2.prototype.shouldComponentUpdate = function(n2, t3) {
+    return E2(this.props, n2) || E2(this.state, t3);
+  };
+  var T3 = l.__b;
+  l.__b = function(n2) {
+    n2.type && n2.type.__f && n2.ref && (n2.props.ref = n2.ref, n2.ref = null), T3 && T3(n2);
+  };
+  var A3 = "undefined" != typeof Symbol && Symbol.for && /* @__PURE__ */ Symbol.for("react.forward_ref") || 3911;
+  var U = l.__e;
+  l.__e = function(n2, t3, e3, r3) {
+    if (n2.then) {
+      for (var u4, o3 = t3; o3 = o3.__; ) if ((u4 = o3.__c) && u4.__c) return null == t3.__e && (t3.__e = e3.__e, t3.__k = e3.__k), u4.__c(n2, t3);
+    }
+    U(n2, t3, e3, r3);
+  };
+  var F3 = l.unmount;
+  function V2(n2, t3, e3) {
+    return n2 && (n2.__c && n2.__c.__H && (n2.__c.__H.__.forEach(function(n3) {
+      "function" == typeof n3.__c && n3.__c();
+    }), n2.__c.__H = null), null != (n2 = g3({}, n2)).__c && (n2.__c.__P === e3 && (n2.__c.__P = t3), n2.__c.__e = true, n2.__c = null), n2.__k = n2.__k && n2.__k.map(function(n3) {
+      return V2(n3, t3, e3);
+    })), n2;
+  }
+  function W(n2, t3, e3) {
+    return n2 && e3 && (n2.__v = null, n2.__k = n2.__k && n2.__k.map(function(n3) {
+      return W(n3, t3, e3);
+    }), n2.__c && n2.__c.__P === t3 && (n2.__e && e3.appendChild(n2.__e), n2.__c.__e = true, n2.__c.__P = e3)), n2;
+  }
+  function P3() {
+    this.__u = 0, this.o = null, this.__b = null;
+  }
+  function j3(n2) {
+    if (!n2.__) return null;
+    var t3 = n2.__.__c;
+    return t3 && t3.__a && t3.__a(n2);
+  }
+  function B3() {
+    this.i = null, this.l = null;
+  }
+  l.unmount = function(n2) {
+    var t3 = n2.__c;
+    t3 && (t3.__z = true), t3 && t3.__R && t3.__R(), t3 && 32 & n2.__u && (n2.type = null), F3 && F3(n2);
+  }, (P3.prototype = new x()).__c = function(n2, t3) {
+    var e3 = t3.__c, r3 = this;
+    null == r3.o && (r3.o = []), r3.o.push(e3);
+    var u4 = j3(r3.__v), o3 = false, i3 = function() {
+      o3 || r3.__z || (o3 = true, e3.__R = null, u4 ? u4(c3) : c3());
+    };
+    e3.__R = i3;
+    var l3 = e3.__P;
+    e3.__P = null;
+    var c3 = function() {
+      if (!--r3.__u) {
+        if (r3.state.__a) {
+          var n3 = r3.state.__a;
+          r3.__v.__k[0] = W(n3, n3.__c.__P, n3.__c.__O);
+        }
+        var t4;
+        for (r3.setState({ __a: r3.__b = null }); t4 = r3.o.pop(); ) t4.__P = l3, t4.forceUpdate();
+      }
+    };
+    r3.__u++ || 32 & t3.__u || r3.setState({ __a: r3.__b = r3.__v.__k[0] }), n2.then(i3, i3);
+  }, P3.prototype.componentWillUnmount = function() {
+    this.o = [];
+  }, P3.prototype.render = function(n2, e3) {
+    if (this.__b) {
+      if (this.__v.__k) {
+        var r3 = document.createElement("div"), o3 = this.__v.__k[0].__c;
+        this.__v.__k[0] = V2(this.__b, r3, o3.__O = o3.__P);
+      }
+      this.__b = null;
+    }
+    var i3 = e3.__a && _(k, null, n2.fallback);
+    return i3 && (i3.__u &= -33), [_(k, null, e3.__a ? null : n2.children), i3];
+  };
+  var H2 = function(n2, t3, e3) {
+    if (++e3[1] === e3[0] && n2.l.delete(t3), n2.props.revealOrder && ("t" !== n2.props.revealOrder[0] || !n2.l.size)) for (e3 = n2.i; e3; ) {
+      for (; e3.length > 3; ) e3.pop()();
+      if (e3[1] < e3[0]) break;
+      n2.i = e3 = e3[2];
+    }
+  };
+  function Z(n2) {
+    return this.getChildContext = function() {
+      return n2.context;
+    }, n2.children;
+  }
+  function Y(n2) {
+    var e3 = this, r3 = n2.h;
+    if (e3.componentWillUnmount = function() {
+      J(null, e3.v), e3.v = null, e3.h = null;
+    }, e3.h && e3.h !== r3 && e3.componentWillUnmount(), !e3.v) {
+      for (var u4 = e3.__v; null !== u4 && !u4.__m && null !== u4.__; ) u4 = u4.__;
+      e3.h = r3, e3.v = { nodeType: 1, parentNode: r3, childNodes: [], __k: { __m: u4.__m }, contains: function() {
+        return true;
+      }, namespaceURI: r3.namespaceURI, insertBefore: function(n3, t3) {
+        this.childNodes.push(n3), e3.h.insertBefore(n3, t3);
+      }, removeChild: function(n3) {
+        this.childNodes.splice(this.childNodes.indexOf(n3) >>> 1, 1), e3.h.removeChild(n3);
+      } };
+    }
+    J(_(Z, { context: e3.context }, n2.__v), e3.v);
+  }
+  function $2(n2, e3) {
+    var r3 = _(Y, { __v: n2, h: e3 });
+    return r3.containerInfo = e3, r3;
+  }
+  (B3.prototype = new x()).__a = function(n2) {
+    var t3 = this, e3 = j3(t3.__v), r3 = t3.l.get(n2);
+    return r3[0]++, function(u4) {
+      var o3 = function() {
+        t3.props.revealOrder ? (r3.push(u4), H2(t3, n2, r3)) : u4();
+      };
+      e3 ? e3(o3) : o3();
+    };
+  }, B3.prototype.render = function(n2) {
+    this.i = null, this.l = /* @__PURE__ */ new Map();
+    var t3 = L(n2.children);
+    n2.revealOrder && "b" === n2.revealOrder[0] && t3.reverse();
+    for (var e3 = t3.length; e3--; ) this.l.set(t3[e3], this.i = [1, 0, this.i]);
+    return n2.children;
+  }, B3.prototype.componentDidUpdate = B3.prototype.componentDidMount = function() {
+    var n2 = this;
+    this.l.forEach(function(t3, e3) {
+      H2(n2, e3, t3);
+    });
+  };
+  var q3 = "undefined" != typeof Symbol && Symbol.for && /* @__PURE__ */ Symbol.for("react.element") || 60103;
+  var G2 = /^(?:accent|alignment|arabic|baseline|cap|clip(?!PathU)|color|dominant|fill|flood|font|glyph(?!R)|horiz|image(!S)|letter|lighting|marker(?!H|W|U)|overline|paint|pointer|shape|stop|strikethrough|stroke|text(?!L)|transform|underline|unicode|units|v|vector|vert|word|writing|x(?!C))[A-Z]/;
+  var J2 = /^on(Ani|Tra|Tou|BeforeInp|Compo)/;
+  var K2 = /[A-Z0-9]/g;
+  var Q2 = "undefined" != typeof document;
+  var X = function(n2) {
+    return ("undefined" != typeof Symbol && "symbol" == typeof /* @__PURE__ */ Symbol() ? /fil|che|rad/ : /fil|che|ra/).test(n2);
+  };
+  x.prototype.isReactComponent = {}, ["componentWillMount", "componentWillReceiveProps", "componentWillUpdate"].forEach(function(t3) {
+    Object.defineProperty(x.prototype, t3, { configurable: true, get: function() {
+      return this["UNSAFE_" + t3];
+    }, set: function(n2) {
+      Object.defineProperty(this, t3, { configurable: true, writable: true, value: n2 });
+    } });
+  });
+  var en = l.event;
+  function rn() {
+  }
+  function un() {
+    return this.cancelBubble;
+  }
+  function on() {
+    return this.defaultPrevented;
+  }
+  l.event = function(n2) {
+    return en && (n2 = en(n2)), n2.persist = rn, n2.isPropagationStopped = un, n2.isDefaultPrevented = on, n2.nativeEvent = n2;
+  };
+  var ln;
+  var cn = { enumerable: false, configurable: true, get: function() {
+    return this.class;
+  } };
+  var fn = l.vnode;
+  l.vnode = function(n2) {
+    "string" == typeof n2.type && (function(n3) {
+      var t3 = n3.props, e3 = n3.type, u4 = {}, o3 = -1 === e3.indexOf("-");
+      for (var i3 in t3) {
+        var l3 = t3[i3];
+        if (!("value" === i3 && "defaultValue" in t3 && null == l3 || Q2 && "children" === i3 && "noscript" === e3 || "class" === i3 || "className" === i3)) {
+          var c3 = i3.toLowerCase();
+          "defaultValue" === i3 && "value" in t3 && null == t3.value ? i3 = "value" : "download" === i3 && true === l3 ? l3 = "" : "translate" === c3 && "no" === l3 ? l3 = false : "o" === c3[0] && "n" === c3[1] ? "ondoubleclick" === c3 ? i3 = "ondblclick" : "onchange" !== c3 || "input" !== e3 && "textarea" !== e3 || X(t3.type) ? "onfocus" === c3 ? i3 = "onfocusin" : "onblur" === c3 ? i3 = "onfocusout" : J2.test(i3) && (i3 = c3) : c3 = i3 = "oninput" : o3 && G2.test(i3) ? i3 = i3.replace(K2, "-$&").toLowerCase() : null === l3 && (l3 = void 0), "oninput" === c3 && u4[i3 = c3] && (i3 = "oninputCapture"), u4[i3] = l3;
+        }
+      }
+      "select" == e3 && u4.multiple && Array.isArray(u4.value) && (u4.value = L(t3.children).forEach(function(n4) {
+        n4.props.selected = -1 != u4.value.indexOf(n4.props.value);
+      })), "select" == e3 && null != u4.defaultValue && (u4.value = L(t3.children).forEach(function(n4) {
+        n4.props.selected = u4.multiple ? -1 != u4.defaultValue.indexOf(n4.props.value) : u4.defaultValue == n4.props.value;
+      })), t3.class && !t3.className ? (u4.class = t3.class, Object.defineProperty(u4, "className", cn)) : t3.className && (u4.class = u4.className = t3.className), n3.props = u4;
+    })(n2), n2.$$typeof = q3, fn && fn(n2);
+  };
+  var an = l.__r;
+  l.__r = function(n2) {
+    an && an(n2), ln = n2.__c;
+  };
+  var sn = l.diffed;
+  l.diffed = function(n2) {
+    sn && sn(n2);
+    var t3 = n2.props, e3 = n2.__e;
+    null != e3 && "textarea" === n2.type && "value" in t3 && t3.value !== e3.value && (e3.value = null == t3.value ? "" : t3.value), ln = null;
+  };
+
+  // src/ui/modal.tsx
+  function Modal({ title, open, onClose, children }) {
+    const backdropRef = A2(null);
+    const closeBtnRef = A2(null);
+    const previouslyFocusedRef = A2(null);
+    y2(() => {
+      if (!open) return;
+      const handler = (e3) => {
+        if (e3.key === "Escape") onClose();
+      };
+      document.addEventListener("keydown", handler);
+      return () => document.removeEventListener("keydown", handler);
+    }, [open, onClose]);
+    y2(() => {
+      if (!open) return;
+      previouslyFocusedRef.current = document.activeElement;
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      const app = document.getElementById("app");
+      app?.setAttribute("inert", "");
+      queueMicrotask(() => closeBtnRef.current?.focus());
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        app?.removeAttribute("inert");
+        previouslyFocusedRef.current?.focus?.();
+      };
+    }, [open]);
+    const handleBackdrop = q2(
+      (e3) => {
+        if (e3.target === backdropRef.current) onClose();
+      },
+      [onClose]
+    );
+    if (!open) return null;
+    return $2(
+      /* @__PURE__ */ u3("div", { class: "modal-backdrop", ref: backdropRef, onClick: handleBackdrop, children: /* @__PURE__ */ u3(
+        "div",
+        {
+          class: "modal-surface",
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": title,
+          children: [
+            /* @__PURE__ */ u3("div", { class: "modal-header", children: [
+              /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: title }),
+              /* @__PURE__ */ u3(
+                "button",
+                {
+                  ref: closeBtnRef,
+                  type: "button",
+                  class: "modal-close",
+                  onClick: onClose,
+                  "aria-label": "Close",
+                  children: "\xD7"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ u3("div", { class: "modal-body", children })
+          ]
+        }
+      ) }),
+      document.body
+    );
+  }
+
+  // src/ui/speed-level-legend.tsx
+  var DEFAULT_BASELINE_MS = 1e3;
+  function formatBaseline(baseline) {
+    const b2 = baseline ?? DEFAULT_BASELINE_MS;
+    return {
+      value: (b2 / 1e3).toFixed(1) + "s",
+      isDefault: baseline === null
+    };
+  }
+  function SpeedThresholdTable({ baseline }) {
+    const thresholds = getCalibrationThresholds(baseline ?? DEFAULT_BASELINE_MS);
+    const fmt = formatBaseline(baseline);
+    return /* @__PURE__ */ u3("div", { class: "speed-threshold-table", children: [
+      /* @__PURE__ */ u3("table", { class: "speed-legend-table", children: [
+        /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
+          /* @__PURE__ */ u3("th", {}),
+          /* @__PURE__ */ u3("th", { children: "Status" }),
+          /* @__PURE__ */ u3("th", { children: "Max time" }),
+          /* @__PURE__ */ u3("th", { children: "Meaning" })
+        ] }) }),
+        /* @__PURE__ */ u3("tbody", { children: thresholds.map((t3) => /* @__PURE__ */ u3("tr", { children: [
+          /* @__PURE__ */ u3("td", { children: /* @__PURE__ */ u3(
+            "span",
+            {
+              class: "heatmap-swatch",
+              style: `background-color: var(${t3.colorToken})`
+            }
+          ) }),
+          /* @__PURE__ */ u3("td", { children: t3.label }),
+          /* @__PURE__ */ u3("td", { children: t3.maxMs !== null ? (t3.maxMs / 1e3).toFixed(1) + "s" : "\u2014" }),
+          /* @__PURE__ */ u3("td", { children: t3.meaning })
+        ] }, t3.label)) })
+      ] }),
+      /* @__PURE__ */ u3(Text, { role: "supporting", as: "p", class: "speed-baseline-note", children: [
+        "Response time baseline: ",
+        fmt.value,
+        fmt.isDefault && " (default)"
+      ] })
+    ] });
+  }
+  function contextLine(kind) {
+    return kind === "multi-level" ? "The bar shows a segment for each level in this skill, showing how quickly you answer." : "The bar shows a segment for each item, showing how quickly you answer.";
+  }
+  function SpeedLevelLegend({ kind = "single-level", baseline = null }) {
+    return /* @__PURE__ */ u3("div", { class: "speed-legend", children: [
+      /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", children: contextLine(kind) }),
+      /* @__PURE__ */ u3(SpeedThresholdTable, { baseline })
+    ] });
+  }
+  function SpeedLevelModal({ open, onClose, kind = "single-level", baseline = null }) {
+    return /* @__PURE__ */ u3(Modal, { title: "Progress", open, onClose, children: /* @__PURE__ */ u3(SpeedLevelLegend, { kind, baseline }) });
+  }
+
+  // src/ui/scope.tsx
+  function GroupProgressBar({ segments, disabled }) {
+    const totalSlots = segments.length;
+    const usedFlex = segments.reduce((sum, s3) => sum + s3.weight, 0);
+    const spacerFlex = totalSlots - usedFlex;
+    return /* @__PURE__ */ u3("div", { class: "group-progress-bar" + (disabled ? " skipped" : ""), children: [
+      segments.map(
+        (seg, i3) => seg.weight > 0 ? /* @__PURE__ */ u3(
+          "div",
+          {
+            class: "group-bar-slice",
+            style: `flex:${seg.weight};background:${seg.color}`
+          },
+          i3
+        ) : null
+      ),
+      spacerFlex > 0 && /* @__PURE__ */ u3("div", { class: "group-bar-slice", style: `flex:${spacerFlex}` })
+    ] });
+  }
+  function ProgressBarLabeled({
+    label,
+    segments,
+    disabled,
+    plain,
+    kind = "single-level",
+    baseline = null
+  }) {
+    const [legendOpen, setLegendOpen] = d2(false);
     const cls = plain ? "progress-bar-plain" : "progress-bar-labeled";
-    return /* @__PURE__ */ u3("div", { class: cls, children: [
-      label && /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "progress-bar-label", children: label }),
-      /* @__PURE__ */ u3(GroupProgressBar, { colors, disabled })
+    return /* @__PURE__ */ u3(k, { children: [
+      /* @__PURE__ */ u3(
+        "button",
+        {
+          type: "button",
+          class: cls + " progress-bar-tappable",
+          onClick: () => setLegendOpen(true),
+          "aria-label": label ? `${label}. Tap for speed level legend.` : "Tap for speed level legend",
+          children: [
+            label && /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "progress-bar-label", children: label }),
+            /* @__PURE__ */ u3(GroupProgressBar, { segments, disabled })
+          ]
+        }
+      ),
+      /* @__PURE__ */ u3(
+        SpeedLevelModal,
+        {
+          open: legendOpen,
+          onClose: () => setLegendOpen(false),
+          kind,
+          baseline
+        }
+      )
     ] });
   }
 
@@ -8114,6 +8543,23 @@ body.native-app .hint {
       },
       tab.id
     )) });
+  }
+  function ScreenHeader({ title, icon, onClose, closeAriaLabel, right, class: extra }) {
+    const cls = "screen-header" + (extra ? " " + extra : "");
+    return /* @__PURE__ */ u3("div", { class: cls, children: /* @__PURE__ */ u3(Bar, { gap: "group", children: [
+      onClose ? /* @__PURE__ */ u3(
+        CloseButton,
+        {
+          ariaLabel: closeAriaLabel ?? "Close",
+          onClick: onClose
+        }
+      ) : /* @__PURE__ */ u3("div", { class: "screen-header-spacer" }),
+      /* @__PURE__ */ u3("div", { class: "screen-header-title", children: [
+        icon,
+        /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", class: "mode-title", children: title })
+      ] }),
+      right ?? /* @__PURE__ */ u3("div", { class: "screen-header-spacer" })
+    ] }) });
   }
   function ModeTopBar({ modeId, title, description, onBack, showBack = true }) {
     return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: /* @__PURE__ */ u3(Bar, { gap: "group", children: [
@@ -8206,7 +8652,7 @@ body.native-app .hint {
         ProgressBarLabeled,
         {
           label: entry.label,
-          colors: entry.colors,
+          segments: entry.colors.map((c3) => ({ color: c3, weight: 1 })),
           plain: true
         },
         entry.id
@@ -8299,9 +8745,19 @@ body.native-app .hint {
     aboutContent,
     practiceContent,
     progressExtra,
+    progressSegments,
+    progressKind,
+    progressBaseline,
+    description,
     startLabel
   }) {
     const prefix = useTabsPrefix();
+    const EMPTY_BAR = [
+      { color: "var(--heatmap-none)", weight: 1 }
+    ];
+    const segs = progressSegments && progressSegments.length > 0 ? progressSegments : EMPTY_BAR;
+    const hasProgressBar = progressSegments != null;
+    const hasSummary = hasProgressBar || description;
     const tabs = [
       {
         id: "practice",
@@ -8309,12 +8765,35 @@ body.native-app .hint {
           /* @__PURE__ */ u3(RepeatMark, { size: 24 }),
           /* @__PURE__ */ u3("span", { class: "tab-icon-text", children: "Practice" })
         ] }),
-        content: practiceContent
+        content: /* @__PURE__ */ u3(Stack, { gap: "region", children: [
+          hasSummary && /* @__PURE__ */ u3(Section, { heading: "Summary", children: [
+            description && /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", children: description }),
+            hasProgressBar && /* @__PURE__ */ u3(
+              ProgressBarLabeled,
+              {
+                label: "Progress",
+                segments: segs,
+                kind: progressKind,
+                baseline: progressBaseline
+              }
+            )
+          ] }),
+          practiceContent
+        ] })
       },
       {
         id: "progress",
         label: /* @__PURE__ */ u3(TabIcon, { icon: "progress", text: "Progress" }),
         content: /* @__PURE__ */ u3(Stack, { gap: "region", children: [
+          hasProgressBar && /* @__PURE__ */ u3(Section, { heading: "Overall", children: /* @__PURE__ */ u3(
+            ProgressBarLabeled,
+            {
+              label: "Progress",
+              segments: segs,
+              kind: progressKind,
+              baseline: progressBaseline
+            }
+          ) }),
           progressExtra,
           statsHeading && /* @__PURE__ */ u3(Section, { heading: statsHeading, gap: "group", children: /* @__PURE__ */ u3("div", { class: "stats-container", children: statsContent }) }),
           !statsHeading && /* @__PURE__ */ u3("div", { class: "stats-container", children: statsContent }),
@@ -8533,7 +9012,7 @@ body.native-app .hint {
             }
           ),
           /* @__PURE__ */ u3(SkillCardHeader, { modeId }),
-          progress && progress.groupColors.length > 0 && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(GroupProgressBar, { colors: progress.groupColors }) })
+          progress && progress.segments.length > 0 && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(GroupProgressBar, { segments: progress.segments }) })
         ]
       }
     );
@@ -8592,18 +9071,21 @@ body.native-app .hint {
               ] })
             ] })
           ] }),
-          progress && (progress.groupColors.length > 0 || progress.activeGroupCount > 0) && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(
+          progress && (progress.segments.length > 0 || progress.activeGroupCount > 0) && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(
             GroupProgressBar,
             {
-              colors: progress.groupColors.length > 0 ? progress.groupColors : notStartedColors(progress.activeGroupCount)
+              segments: progress.segments.length > 0 ? progress.segments : notStartedSegments(progress.activeGroupCount)
             }
           ) })
         ] })
       }
     );
   }
-  function notStartedColors(count) {
-    return Array.from({ length: count }, () => "var(--heatmap-none)");
+  function notStartedSegments(count) {
+    return Array.from(
+      { length: count },
+      () => ({ color: "var(--heatmap-none)", weight: 1 })
+    );
   }
   function ActiveSkillsList({ starred, onToggleStar, onSelectMode, progress, recommendations }) {
     if (starred.size === 0) {
@@ -9095,7 +9577,7 @@ body.native-app .hint {
   async function sha256Hex(text) {
     const data = new TextEncoder().encode(text);
     const hash = await crypto.subtle.digest("SHA-256", data);
-    return Array.from(new Uint8Array(hash)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    return Array.from(new Uint8Array(hash)).map((b2) => b2.toString(16).padStart(2, "0")).join("");
   }
   async function checkForUpdateCore(deps) {
     const manifest = await deps.fetchManifest();
@@ -9389,7 +9871,7 @@ body.native-app .hint {
               if (newEnabled.size > 0) enabled = newEnabled;
             } else {
               const newEnabled = new Set(
-                parsed.filter((x2) => typeof x2 === "string")
+                parsed.filter((x3) => typeof x3 === "string")
               );
               if (newEnabled.size > 0) enabled = newEnabled;
             }
@@ -9398,7 +9880,7 @@ body.native-app .hint {
         }
       }
       for (const id of enabled) {
-        if (!spec.groups.some((g2) => g2.id === id)) enabled.delete(id);
+        if (!spec.groups.some((g4) => g4.id === id)) enabled.delete(id);
       }
       if (enabled.size === 0) {
         for (const d4 of spec.defaultEnabled) enabled.add(d4);
@@ -9438,7 +9920,7 @@ body.native-app .hint {
         }
       }
       for (const id of skipped.keys()) {
-        if (!spec.groups.some((g2) => g2.id === id)) skipped.delete(id);
+        if (!spec.groups.some((g4) => g4.id === id)) skipped.delete(id);
       }
       for (const id of skipped.keys()) enabled.delete(id);
       return { kind: "groups", enabledGroups: enabled, skippedGroups: skipped };
@@ -9500,7 +9982,7 @@ body.native-app .hint {
         const groupCount = spec.groups.length;
         if (prev.skippedGroups.size + (prev.skippedGroups.has(id) ? 0 : 1) >= groupCount) return prev;
         const groupSpec = spec;
-        if (!groupSpec.groups.some((g2) => g2.id === id)) return prev;
+        if (!groupSpec.groups.some((g4) => g4.id === id)) return prev;
         const nextSkipped = new Map(prev.skippedGroups);
         nextSkipped.set(id, reason);
         const nextEnabled = new Set(prev.enabledGroups);
@@ -9595,7 +10077,7 @@ body.native-app .hint {
         spec.getItemIdsForGroup,
         {},
         {
-          sortUnstarted: (a3, b) => (idOrder.get(a3.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0)
+          sortUnstarted: (a3, b2) => (idOrder.get(a3.groupId) ?? 0) - (idOrder.get(b2.groupId) ?? 0)
         }
       ),
       [
@@ -9608,9 +10090,9 @@ body.native-app .hint {
     );
     const getLabel = q2(
       (id) => {
-        const g2 = spec.groups.find((g3) => g3.id === id);
-        if (!g2) return id;
-        return resolveLabel(g2.longLabel ?? g2.label);
+        const g4 = spec.groups.find((g5) => g5.id === id);
+        if (!g4) return id;
+        return resolveLabel(g4.longLabel ?? g4.label);
       },
       [spec.groups, notationVersion]
     );
@@ -9634,10 +10116,10 @@ body.native-app .hint {
     const [practiceMode, setPracticeMode] = usePracticeMode(spec.storageKey);
     const [scope, scopeActions] = useScopeState({
       kind: "groups",
-      groups: spec.groups.map((g2) => ({
-        id: g2.id,
-        label: resolveLabel(g2.label),
-        itemIds: spec.getItemIdsForGroup(g2.id)
+      groups: spec.groups.map((g4) => ({
+        id: g4.id,
+        label: resolveLabel(g4.label),
+        itemIds: spec.getItemIdsForGroup(g4.id)
       })),
       defaultEnabled: spec.defaultEnabled,
       storageKey: spec.storageKey,
@@ -9689,21 +10171,20 @@ body.native-app .hint {
   }
 
   // src/ui/practice-config.tsx
-  function SkillHeader({ modeId, title, totalReps, progressColors, onBack }) {
-    return /* @__PURE__ */ u3(Stack, { gap: "group", class: "skill-header", children: [
-      /* @__PURE__ */ u3(Bar, { gap: "group", children: [
-        onBack && /* @__PURE__ */ u3(CloseButton, { ariaLabel: "Back to home", onClick: onBack }),
-        /* @__PURE__ */ u3("div", { class: "skill-header-title", children: [
-          modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
-          /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", class: "mode-title", children: title })
-        ] }),
-        totalReps != null && /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", class: "skill-header-reps", children: [
+  function SkillHeader({ modeId, title, totalReps, onBack }) {
+    return /* @__PURE__ */ u3(
+      ScreenHeader,
+      {
+        title,
+        icon: modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
+        onClose: onBack,
+        closeAriaLabel: "Back to home",
+        right: totalReps != null ? /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", class: "skill-header-reps", children: [
           totalReps.toLocaleString(),
           /* @__PURE__ */ u3(RepeatMark, { size: 18, class: "skill-header-reps-icon" })
-        ] })
-      ] }),
-      progressColors && progressColors.length > 0 && /* @__PURE__ */ u3(ProgressBarLabeled, { label: "Progress", colors: progressColors })
-    ] });
+        ] }) : void 0
+      }
+    );
   }
   function SuggestionLines({ lines }) {
     if (lines.length === 0) return null;
@@ -9740,6 +10221,7 @@ body.native-app .hint {
     pill,
     colors,
     status,
+    baseline,
     onToggleKnown,
     onToggleSkip
   }) {
@@ -9788,7 +10270,14 @@ body.native-app .hint {
             statusLabel
           ] }),
           pill && /* @__PURE__ */ u3("div", { class: "level-progress-pill-row", children: /* @__PURE__ */ u3(Pill, { variant: "notice", children: pill }) }),
-          /* @__PURE__ */ u3(ProgressBarLabeled, { colors, disabled: st === "skipped" })
+          /* @__PURE__ */ u3(
+            ProgressBarLabeled,
+            {
+              segments: colors.map((c3) => ({ color: c3, weight: 1 })),
+              disabled: st === "skipped",
+              baseline
+            }
+          )
         ] })
       }
     );
@@ -9831,7 +10320,7 @@ body.native-app .hint {
     return /* @__PURE__ */ u3("div", { class: gridCls, children: notes.map((n2) => {
       let label;
       if (useFlats !== void 0) {
-        const note = NOTES.find((x2) => x2.name === n2);
+        const note = NOTES.find((x3) => x3.name === n2);
         label = note ? displayNote(pickAccidentalName(note.displayName, useFlats)) : displayNote(n2);
       } else {
         label = displayNote(n2);
@@ -10177,11 +10666,15 @@ body.native-app .hint {
   var PAUSE_MS = 400;
   var WRONG_FEEDBACK_MS = 800;
   function SpeedCheckHeader({ count, onClose }) {
-    return /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(Bar, { gap: "group", class: "speed-check-header", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-page", class: "speed-check-label", children: "Speed Check" }),
-      count && /* @__PURE__ */ u3(Text, { role: "metric-info", children: count }),
-      /* @__PURE__ */ u3(CloseButton, { ariaLabel: "Cancel speed check", onClick: onClose })
-    ] }) });
+    return /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
+      ScreenHeader,
+      {
+        title: "Speed Check",
+        onClose,
+        closeAriaLabel: "Cancel speed check",
+        right: count ? /* @__PURE__ */ u3(Text, { role: "metric-info", children: count }) : void 0
+      }
+    ) });
   }
   function useTrialLoop(config, onDone) {
     const trialRef = A2({
@@ -10339,33 +10832,9 @@ body.native-app .hint {
     ] });
   }
   function SpeedCheckResults({ baseline }) {
-    const thresholds = getCalibrationThresholds(baseline);
     return /* @__PURE__ */ u3("div", { class: "calibration-results", children: [
       /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h2", children: "Speed Check Complete" }),
-      /* @__PURE__ */ u3(Text, { role: "metric-primary", as: "div", class: "calibration-baseline", children: [
-        (baseline / 1e3).toFixed(2),
-        "s"
-      ] }),
-      /* @__PURE__ */ u3("table", { class: "calibration-thresholds", children: [
-        /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
-          /* @__PURE__ */ u3("th", {}),
-          /* @__PURE__ */ u3("th", { children: "Level" }),
-          /* @__PURE__ */ u3("th", { children: "Max time" }),
-          /* @__PURE__ */ u3("th", { children: "Meaning" })
-        ] }) }),
-        /* @__PURE__ */ u3("tbody", { children: thresholds.map((t3) => /* @__PURE__ */ u3("tr", { children: [
-          /* @__PURE__ */ u3("td", { children: /* @__PURE__ */ u3(
-            "span",
-            {
-              class: "heatmap-swatch",
-              style: `background-color: var(${t3.colorToken})`
-            }
-          ) }),
-          /* @__PURE__ */ u3("td", { children: t3.label }),
-          /* @__PURE__ */ u3("td", { children: t3.maxMs !== null ? (t3.maxMs / 1e3).toFixed(1) + "s" : "\u2014" }),
-          /* @__PURE__ */ u3("td", { children: t3.meaning })
-        ] }, t3.label)) })
-      ] })
+      /* @__PURE__ */ u3(SpeedThresholdTable, { baseline })
     ] });
   }
   function SpeedCheck({ config, onComplete, onCancel, fixture }) {
@@ -10473,10 +10942,10 @@ body.native-app .hint {
   }
 
   // src/declarative/answer-utils.ts
-  function resolveAnswerSpec(def, q3) {
+  function resolveAnswerSpec(def, q4) {
     const spec = def.answer;
     if ("kind" in spec && spec.kind === "bidirectional") {
-      const dir = def.getDirection(q3);
+      const dir = def.getDirection(q4);
       return dir === "fwd" ? spec.fwd : spec.rev;
     }
     return spec;
@@ -10512,12 +10981,12 @@ body.native-app .hint {
         correctAnswer: sep >= 0 ? input.slice(sep + 1) : ""
       };
     }
-    const q3 = currentQRef.current;
-    const spec = resolveAnswerSpec(def, q3);
-    const expected = spec.getExpectedValue(q3);
+    const q4 = currentQRef.current;
+    const spec = resolveAnswerSpec(def, q4);
+    const expected = spec.getExpectedValue(q4);
     const normalized = spec.normalizeInput?.(input) ?? input;
     const correct = checkCorrectness(spec.comparison, expected, normalized);
-    const display = spec.getDisplayAnswer?.(q3) ?? defaultDisplayAnswer(spec.comparison, expected);
+    const display = spec.getDisplayAnswer?.(q4) ?? defaultDisplayAnswer(spec.comparison, expected);
     lastAnswerRef.current = {
       expected,
       comparison: spec.comparison,
@@ -10633,12 +11102,12 @@ body.native-app .hint {
         "http://www.w3.org/2000/svg",
         "line"
       );
-      for (const ln of [line1, line2]) {
-        ln.setAttribute("class", MUTE_MARKER_CLASS);
-        ln.setAttribute("stroke", colorMuted);
-        ln.setAttribute("stroke-width", "2.5");
-        ln.setAttribute("stroke-linecap", "round");
-        ln.setAttribute("pointer-events", "none");
+      for (const ln2 of [line1, line2]) {
+        ln2.setAttribute("class", MUTE_MARKER_CLASS);
+        ln2.setAttribute("stroke", colorMuted);
+        ln2.setAttribute("stroke-width", "2.5");
+        ln2.setAttribute("stroke-linecap", "round");
+        ln2.setAttribute("pointer-events", "none");
       }
       line1.setAttribute("x1", String(cx - half));
       line1.setAttribute("y1", String(cy - half));
@@ -11202,8 +11671,8 @@ body.native-app .hint {
     const groupScope = def.scope.kind === "groups" ? def.scope : null;
     if (!groupScope) return null;
     const groupLabels = groupScope.allGroupIds.map((id) => {
-      const g2 = groupScope.groups.find((g3) => g3.id === id);
-      return g2 ? resolveGroupLabel(g2.label) : id;
+      const g4 = groupScope.groups.find((g5) => g5.id === id);
+      return g4 ? resolveGroupLabel(g4.label) : id;
     });
     return /* @__PURE__ */ u3(k, { children: /* @__PURE__ */ u3(
       PracticeConfig,
@@ -11227,7 +11696,7 @@ body.native-app .hint {
     const groupScope = def.scope.kind === "groups" ? def.scope : null;
     if (!groupScope) return null;
     return /* @__PURE__ */ u3(Stack, { gap: "related", class: "level-progress-cards", children: groupScope.allGroupIds.map((id) => {
-      const g2 = groupScope.groups.find((g3) => g3.id === id);
+      const g4 = groupScope.groups.find((g5) => g5.id === id);
       const itemIds = groupScope.getItemIdsForGroup(id);
       const colors = progressBarColors(learner.selector, itemIds);
       const ls = groupScopeResult.recommendation.levelStatuses?.find((s3) => s3.groupId === id);
@@ -11235,8 +11704,8 @@ body.native-app .hint {
       const pill = ls?.reviewInHours != null ? ls.reviewStatus === "soon" ? "Review soon" : `Review in ${formatReviewDuration(ls.reviewInHours)}` : void 0;
       const skipReason = groupScopeResult.skippedGroups.get(id);
       const status = skipReason === "mastered" ? "known" : skipReason === "deferred" ? "skipped" : "normal";
-      const label = g2 ? resolveGroupLabel(
-        g2.longLabel ?? g2.label
+      const label = g4 ? resolveGroupLabel(
+        g4.longLabel ?? g4.label
       ) : id;
       return /* @__PURE__ */ u3(
         LevelProgressCard,
@@ -11247,6 +11716,7 @@ body.native-app .hint {
           pill,
           colors,
           status,
+          baseline: learner.motorBaseline,
           onToggleKnown: () => skipReason === "mastered" ? groupScopeResult.scopeActions.unskipGroup(id) : groupScopeResult.scopeActions.skipGroup(id, "mastered"),
           onToggleSkip: () => skipReason === "deferred" ? groupScopeResult.scopeActions.unskipGroup(id) : groupScopeResult.scopeActions.skipGroup(id, "deferred")
         },
@@ -11280,7 +11750,16 @@ body.native-app .hint {
       ] })
     ] });
   }
-  function IdlePracticeView({ def, engine, learner, ctrl, groupScopeResult, ps, onCalibrate }) {
+  function IdlePracticeView({
+    def,
+    engine,
+    learner,
+    ctrl,
+    groupScopeResult,
+    ps,
+    progressSegments,
+    onCalibrate
+  }) {
     const hasGroups = def.scope.kind === "groups" && groupScopeResult;
     const hasStats = def.stats.kind !== "none" || !!ctrl.renderStats;
     const customItemCount = hasGroups && groupScopeResult.practiceMode === "custom" ? groupScopeResult.enabledItems.length : null;
@@ -11288,6 +11767,10 @@ body.native-app .hint {
       PracticeTab,
       {
         onStart: engine.start,
+        progressSegments,
+        progressKind: hasGroups ? "multi-level" : "single-level",
+        progressBaseline: learner.motorBaseline,
+        description: def.description,
         scopeValid: !groupScopeResult || groupScopeResult.enabledGroups.size > 0,
         validationMessage: "Select at least one level",
         startLabel: customItemCount != null ? `Practice (${customItemCount} ${customItemCount === 1 ? "item" : "items"})` : void 0,
@@ -12024,8 +12507,8 @@ body.native-app .hint {
       if (notes.length === 0) return false;
       seqEntriesRef.current = notes;
       setSeqEntries(notes.map((r3) => ({ display: displayNote(r3) })));
-      const q3 = currentQRef.current;
-      const result = def.sequential.evaluate(q3, notes);
+      const q4 = currentQRef.current;
+      const result = def.sequential.evaluate(q4, notes);
       seqEvaluatedRef.current = result.perEntry;
       setSeqEvaluated(result.perEntry);
       setSeqCorrectAnswer(result.correctAnswer);
@@ -12038,8 +12521,8 @@ body.native-app .hint {
       if (seqEvaluatedRef.current) return;
       const raw = seqEntriesRef.current;
       if (raw.length === 0) return;
-      const q3 = currentQRef.current;
-      const result = def.sequential.evaluate(q3, raw);
+      const q4 = currentQRef.current;
+      const result = def.sequential.evaluate(q4, raw);
       seqEvaluatedRef.current = result.perEntry;
       setSeqEvaluated(result.perEntry);
       setSeqCorrectAnswer(result.correctAnswer);
@@ -12328,8 +12811,8 @@ body.native-app .hint {
       if (def.scope.kind === "groups" && enabledGroups) {
         const scope = def.scope;
         return scope.allGroupIds.filter((id) => enabledGroups.has(id)).map((id) => {
-          const g2 = scope.groups.find((g3) => g3.id === id);
-          const label = g2 ? resolveGroupLabel(g2.longLabel ?? g2.label) : id;
+          const g4 = scope.groups.find((g5) => g5.id === id);
+          const label = g4 ? resolveGroupLabel(g4.longLabel ?? g4.label) : id;
           const colors2 = progressBarColors(
             learner.selector,
             scope.getItemIdsForGroup(id)
@@ -12343,7 +12826,7 @@ body.native-app .hint {
   }
 
   // src/declarative/generic-mode.tsx
-  function ModeHeader({ def, isIdle, progressColors, totalReps, navigateHome }) {
+  function ModeHeader({ def, isIdle, totalReps, navigateHome }) {
     if (isIdle) {
       return /* @__PURE__ */ u3(
         SkillHeader,
@@ -12351,7 +12834,6 @@ body.native-app .hint {
           modeId: def.id,
           title: def.name,
           totalReps,
-          progressColors,
           onBack: navigateHome
         }
       );
@@ -12399,7 +12881,6 @@ body.native-app .hint {
           {
             def,
             isIdle: true,
-            progressColors,
             totalReps,
             navigateHome
           }
@@ -12413,6 +12894,7 @@ body.native-app .hint {
             ctrl,
             groupScopeResult,
             ps,
+            progressSegments: progressColors,
             onCalibrate: sc.hasSpeedCheck ? () => sc.setSpeedCheck("active") : void 0
           }
         )
