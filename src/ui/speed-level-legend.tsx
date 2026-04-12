@@ -5,18 +5,27 @@ import { SPEED_LEVELS } from '../speed-levels.ts';
 import { Text } from './text.tsx';
 import { Modal } from './modal.tsx';
 
+/** Whether the tapped bar shows one segment per level or one per item. */
+export type ProgressBarKind = 'multi-level' | 'single-level';
+
+function contextLine(kind: ProgressBarKind): string {
+  return kind === 'multi-level'
+    ? 'The bar shows a segment for each level in this skill, showing how quickly you answer.'
+    : 'The bar shows a segment for each item, showing how quickly you answer.';
+}
+
 /** Speed level legend table (no modal wrapper). */
-export function SpeedLevelLegend() {
+export function SpeedLevelLegend(
+  { kind = 'single-level' }: { kind?: ProgressBarKind },
+) {
   return (
     <div class='speed-legend'>
-      <Text role='body-secondary' as='p'>
-        Each color shows how quickly you recall an item.
-      </Text>
+      <Text role='body-secondary' as='p'>{contextLine(kind)}</Text>
       <table class='speed-legend-table'>
         <thead>
           <tr>
             <th></th>
-            <th>Level</th>
+            <th>Status</th>
             <th>Meaning</th>
           </tr>
         </thead>
@@ -41,11 +50,15 @@ export function SpeedLevelLegend() {
 
 /** Modal wrapping the speed level legend. */
 export function SpeedLevelModal(
-  { open, onClose }: { open: boolean; onClose: () => void },
+  { open, onClose, kind = 'single-level' }: {
+    open: boolean;
+    onClose: () => void;
+    kind?: ProgressBarKind;
+  },
 ) {
   return (
-    <Modal title='Speed Levels' open={open} onClose={onClose}>
-      <SpeedLevelLegend />
+    <Modal title='Progress' open={open} onClose={onClose}>
+      <SpeedLevelLegend kind={kind} />
     </Modal>
   );
 }

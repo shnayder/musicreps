@@ -11,6 +11,7 @@ import { Bar, Section, Stack } from './layout.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
 import type { ProgressSegment } from '../stats-display.ts';
 import { ProgressBarLabeled } from './scope.tsx';
+import type { ProgressBarKind } from './speed-level-legend.tsx';
 
 // ---------------------------------------------------------------------------
 // CloseButton — × dismiss button used in top bars and overlays
@@ -542,6 +543,7 @@ export function PracticeTab(
     practiceContent,
     progressExtra,
     progressSegments,
+    progressKind,
     description,
     startLabel,
   }: {
@@ -561,6 +563,8 @@ export function PracticeTab(
     progressExtra?: ComponentChildren;
     /** Overall progress bar segments (shown on practice + progress tabs). */
     progressSegments?: ProgressSegment[];
+    /** Whether the bar shows one segment per level or per item. */
+    progressKind?: ProgressBarKind;
     /** Short skill description shown in the practice tab summary. */
     description?: string;
     /** Custom label for the start button (e.g. "Practice (32 items)"). */
@@ -598,6 +602,7 @@ export function PracticeTab(
                 <ProgressBarLabeled
                   label='Progress'
                   segments={segs}
+                  kind={progressKind}
                 />
               )}
             </Section>
@@ -616,6 +621,7 @@ export function PracticeTab(
               <ProgressBarLabeled
                 label='Progress'
                 segments={segs}
+                kind={progressKind}
               />
             </Section>
           )}

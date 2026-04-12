@@ -75,9 +75,10 @@ function ScopeSection(
             />
           </div>
         </Section>
-        <Section title='ProgressBarLabeled (tap to open modal)' tabId={tabId}>
+        <Section title='ProgressBarLabeled — multi-level' tabId={tabId}>
           <ProgressBarLabeled
             label='Progress'
+            kind='multi-level'
             segments={[
               { color: 'var(--heatmap-5)', weight: 1 },
               { color: 'var(--heatmap-4)', weight: 0.6 },
@@ -85,8 +86,22 @@ function ScopeSection(
             ]}
           />
         </Section>
-        <Section title='SpeedLevelLegend' tabId={tabId}>
-          <SpeedLevelLegend />
+        <Section title='ProgressBarLabeled — single-level' tabId={tabId}>
+          <ProgressBarLabeled
+            label='Progress'
+            kind='single-level'
+            segments={[
+              { color: 'var(--heatmap-5)', weight: 1 },
+              { color: 'var(--heatmap-4)', weight: 1 },
+              { color: 'var(--heatmap-3)', weight: 1 },
+            ]}
+          />
+        </Section>
+        <Section title='SpeedLevelLegend (multi-level)' tabId={tabId}>
+          <SpeedLevelLegend kind='multi-level' />
+        </Section>
+        <Section title='SpeedLevelLegend (single-level)' tabId={tabId}>
+          <SpeedLevelLegend kind='single-level' />
         </Section>
       </PreviewGrid>
     </>

@@ -2,7 +2,10 @@
 
 import { useState } from 'preact/hooks';
 import type { ProgressSegment } from '../stats-display.ts';
-import { SpeedLevelModal } from './speed-level-legend.tsx';
+import {
+  type ProgressBarKind,
+  SpeedLevelModal,
+} from './speed-level-legend.tsx';
 import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
@@ -43,11 +46,13 @@ export function GroupProgressBar(
 // ---------------------------------------------------------------------------
 
 export function ProgressBarLabeled(
-  { label, segments, disabled, plain }: {
+  { label, segments, disabled, plain, kind = 'single-level' }: {
     label?: string;
     segments: ProgressSegment[];
     disabled?: boolean;
     plain?: boolean;
+    /** Whether the bar shows one segment per level or per item. */
+    kind?: ProgressBarKind;
   },
 ) {
   const [legendOpen, setLegendOpen] = useState(false);
@@ -70,6 +75,7 @@ export function ProgressBarLabeled(
       <SpeedLevelModal
         open={legendOpen}
         onClose={() => setLegendOpen(false)}
+        kind={kind}
       />
     </>
   );

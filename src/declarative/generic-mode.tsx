@@ -943,6 +943,7 @@ function IdlePracticeView<Q>(
     <PracticeTab
       onStart={engine.start}
       progressSegments={progressSegments}
+      progressKind={hasGroups ? 'multi-level' : 'single-level'}
       description={def.description}
       scopeValid={!groupScopeResult || groupScopeResult.enabledGroups.size > 0}
       validationMessage='Select at least one level'
