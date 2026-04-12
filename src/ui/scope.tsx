@@ -68,11 +68,13 @@ export function ProgressBarLabeled(
   const cls = plain ? 'progress-bar-plain' : 'progress-bar-labeled';
   return (
     <>
-      <div
+      <button
+        type='button'
         class={cls + ' progress-bar-tappable'}
         onClick={() => setLegendOpen(true)}
-        role='button'
-        tabIndex={0}
+        aria-label={label
+          ? `${label}. Tap for speed level legend.`
+          : 'Tap for speed level legend'}
       >
         {label && (
           <Text role='label' as='div' class='progress-bar-label'>
@@ -80,7 +82,7 @@ export function ProgressBarLabeled(
           </Text>
         )}
         <GroupProgressBar segments={segments} disabled={disabled} />
-      </div>
+      </button>
       <SpeedLevelModal
         open={legendOpen}
         onClose={() => setLegendOpen(false)}
