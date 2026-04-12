@@ -7,8 +7,8 @@ Poll GitHub Actions and Copilot code review until both complete, then report.
 1. Get the current branch name and PR number (if any).
 
 2. **Run `scripts/poll-ci.sh`** — this is a whitelisted helper that polls both
-   GitHub Actions and (if a PR is given) the Copilot review, printing results
-   as structured output:
+   GitHub Actions and (if a PR is given) the Copilot review, printing results as
+   structured output:
 
    ```bash
    # Poll CI only
@@ -20,11 +20,11 @@ Poll GitHub Actions and Copilot code review until both complete, then report.
 
    The script polls every 30s up to 10 minutes. It prints the CI conclusion
    (`success` / `failure` / etc.) and, on failure, the last 40 lines of
-   `gh run view --log-failed`. For Copilot it prints the review body and
-   any inline comments in `[path:line] body` format.
+   `gh run view --log-failed`. For Copilot it prints the review body and any
+   inline comments in `[path:line] body` format.
 
-   **After the script finishes, check the conclusion.** Do not assume success
-   — read the actual `CI:` line in the output. CI includes E2E tests that may
+   **After the script finishes, check the conclusion.** Do not assume success —
+   read the actual `CI:` line in the output. CI includes E2E tests that may
    catch regressions not covered by `deno task ok` (e.g., removed CSS classes
    used as Playwright selectors).
 
