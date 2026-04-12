@@ -544,6 +544,7 @@ export function PracticeTab(
     progressExtra,
     progressSegments,
     progressKind,
+    progressBaseline,
     description,
     startLabel,
   }: {
@@ -565,6 +566,8 @@ export function PracticeTab(
     progressSegments?: ProgressSegment[];
     /** Whether the bar shows one segment per level or per item. */
     progressKind?: ProgressBarKind;
+    /** Motor baseline in ms (null = default). Used in legend modal. */
+    progressBaseline?: number | null;
     /** Short skill description shown in the practice tab summary. */
     description?: string;
     /** Custom label for the start button (e.g. "Practice (32 items)"). */
@@ -603,6 +606,7 @@ export function PracticeTab(
                   label='Progress'
                   segments={segs}
                   kind={progressKind}
+                  baseline={progressBaseline}
                 />
               )}
             </Section>
@@ -622,6 +626,7 @@ export function PracticeTab(
                 label='Progress'
                 segments={segs}
                 kind={progressKind}
+                baseline={progressBaseline}
               />
             </Section>
           )}

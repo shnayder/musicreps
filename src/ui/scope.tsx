@@ -46,13 +46,22 @@ export function GroupProgressBar(
 // ---------------------------------------------------------------------------
 
 export function ProgressBarLabeled(
-  { label, segments, disabled, plain, kind = 'single-level' }: {
+  {
+    label,
+    segments,
+    disabled,
+    plain,
+    kind = 'single-level',
+    baseline = null,
+  }: {
     label?: string;
     segments: ProgressSegment[];
     disabled?: boolean;
     plain?: boolean;
     /** Whether the bar shows one segment per level or per item. */
     kind?: ProgressBarKind;
+    /** Motor baseline in ms (null = default). Used in legend modal. */
+    baseline?: number | null;
   },
 ) {
   const [legendOpen, setLegendOpen] = useState(false);
@@ -76,6 +85,7 @@ export function ProgressBarLabeled(
         open={legendOpen}
         onClose={() => setLegendOpen(false)}
         kind={kind}
+        baseline={baseline}
       />
     </>
   );

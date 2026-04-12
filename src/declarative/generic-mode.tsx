@@ -880,6 +880,7 @@ function LevelProgressCards<Q>(
             pill={pill}
             colors={colors}
             status={status}
+            baseline={learner.motorBaseline}
             onToggleKnown={() =>
               skipReason === 'mastered'
                 ? groupScopeResult.scopeActions.unskipGroup(id)
@@ -944,6 +945,7 @@ function IdlePracticeView<Q>(
       onStart={engine.start}
       progressSegments={progressSegments}
       progressKind={hasGroups ? 'multi-level' : 'single-level'}
+      progressBaseline={learner.motorBaseline}
       description={def.description}
       scopeValid={!groupScopeResult || groupScopeResult.enabledGroups.size > 0}
       validationMessage='Select at least one level'

@@ -1963,39 +1963,6 @@ button {
   max-width: 420px;
   margin: 0 auto;
 }
-.calibration-baseline {
-  font-variant-numeric: tabular-nums;
-  margin: var(--gap-group) 0 var(--pad-region);
-}
-.calibration-thresholds {
-  border-collapse: collapse;
-  margin: 0 auto var(--pad-region);
-  font-size: var(--text-sm);
-  width: 100%;
-}
-.calibration-thresholds th,
-.calibration-thresholds td {
-  border: 1px solid var(--color-border-light);
-  padding: 0.35rem var(--gap-group);
-  text-align: left;
-}
-.calibration-thresholds th {
-  background: var(--color-surface);
-  font-weight: var(--font-semibold);
-}
-.calibration-thresholds td:first-child {
-  width: 1.5rem;
-  text-align: center;
-  padding: 0.35rem var(--gap-related);
-}
-.calibration-thresholds td:nth-child(2) {
-  font-weight: var(--font-semibold);
-  white-space: nowrap;
-}
-.calibration-thresholds td:nth-child(3) {
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
 
 /* ==========================================================================
    13. TEXT ROLES (Layer 2 → Layer 3 classes)
@@ -2708,6 +2675,14 @@ button {
 .speed-legend-table td:nth-child(2) {
   font-weight: var(--font-semibold);
   white-space: nowrap;
+}
+.speed-legend-table td:nth-child(3) {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.speed-baseline-note {
+  margin-top: var(--gap-group);
 }
 
 /* --- Tappable progress bar cursor --- */

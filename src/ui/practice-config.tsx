@@ -122,6 +122,7 @@ export function LevelProgressCard(
     pill,
     colors,
     status,
+    baseline,
     onToggleKnown,
     onToggleSkip,
   }: {
@@ -132,6 +133,8 @@ export function LevelProgressCard(
     pill?: string;
     colors: string[];
     status?: LevelCardStatus;
+    /** Motor baseline in ms (null = default). Used in legend modal. */
+    baseline?: number | null;
     onToggleKnown?: () => void;
     onToggleSkip?: () => void;
   },
@@ -189,6 +192,7 @@ export function LevelProgressCard(
         <ProgressBarLabeled
           segments={colors.map((c) => ({ color: c, weight: 1 }))}
           disabled={st === 'skipped'}
+          baseline={baseline}
         />
       </Stack>
     </Card>
