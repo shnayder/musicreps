@@ -1103,15 +1103,19 @@ body.native-app .brand-strip {
 .close-btn {
   background: none;
   border: none;
-  /* Full-size X glyph. The 44px touch target is preserved via min-width /
-     min-height + a negative block margin so the padding overflows into
-     the surrounding chrome instead of inflating the header row. */
+  /* Full-size X glyph. The button box is still --size-touch-target tall for
+     a 44px hit target, but we pull its layout contribution back to the title
+     line-height via a negative block margin so it doesn't inflate the
+     header row. The overflow lands in the surrounding chrome where it's
+     invisible. */
   font-size: var(--size-close-btn);
   cursor: pointer;
   padding: 0 var(--gap-related);
   min-width: var(--size-touch-target);
   min-height: var(--size-touch-target);
-  margin-block: calc((1em - var(--size-touch-target)) / 2);
+  margin-block: calc(
+    (var(--text-lg) * var(--leading-tight) - var(--size-touch-target)) / 2
+  );
   color: var(--color-text-light);
   display: flex;
   align-items: center;
