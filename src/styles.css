@@ -735,40 +735,38 @@ body {
   padding: var(--gap-group) var(--size-content-inset);
   background: var(--color-chrome);
 }
-.home-title {
+/* --- Brand strip (top of every web screen, hidden on native) --- */
+.brand-strip {
+  padding: var(--gap-group) var(--size-content-inset);
+  background: var(--color-chrome);
+  border-bottom: 1px solid var(--color-border-lighter);
+}
+body.native-app .brand-strip {
+  display: none;
+}
+.brand-strip-title {
   display: flex;
   align-items: center;
   gap: 0.4em;
+  margin: 0;
   font-family: var(--type-display-brand-family);
   font-size: var(--type-display-brand-size);
   font-weight: var(--type-display-brand-weight);
   line-height: var(--type-display-brand-leading);
   color: var(--type-display-brand-color);
 }
-.home-logo-mark {
+.brand-strip-mark {
   color: var(--color-brand);
   flex-shrink: 0;
 }
-.home-title::after {
-  display: none;
-}
-.home-tagline {
-  margin: var(--gap-group) 0 0;
-}
-/* On native apps, hide the title/tagline but keep the stats bar visible */
-.home-header.native .home-title,
-.home-header.native .home-tagline {
-  display: none;
+.brand-strip-tagline {
+  margin: var(--gap-related) 0 0;
 }
 /* --- Stats bar (home header) --- */
 .home-stats-bar {
   justify-content: center;
-  margin-top: var(--gap-group);
   font-size: var(--type-status-size);
   color: var(--type-status-color);
-}
-.home-header.native .home-stats-bar {
-  margin-top: 0;
 }
 .home-stat-sep {
   color: var(--color-text-muted);

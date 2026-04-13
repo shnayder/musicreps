@@ -13,6 +13,7 @@ import { createNavigation } from './navigation.ts';
 import { createSettingsController } from './settings.ts';
 import { refreshNoteButtonLabels } from './quiz-engine.ts';
 import type { ModeHandle } from './types.ts';
+import { BrandStrip } from './ui/brand-strip.tsx';
 import { cleanupLegacyKeys, HomeScreen } from './ui/home-screen.tsx';
 import { APP_CONFIG } from './app-config.ts';
 import { registerModeForEffort } from './effort.ts';
@@ -114,6 +115,13 @@ async function boot() {
     document.body.classList.add('native-app');
   }
 
+  // Mount the persistent brand strip once. Hidden on native via CSS.
+  const brandRoot = document.getElementById('brand-strip');
+  if (brandRoot) {
+    brandRoot.textContent = '';
+    render(h(BrandStrip, {}), brandRoot);
+  }
+
   // Mount Preact home screen — replaces static build-time HTML
   const homeRoot = document.getElementById('home-screen')!;
   const version = homeRoot.dataset.version || '';
@@ -125,7 +133,6 @@ async function boot() {
       appConfig: APP_CONFIG,
       showDevLink: true,
       version,
-      isNativeApp,
     }),
     homeRoot,
   );

@@ -15,6 +15,11 @@ function modeScreens(): string {
     .join('\n');
 }
 
+// Persistent brand strip at the top of every web screen. Hidden on native
+// via .native-app body class. Preact mounts BrandStrip into this container.
+export const BRAND_STRIP_HTML =
+  `  <div class="brand-strip" id="brand-strip"></div>`;
+
 // Minimal placeholder — Preact HomeScreen component renders the full UI at runtime.
 export const HOME_SCREEN_HTML =
   `  <div class="home-screen" id="home-screen" data-version="__VERSION__"></div>`;
@@ -49,6 +54,7 @@ export function assembleHTML(css: string, js: string): string {
 </head>
 <body>
   <div id="app">
+${BRAND_STRIP_HTML}
 ${HOME_SCREEN_HTML}
 ${modeScreens()}
   </div>
