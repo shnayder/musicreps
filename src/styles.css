@@ -475,12 +475,13 @@ body {
   overscroll-behavior: none;
 }
 /* Viewport containment: #app only exists in the built app (build-template.ts),
-   so prototype/design pages that import styles.css are unaffected. */
+   so prototype/design pages that import styles.css are unaffected. #app is
+   the viewport anchor: an absolute height minus the top safe-area inset that
+   body already pads. Every descendant flexes from here. */
 #app {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 0;
+  height: calc(100dvh - env(safe-area-inset-top, 0px));
   overflow: hidden;
 }
 
@@ -1230,6 +1231,7 @@ body.native-app .brand-strip {
   display: none;
   padding-top: 0;
   flex: 1;
+  min-height: 0;
 }
 .mode-screen.mode-active {
   display: flex;
