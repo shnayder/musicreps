@@ -59,22 +59,28 @@ function setCircleFill(
   }
 }
 
-/** Wrong-tap ring: stroke outline only, no fill. */
+/** Wrong-tap marker. Fret 0 stays hollow (matching open-string convention);
+ *  fretted wrong taps get a pink fill with a red stroke so they read as
+ *  "wrong dot" rather than an empty circle. */
 function setCircleRing(
   root: HTMLElement,
   posKey: string,
   color: string,
+  fillColor: string,
 ): void {
   const [s, f] = posKey.split('-');
   const circle = root.querySelector(
     'circle.fb-pos[data-string="' + s + '"][data-fret="' + f + '"]',
   ) as SVGElement | null;
   if (!circle) return;
-  circle.style.fill = 'none';
   circle.style.stroke = color;
-  circle.style.strokeWidth = f === '0'
-    ? OPEN_STRING_STROKE_WIDTH
-    : RING_STROKE_WIDTH;
+  if (f === '0') {
+    circle.style.fill = 'none';
+    circle.style.strokeWidth = OPEN_STRING_STROKE_WIDTH;
+  } else {
+    circle.style.fill = fillColor;
+    circle.style.strokeWidth = RING_STROKE_WIDTH;
+  }
 }
 
 function clearAllCircles(root: HTMLElement): void {
@@ -198,13 +204,14 @@ export function InteractiveFretboard(
       //                   enough to be visible on small fretboard circles)
       const colorOk = readCSSColor('--color-success', '#2e7d32');
       const colorBad = readCSSColor('--color-error', '#d32f2f');
+      const colorBadFill = readCSSColor('--color-error-bg-strong', '#f4c2c2');
       const colorMissed = readCSSColor('--color-success-reveal', '#66bb6a');
       const tappedSet = new Set(evaluated.perEntry.map((e) => e.positionKey));
       for (const entry of evaluated.perEntry) {
         if (entry.correct) {
           setCircleFill(root, entry.positionKey, colorOk);
         } else {
-          setCircleRing(root, entry.positionKey, colorBad);
+          setCircleRing(root, entry.positionKey, colorBad, colorBadFill);
         }
       }
       for (const missed of evaluated.missed) {

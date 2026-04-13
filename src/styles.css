@@ -117,6 +117,7 @@
   /* Error */
   --color-error: var(--error-600);
   --color-error-bg: var(--error-100);
+  --color-error-bg-strong: var(--error-200);
   --color-error-border: var(--error-300);
   --color-error-text: var(--error-800);
   --color-tap-selected: var(--color-accent);
