@@ -58,23 +58,6 @@ export function createFretboardHelpers(musicData: {
     return noteFilter === 'natural' ? isNatural : !isNatural;
   }
 
-  /** Compute the list of enabled item IDs. */
-  function getFretboardEnabledItems(
-    enabledStrings: Set<number>,
-    noteFilter: string,
-  ): string[] {
-    const items: string[] = [];
-    for (const s of enabledStrings) {
-      for (let f = 0; f < fretCount; f++) {
-        const note = getNoteAtPosition(s, f);
-        if (notePassesFilter(note, noteFilter)) {
-          items.push(s + '-' + f);
-        }
-      }
-    }
-    return items;
-  }
-
   /** Compute item IDs for a specific string (used for recommendations). */
   function getItemIdsForString(string: number, noteFilter: string): string[] {
     const items: string[] = [];
@@ -119,7 +102,6 @@ export function createFretboardHelpers(musicData: {
     getNoteAtPosition,
     parseFretboardItem,
     checkFretboardAnswer,
-    getFretboardEnabledItems,
     getItemIdsForString,
     getItemIdsForFretRange,
   };

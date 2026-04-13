@@ -194,7 +194,15 @@ export function needsActiveLearning(speedScore: number | null): boolean {
   return speedScore == null || speedScore < 0.9;
 }
 
-/** Item was fast but has gone stale. Mutually exclusive with needsActiveLearning. */
+/**
+ * Item was fast but has gone stale. Mutually exclusive with
+ * needsActiveLearning.
+ *
+ * `freshness == null` (fast item with no stability data — e.g. legacy
+ * stats or items that never had lastCorrectAt recorded) is treated as
+ * "fresh" so the item falls into fastFresh rather than being flagged
+ * for review we have no evidence is needed.
+ */
 export function needsReview(
   speedScore: number | null,
   freshness: number | null,
@@ -618,9 +626,10 @@ export function createAdaptiveSelector(
       lastSelected,
     );
     const picked = pickFromBuckets(buckets, getWeight, randomFn(), randomFn());
-    // Corner case: every non-excluded item ended up in no bucket (only
-    // possible if orderedItems was effectively [lastSelected]). Repeat
-    // it rather than throwing.
+    // Belt-and-suspenders: the length===1 guard above already handles
+    // the only case where pickFromBuckets could return null (orderedItems
+    // was effectively [lastSelected]). This fallback keeps us robust if
+    // bucket logic ever changes.
     const selected = picked ?? lastSelected ?? orderedItems[0];
     storage.setLastSelected(selected);
     return selected;

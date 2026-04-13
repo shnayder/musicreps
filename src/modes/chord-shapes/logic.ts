@@ -100,7 +100,7 @@ export function chordDisplayName(v: ChordVoicing): string {
 
 export function allItems(instrument: 'guitar' | 'ukulele'): string[] {
   const out: string[] = [];
-  for (const q of ['major', 'minor', 'dom7']) {
+  for (const q of ALL_GROUP_IDS) {
     out.push(...getItemIdsForGroup(instrument, q));
   }
   return out;
