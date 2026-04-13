@@ -491,7 +491,8 @@ body {
 .screen-layout {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - env(safe-area-inset-top, 0px));
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -721,8 +722,15 @@ body {
 /* ==========================================================================
    3. HOME SCREEN
    ========================================================================== */
-/* .home-screen: outer container — ScreenLayout fills the viewport inside it.
-   No styles needed; show/hide is on .home-screen.hidden below. */
+/* .home-screen: outer container — a flex child of #app so the inner
+   ScreenLayout fills the space left by the brand strip and any other
+   siblings. */
+.home-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
 .home-screen.hidden {
   display: none;
 }
@@ -737,6 +745,7 @@ body {
 }
 /* --- Brand strip (top of every web screen, hidden on native) --- */
 .brand-strip {
+  flex-shrink: 0;
   padding: var(--gap-group) var(--size-content-inset);
   background: var(--color-chrome);
   border-bottom: 1px solid var(--color-border-lighter);
