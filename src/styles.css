@@ -247,8 +247,14 @@
   /* Interactive element sizes */
   --size-close-btn: 2.25rem;
   --size-content-inset: var(--pad-region);
-  --size-answer-grid: 272px;
-  --size-answer-grid-wide: 400px;
+  /* Answer button width. Both the 4-col and 6-col grids derive their
+     max-width from this token so 4+3 and 6+6 layouts have matching button
+     sizes. Shrunk on short screens (mobile layout block). */
+  --size-answer-btn: 64px;
+  --size-answer-grid: calc(4 * var(--size-answer-btn) + 3 * var(--gap-related));
+  --size-answer-grid-wide: calc(
+    6 * var(--size-answer-btn) + 5 * var(--gap-related)
+  );
 
   /* Elevation (box-shadow) */
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1);
@@ -2738,7 +2744,6 @@ body.native-app .hint {
 @media (max-width: 599px) {
   :root {
     --size-content-inset: var(--gap-group);
-    --size-answer-grid: 220px;
     --type-answer-size: 1.1rem;
   }
 
@@ -2776,5 +2781,14 @@ body.native-app .hint {
   /* Prevent iOS zoom on input focus */
   input, button {
     font-size: 16px;
+  }
+}
+
+/* Short screens (iPhone SE and similar): shrink answer buttons so the
+   quiz controls + footer still fit without scrolling. Height-based so it
+   only kicks in when vertical space is actually scarce. */
+@media (max-height: 700px) {
+  :root {
+    --size-answer-btn: 52px;
   }
 }
