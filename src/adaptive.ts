@@ -206,9 +206,10 @@ export function needsActiveLearning(speedScore: number | null): boolean {
 export function needsReview(
   speedScore: number | null,
   freshness: number | null,
+  freshnessThreshold: number = DEFAULT_CONFIG.freshnessThreshold,
 ): boolean {
   if (speedScore == null || speedScore < 0.9) return false;
-  return (freshness ?? 1) < 0.5;
+  return (freshness ?? 1) < freshnessThreshold;
 }
 
 export type WorkingBuckets = {
@@ -236,6 +237,7 @@ export function computeBuckets(
   getSpeed: (id: string) => number | null,
   getFreshness: (id: string) => number | null,
   excludeId: string | null,
+  freshnessThreshold: number = DEFAULT_CONFIG.freshnessThreshold,
 ): WorkingBuckets {
   const active: string[] = [];
   const review: string[] = [];
@@ -248,7 +250,7 @@ export function computeBuckets(
       continue;
     }
     const fresh = getFreshness(id);
-    if (needsReview(speed, fresh)) {
+    if (needsReview(speed, fresh, freshnessThreshold)) {
       if (review.length < M_REVIEW) review.push(id);
       continue;
     }
@@ -612,7 +614,7 @@ export function createAdaptiveSelector(
 
   function selectNext(orderedItems: string[]): string {
     if (orderedItems.length === 0) {
-      throw new Error('validItems cannot be empty');
+      throw new Error('orderedItems cannot be empty');
     }
     if (orderedItems.length === 1) {
       storage.setLastSelected(orderedItems[0]);
@@ -624,6 +626,7 @@ export function createAdaptiveSelector(
       getSpeedScore,
       getFreshness,
       lastSelected,
+      cfg.freshnessThreshold,
     );
     const picked = pickFromBuckets(buckets, getWeight, randomFn(), randomFn());
     // Belt-and-suspenders: the length===1 guard above already handles

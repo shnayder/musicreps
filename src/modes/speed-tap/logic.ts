@@ -149,11 +149,15 @@ export const NOTE_GROUPS = [
 export const ALL_GROUP_IDS: string[] = NOTE_GROUPS.map((g) => g.id);
 
 export function getItemIdsForGroup(groupId: string): string[] {
-  // Validate membership, then return in fixed (circle-of-fifths) order.
+  // Return in fixed (circle-of-fifths) order. Unknown group IDs
+  // return [] to match the defensive pattern used by other modes.
   if (groupId === 'naturals') {
     return NATURALS_CYCLE.filter((n) => NATURAL_NOTES.includes(n));
   }
-  return ACCIDENTALS_CYCLE.filter((n) => ACCIDENTAL_NOTES.includes(n));
+  if (groupId === 'sharps-flats') {
+    return ACCIDENTALS_CYCLE.filter((n) => ACCIDENTAL_NOTES.includes(n));
+  }
+  return [];
 }
 
 export function formatGroupLabel(
