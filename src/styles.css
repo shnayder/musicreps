@@ -1103,16 +1103,15 @@ body.native-app .brand-strip {
 .close-btn {
   background: none;
   border: none;
-  /* Visible icon is title line-height so the button doesn't inflate the
-     header row; the surrounding padding still gives a 44px hit target,
-     and a negative block margin keeps that padding from contributing to
-     the row height (it overflows into the brand strip / body, invisible). */
-  font-size: var(--type-heading-page-size);
+  /* Full-size X glyph. The 44px touch target is preserved via min-width /
+     min-height + a negative block margin so the padding overflows into
+     the surrounding chrome instead of inflating the header row. */
+  font-size: var(--size-close-btn);
   cursor: pointer;
-  padding: calc((var(--size-touch-target) - 1.4em) / 2) var(--gap-related);
+  padding: 0 var(--gap-related);
   min-width: var(--size-touch-target);
   min-height: var(--size-touch-target);
-  margin-block: calc((1.4em - var(--size-touch-target)) / 2);
+  margin-block: calc((1em - var(--size-touch-target)) / 2);
   color: var(--color-text-light);
   display: flex;
   align-items: center;
