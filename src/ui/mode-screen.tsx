@@ -346,7 +346,7 @@ export function QuizSession(
           </Text>
         </Bar>
         {count && (
-          <Text role='metric-effort' as='span' class='quiz-info-count'>
+          <Text role='metric-header' as='span' class='quiz-info-count'>
             {count}
             <RepeatMark size={13} class='quiz-info-count-icon' />
           </Text>

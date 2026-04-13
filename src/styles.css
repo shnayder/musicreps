@@ -391,6 +391,15 @@
   --type-metric-effort-leading: var(--leading-none);
   --type-metric-effort-color: var(--color-tertiary);
 
+  /* Headline metric — used in screen headers (home stats bar, quiz round
+     counter). Matches heading-page weight/size so metric numbers carry the
+     same visual weight as page titles, keeping headers consistent across
+     screens. */
+  --type-metric-header-size: var(--type-heading-page-size);
+  --type-metric-header-weight: var(--type-heading-page-weight);
+  --type-metric-header-leading: var(--type-heading-page-leading);
+  --type-metric-header-color: var(--color-text);
+
   /* -- Status: state communication -- */
   --type-status-size: var(--text-sm);
   --type-status-weight: var(--font-normal);
@@ -2102,6 +2111,14 @@ button {
   font-weight: var(--type-metric-effort-weight);
   line-height: var(--type-metric-effort-leading);
   color: var(--type-metric-effort-color);
+  font-variant-numeric: tabular-nums;
+}
+.text-metric-header {
+  font-size: var(--type-metric-header-size);
+  font-weight: var(--type-metric-header-weight);
+  line-height: var(--type-metric-header-leading);
+  color: var(--type-metric-header-color);
+  font-family: var(--font-display);
   font-variant-numeric: tabular-nums;
 }
 

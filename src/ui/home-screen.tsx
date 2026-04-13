@@ -705,21 +705,21 @@ function HomeHeader(
       )}
       <Bar gap='group' class='home-stats-bar'>
         <span class='home-stat'>
-          <Text role='metric-effort' as='span'>
+          <Text role='metric-header' as='span'>
             {repsToday.toLocaleString()}
           </Text>
           {' today'}
         </span>
         <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
         <span class='home-stat'>
-          <Text role='metric-effort' as='span'>
+          <Text role='metric-header' as='span'>
             {totalReps.toLocaleString()}
           </Text>
           {' total'}
         </span>
         <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
         <span class='home-stat'>
-          <Text role='metric-effort' as='span'>{daysActive}</Text>
+          <Text role='metric-header' as='span'>{daysActive}</Text>
           {daysActive === 1 ? ' day' : ' days'}
         </span>
       </Bar>

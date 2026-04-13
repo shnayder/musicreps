@@ -37,7 +37,7 @@ export function SkillHeader(
       closeAriaLabel='Back to home'
       right={totalReps != null
         ? (
-          <Text role='metric-effort' as='span' class='skill-header-reps'>
+          <Text role='metric-header' as='span' class='skill-header-reps'>
             {totalReps.toLocaleString()}
             <RepeatMark size={18} class='skill-header-reps-icon' />
           </Text>
