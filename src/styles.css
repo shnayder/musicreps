@@ -1092,13 +1092,17 @@ body.native-app .brand-strip {
 .close-btn {
   background: none;
   border: none;
-  font-size: var(--size-close-btn);
+  /* Visible icon is title line-height so the button doesn't inflate the
+     header row; the surrounding padding still gives a 44px hit target,
+     and a negative block margin keeps that padding from contributing to
+     the row height (it overflows into the brand strip / body, invisible). */
+  font-size: var(--type-heading-page-size);
   cursor: pointer;
-  padding: var(--gap-related);
+  padding: calc((var(--size-touch-target) - 1.4em) / 2) var(--gap-related);
   min-width: var(--size-touch-target);
   min-height: var(--size-touch-target);
+  margin-block: calc((1.4em - var(--size-touch-target)) / 2);
   color: var(--color-text-light);
-  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1223,8 +1227,7 @@ body.native-app .brand-strip {
 }
 
 .quiz-session-header {
-  padding: var(--gap-related) var(--size-content-inset) var(--gap-related)
-    var(--gap-group);
+  padding: var(--gap-group) var(--size-content-inset);
   background: var(--color-chrome);
 }
 .quiz-countdown-group {
