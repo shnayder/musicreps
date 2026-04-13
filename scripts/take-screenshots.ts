@@ -1,5 +1,5 @@
 // Fixture-based Playwright screenshot script.
-// Navigates to each mode with ?fixtures, dispatches __fixture__ events,
+// Navigates to each mode with ?fixtures&native, dispatches __fixture__ events,
 // and captures deterministic screenshots.
 //
 // Usage:
@@ -195,10 +195,14 @@ async function main() {
         deviceScaleFactor: DEVICE_SCALE_FACTOR,
         hasTouch: touchMode,
       });
+
       const page = await context.newPage();
 
-      // Load page with ?fixtures to enable fixture injection
-      await page.goto(`${BASE_URL}/?fixtures`);
+      // Load page with ?fixtures&native — native mode hides web-only chrome
+      // (brand strip, keyboard hints) and enables simulated safe-area insets
+      // via body.native-sim so the marketing device-frame overlay doesn't
+      // cover app content.
+      await page.goto(`${BASE_URL}/?fixtures&native`);
       await page.waitForLoadState('networkidle');
 
       // Seed shared motor baseline to skip calibration for all modes.
@@ -216,7 +220,7 @@ async function main() {
       // no leftover fixture state, no navigation system desync.
       // modeId 'home' skips the click — the home screen is visible on load.
       async function navigateToMode(modeId: string) {
-        await page.goto(`${BASE_URL}/?fixtures`);
+        await page.goto(`${BASE_URL}/?fixtures&native`);
         await page.waitForLoadState('networkidle');
         if (modeId === 'home') return;
         await page.click(`[data-mode="${modeId}"]`);

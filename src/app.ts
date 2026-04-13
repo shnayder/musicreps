@@ -114,6 +114,11 @@ async function boot() {
   if (isNativeApp || simulateNative) {
     document.body.classList.add('native-app');
   }
+  // Marker class so desktop-browser ?native simulations can stand in for
+  // real device safe-area insets (which env() doesn't expose in Chromium).
+  if (simulateNative && !isNativeApp) {
+    document.body.classList.add('native-sim');
+  }
 
   // Mount the persistent brand strip once. Hidden on native via CSS.
   const brandRoot = document.getElementById('brand-strip');

@@ -2753,6 +2753,23 @@ body.native-app .keyboard-hint,
 body.native-app .hint {
   display: none;
 }
+/* Simulate iPhone 15 Pro safe-area insets when ?native is used in a desktop
+   browser (marketing pipeline). Chromium doesn't expose real env(safe-area-
+   inset-*) values, so the device-frame overlay would otherwise cover app
+   content. Real native builds get the actual env() values and never hit
+   these rules. */
+body.native-sim {
+  --native-safe-top: 24px;
+  --native-safe-bottom: 0px;
+  box-sizing: border-box;
+  padding-top: var(--native-safe-top);
+  padding-bottom: var(--native-safe-bottom);
+  /* Pin body to the viewport so padding eats into content rather than
+     pushing the layout below the visible area. */
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+}
 
 /* ==========================================================================
    19. MOBILE LAYOUT
