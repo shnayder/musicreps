@@ -34,6 +34,12 @@ function readCSSColor(prop: string, fallback: string): string {
 // SVG helpers (imperative DOM mutation for performance)
 // ---------------------------------------------------------------------------
 
+// Open-string circles (fret 0) render as hollow outlines per chord-diagram
+// convention. Slightly thicker stroke makes them read a bit larger than the
+// solid dots used for fretted notes.
+const OPEN_STRING_STROKE_WIDTH = '3.5';
+const RING_STROKE_WIDTH = '3';
+
 function setCircleFill(
   root: HTMLElement,
   posKey: string,
@@ -43,7 +49,14 @@ function setCircleFill(
   const circle = root.querySelector(
     'circle.fb-pos[data-string="' + s + '"][data-fret="' + f + '"]',
   ) as SVGElement | null;
-  if (circle) circle.style.fill = color;
+  if (!circle) return;
+  if (f === '0') {
+    circle.style.fill = 'none';
+    circle.style.stroke = color;
+    circle.style.strokeWidth = OPEN_STRING_STROKE_WIDTH;
+  } else {
+    circle.style.fill = color;
+  }
 }
 
 /** Wrong-tap ring: stroke outline only, no fill. */
@@ -59,7 +72,9 @@ function setCircleRing(
   if (!circle) return;
   circle.style.fill = 'none';
   circle.style.stroke = color;
-  circle.style.strokeWidth = '3';
+  circle.style.strokeWidth = f === '0'
+    ? OPEN_STRING_STROKE_WIDTH
+    : RING_STROKE_WIDTH;
 }
 
 function clearAllCircles(root: HTMLElement): void {
