@@ -2811,7 +2811,7 @@ body.native-app .hint {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="45b92d item-selection-logic"></div>
+  <div class="home-screen" id="home-screen" data-version="7d2171 item-selection-logic"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -5105,11 +5105,11 @@ body.native-app .hint {
   function needsActiveLearning(speedScore) {
     return speedScore == null || speedScore < 0.9;
   }
-  function needsReview(speedScore, freshness) {
+  function needsReview(speedScore, freshness, freshnessThreshold = DEFAULT_CONFIG.freshnessThreshold) {
     if (speedScore == null || speedScore < 0.9) return false;
-    return (freshness ?? 1) < 0.5;
+    return (freshness ?? 1) < freshnessThreshold;
   }
-  function computeBuckets(orderedItems, getSpeed, getFreshness, excludeId) {
+  function computeBuckets(orderedItems, getSpeed, getFreshness, excludeId, freshnessThreshold = DEFAULT_CONFIG.freshnessThreshold) {
     const active = [];
     const review = [];
     const fastFresh = [];
@@ -5121,7 +5121,7 @@ body.native-app .hint {
         continue;
       }
       const fresh = getFreshness(id);
-      if (needsReview(speed, fresh)) {
+      if (needsReview(speed, fresh, freshnessThreshold)) {
         if (review.length < M_REVIEW) review.push(id);
         continue;
       }
@@ -5346,7 +5346,7 @@ body.native-app .hint {
     }
     function selectNext(orderedItems) {
       if (orderedItems.length === 0) {
-        throw new Error("validItems cannot be empty");
+        throw new Error("orderedItems cannot be empty");
       }
       if (orderedItems.length === 1) {
         storage2.setLastSelected(orderedItems[0]);
@@ -5357,7 +5357,8 @@ body.native-app .hint {
         orderedItems,
         getSpeedScore,
         getFreshness,
-        lastSelected
+        lastSelected,
+        cfg.freshnessThreshold
       );
       const picked = pickFromBuckets(buckets, getWeight, randomFn(), randomFn());
       const selected = picked ?? lastSelected ?? orderedItems[0];
@@ -7524,7 +7525,10 @@ body.native-app .hint {
     if (groupId === "naturals") {
       return NATURALS_CYCLE.filter((n2) => NATURAL_NOTES.includes(n2));
     }
-    return ACCIDENTALS_CYCLE.filter((n2) => ACCIDENTAL_NOTES.includes(n2));
+    if (groupId === "sharps-flats") {
+      return ACCIDENTALS_CYCLE.filter((n2) => ACCIDENTAL_NOTES.includes(n2));
+    }
+    return [];
   }
   function formatGroupLabel(enabledGroups) {
     if (enabledGroups.size === 2) return "all notes";
