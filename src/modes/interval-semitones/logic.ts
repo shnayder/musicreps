@@ -4,16 +4,19 @@
 
 import type { StatsTableRow } from '../../types.ts';
 import { INTERVALS } from '../../music-data.ts';
-import { buildBidirectionalIds } from '../../mode-utils.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-/** All 24 item IDs: 12 intervals × 2 directions (fwd + rev). */
-export const ALL_ITEMS = buildBidirectionalIds(
-  INTERVALS.map((i) => i.abbrev),
-);
+/**
+ * All 24 item IDs: 12 intervals × 2 directions.
+ * Order: direction outer (fwd first), intervals ascending by semitone.
+ */
+export const ALL_ITEMS: string[] = [
+  ...INTERVALS.map((i) => i.abbrev + ':fwd'),
+  ...INTERVALS.map((i) => i.abbrev + ':rev'),
+];
 
 // ---------------------------------------------------------------------------
 // Question

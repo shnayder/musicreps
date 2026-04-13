@@ -63,7 +63,7 @@ export function createFretboardHelpers(musicData: {
     enabledStrings: Set<number>,
     noteFilter: string,
   ): string[] {
-    const items = [];
+    const items: string[] = [];
     for (const s of enabledStrings) {
       for (let f = 0; f < fretCount; f++) {
         const note = getNoteAtPosition(s, f);
@@ -77,7 +77,7 @@ export function createFretboardHelpers(musicData: {
 
   /** Compute item IDs for a specific string (used for recommendations). */
   function getItemIdsForString(string: number, noteFilter: string): string[] {
-    const items = [];
+    const items: string[] = [];
     for (let f = 0; f < fretCount; f++) {
       const note = getNoteAtPosition(string, f);
       if (notePassesFilter(note, noteFilter)) {
@@ -87,7 +87,12 @@ export function createFretboardHelpers(musicData: {
     return items;
   }
 
-  /** Compute item IDs for a fret range across all strings. */
+  /**
+   * Compute item IDs for a fret range across all strings.
+   * Order: fret ascending (outer), then string low→high (inner), so
+   * earlier items build familiarity with one fret across the instrument
+   * before moving to the next fret.
+   */
   function getItemIdsForFretRange(
     startFret: number,
     endFret: number,
@@ -97,8 +102,9 @@ export function createFretboardHelpers(musicData: {
     const lo = Math.max(0, startFret);
     const hi = Math.min(endFret, fretCount - 1);
     const items: string[] = [];
-    for (let s = 0; s < stringCount; s++) {
-      for (let f = lo; f <= hi; f++) {
+    // String index 0 = highest-pitched string; low→high means descending index.
+    for (let f = lo; f <= hi; f++) {
+      for (let s = stringCount - 1; s >= 0; s--) {
         const note = getNoteAtPosition(s, f);
         if (notePassesFilter(note, noteFilter)) {
           items.push(s + '-' + f);

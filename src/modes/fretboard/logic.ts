@@ -118,11 +118,11 @@ export function getItemIdsForGroup(
   );
 }
 
-/** All item IDs for an instrument (all strings, all frets). */
+/** All item IDs for an instrument, ordered fret ascending, string low→high. */
 export function getAllItems(instrument: Instrument): string[] {
   const items: string[] = [];
-  for (let s = 0; s < instrument.stringCount; s++) {
-    for (let f = 0; f < instrument.fretCount; f++) {
+  for (let f = 0; f < instrument.fretCount; f++) {
+    for (let s = instrument.stringCount - 1; s >= 0; s--) {
       items.push(s + '-' + f);
     }
   }

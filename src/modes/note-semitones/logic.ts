@@ -3,15 +3,25 @@
 // Bidirectional: forward (note → semitone number), reverse (number → note).
 
 import type { StatsTableRow } from '../../types.ts';
-import { displayNote, NOTES, pickRandomAccidental } from '../../music-data.ts';
-import { buildBidirectionalIds } from '../../mode-utils.ts';
+import {
+  displayNote,
+  NOTES,
+  pickRandomAccidental,
+  ROOT_CYCLE,
+} from '../../music-data.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-/** All 24 item IDs: 12 notes × 2 directions (fwd + rev). */
-export const ALL_ITEMS = buildBidirectionalIds(NOTES.map((n) => n.name));
+/**
+ * All 24 item IDs: 12 notes × 2 directions.
+ * Order: direction outer (fwd first), ROOT_CYCLE inner.
+ */
+export const ALL_ITEMS: string[] = [
+  ...ROOT_CYCLE.map((n) => n + ':fwd'),
+  ...ROOT_CYCLE.map((n) => n + ':rev'),
+];
 
 // ---------------------------------------------------------------------------
 // Question

@@ -1,6 +1,8 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
 import {
+  ACTIVE_BUCKET_BIAS,
+  computeBuckets,
   computeEwma,
   computeFreshness,
   computeMedian,
@@ -12,6 +14,10 @@ import {
   createMemoryStorage,
   DEFAULT_CONFIG,
   deriveScaledConfig,
+  M_REVIEW,
+  N_ACTIVE,
+  needsActiveLearning,
+  needsReview,
   selectWeighted,
   updateStability,
 } from './adaptive.ts';
@@ -411,6 +417,125 @@ describe('selectWeighted', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Working-set bucket predicates & computeBuckets
+// ---------------------------------------------------------------------------
+
+describe('needsActiveLearning', () => {
+  it('returns true for unseen items', () => {
+    assert.equal(needsActiveLearning(null), true);
+  });
+  it('returns true for slow items', () => {
+    assert.equal(needsActiveLearning(0.5), true);
+  });
+  it('returns false for items at the Automatic threshold', () => {
+    assert.equal(needsActiveLearning(0.9), false);
+    assert.equal(needsActiveLearning(1.0), false);
+  });
+});
+
+describe('needsReview', () => {
+  it('returns false for unseen or slow items', () => {
+    assert.equal(needsReview(null, null), false);
+    assert.equal(needsReview(0.5, 0.1), false);
+  });
+  it('returns true for fast but stale items', () => {
+    assert.equal(needsReview(0.95, 0.3), true);
+  });
+  it('returns false for fast and fresh items', () => {
+    assert.equal(needsReview(0.95, 0.9), false);
+    assert.equal(needsReview(0.95, null), false);
+  });
+});
+
+describe('computeBuckets', () => {
+  const freshAll = () => 1;
+  const unseen = () => null;
+
+  it('puts all unseen items into active, capped at N_ACTIVE', () => {
+    const items = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+    const b = computeBuckets(items, unseen, freshAll, null);
+    assert.deepEqual(b.active, ['a', 'b', 'c', 'd', 'e']);
+    assert.deepEqual(b.review, []);
+    assert.deepEqual(b.fastFresh, []);
+    assert.equal(b.active.length, N_ACTIVE);
+  });
+
+  it('omits overflow items — fastFresh never receives them', () => {
+    const items = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+    const b = computeBuckets(items, unseen, freshAll, null);
+    // f and g are unseen → would go to active but it's full → omitted
+    assert.ok(!b.fastFresh.includes('f'));
+    assert.ok(!b.fastFresh.includes('g'));
+    assert.ok(!b.review.includes('f'));
+    assert.ok(!b.review.includes('g'));
+  });
+
+  it('skips excludeId from all buckets', () => {
+    const items = ['a', 'b', 'c'];
+    const b = computeBuckets(items, unseen, freshAll, 'b');
+    assert.deepEqual(b.active, ['a', 'c']);
+    assert.ok(!b.review.includes('b'));
+    assert.ok(!b.fastFresh.includes('b'));
+  });
+
+  it('partitions mixed stats correctly', () => {
+    // a: slow (active), b: fast+fresh (fastFresh), c: fast+stale (review),
+    // d: unseen (active)
+    const speed = (id: string) => {
+      if (id === 'a') return 0.4;
+      if (id === 'b') return 0.95;
+      if (id === 'c') return 0.95;
+      return null;
+    };
+    const fresh = (id: string) => {
+      if (id === 'b') return 0.9;
+      if (id === 'c') return 0.2;
+      return 1;
+    };
+    const b = computeBuckets(['a', 'b', 'c', 'd'], speed, fresh, null);
+    assert.deepEqual(b.active, ['a', 'd']);
+    assert.deepEqual(b.review, ['c']);
+    assert.deepEqual(b.fastFresh, ['b']);
+  });
+
+  it('no item appears in more than one bucket', () => {
+    const items = Array.from({ length: 30 }, (_, i) => `i${i}`);
+    const b = computeBuckets(items, unseen, freshAll, null);
+    const seen = new Set<string>();
+    for (const id of [...b.active, ...b.review, ...b.fastFresh]) {
+      assert.ok(!seen.has(id), `duplicate ${id}`);
+      seen.add(id);
+    }
+  });
+
+  it('caps review bucket at M_REVIEW', () => {
+    // Construct 12 fast-stale items
+    const items = Array.from({ length: 12 }, (_, i) => `i${i}`);
+    const speed = () => 0.95;
+    const fresh = () => 0.1;
+    const b = computeBuckets(items, speed, fresh, null);
+    assert.equal(b.review.length, M_REVIEW);
+    assert.deepEqual(b.review, items.slice(0, M_REVIEW));
+  });
+
+  it('preserves input order within each bucket', () => {
+    const items = ['z', 'y', 'x', 'w', 'v'];
+    const b = computeBuckets(items, unseen, freshAll, null);
+    assert.deepEqual(b.active, items);
+  });
+
+  it('fastFresh holds only items that are actually fast and fresh', () => {
+    const items = ['a', 'b'];
+    const speed = () => 0.95;
+    const fresh = () => 0.9;
+    const b = computeBuckets(items, speed, fresh, null);
+    assert.deepEqual(b.fastFresh, ['a', 'b']);
+    assert.deepEqual(b.active, []);
+    assert.deepEqual(b.review, []);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // createAdaptiveSelector integration
 // ---------------------------------------------------------------------------
 
@@ -537,6 +662,83 @@ describe('createAdaptiveSelector', () => {
       unseenWeight > seenWeight,
       `unseen weight (${unseenWeight}) must be > seen weight (${seenWeight})`,
     );
+  });
+
+  it('working set: only draws from first N_ACTIVE items when all unseen', () => {
+    const storage = createMemoryStorage();
+    // Deterministic RNG: first call picks bucket (use 0 to prefer active),
+    // second call picks within the bucket.
+    let callCount = 0;
+    const selector = createAdaptiveSelector(
+      storage,
+      DEFAULT_CONFIG,
+      () => {
+        const r = (callCount++ % 5) / 5; // 0, 0.2, 0.4, 0.6, 0.8
+        // The first call per selectNext is the coin flip; we want it
+        // below ACTIVE_BUCKET_BIAS (0.7), which 0..0.6 are.
+        return r;
+      },
+    );
+    const items = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
+    const seen = new Set<string>();
+    for (let i = 0; i < 30; i++) {
+      const pick = selector.selectNext(items);
+      seen.add(pick);
+      // Don't record a response — keep them all unseen. Because the
+      // last-selected is excluded each trial, we should see picks from
+      // the first 6 positions (active holds the first 5 non-excluded).
+    }
+    // First 5 unseen items should dominate; later items only surface
+    // when one of them is the excluded lastSelected.
+    const earlyItems = items.slice(0, 6);
+    for (const id of seen) {
+      assert.ok(
+        earlyItems.includes(id),
+        `picked ${id}, expected only early items ${earlyItems}`,
+      );
+    }
+    assert.ok(
+      seen.size >= 4,
+      `expected coverage of early items, got ${seen.size}`,
+    );
+  });
+
+  it('working set: falls through to review when active is empty', () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(
+      storage,
+      DEFAULT_CONFIG,
+      () => 0.5, // below ACTIVE_BUCKET_BIAS → prefers active
+    );
+    // Make all items fast but stale → review bucket populated, active empty.
+    // Record a fast response, then age the lastCorrectAt to force low freshness.
+    const items = ['a', 'b', 'c'];
+    for (const id of items) {
+      selector.recordResponse(id, 500); // fast
+      const stats = storage.getStats(id)!;
+      // Force staleness: set lastCorrectAt far in the past.
+      storage.saveStats(id, {
+        ...stats,
+        lastCorrectAt: Date.now() - 100 * 3600 * 1000, // 100 hours ago
+        stability: 1, // 1-hour half-life → freshness ~0
+      });
+    }
+    // Prefer active (coin < 0.7) but active should be empty → picks review.
+    const pick = selector.selectNext(items);
+    assert.ok(items.includes(pick));
+    // Verify bucket membership explicitly.
+    const buckets = computeBuckets(
+      items,
+      (id) => selector.getSpeedScore(id),
+      (id) => selector.getFreshness(id),
+      null,
+    );
+    assert.equal(buckets.active.length, 0);
+    assert.ok(buckets.review.length > 0);
+  });
+
+  it('ACTIVE_BUCKET_BIAS is 0.7', () => {
+    assert.equal(ACTIVE_BUCKET_BIAS, 0.7);
   });
 
   it('distributes selections across unseen items, not just the first few', () => {
