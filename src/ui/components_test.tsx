@@ -21,7 +21,6 @@ import { CountdownBar, FeedbackDisplay, TextPrompt } from './quiz-ui.tsx';
 import { SkillIcon } from './icons.tsx';
 import {
   ModeScreen,
-  ModeTopBar,
   QuizArea,
   QuizSession,
   RoundCompleteActions,
@@ -414,45 +413,6 @@ describe('ModeScreen', () => {
       </ModeScreen>,
     );
     assert.ok(html.includes('mode-screen phase-active'));
-  });
-});
-
-describe('ModeTopBar', () => {
-  it('renders close button and title', () => {
-    const html = render(<ModeTopBar title='Semitone Math' />);
-    assert.ok(html.includes('mode-top-bar'));
-    assert.ok(html.includes('close-btn'));
-    assert.ok(html.includes('mode-title'));
-    assert.ok(html.includes('Semitone Math'));
-    assert.ok(html.includes('\u00D7'));
-  });
-
-  it('hides close button when showBack is false', () => {
-    const html = render(<ModeTopBar title='Test' showBack={false} />);
-    assert.ok(html.includes('mode-top-bar'));
-    assert.ok(html.includes('mode-title'));
-    assert.ok(!html.includes('close-btn'));
-  });
-
-  it('renders description as static paragraph', () => {
-    const html = render(
-      <ModeTopBar title='Test' description='Some description' />,
-    );
-    assert.ok(html.includes('mode-description'));
-    assert.ok(html.includes('Some description'));
-  });
-
-  it('renders skill icon when modeId is provided', () => {
-    const html = render(
-      <ModeTopBar modeId='semitoneMath' title='Semitone Math' />,
-    );
-    assert.ok(html.includes('skill-icon'));
-    assert.ok(html.includes('aria-hidden="true"'));
-  });
-
-  it('renders no icon when modeId is omitted', () => {
-    const html = render(<ModeTopBar title='Test' />);
-    assert.ok(!html.includes('skill-icon'));
   });
 });
 

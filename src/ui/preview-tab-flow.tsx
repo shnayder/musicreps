@@ -10,13 +10,13 @@ import type { StatsSelector } from './stats.tsx';
 import { StatsGrid, StatsLegend } from './stats.tsx';
 import { FeedbackDisplay } from './quiz-ui.tsx';
 import {
-  ModeTopBar,
   QuizArea,
   QuizSession,
   RoundCompleteActions,
   RoundCompleteInfo,
   Tabs,
 } from './mode-screen.tsx';
+import { SkillHeader } from './practice-config.tsx';
 import { Text } from './text.tsx';
 import { SkillCard } from './home-screen.tsx';
 import {
@@ -57,10 +57,11 @@ function FlowIdleSection(
       </Section>
 
       <Section title='Idle — Practice + Recommendation' tabId={tabId}>
-        <ModeTopBar
+        <SkillHeader
           modeId='semitoneMath'
           title='Semitone Math'
-          description='Transpose by semitones without counting'
+          totalReps={42}
+          onBack={() => {}}
         />
         <Tabs
           activeTab='practice'

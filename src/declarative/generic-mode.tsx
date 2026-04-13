@@ -17,7 +17,6 @@ import { useLearnerModel } from '../hooks/use-learner-model.ts';
 import { useGroupScope } from '../hooks/use-group-scope.ts';
 
 import { LayoutHeader, ScreenLayout } from '../ui/screen-layout.tsx';
-import { ModeTopBar } from '../ui/mode-screen.tsx';
 import { SkillHeader } from '../ui/practice-config.tsx';
 import { NOTE_BUTTON_CONFIG, SpeedCheck } from '../ui/speed-check.tsx';
 import type { ModeDefinition } from './types.ts';
@@ -36,31 +35,6 @@ import {
   useProgressColors,
   useSpeedCheckOverlay,
 } from './generic-mode-hooks.ts';
-
-// ---------------------------------------------------------------------------
-// ModeHeader — SkillHeader (idle) or minimal ModeTopBar (active/calibration)
-// ---------------------------------------------------------------------------
-
-function ModeHeader<Q>(
-  { def, isIdle, totalReps, navigateHome }: {
-    def: ModeDefinition<Q>;
-    isIdle: boolean;
-    totalReps: number;
-    navigateHome: () => void;
-  },
-) {
-  if (isIdle) {
-    return (
-      <SkillHeader
-        modeId={def.id}
-        title={def.name}
-        totalReps={totalReps}
-        onBack={navigateHome}
-      />
-    );
-  }
-  return <ModeTopBar modeId={def.id} title={def.name} showBack={false} />;
-}
 
 // ---------------------------------------------------------------------------
 // GenericModeBody — renders speed check overlay or idle/active views
@@ -109,11 +83,11 @@ function GenericModeBody<Q>(
     return (
       <ScreenLayout>
         <LayoutHeader>
-          <ModeHeader
-            def={def}
-            isIdle
+          <SkillHeader
+            modeId={def.id}
+            title={def.name}
             totalReps={totalReps}
-            navigateHome={navigateHome}
+            onBack={navigateHome}
           />
         </LayoutHeader>
         <IdlePracticeView

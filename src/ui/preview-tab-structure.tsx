@@ -7,13 +7,13 @@ import { StatsGrid } from './stats.tsx';
 import { FeedbackDisplay } from './quiz-ui.tsx';
 import {
   ModeScreen,
-  ModeTopBar,
   QuizArea,
   RoundCompleteActions,
   RoundCompleteInfo,
   StartButton,
   Tabs,
 } from './mode-screen.tsx';
+import { SkillHeader } from './practice-config.tsx';
 import { Bar, Card, Section as LayoutSection, Stack } from './layout.tsx';
 import { Text } from './text.tsx';
 import { PreviewGrid, Section } from './preview-shared.tsx';
@@ -188,13 +188,12 @@ function IdleBasicComponents(
 ) {
   return (
     <PreviewGrid>
-      <Section title='ModeTopBar' tabId={tabId}>
-        <ModeTopBar title='Semitone Math' />
-      </Section>
-      <Section title='ModeTopBar — with description' tabId={tabId}>
-        <ModeTopBar
+      <Section title='SkillHeader' tabId={tabId}>
+        <SkillHeader
+          modeId='semitoneMath'
           title='Semitone Math'
-          description='Transpose by semitones without counting'
+          totalReps={42}
+          onBack={() => {}}
         />
       </Section>
     </PreviewGrid>
@@ -232,9 +231,11 @@ function IdleComposedComponents(
       </Section>
       <Section title='ModeScreen (idle, composed)' tabId={tabId}>
         <ModeScreen id='preview-demo' phase='idle'>
-          <ModeTopBar
+          <SkillHeader
+            modeId='semitoneMath'
             title='Demo Mode'
-            description='Practice skill X until it becomes automatic'
+            totalReps={0}
+            onBack={() => {}}
           />
           <Tabs
             activeTab='practice'

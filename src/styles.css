@@ -1089,15 +1089,6 @@ body.native-app .brand-strip {
 /* ==========================================================================
    4. MODE CHROME
    ========================================================================== */
-.mode-top-bar {
-  padding: var(--gap-group) var(--size-content-inset);
-  background: var(--color-chrome);
-}
-/* mode-top-bar-row: replaced by Bar gap='group' */
-.mode-top-bar .skill-icon {
-  flex-shrink: 0;
-  color: var(--color-text-muted);
-}
 .close-btn {
   background: none;
   border: none;
@@ -1124,13 +1115,6 @@ body.native-app .brand-strip {
 }
 .close-btn:active {
   background: var(--color-surface-pressed);
-}
-.mode-top-bar-text {
-  flex: 1;
-  min-width: 0;
-}
-.mode-description {
-  margin: var(--gap-micro) 0 0;
 }
 /* --- Settings page --- */
 .settings-page-header {
@@ -1745,11 +1729,6 @@ button {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-}
-.mode-screen.phase-active .mode-top-bar,
-.mode-screen.phase-round-complete .mode-top-bar,
-.mode-screen.phase-calibration .mode-top-bar {
-  display: none;
 }
 /* --- Quiz area — two-zone layout: .quiz-content + .quiz-controls --- */
 .quiz-area {
