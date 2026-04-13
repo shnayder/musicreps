@@ -1114,7 +1114,11 @@ body.native-app .brand-strip {
   min-width: var(--size-touch-target);
   min-height: var(--size-touch-target);
   margin-block: calc(
-    (var(--text-lg) * var(--leading-tight) - var(--size-touch-target)) / 2
+    (
+      var(--type-heading-page-size) * var(--type-heading-page-leading)
+        - var(--size-touch-target)
+    )
+      / 2
   );
   color: var(--color-text-light);
   display: flex;

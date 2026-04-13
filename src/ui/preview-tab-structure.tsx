@@ -13,6 +13,7 @@ import {
   StartButton,
   Tabs,
 } from './mode-screen.tsx';
+import { BrandStrip } from './brand-strip.tsx';
 import { SkillHeader } from './practice-config.tsx';
 import { Bar, Card, Section as LayoutSection, Stack } from './layout.tsx';
 import { Text } from './text.tsx';
@@ -188,6 +189,11 @@ function IdleBasicComponents(
 ) {
   return (
     <PreviewGrid>
+      <Section title='BrandStrip' tabId={tabId}>
+        <div class='brand-strip'>
+          <BrandStrip />
+        </div>
+      </Section>
       <Section title='SkillHeader' tabId={tabId}>
         <SkillHeader
           modeId='semitoneMath'

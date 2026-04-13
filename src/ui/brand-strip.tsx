@@ -7,7 +7,7 @@ import { Text } from './text.tsx';
 
 export function BrandStrip() {
   return (
-    <div class='brand-strip-inner'>
+    <>
       <h1 class='brand-strip-title'>
         <RepeatMark size={28} class='brand-strip-mark' />
         Music Reps
@@ -15,6 +15,6 @@ export function BrandStrip() {
       <Text role='body-secondary' as='p' class='brand-strip-tagline'>
         Make music fundamentals automatic so you can focus on playing.
       </Text>
-    </div>
+    </>
   );
 }
