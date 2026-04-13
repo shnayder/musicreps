@@ -398,7 +398,7 @@
   --type-metric-header-size: var(--type-heading-page-size);
   --type-metric-header-weight: var(--type-heading-page-weight);
   --type-metric-header-leading: var(--type-heading-page-leading);
-  --type-metric-header-color: var(--color-text);
+  --type-metric-header-color: var(--color-tertiary);
 
   /* -- Status: state communication -- */
   --type-status-size: var(--text-sm);
