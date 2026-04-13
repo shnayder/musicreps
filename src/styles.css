@@ -117,6 +117,7 @@
   /* Error */
   --color-error: var(--error-600);
   --color-error-bg: var(--error-100);
+  --color-error-bg-strong: var(--error-200);
   --color-error-border: var(--error-300);
   --color-error-text: var(--error-800);
   --color-tap-selected: var(--color-accent);
@@ -247,8 +248,14 @@
   /* Interactive element sizes */
   --size-close-btn: 2.25rem;
   --size-content-inset: var(--pad-region);
-  --size-answer-grid: 272px;
-  --size-answer-grid-wide: 400px;
+  /* Answer button width. Both the 4-col and 6-col grids derive their
+     max-width from this token so 4+3 and 6+6 layouts have matching button
+     sizes. Shrunk on short screens (mobile layout block). */
+  --size-answer-btn: 64px;
+  --size-answer-grid: calc(4 * var(--size-answer-btn) + 3 * var(--gap-related));
+  --size-answer-grid-wide: calc(
+    6 * var(--size-answer-btn) + 5 * var(--gap-related)
+  );
 
   /* Elevation (box-shadow) */
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1);
@@ -385,6 +392,15 @@
   --type-metric-effort-leading: var(--leading-none);
   --type-metric-effort-color: var(--color-tertiary);
 
+  /* Headline metric — used in screen headers (home stats bar, quiz round
+     counter). Matches heading-page weight/size so metric numbers carry the
+     same visual weight as page titles, keeping headers consistent across
+     screens. */
+  --type-metric-header-size: var(--type-heading-page-size);
+  --type-metric-header-weight: var(--type-heading-page-weight);
+  --type-metric-header-leading: var(--type-heading-page-leading);
+  --type-metric-header-color: var(--color-tertiary);
+
   /* -- Status: state communication -- */
   --type-status-size: var(--text-sm);
   --type-status-weight: var(--font-normal);
@@ -459,12 +475,13 @@ body {
   overscroll-behavior: none;
 }
 /* Viewport containment: #app only exists in the built app (build-template.ts),
-   so prototype/design pages that import styles.css are unaffected. */
+   so prototype/design pages that import styles.css are unaffected. #app is
+   the viewport anchor: an absolute height minus the top safe-area inset that
+   body already pads. Every descendant flexes from here. */
 #app {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 0;
+  height: calc(100dvh - env(safe-area-inset-top, 0px));
   overflow: hidden;
 }
 
@@ -476,7 +493,8 @@ body {
 .screen-layout {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - env(safe-area-inset-top, 0px));
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -706,8 +724,15 @@ body {
 /* ==========================================================================
    3. HOME SCREEN
    ========================================================================== */
-/* .home-screen: outer container — ScreenLayout fills the viewport inside it.
-   No styles needed; show/hide is on .home-screen.hidden below. */
+/* .home-screen: outer container — a flex child of #app so the inner
+   ScreenLayout fills the space left by the brand strip and any other
+   siblings. */
+.home-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
 .home-screen.hidden {
   display: none;
 }
@@ -720,40 +745,39 @@ body {
   padding: var(--gap-group) var(--size-content-inset);
   background: var(--color-chrome);
 }
-.home-title {
+/* --- Brand strip (top of every web screen, hidden on native) --- */
+.brand-strip {
+  flex-shrink: 0;
+  padding: var(--gap-group) var(--size-content-inset);
+  background: var(--color-chrome);
+  border-bottom: 1px solid var(--color-border-lighter);
+}
+body.native-app .brand-strip {
+  display: none;
+}
+.brand-strip-title {
   display: flex;
   align-items: center;
   gap: 0.4em;
+  margin: 0;
   font-family: var(--type-display-brand-family);
   font-size: var(--type-display-brand-size);
   font-weight: var(--type-display-brand-weight);
   line-height: var(--type-display-brand-leading);
   color: var(--type-display-brand-color);
 }
-.home-logo-mark {
+.brand-strip-mark {
   color: var(--color-brand);
   flex-shrink: 0;
 }
-.home-title::after {
-  display: none;
-}
-.home-tagline {
-  margin: var(--gap-group) 0 0;
-}
-/* On native apps, hide the title/tagline but keep the stats bar visible */
-.home-header.native .home-title,
-.home-header.native .home-tagline {
-  display: none;
+.brand-strip-tagline {
+  margin: var(--gap-related) 0 0;
 }
 /* --- Stats bar (home header) --- */
 .home-stats-bar {
   justify-content: center;
-  margin-top: var(--gap-group);
   font-size: var(--type-status-size);
   color: var(--type-status-color);
-}
-.home-header.native .home-stats-bar {
-  margin-top: 0;
 }
 .home-stat-sep {
   color: var(--color-text-muted);
@@ -1076,25 +1100,27 @@ body {
 /* ==========================================================================
    4. MODE CHROME
    ========================================================================== */
-.mode-top-bar {
-  padding: var(--gap-group) var(--size-content-inset);
-  background: var(--color-chrome);
-}
-/* mode-top-bar-row: replaced by Bar gap='group' */
-.mode-top-bar .skill-icon {
-  flex-shrink: 0;
-  color: var(--color-text-muted);
-}
 .close-btn {
   background: none;
   border: none;
+  /* Full-size X glyph. The button box is still --size-touch-target tall for
+     a 44px hit target, but we pull its layout contribution back to the title
+     line-height via a negative block margin so it doesn't inflate the
+     header row. The overflow lands in the surrounding chrome where it's
+     invisible. */
   font-size: var(--size-close-btn);
   cursor: pointer;
-  padding: var(--gap-related);
+  padding: 0 var(--gap-related);
   min-width: var(--size-touch-target);
   min-height: var(--size-touch-target);
+  margin-block: calc(
+    (
+      var(--type-heading-page-size) * var(--type-heading-page-leading)
+        - var(--size-touch-target)
+    )
+      / 2
+  );
   color: var(--color-text-light);
-  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1111,13 +1137,6 @@ body {
 }
 .close-btn:active {
   background: var(--color-surface-pressed);
-}
-.mode-top-bar-text {
-  flex: 1;
-  min-width: 0;
-}
-.mode-description {
-  margin: var(--gap-micro) 0 0;
 }
 /* --- Settings page --- */
 .settings-page-header {
@@ -1219,6 +1238,7 @@ body {
   display: none;
   padding-top: 0;
   flex: 1;
+  min-height: 0;
 }
 .mode-screen.mode-active {
   display: flex;
@@ -1226,8 +1246,7 @@ body {
 }
 
 .quiz-session-header {
-  padding: var(--gap-related) var(--size-content-inset) var(--gap-related)
-    var(--gap-group);
+  padding: var(--gap-group) var(--size-content-inset);
   background: var(--color-chrome);
 }
 .quiz-countdown-group {
@@ -1733,11 +1752,6 @@ button {
   flex: 1;
   min-height: 0;
 }
-.mode-screen.phase-active .mode-top-bar,
-.mode-screen.phase-round-complete .mode-top-bar,
-.mode-screen.phase-calibration .mode-top-bar {
-  display: none;
-}
 /* --- Quiz area — two-zone layout: .quiz-content + .quiz-controls --- */
 .quiz-area {
   display: flex;
@@ -2096,6 +2110,14 @@ button {
   font-weight: var(--type-metric-effort-weight);
   line-height: var(--type-metric-effort-leading);
   color: var(--type-metric-effort-color);
+  font-variant-numeric: tabular-nums;
+}
+.text-metric-header {
+  font-size: var(--type-metric-header-size);
+  font-weight: var(--type-metric-header-weight);
+  line-height: var(--type-metric-header-leading);
+  color: var(--type-metric-header-color);
+  font-family: var(--font-display);
   font-variant-numeric: tabular-nums;
 }
 
@@ -2738,7 +2760,6 @@ body.native-app .hint {
 @media (max-width: 599px) {
   :root {
     --size-content-inset: var(--gap-group);
-    --size-answer-grid: 220px;
     --type-answer-size: 1.1rem;
   }
 
@@ -2776,5 +2797,14 @@ body.native-app .hint {
   /* Prevent iOS zoom on input focus */
   input, button {
     font-size: 16px;
+  }
+}
+
+/* Short screens (iPhone SE and similar): shrink answer buttons so the
+   quiz controls + footer still fit without scrolling. Height-based so it
+   only kicks in when vertical space is actually scarce. */
+@media (max-height: 700px) {
+  :root {
+    --size-answer-btn: 52px;
   }
 }

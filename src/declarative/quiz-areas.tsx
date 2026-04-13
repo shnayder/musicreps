@@ -19,6 +19,7 @@ import {
   NoteButtons,
   NumberButtons,
   NumeralButtons,
+  type SplitButtonsFlushRef,
   SplitKeysigButtons,
   SplitNoteButtons,
 } from '../ui/buttons.tsx';
@@ -162,6 +163,7 @@ export function ResponseButtons(
     columnsOverride,
     feedback,
     answered,
+    splitFlushRef,
   }: {
     buttonsDef: ButtonsDef;
     onAnswer: (input: string) => void;
@@ -171,6 +173,7 @@ export function ResponseButtons(
     columnsOverride?: number;
     feedback?: ButtonFeedback | null;
     answered?: boolean;
+    splitFlushRef?: SplitButtonsFlushRef;
   },
 ) {
   switch (buttonsDef.kind) {
@@ -190,6 +193,7 @@ export function ResponseButtons(
         <SplitNoteButtons
           onAnswer={onAnswer}
           answered={answered}
+          flushRef={splitFlushRef}
         />
       );
     case 'number':
@@ -249,6 +253,7 @@ export function SequentialQuizArea<Q>(
     placeholder,
     promptText,
     instruction,
+    splitFlushRef,
   }: {
     def: ModeDefinition<Q>;
     engine: ReturnType<typeof useQuizEngine>;
@@ -265,6 +270,7 @@ export function SequentialQuizArea<Q>(
     placeholder?: string;
     promptText: string;
     instruction?: string;
+    splitFlushRef?: SplitButtonsFlushRef;
   },
 ) {
   return (
@@ -298,6 +304,7 @@ export function SequentialQuizArea<Q>(
             buttonsDef={activeButtons}
             onAnswer={seq.handleInput}
             answered={engine.state.answered}
+            splitFlushRef={splitFlushRef}
           />
           {def.sequential?.parseBatchInput && (
             <AnswerInput
@@ -497,6 +504,13 @@ export function QuizActiveView<Q>(
   }: QuizActiveViewProps<Q>,
 ) {
   const phase = engine.state.phase;
+  // Ref for committing a tapped letter that hasn't been paired with an
+  // accidental yet, so pressing Check submits "B" rather than dropping it.
+  const splitFlushRef = useRef<(() => void) | null>(null);
+  const handleCheckWithFlush = useCallback(() => {
+    splitFlushRef.current?.();
+    seq.handleCheck();
+  }, [seq]);
 
   if (phase === 'round-complete') {
     return (
@@ -557,6 +571,7 @@ export function QuizActiveView<Q>(
         placeholder={placeholder}
         promptText={promptText}
         instruction={instruction}
+        splitFlushRef={splitFlushRef}
       />
     )
     : (
@@ -598,7 +613,7 @@ export function QuizActiveView<Q>(
           onNext={engine.state.answered ? engine.nextQuestion : undefined}
           onCheck={!engine.state.answered
             ? (def.sequential && !seq.evaluated && seq.entries.length > 0
-              ? seq.handleCheck
+              ? handleCheckWithFlush
               : def.multiTap && !multiTapInput.evaluated &&
                   multiTapInput.tappedPositions.size > 0
               ? multiTapInput.handleCheck

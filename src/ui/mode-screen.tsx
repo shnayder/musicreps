@@ -3,7 +3,6 @@
 
 import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
-import { SkillIcon } from './icons.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
@@ -226,42 +225,6 @@ export function ScreenHeader(
 }
 
 // ---------------------------------------------------------------------------
-// ModeTopBar — close button + mode title + description
-// ---------------------------------------------------------------------------
-
-export function ModeTopBar(
-  { modeId, title, description, onBack, showBack = true }: {
-    modeId?: string;
-    title: string;
-    description?: string;
-    onBack?: () => void;
-    showBack?: boolean;
-  },
-) {
-  return (
-    <div class='mode-top-bar'>
-      <Bar gap='group'>
-        {showBack && (
-          <CloseButton
-            ariaLabel='Back to home'
-            onClick={onBack}
-          />
-        )}
-        {modeId && <SkillIcon modeId={modeId} />}
-        <div class='mode-top-bar-text'>
-          <Text role='heading-page' as='h1' class='mode-title'>{title}</Text>
-          {description && (
-            <Text role='body-secondary' as='p' class='mode-description'>
-              {description}
-            </Text>
-          )}
-        </div>
-      </Bar>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // ModeTab — tab IDs for mode screens
 // ---------------------------------------------------------------------------
 
@@ -346,7 +309,7 @@ export function QuizSession(
           </Text>
         </Bar>
         {count && (
-          <Text role='metric-effort' as='span' class='quiz-info-count'>
+          <Text role='metric-header' as='span' class='quiz-info-count'>
             {count}
             <RepeatMark size={13} class='quiz-info-count-icon' />
           </Text>

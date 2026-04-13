@@ -9,7 +9,6 @@ import { type DevPanelData, getDevPanelData } from '../dev-panel.ts';
 import { getGlobalEffort, toLocalDateString } from '../effort.ts';
 import { SkillIcon } from './icons.tsx';
 import { Pill } from './pill.tsx';
-import { RepeatMark } from './repeat-mark.tsx';
 import type { SettingsController } from '../types.ts';
 import { storage } from '../storage.ts';
 import type { AppConfig } from '../app-config.ts';
@@ -672,8 +671,7 @@ const TAB_TITLES: Partial<Record<HomeTab, string>> = {
 };
 
 function HomeHeader(
-  { isNativeApp, tab, repsToday, totalReps, daysActive }: {
-    isNativeApp?: boolean;
+  { tab, repsToday, totalReps, daysActive }: {
     tab: HomeTab;
     repsToday: number;
     totalReps: number;
@@ -683,7 +681,7 @@ function HomeHeader(
   const pageTitle = TAB_TITLES[tab];
   if (pageTitle) {
     return (
-      <div class={`home-header${isNativeApp ? ' native' : ''}`}>
+      <div class='home-header'>
         <Text role='heading-page' as='h1' class='page-heading'>
           {pageTitle}
         </Text>
@@ -691,35 +689,24 @@ function HomeHeader(
     );
   }
   return (
-    <div class={`home-header${isNativeApp ? ' native' : ''}`}>
-      {!isNativeApp && (
-        <>
-          <h1 class='home-title'>
-            <RepeatMark size={28} class='home-logo-mark' />
-            Music Reps
-          </h1>
-          <Text role='body-secondary' as='p' class='home-tagline'>
-            Make music fundamentals automatic so you can focus on playing.
-          </Text>
-        </>
-      )}
+    <div class='home-header'>
       <Bar gap='group' class='home-stats-bar'>
         <span class='home-stat'>
-          <Text role='metric-effort' as='span'>
+          <Text role='metric-header' as='span'>
             {repsToday.toLocaleString()}
           </Text>
           {' today'}
         </span>
         <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
         <span class='home-stat'>
-          <Text role='metric-effort' as='span'>
+          <Text role='metric-header' as='span'>
             {totalReps.toLocaleString()}
           </Text>
           {' total'}
         </span>
         <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
         <span class='home-stat'>
-          <Text role='metric-effort' as='span'>{daysActive}</Text>
+          <Text role='metric-header' as='span'>{daysActive}</Text>
           {daysActive === 1 ? ' day' : ' days'}
         </span>
       </Bar>
@@ -893,13 +880,12 @@ function useHomeTabs(
 // ---------------------------------------------------------------------------
 
 export function HomeScreen(
-  { onSelectMode, settings, appConfig, showDevLink, version, isNativeApp }: {
+  { onSelectMode, settings, appConfig, showDevLink, version }: {
     onSelectMode: (modeId: string) => void;
     settings: SettingsController;
     appConfig: AppConfig;
     showDevLink?: boolean;
     version: string;
-    isNativeApp?: boolean;
   },
 ) {
   const [starred, setStarred] = useState(loadStarredSkills);
@@ -959,7 +945,6 @@ export function HomeScreen(
     <ScreenLayout class='home-screen-layout'>
       <LayoutHeader>
         <HomeHeader
-          isNativeApp={isNativeApp}
           tab={tab}
           repsToday={globalEffort.dailyReps[toLocalDateString(new Date())] ?? 0}
           totalReps={globalEffort.totalReps}
