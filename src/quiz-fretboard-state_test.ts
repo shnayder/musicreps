@@ -136,55 +136,6 @@ describe('checkFretboardAnswer', () => {
   });
 });
 
-describe('getFretboardEnabledItems', () => {
-  it('single string, filter=all: returns all 13 frets', () => {
-    const items = fb.getFretboardEnabledItems(new Set([5]), 'all');
-    assert.equal(items.length, 13);
-    assert.equal(items[0], '5-0');
-    assert.equal(items[12], '5-12');
-  });
-
-  it('single string, filter=natural: returns only natural-note frets', () => {
-    const items = fb.getFretboardEnabledItems(new Set([5]), 'natural');
-    // Low E string: E F F# G G# A A# B C C# D D# E
-    // Naturals: E(0) F(1) G(3) A(5) B(7) C(8) D(10) E(12) = 8
-    assert.equal(items.length, 8);
-    assert.ok(items.includes('5-0')); // E
-    assert.ok(items.includes('5-1')); // F
-    assert.ok(!items.includes('5-2')); // F# (not natural)
-    assert.ok(items.includes('5-3')); // G
-  });
-
-  it('single string, filter=none: returns zero items', () => {
-    const items = fb.getFretboardEnabledItems(new Set([5]), 'none');
-    assert.equal(items.length, 0);
-  });
-
-  it('single string, filter=sharps-flats: returns only accidental frets', () => {
-    const items = fb.getFretboardEnabledItems(new Set([5]), 'sharps-flats');
-    // Low E string: E F F# G G# A A# B C C# D D# E
-    // Accidentals: F#(2) G#(4) A#(6) C#(9) D#(11) = 5
-    assert.equal(items.length, 5);
-    assert.ok(items.includes('5-2')); // F#
-    assert.ok(items.includes('5-4')); // G#
-    assert.ok(!items.includes('5-0')); // E (natural)
-    assert.ok(!items.includes('5-1')); // F (natural)
-  });
-
-  it('multiple strings', () => {
-    const items = fb.getFretboardEnabledItems(new Set([0, 5]), 'all');
-    assert.equal(items.length, 26); // 2 * 13
-  });
-
-  it('all 6 strings, filter=all: returns 78 items', () => {
-    const items = fb.getFretboardEnabledItems(
-      new Set([0, 1, 2, 3, 4, 5]),
-      'all',
-    );
-    assert.equal(items.length, 78); // 6 * 13
-  });
-});
-
 describe('getItemIdsForString', () => {
   it('string 5, filter=all: 13 items', () => {
     const items = fb.getItemIdsForString(5, 'all');
@@ -253,6 +204,23 @@ describe('getItemIdsForFretRange', () => {
     const all = fb.getItemIdsForFretRange(0, 3, 'all', 6);
     assert.equal(naturals.length + accidentals.length, all.length);
   });
+
+  it('orders items fret-outer, string low→high (working-set cap depends on this)', () => {
+    // Guitar: string 5 = low E, string 0 = high e. Within a fret we
+    // walk from low E up to high e, so fret 0 is: 5-0, 4-0, 3-0, 2-0,
+    // 1-0, 0-0. Then fret 1 starts: 5-1, 4-1, ...
+    const items = fb.getItemIdsForFretRange(0, 1, 'all', 6);
+    assert.deepEqual(items.slice(0, 6), [
+      '5-0',
+      '4-0',
+      '3-0',
+      '2-0',
+      '1-0',
+      '0-0',
+    ]);
+    assert.equal(items[6], '5-1');
+    assert.equal(items[11], '0-1');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -316,27 +284,6 @@ describe('ukulele getNoteAtPosition', () => {
   });
 });
 
-describe('ukulele getFretboardEnabledItems', () => {
-  it('single string, filter=all: returns 13 frets', () => {
-    const items = uke.getFretboardEnabledItems(new Set([2]), 'all');
-    assert.equal(items.length, 13);
-    assert.equal(items[0], '2-0');
-    assert.equal(items[12], '2-12');
-  });
-
-  it('all 4 strings, filter=all: returns 52 items', () => {
-    const items = uke.getFretboardEnabledItems(new Set([0, 1, 2, 3]), 'all');
-    assert.equal(items.length, 52); // 4 * 13
-  });
-
-  it('single string, filter=natural: correct count', () => {
-    // C string: C C# D D# E F F# G G# A A# B C
-    // Naturals: C(0) D(2) E(4) F(5) G(7) A(9) B(11) C(12) = 8
-    const items = uke.getFretboardEnabledItems(new Set([2]), 'natural');
-    assert.equal(items.length, 8);
-  });
-});
-
 describe('ukulele parseFretboardItem', () => {
   it("parses '2-0' to C string fret 0 = C", () => {
     const q = uke.parseFretboardItem('2-0');
@@ -371,7 +318,7 @@ describe('createFretboardHelpers fretCount', () => {
       fretCount: 5,
       noteMatchesInput,
     });
-    const items = small.getFretboardEnabledItems(new Set([0]), 'all');
+    const items = small.getItemIdsForString(0, 'all');
     assert.equal(items.length, 5);
     assert.equal(items[4], '0-4');
   });

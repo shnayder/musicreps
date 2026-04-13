@@ -240,9 +240,11 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
 
   const enabledItems = useMemo(() => {
     const items: string[] = [];
-    for (const id of enabledGroups) items.push(...spec.getItemIdsForGroup(id));
+    for (const id of spec.allGroupIds) {
+      if (enabledGroups.has(id)) items.push(...spec.getItemIdsForGroup(id));
+    }
     return items;
-  }, [enabledGroups, spec.getItemIdsForGroup]);
+  }, [enabledGroups, spec.allGroupIds, spec.getItemIdsForGroup]);
 
   const practicingLabel = useMemo(
     () => spec.formatLabel(enabledGroups),

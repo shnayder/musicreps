@@ -99,7 +99,11 @@ export function chordDisplayName(v: ChordVoicing): string {
 // ---------------------------------------------------------------------------
 
 export function allItems(instrument: 'guitar' | 'ukulele'): string[] {
-  return getVoicings(instrument).map(itemId);
+  const out: string[] = [];
+  for (const q of ALL_GROUP_IDS) {
+    out.push(...getItemIdsForGroup(instrument, q));
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -148,13 +152,26 @@ export const QUALITY_GROUPS = [
 
 export const ALL_GROUP_IDS: string[] = QUALITY_GROUPS.map((g) => g.id);
 
+/**
+ * Circle-of-fifths root order for sorting chord voicings within a quality
+ * group. Uses enharmonic spellings present in the hardcoded voicings
+ * (Bb, not A#).
+ */
+const CHORD_SHAPE_ROOT_ORDER: Record<string, number> = Object.fromEntries(
+  ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F']
+    .map((r, i) => [r, i]),
+);
+
 export function getItemIdsForGroup(
   instrument: 'guitar' | 'ukulele',
   groupId: string,
 ): string[] {
-  return getVoicings(instrument)
-    .filter((v) => v.quality === groupId)
-    .map(itemId);
+  const voicings = getVoicings(instrument).filter((v) => v.quality === groupId);
+  voicings.sort((a, b) =>
+    (CHORD_SHAPE_ROOT_ORDER[a.root] ?? 99) -
+    (CHORD_SHAPE_ROOT_ORDER[b.root] ?? 99)
+  );
+  return voicings.map(itemId);
 }
 
 export function formatGroupLabel(enabledGroups: ReadonlySet<string>): string {

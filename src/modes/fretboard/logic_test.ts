@@ -87,6 +87,23 @@ describe('guitar getAllItems', () => {
   it('returns 78 items (6 strings × 13 frets)', () => {
     assert.equal(getAllItems(GUITAR).length, 78);
   });
+
+  it('orders items fret ascending, then string low→high', () => {
+    // Fret 0 across all strings low→high: 5-0, 4-0, 3-0, 2-0, 1-0, 0-0.
+    // Then fret 1 starts: 5-1.
+    const items = getAllItems(GUITAR);
+    assert.deepEqual(items.slice(0, 6), [
+      '5-0',
+      '4-0',
+      '3-0',
+      '2-0',
+      '1-0',
+      '0-0',
+    ]);
+    assert.equal(items[6], '5-1');
+    // Last fret on high e (string 0) should be the final item.
+    assert.equal(items[items.length - 1], '0-12');
+  });
 });
 
 // ---------------------------------------------------------------------------

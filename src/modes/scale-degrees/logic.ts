@@ -46,10 +46,14 @@ export function getItemIdsForGroup(groupId: string): string[] {
   const group = DEGREE_GROUPS.find((g) => g.id === groupId);
   if (!group) return [];
   const items: string[] = [];
-  for (const key of MAJOR_KEYS) {
-    for (const d of group.degrees) {
-      items.push(key.root + ':' + d + ':fwd');
-      items.push(key.root + ':' + d + ':rev');
+  // Outer: degree ascending within group; direction (fwd first);
+  // inner: MAJOR_KEYS (already circle-of-fifths order).
+  const sortedDegrees = [...group.degrees].sort((a, b) => a - b);
+  for (const d of sortedDegrees) {
+    for (const dir of ['fwd', 'rev']) {
+      for (const key of MAJOR_KEYS) {
+        items.push(key.root + ':' + d + ':' + dir);
+      }
     }
   }
   return items;
@@ -57,10 +61,11 @@ export function getItemIdsForGroup(groupId: string): string[] {
 
 /** All 144 item IDs: 12 keys × 6 degrees × 2 directions (1st excluded). */
 export const ALL_ITEMS: string[] = [];
-for (const key of MAJOR_KEYS) {
-  for (const d of ACTIVE_DEGREES) {
-    ALL_ITEMS.push(key.root + ':' + d + ':fwd');
-    ALL_ITEMS.push(key.root + ':' + d + ':rev');
+for (const d of ACTIVE_DEGREES) {
+  for (const dir of ['fwd', 'rev']) {
+    for (const key of MAJOR_KEYS) {
+      ALL_ITEMS.push(key.root + ':' + d + ':' + dir);
+    }
   }
 }
 

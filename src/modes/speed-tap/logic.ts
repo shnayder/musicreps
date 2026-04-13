@@ -137,6 +137,10 @@ const ACCIDENTAL_NOTES = NOTES
   .filter((n) => !NATURAL_NOTES.includes(n.name))
   .map((n) => n.name);
 
+// Circle-of-fifths ordering for each group (pedagogical fixed order).
+const NATURALS_CYCLE = ['C', 'G', 'D', 'A', 'E', 'B', 'F'];
+const ACCIDENTALS_CYCLE = ['F#', 'C#', 'G#', 'D#', 'A#'];
+
 export const NOTE_GROUPS = [
   { id: 'naturals', label: 'Naturals', longLabel: 'Natural notes' },
   { id: 'sharps-flats', label: '\u266F/\u266D', longLabel: 'Sharps & flats' },
@@ -145,9 +149,15 @@ export const NOTE_GROUPS = [
 export const ALL_GROUP_IDS: string[] = NOTE_GROUPS.map((g) => g.id);
 
 export function getItemIdsForGroup(groupId: string): string[] {
-  return groupId === 'naturals'
-    ? NATURAL_NOTES.slice()
-    : ACCIDENTAL_NOTES.slice();
+  // Return in fixed (circle-of-fifths) order. Unknown group IDs
+  // return [] to match the defensive pattern used by other modes.
+  if (groupId === 'naturals') {
+    return NATURALS_CYCLE.filter((n) => NATURAL_NOTES.includes(n));
+  }
+  if (groupId === 'sharps-flats') {
+    return ACCIDENTALS_CYCLE.filter((n) => ACCIDENTAL_NOTES.includes(n));
+  }
+  return [];
 }
 
 export function formatGroupLabel(

@@ -76,17 +76,36 @@ function buildGroups(): {
 export const SPELLING_GROUPS = buildGroups();
 
 /**
+ * Circle of fifths ordering for chord roots, using the enharmonic spellings
+ * from CHORD_ROOTS (Db not C#, Eb not D#, Ab not G#, Bb not A#). F# is used
+ * for the sharp side. Tuning of this order is deferred.
+ */
+const CHORD_ROOT_CYCLE: string[] = [
+  'C',
+  'G',
+  'D',
+  'A',
+  'E',
+  'B',
+  'F#',
+  'Db',
+  'Ab',
+  'Eb',
+  'Bb',
+  'F',
+];
+
+/**
  * Get all item IDs belonging to a chord type group.
  * Item ID format: "root:typeName" (e.g. "C:major", "F#:dim").
- *
- * @example getItemIdsForGroup('triads-major') → ["C:major","C#:major",...]
+ * Order: chord type outer, circle-of-fifths roots inner.
  */
 export function getItemIdsForGroup(groupId: string): string[] {
   const group = SPELLING_GROUPS.find((g) => g.id === groupId);
   if (!group) return [];
   const items: string[] = [];
-  for (const root of CHORD_ROOTS) {
-    for (const type of group.types) {
+  for (const type of group.types) {
+    for (const root of CHORD_ROOT_CYCLE) {
       items.push(root + ':' + type.name);
     }
   }
@@ -95,8 +114,8 @@ export function getItemIdsForGroup(groupId: string): string[] {
 
 /** All item IDs: 12 roots × all chord types. */
 export const ALL_ITEMS: string[] = [];
-for (const root of CHORD_ROOTS) {
-  for (const type of CHORD_TYPES) {
+for (const type of CHORD_TYPES) {
+  for (const root of CHORD_ROOT_CYCLE) {
     ALL_ITEMS.push(root + ':' + type.name);
   }
 }

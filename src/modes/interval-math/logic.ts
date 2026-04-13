@@ -11,6 +11,7 @@ import {
   NOTES,
   noteSub,
   pickAccidentalName,
+  ROOT_CYCLE,
 } from '../../music-data.ts';
 import { buildMathIds, parseMathId } from '../../mode-utils.ts';
 
@@ -70,10 +71,13 @@ export function getItemIdsForGroup(groupId: string): string[] {
     group.distances.includes(i.num)
   );
   const items: string[] = [];
-  for (const note of NOTES) {
-    for (const interval of intervals) {
-      items.push(note.name + '+' + interval.abbrev);
-      items.push(note.name + '-' + interval.abbrev);
+  // Outer: interval ascending within group; direction (+ then -);
+  // inner: ROOT_CYCLE roots.
+  for (const interval of intervals) {
+    for (const sign of ['+', '-']) {
+      for (const root of ROOT_CYCLE) {
+        items.push(root + sign + interval.abbrev);
+      }
     }
   }
   return items;
@@ -81,7 +85,7 @@ export function getItemIdsForGroup(groupId: string): string[] {
 
 /** All 264 item IDs: 12 notes × 11 intervals × 2 directions (+/-). */
 export const ALL_ITEMS: string[] = buildMathIds(
-  NOTES.map((n) => n.name),
+  ROOT_CYCLE,
   MATH_INTERVALS.map((i) => i.abbrev),
 );
 

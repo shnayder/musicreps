@@ -13,6 +13,12 @@ import type {
 } from './types.ts';
 import { storage } from './storage.ts';
 
+// Working-set bucket constants. See exec-plan
+// "2026-04-12-within-level-working-sets" and backlog item #76.
+export const N_ACTIVE = 5;
+export const M_REVIEW = 10;
+export const ACTIVE_BUCKET_BIAS = 0.7;
+
 export const DEFAULT_CONFIG: AdaptiveConfig = {
   minTime: 1000,
   unseenBoost: 3,
@@ -177,6 +183,80 @@ export function computeWeight(
     return speedWeight * recallWeight;
   }
   return speedWeight;
+}
+
+// ---------------------------------------------------------------------------
+// Working-set bucket predicates & computeBuckets
+// ---------------------------------------------------------------------------
+
+/** Item not yet fast (speed < Automatic, including unseen). */
+export function needsActiveLearning(speedScore: number | null): boolean {
+  return speedScore == null || speedScore < 0.9;
+}
+
+/**
+ * Item was fast but has gone stale. Mutually exclusive with
+ * needsActiveLearning.
+ *
+ * `freshness == null` (fast item with no stability data — e.g. legacy
+ * stats or items that never had lastCorrectAt recorded) is treated as
+ * "fresh" so the item falls into fastFresh rather than being flagged
+ * for review we have no evidence is needed.
+ */
+export function needsReview(
+  speedScore: number | null,
+  freshness: number | null,
+  freshnessThreshold: number = DEFAULT_CONFIG.freshnessThreshold,
+): boolean {
+  if (speedScore == null || speedScore < 0.9) return false;
+  return (freshness ?? 1) < freshnessThreshold;
+}
+
+export type WorkingBuckets = {
+  /** Up to N_ACTIVE items being actively learned. */
+  active: string[];
+  /** Up to M_REVIEW items needing review. */
+  review: string[];
+  /** Items that are genuinely fast AND fresh — fallback pool. */
+  fastFresh: string[];
+};
+
+/**
+ * Partition an ordered list of items into the three working-set buckets.
+ *
+ * Walks `orderedItems` once. Each item is classified and placed in the
+ * matching bucket if that bucket has space. Overflow items (those whose
+ * category is full) are **omitted** — they are not silently reclassified
+ * as fastFresh. They'll be picked up on a future trial once a cap slot
+ * frees up. Safe because buckets recompute every trial.
+ *
+ * `excludeId` (typically the last-selected item) is skipped entirely.
+ */
+export function computeBuckets(
+  orderedItems: string[],
+  getSpeed: (id: string) => number | null,
+  getFreshness: (id: string) => number | null,
+  excludeId: string | null,
+  freshnessThreshold: number = DEFAULT_CONFIG.freshnessThreshold,
+): WorkingBuckets {
+  const active: string[] = [];
+  const review: string[] = [];
+  const fastFresh: string[] = [];
+  for (const id of orderedItems) {
+    if (id === excludeId) continue;
+    const speed = getSpeed(id);
+    if (needsActiveLearning(speed)) {
+      if (active.length < N_ACTIVE) active.push(id);
+      continue;
+    }
+    const fresh = getFreshness(id);
+    if (needsReview(speed, fresh, freshnessThreshold)) {
+      if (review.length < M_REVIEW) review.push(id);
+      continue;
+    }
+    fastFresh.push(id);
+  }
+  return { active, review, fastFresh };
 }
 
 /**
@@ -474,6 +554,33 @@ function getItemFreshness(
   );
 }
 
+/**
+ * Pick the next item given pre-computed buckets and a 70/30 coin flip.
+ * Returns null only if every bucket is empty (caller falls back to
+ * lastSelected in that case).
+ */
+export function pickFromBuckets(
+  buckets: WorkingBuckets,
+  getWeight: (id: string) => number,
+  coin: number,
+  rand: number,
+): string | null {
+  const preferActive = coin < ACTIVE_BUCKET_BIAS;
+  const order = preferActive
+    ? [buckets.active, buckets.review, buckets.fastFresh]
+    : [buckets.review, buckets.active, buckets.fastFresh];
+  let chosen: string[] | null = null;
+  for (const bucket of order) {
+    if (bucket.length > 0) {
+      chosen = bucket;
+      break;
+    }
+  }
+  if (chosen == null) return null;
+  const weights = chosen.map((id) => getWeight(id));
+  return selectWeighted(chosen, weights, rand);
+}
+
 // ---------------------------------------------------------------------------
 // Selector factory (storage-injected — works with localStorage or Map)
 // ---------------------------------------------------------------------------
@@ -505,19 +612,28 @@ export function createAdaptiveSelector(
     version++;
   }
 
-  function selectNext(validItems: string[]): string {
-    if (validItems.length === 0) {
-      throw new Error('validItems cannot be empty');
+  function selectNext(orderedItems: string[]): string {
+    if (orderedItems.length === 0) {
+      throw new Error('orderedItems cannot be empty');
     }
-    if (validItems.length === 1) {
-      storage.setLastSelected(validItems[0]);
-      return validItems[0];
+    if (orderedItems.length === 1) {
+      storage.setLastSelected(orderedItems[0]);
+      return orderedItems[0];
     }
     const lastSelected = storage.getLastSelected();
-    const weights = validItems.map((id) =>
-      id === lastSelected ? 0 : getWeight(id)
+    const buckets = computeBuckets(
+      orderedItems,
+      getSpeedScore,
+      getFreshness,
+      lastSelected,
+      cfg.freshnessThreshold,
     );
-    const selected = selectWeighted(validItems, weights, randomFn());
+    const picked = pickFromBuckets(buckets, getWeight, randomFn(), randomFn());
+    // Belt-and-suspenders: the length===1 guard above already handles
+    // the only case where pickFromBuckets could return null (orderedItems
+    // was effectively [lastSelected]). This fallback keeps us robust if
+    // bucket logic ever changes.
+    const selected = picked ?? lastSelected ?? orderedItems[0];
     storage.setLastSelected(selected);
     return selected;
   }

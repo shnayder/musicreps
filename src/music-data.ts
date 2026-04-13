@@ -31,6 +31,28 @@ export const NATURAL_NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
 export const NOTE_NAMES = NOTES.map((n) => n.name);
 export const ACCIDENTAL_NAMES = NOTE_NAMES.filter((n) => n.includes('#'));
 
+/**
+ * Circle of fifths starting at C. Used as the pedagogical root order for
+ * fixed item sequencing in modes where items are (root × something-else).
+ * Earlier entries are "easier" / more common; later entries are enharmonic-
+ * heavy keys. Tuning of this order is deferred — this is a reasonable
+ * starting point, not final.
+ */
+export const ROOT_CYCLE: string[] = [
+  'C',
+  'G',
+  'D',
+  'A',
+  'E',
+  'B',
+  'F#',
+  'C#',
+  'G#',
+  'D#',
+  'A#',
+  'F',
+];
+
 export const INTERVALS: Interval[] = [
   { name: 'minor 2nd', num: 1, abbrev: 'm2' },
   { name: 'Major 2nd', num: 2, abbrev: 'M2' },
