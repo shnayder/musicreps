@@ -2811,7 +2811,7 @@ body.native-app .hint {
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1382"></div>
+  <div class="home-screen" id="home-screen" data-version="#1387"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -3807,6 +3807,20 @@ body.native-app .hint {
   var NATURAL_NOTES = ["C", "D", "E", "F", "G", "A", "B"];
   var NOTE_NAMES = NOTES.map((n2) => n2.name);
   var ACCIDENTAL_NAMES = NOTE_NAMES.filter((n2) => n2.includes("#"));
+  var ROOT_CYCLE = [
+    "C",
+    "G",
+    "D",
+    "A",
+    "E",
+    "B",
+    "F#",
+    "C#",
+    "G#",
+    "D#",
+    "A#",
+    "F"
+  ];
   var INTERVALS = [
     { name: "minor 2nd", num: 1, abbrev: "m2" },
     { name: "Major 2nd", num: 2, abbrev: "M2" },
@@ -5008,6 +5022,9 @@ body.native-app .hint {
   ];
 
   // src/adaptive.ts
+  var N_ACTIVE = 5;
+  var M_REVIEW = 10;
+  var ACTIVE_BUCKET_BIAS = 0.7;
   var DEFAULT_CONFIG = {
     minTime: 1e3,
     unseenBoost: 3,
@@ -5084,6 +5101,33 @@ body.native-app .hint {
       return speedWeight * recallWeight;
     }
     return speedWeight;
+  }
+  function needsActiveLearning(speedScore) {
+    return speedScore == null || speedScore < 0.9;
+  }
+  function needsReview(speedScore, freshness, freshnessThreshold = DEFAULT_CONFIG.freshnessThreshold) {
+    if (speedScore == null || speedScore < 0.9) return false;
+    return (freshness ?? 1) < freshnessThreshold;
+  }
+  function computeBuckets(orderedItems, getSpeed, getFreshness, excludeId, freshnessThreshold = DEFAULT_CONFIG.freshnessThreshold) {
+    const active = [];
+    const review = [];
+    const fastFresh = [];
+    for (const id of orderedItems) {
+      if (id === excludeId) continue;
+      const speed = getSpeed(id);
+      if (needsActiveLearning(speed)) {
+        if (active.length < N_ACTIVE) active.push(id);
+        continue;
+      }
+      const fresh = getFreshness(id);
+      if (needsReview(speed, fresh, freshnessThreshold)) {
+        if (review.length < M_REVIEW) review.push(id);
+        continue;
+      }
+      fastFresh.push(id);
+    }
+    return { active, review, fastFresh };
   }
   function selectWeighted(items, weights, rand) {
     const totalWeight = weights.reduce((sum, w3) => sum + w3, 0);
@@ -5273,6 +5317,20 @@ body.native-app .hint {
       nowMs
     );
   }
+  function pickFromBuckets(buckets, getWeight, coin, rand) {
+    const preferActive = coin < ACTIVE_BUCKET_BIAS;
+    const order = preferActive ? [buckets.active, buckets.review, buckets.fastFresh] : [buckets.review, buckets.active, buckets.fastFresh];
+    let chosen = null;
+    for (const bucket of order) {
+      if (bucket.length > 0) {
+        chosen = bucket;
+        break;
+      }
+    }
+    if (chosen == null) return null;
+    const weights = chosen.map((id) => getWeight(id));
+    return selectWeighted(chosen, weights, rand);
+  }
   function createAdaptiveSelector(storage2, cfg = DEFAULT_CONFIG, randomFn = Math.random, responseCountFn = null) {
     const getResponseCount = (itemId2) => responseCountFn ? responseCountFn(itemId2) : 1;
     const scaledCfg = (itemId2) => scaleConfigForResponseCount(cfg, getResponseCount(itemId2));
@@ -5286,19 +5344,24 @@ body.native-app .hint {
       } else recordWrongResponse(storage2, cfg, itemCfg, itemId2, now);
       version++;
     }
-    function selectNext(validItems) {
-      if (validItems.length === 0) {
-        throw new Error("validItems cannot be empty");
+    function selectNext(orderedItems) {
+      if (orderedItems.length === 0) {
+        throw new Error("orderedItems cannot be empty");
       }
-      if (validItems.length === 1) {
-        storage2.setLastSelected(validItems[0]);
-        return validItems[0];
+      if (orderedItems.length === 1) {
+        storage2.setLastSelected(orderedItems[0]);
+        return orderedItems[0];
       }
       const lastSelected = storage2.getLastSelected();
-      const weights = validItems.map(
-        (id) => id === lastSelected ? 0 : getWeight(id)
+      const buckets = computeBuckets(
+        orderedItems,
+        getSpeedScore,
+        getFreshness,
+        lastSelected,
+        cfg.freshnessThreshold
       );
-      const selected = selectWeighted(validItems, weights, randomFn());
+      const picked = pickFromBuckets(buckets, getWeight, randomFn(), randomFn());
+      const selected = picked ?? lastSelected ?? orderedItems[0];
       storage2.setLastSelected(selected);
       return selected;
     }
@@ -6153,18 +6216,6 @@ body.native-app .hint {
       const isNatural = musicData.naturalNotes.includes(note);
       return noteFilter === "natural" ? isNatural : !isNatural;
     }
-    function getFretboardEnabledItems(enabledStrings, noteFilter) {
-      const items = [];
-      for (const s3 of enabledStrings) {
-        for (let f4 = 0; f4 < fretCount; f4++) {
-          const note = getNoteAtPosition2(s3, f4);
-          if (notePassesFilter(note, noteFilter)) {
-            items.push(s3 + "-" + f4);
-          }
-        }
-      }
-      return items;
-    }
     function getItemIdsForString(string, noteFilter) {
       const items = [];
       for (let f4 = 0; f4 < fretCount; f4++) {
@@ -6179,8 +6230,8 @@ body.native-app .hint {
       const lo = Math.max(0, startFret);
       const hi = Math.min(endFret, fretCount - 1);
       const items = [];
-      for (let s3 = 0; s3 < stringCount; s3++) {
-        for (let f4 = lo; f4 <= hi; f4++) {
+      for (let f4 = lo; f4 <= hi; f4++) {
+        for (let s3 = stringCount - 1; s3 >= 0; s3--) {
           const note = getNoteAtPosition2(s3, f4);
           if (notePassesFilter(note, noteFilter)) {
             items.push(s3 + "-" + f4);
@@ -6194,7 +6245,6 @@ body.native-app .hint {
       getNoteAtPosition: getNoteAtPosition2,
       parseFretboardItem,
       checkFretboardAnswer,
-      getFretboardEnabledItems,
       getItemIdsForString,
       getItemIdsForFretRange
     };
@@ -6280,8 +6330,8 @@ body.native-app .hint {
   }
   function getAllItems(instrument) {
     const items = [];
-    for (let s3 = 0; s3 < instrument.stringCount; s3++) {
-      for (let f4 = 0; f4 < instrument.fretCount; f4++) {
+    for (let f4 = 0; f4 < instrument.fretCount; f4++) {
+      for (let s3 = instrument.stringCount - 1; s3 >= 0; s3--) {
         items.push(s3 + "-" + f4);
       }
     }
@@ -6452,37 +6502,11 @@ body.native-app .hint {
     };
   }
 
-  // src/mode-utils.ts
-  function buildBidirectionalIds(keys) {
-    const ids = [];
-    for (let i3 = 0; i3 < keys.length; i3++) {
-      ids.push(keys[i3] + ":fwd", keys[i3] + ":rev");
-    }
-    return ids;
-  }
-  function buildMathIds(notes, values) {
-    const ids = [];
-    for (let i3 = 0; i3 < notes.length; i3++) {
-      for (let j4 = 0; j4 < values.length; j4++) {
-        ids.push(notes[i3] + "+" + values[j4], notes[i3] + "-" + values[j4]);
-      }
-    }
-    return ids;
-  }
-  function parseMathId(id) {
-    const match = id.match(/^([A-Ga-g][#b]?)([+-])(.+)$/);
-    if (!match) {
-      return { note: id, op: "+", value: "" };
-    }
-    return {
-      note: match[1],
-      op: match[2],
-      value: match[3]
-    };
-  }
-
   // src/modes/note-semitones/logic.ts
-  var ALL_ITEMS = buildBidirectionalIds(NOTES.map((n2) => n2.name));
+  var ALL_ITEMS = [
+    ...ROOT_CYCLE.map((n2) => n2 + ":fwd"),
+    ...ROOT_CYCLE.map((n2) => n2 + ":rev")
+  ];
   function getQuestion2(itemId2) {
     const [noteName, dir] = itemId2.split(":");
     const note = NOTES.find((n2) => n2.name === noteName);
@@ -6546,9 +6570,10 @@ body.native-app .hint {
   };
 
   // src/modes/interval-semitones/logic.ts
-  var ALL_ITEMS2 = buildBidirectionalIds(
-    INTERVALS.map((i3) => i3.abbrev)
-  );
+  var ALL_ITEMS2 = [
+    ...INTERVALS.map((i3) => i3.abbrev + ":fwd"),
+    ...INTERVALS.map((i3) => i3.abbrev + ":rev")
+  ];
   function getQuestion3(itemId2) {
     const [abbrev, dir] = itemId2.split(":");
     const interval = INTERVALS.find((i3) => i3.abbrev === abbrev);
@@ -6610,6 +6635,28 @@ body.native-app .hint {
     }
   };
 
+  // src/mode-utils.ts
+  function buildMathIds(notes, values) {
+    const ids = [];
+    for (let i3 = 0; i3 < notes.length; i3++) {
+      for (let j4 = 0; j4 < values.length; j4++) {
+        ids.push(notes[i3] + "+" + values[j4], notes[i3] + "-" + values[j4]);
+      }
+    }
+    return ids;
+  }
+  function parseMathId(id) {
+    const match = id.match(/^([A-Ga-g][#b]?)([+-])(.+)$/);
+    if (!match) {
+      return { note: id, op: "+", value: "" };
+    }
+    return {
+      note: match[1],
+      op: match[2],
+      value: match[3]
+    };
+  }
+
   // src/modes/semitone-math/logic.ts
   var DISTANCE_GROUPS = [
     {
@@ -6647,16 +6694,17 @@ body.native-app .hint {
     const group = DISTANCE_GROUPS.find((g4) => g4.id === groupId);
     if (!group) return [];
     const items = [];
-    for (const note of NOTES) {
-      for (const d4 of group.distances) {
-        items.push(note.name + "+" + d4);
-        items.push(note.name + "-" + d4);
+    for (const d4 of group.distances) {
+      for (const sign of ["+", "-"]) {
+        for (const root of ROOT_CYCLE) {
+          items.push(root + sign + d4);
+        }
       }
     }
     return items;
   }
   var ALL_ITEMS3 = buildMathIds(
-    NOTES.map((n2) => n2.name),
+    ROOT_CYCLE,
     Array.from({ length: 11 }, (_3, i3) => i3 + 1)
   );
   var ALL_GROUP_IDS = DISTANCE_GROUPS.map((g4) => g4.id);
@@ -6775,16 +6823,17 @@ body.native-app .hint {
       (i3) => group.distances.includes(i3.num)
     );
     const items = [];
-    for (const note of NOTES) {
-      for (const interval of intervals) {
-        items.push(note.name + "+" + interval.abbrev);
-        items.push(note.name + "-" + interval.abbrev);
+    for (const interval of intervals) {
+      for (const sign of ["+", "-"]) {
+        for (const root of ROOT_CYCLE) {
+          items.push(root + sign + interval.abbrev);
+        }
       }
     }
     return items;
   }
   var ALL_ITEMS4 = buildMathIds(
-    NOTES.map((n2) => n2.name),
+    ROOT_CYCLE,
     MATH_INTERVALS.map((i3) => i3.abbrev)
   );
   var ALL_GROUP_IDS2 = DISTANCE_GROUPS2.map((g4) => g4.id);
@@ -6908,22 +6957,20 @@ body.native-app .hint {
   function getItemIdsForGroup4(groupId) {
     const group = ALL_KEY_GROUPS.find((g4) => g4.id === groupId);
     if (!group) return [];
-    const items = [];
-    for (const root of group.keys) {
-      items.push(root + ":fwd");
-      items.push(root + ":rev");
-    }
-    return items;
+    return [
+      ...group.keys.map((r3) => r3 + ":fwd"),
+      ...group.keys.map((r3) => r3 + ":rev")
+    ];
   }
-  var ALL_ITEMS5 = [];
-  for (const key of MAJOR_KEYS) {
-    ALL_ITEMS5.push(key.root + ":fwd");
-    ALL_ITEMS5.push(key.root + ":rev");
-  }
-  for (const minorRoot of MINOR_ROOTS) {
-    ALL_ITEMS5.push(minorRoot + "m:fwd");
-    ALL_ITEMS5.push(minorRoot + "m:rev");
-  }
+  var ALL_ITEMS5 = (() => {
+    const majorRoots = MAJOR_KEYS.map((k3) => k3.root);
+    const minorRoots = MINOR_ROOTS.map((r3) => r3 + "m");
+    const allRoots = [...majorRoots, ...minorRoots];
+    return [
+      ...allRoots.map((r3) => r3 + ":fwd"),
+      ...allRoots.map((r3) => r3 + ":rev")
+    ];
+  })();
   var ALL_GROUP_IDS3 = ALL_KEY_GROUPS.map((g4) => g4.id);
   function getQuestion6(itemId2) {
     const [rootPart, dir] = itemId2.split(":");
@@ -7045,19 +7092,22 @@ body.native-app .hint {
     const group = DEGREE_GROUPS.find((g4) => g4.id === groupId);
     if (!group) return [];
     const items = [];
-    for (const key of MAJOR_KEYS) {
-      for (const d4 of group.degrees) {
-        items.push(key.root + ":" + d4 + ":fwd");
-        items.push(key.root + ":" + d4 + ":rev");
+    const sortedDegrees = [...group.degrees].sort((a3, b2) => a3 - b2);
+    for (const d4 of sortedDegrees) {
+      for (const dir of ["fwd", "rev"]) {
+        for (const key of MAJOR_KEYS) {
+          items.push(key.root + ":" + d4 + ":" + dir);
+        }
       }
     }
     return items;
   }
   var ALL_ITEMS6 = [];
-  for (const key of MAJOR_KEYS) {
-    for (const d4 of ACTIVE_DEGREES) {
-      ALL_ITEMS6.push(key.root + ":" + d4 + ":fwd");
-      ALL_ITEMS6.push(key.root + ":" + d4 + ":rev");
+  for (const d4 of ACTIVE_DEGREES) {
+    for (const dir of ["fwd", "rev"]) {
+      for (const key of MAJOR_KEYS) {
+        ALL_ITEMS6.push(key.root + ":" + d4 + ":" + dir);
+      }
     }
   }
   var ALL_GROUP_IDS4 = DEGREE_GROUPS.map((g4) => g4.id);
@@ -7160,19 +7210,22 @@ body.native-app .hint {
     const group = CHORD_GROUPS.find((g4) => g4.id === groupId);
     if (!group) return [];
     const items = [];
-    for (const key of MAJOR_KEYS) {
-      for (const d4 of group.degrees) {
-        items.push(key.root + ":" + d4 + ":fwd");
-        items.push(key.root + ":" + d4 + ":rev");
+    const sortedDegrees = [...group.degrees].sort((a3, b2) => a3 - b2);
+    for (const d4 of sortedDegrees) {
+      for (const dir of ["fwd", "rev"]) {
+        for (const key of MAJOR_KEYS) {
+          items.push(key.root + ":" + d4 + ":" + dir);
+        }
       }
     }
     return items;
   }
   var ALL_ITEMS7 = [];
-  for (const key of MAJOR_KEYS) {
-    for (let d4 = 1; d4 <= 7; d4++) {
-      ALL_ITEMS7.push(key.root + ":" + d4 + ":fwd");
-      ALL_ITEMS7.push(key.root + ":" + d4 + ":rev");
+  for (let d4 = 1; d4 <= 7; d4++) {
+    for (const dir of ["fwd", "rev"]) {
+      for (const key of MAJOR_KEYS) {
+        ALL_ITEMS7.push(key.root + ":" + d4 + ":" + dir);
+      }
     }
   }
   var ALL_GROUP_IDS5 = CHORD_GROUPS.map((g4) => g4.id);
@@ -7292,20 +7345,34 @@ body.native-app .hint {
     return result;
   }
   var SPELLING_GROUPS = buildGroups();
+  var CHORD_ROOT_CYCLE = [
+    "C",
+    "G",
+    "D",
+    "A",
+    "E",
+    "B",
+    "F#",
+    "Db",
+    "Ab",
+    "Eb",
+    "Bb",
+    "F"
+  ];
   function getItemIdsForGroup7(groupId) {
     const group = SPELLING_GROUPS.find((g4) => g4.id === groupId);
     if (!group) return [];
     const items = [];
-    for (const root of CHORD_ROOTS) {
-      for (const type of group.types) {
+    for (const type of group.types) {
+      for (const root of CHORD_ROOT_CYCLE) {
         items.push(root + ":" + type.name);
       }
     }
     return items;
   }
   var ALL_ITEMS8 = [];
-  for (const root of CHORD_ROOTS) {
-    for (const type of CHORD_TYPES) {
+  for (const type of CHORD_TYPES) {
+    for (const root of CHORD_ROOT_CYCLE) {
       ALL_ITEMS8.push(root + ":" + type.name);
     }
   }
@@ -7447,13 +7514,21 @@ body.native-app .hint {
     };
   }
   var ACCIDENTAL_NOTES = NOTES.filter((n2) => !NATURAL_NOTES.includes(n2.name)).map((n2) => n2.name);
+  var NATURALS_CYCLE = ["C", "G", "D", "A", "E", "B", "F"];
+  var ACCIDENTALS_CYCLE = ["F#", "C#", "G#", "D#", "A#"];
   var NOTE_GROUPS = [
     { id: "naturals", label: "Naturals", longLabel: "Natural notes" },
     { id: "sharps-flats", label: "\u266F/\u266D", longLabel: "Sharps & flats" }
   ];
   var ALL_GROUP_IDS7 = NOTE_GROUPS.map((g4) => g4.id);
   function getItemIdsForGroup8(groupId) {
-    return groupId === "naturals" ? NATURAL_NOTES.slice() : ACCIDENTAL_NOTES.slice();
+    if (groupId === "naturals") {
+      return NATURALS_CYCLE.filter((n2) => NATURAL_NOTES.includes(n2));
+    }
+    if (groupId === "sharps-flats") {
+      return ACCIDENTALS_CYCLE.filter((n2) => ACCIDENTAL_NOTES.includes(n2));
+    }
+    return [];
   }
   function formatGroupLabel(enabledGroups) {
     if (enabledGroups.size === 2) return "all notes";
@@ -7618,7 +7693,11 @@ body.native-app .hint {
     return displayNote(v3.root) + v3.symbol;
   }
   function allItems(instrument) {
-    return getVoicings(instrument).map(itemId);
+    const out = [];
+    for (const q4 of ALL_GROUP_IDS8) {
+      out.push(...getItemIdsForGroup9(instrument, q4));
+    }
+    return out;
   }
   function evaluate3(q4, tapped) {
     const targetSet = new Set(q4.playedPositions);
@@ -7642,8 +7721,15 @@ body.native-app .hint {
     { id: "dom7", label: "7th", longLabel: "Dominant 7th chords" }
   ];
   var ALL_GROUP_IDS8 = QUALITY_GROUPS.map((g4) => g4.id);
+  var CHORD_SHAPE_ROOT_ORDER = Object.fromEntries(
+    ["C", "G", "D", "A", "E", "B", "F#", "Db", "Ab", "Eb", "Bb", "F"].map((r3, i3) => [r3, i3])
+  );
   function getItemIdsForGroup9(instrument, groupId) {
-    return getVoicings(instrument).filter((v3) => v3.quality === groupId).map(itemId);
+    const voicings = getVoicings(instrument).filter((v3) => v3.quality === groupId);
+    voicings.sort(
+      (a3, b2) => (CHORD_SHAPE_ROOT_ORDER[a3.root] ?? 99) - (CHORD_SHAPE_ROOT_ORDER[b2.root] ?? 99)
+    );
+    return voicings.map(itemId);
   }
   function formatGroupLabel2(enabledGroups) {
     if (enabledGroups.size === 3) return "all chords";
@@ -10135,9 +10221,11 @@ body.native-app .hint {
     const enabledGroups = practiceMode === "suggested" && rec.suggestedScope.size > 0 ? rec.suggestedScope : customGroups;
     const enabledItems = T2(() => {
       const items = [];
-      for (const id of enabledGroups) items.push(...spec.getItemIdsForGroup(id));
+      for (const id of spec.allGroupIds) {
+        if (enabledGroups.has(id)) items.push(...spec.getItemIdsForGroup(id));
+      }
       return items;
-    }, [enabledGroups, spec.getItemIdsForGroup]);
+    }, [enabledGroups, spec.allGroupIds, spec.getItemIdsForGroup]);
     const practicingLabel = T2(
       () => spec.formatLabel(enabledGroups),
       [enabledGroups, spec.formatLabel, notationVersion]
@@ -11956,7 +12044,7 @@ body.native-app .hint {
   function engineStop(_state) {
     return initialEngineState();
   }
-  function engineUpdateIdleMessage(state, allMastered, needsReview) {
+  function engineUpdateIdleMessage(state, allMastered, needsReview2) {
     if (state.phase !== "idle") return state;
     if (allMastered) {
       return {
@@ -11965,7 +12053,7 @@ body.native-app .hint {
         showMastery: true
       };
     }
-    if (needsReview) {
+    if (needsReview2) {
       return { ...state, masteryText: "Time to review?", showMastery: true };
     }
     return { ...state, masteryText: "", showMastery: false };
