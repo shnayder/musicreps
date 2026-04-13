@@ -124,6 +124,13 @@ type SplitButtonItem = { label: string; value: string };
 /** A primary value that auto-submits without needing the secondary row. */
 type SplitShortcut = { value: string; submit: string };
 
+/** Imperative handle for committing a pending primary selection from outside.
+ *  Used by sequential modes so pressing Check submits a tapped letter that
+ *  hasn't been paired with an accidental yet. */
+export type SplitButtonsFlushRef = {
+  current: (() => void) | null;
+};
+
 function SplitButtons(
   {
     primaryItems,
@@ -134,6 +141,7 @@ function SplitButtons(
     onAnswer,
     primaryFeedback,
     secondaryFeedback,
+    flushRef,
   }: {
     primaryItems: readonly SplitButtonItem[];
     secondaryItems: readonly SplitButtonItem[];
@@ -143,6 +151,7 @@ function SplitButtons(
     onAnswer: (value: string) => void;
     primaryFeedback?: ButtonFeedback | null;
     secondaryFeedback?: ButtonFeedback | null;
+    flushRef?: SplitButtonsFlushRef;
   },
 ) {
   const [pendingPri, setPendingPri] = useState<string | null>(null);
@@ -166,6 +175,24 @@ function SplitButtons(
       setPendingSec(null);
     }
   }, [pendingPri, pendingSec, combine]);
+
+  // Expose a "flush pending primary" handle. Used when a parent wants to
+  // commit a tapped letter that hasn't been paired with an accidental yet
+  // (e.g. user pressed Check before tapping ♮/♯/♭). Treated as natural.
+  const flushPending = useCallback(() => {
+    if (pendingPri && pendingSec === null) {
+      onAnswerRef.current(combine(pendingPri, ''));
+      setPendingPri(null);
+      setPendingSec(null);
+    }
+  }, [pendingPri, pendingSec, combine]);
+  useEffect(() => {
+    if (!flushRef) return;
+    flushRef.current = flushPending;
+    return () => {
+      flushRef.current = null;
+    };
+  }, [flushPending, flushRef]);
 
   const handlePri = useCallback((value: string) => {
     if (shortcut && value === shortcut.value) {
@@ -257,10 +284,11 @@ const ACCIDENTAL_ITEMS: SplitButtonItem[] = [
 const combineNote = (base: string, acc: string) => acc ? base + acc : base;
 
 export function SplitNoteButtons(
-  { onAnswer, answered }: {
+  { onAnswer, answered, flushRef }: {
     onAnswer: (note: string) => void;
     /** When true, buttons are inactive (answer already submitted). */
     answered?: boolean;
+    flushRef?: SplitButtonsFlushRef;
   },
 ) {
   return (
@@ -270,6 +298,7 @@ export function SplitNoteButtons(
       combine={combineNote}
       answered={answered}
       onAnswer={onAnswer}
+      flushRef={flushRef}
     />
   );
 }
