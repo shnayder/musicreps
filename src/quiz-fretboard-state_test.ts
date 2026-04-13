@@ -204,6 +204,23 @@ describe('getItemIdsForFretRange', () => {
     const all = fb.getItemIdsForFretRange(0, 3, 'all', 6);
     assert.equal(naturals.length + accidentals.length, all.length);
   });
+
+  it('orders items fret-outer, string low→high (working-set cap depends on this)', () => {
+    // Guitar: string 5 = low E, string 0 = high e. Within a fret we
+    // walk from low E up to high e, so fret 0 is: 5-0, 4-0, 3-0, 2-0,
+    // 1-0, 0-0. Then fret 1 starts: 5-1, 4-1, ...
+    const items = fb.getItemIdsForFretRange(0, 1, 'all', 6);
+    assert.deepEqual(items.slice(0, 6), [
+      '5-0',
+      '4-0',
+      '3-0',
+      '2-0',
+      '1-0',
+      '0-0',
+    ]);
+    assert.equal(items[6], '5-1');
+    assert.equal(items[11], '0-1');
+  });
 });
 
 // ---------------------------------------------------------------------------
