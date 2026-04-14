@@ -49,7 +49,6 @@ function resolve(rel: string): string {
 async function bundleJS(entry = './src/app.ts'): Promise<string> {
   const entryPoint = resolve(entry);
   const appContactEmail = Deno.env.get('APP_CONTACT_EMAIL') || '';
-  const appSupportUrl = Deno.env.get('APP_SUPPORT_URL') || '';
   const appTermsUrl = Deno.env.get('APP_TERMS_URL') || '';
   const appPrivacyUrl = Deno.env.get('APP_PRIVACY_URL') || '';
   const cmd = new Deno.Command('npx', {
@@ -60,7 +59,6 @@ async function bundleJS(entry = './src/app.ts'): Promise<string> {
       '--jsx=automatic',
       '--jsx-import-source=preact',
       `--define:__APP_CONTACT_EMAIL__=${JSON.stringify(appContactEmail)}`,
-      `--define:__APP_SUPPORT_URL__=${JSON.stringify(appSupportUrl)}`,
       `--define:__APP_TERMS_URL__=${JSON.stringify(appTermsUrl)}`,
       `--define:__APP_PRIVACY_URL__=${JSON.stringify(appPrivacyUrl)}`,
       entryPoint,

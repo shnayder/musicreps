@@ -1023,7 +1023,6 @@ function SettingsPanelSection({ tabId }: { tabId: string }) {
   };
   const mockConfig = {
     contactEmail: 'test@example.com',
-    supportUrl: 'https://example.com/support',
     termsUrl: 'https://example.com/terms',
     privacyUrl: 'https://example.com/privacy',
   };

@@ -54,7 +54,6 @@ jobs:
         env:
           BUILD_NUMBER: ${{ steps.commit-count.outputs.count }}
           APP_CONTACT_EMAIL: musicrepsapp@gmail.com
-          APP_SUPPORT_URL: https://github.com/shnayder/musicreps/issues
           APP_TERMS_URL: https://shnayder.github.io/musicreps/terms.html
           APP_PRIVACY_URL: https://shnayder.github.io/musicreps/privacy.html
 
