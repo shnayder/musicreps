@@ -2770,6 +2770,12 @@ body.native-sim {
   min-height: 100dvh;
   max-height: 100dvh;
 }
+/* Shrink #app to match: padding shouldn't push its content off-screen. */
+body.native-sim #app {
+  height: calc(100dvh - var(--native-safe-top) - var(--native-safe-bottom));
+  min-height: calc(100dvh - var(--native-safe-top) - var(--native-safe-bottom));
+  max-height: calc(100dvh - var(--native-safe-top) - var(--native-safe-bottom));
+}
 
 /* ==========================================================================
    19. MOBILE LAYOUT
