@@ -18,17 +18,16 @@ The app saves the following to your device's local storage so you can pick up
 where you left off:
 
 - Per-skill progress (which items you have practiced, response times, accuracy)
-- Settings you have chosen (preferred note naming, practice scope, theme, etc.)
+- Settings you have chosen (preferred note naming, practice scope, etc.)
 - Motor baseline calibration data
 
-This data never leaves your device. Uninstalling the app or clearing site data
-removes it.
+This data never leaves your device. Uninstalling the app
+removes all saved data.
 
 ## Permissions
 
-Music Reps does not request access to your microphone, camera, contacts,
-location, or any other system resource. The only permissions the app uses are
-those required to render itself on screen and store data in its own sandbox.
+Music Reps does not request access to your microphone, camera, location, or any other system resource. The only
+ permissions the app uses are those required to render itself on screen and store data in its own sandbox.
 
 ## Third parties
 
