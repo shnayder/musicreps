@@ -21,13 +21,13 @@ where you left off:
 - Settings you have chosen (preferred note naming, practice scope, etc.)
 - Motor baseline calibration data
 
-This data never leaves your device. Uninstalling the app
-removes all saved data.
+This data never leaves your device. Uninstalling the app removes all saved data.
 
 ## Permissions
 
-Music Reps does not request access to your microphone, camera, location, or any other system resource. The only
- permissions the app uses are those required to render itself on screen and store data in its own sandbox.
+Music Reps does not request access to your microphone, camera, location, or any
+other system resource. The only permissions the app uses are those required to
+render itself on screen and store data in its own sandbox.
 
 ## Third parties
 
