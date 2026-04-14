@@ -2865,7 +2865,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1410"></div>
+  <div class="home-screen" id="home-screen" data-version="#1413"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -5128,8 +5128,14 @@ body.native-sim #app {
 
   // src/adaptive.ts
   var N_ACTIVE = 5;
+  var N_ACTIVE_EXPANDED = 7;
   var M_REVIEW = 10;
   var ACTIVE_BUCKET_BIAS = 0.7;
+  function effectiveActiveCap(reviewSize) {
+    if (reviewSize === 0) return N_ACTIVE_EXPANDED;
+    if (reviewSize <= 3) return N_ACTIVE + 1;
+    return N_ACTIVE;
+  }
   var DEFAULT_CONFIG = {
     minTime: 1e3,
     unseenBoost: 3,
@@ -5222,7 +5228,7 @@ body.native-sim #app {
       if (id === excludeId) continue;
       const speed = getSpeed(id);
       if (needsActiveLearning(speed)) {
-        if (active.length < N_ACTIVE) active.push(id);
+        if (active.length < N_ACTIVE_EXPANDED) active.push(id);
         continue;
       }
       const fresh = getFreshness(id);
@@ -5232,6 +5238,8 @@ body.native-sim #app {
       }
       fastFresh.push(id);
     }
+    const cap = effectiveActiveCap(review.length);
+    if (active.length > cap) active.length = cap;
     return { active, review, fastFresh };
   }
   function selectWeighted(items, weights, rand) {
