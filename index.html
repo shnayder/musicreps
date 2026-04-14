@@ -2865,7 +2865,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1413"></div>
+  <div class="home-screen" id="home-screen" data-version="#1421"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -9311,22 +9311,59 @@ body.native-sim #app {
       isExpanded && /* @__PURE__ */ u2(Stack, { gap: "group", class: "track-accordion-body", children })
     ] });
   }
+  function mailto(email, subject, body) {
+    const qs = new URLSearchParams({ subject, body }).toString();
+    return `mailto:${email}?${qs}`;
+  }
   function SettingsAboutLegal({ appConfig, version }) {
+    const contactBody = `Hi,
+
+[What would you like to tell us?]
+
+---
+Build: ${version}
+`;
+    const supportBody = `Hi,
+
+I ran into an issue with Music Reps.
+
+What I was doing:
+
+What I expected:
+
+What happened instead:
+
+---
+Build: ${version}
+`;
     return /* @__PURE__ */ u2(k, { children: [
       /* @__PURE__ */ u2(Section, { heading: "About", children: /* @__PURE__ */ u2("div", { class: "settings-link-list", children: [
-        appConfig.contactEmail && /* @__PURE__ */ u2("a", { class: "text-link", href: `mailto:${appConfig.contactEmail}`, children: "Contact" }),
-        appConfig.supportUrl && /* @__PURE__ */ u2(
+        appConfig.contactEmail && /* @__PURE__ */ u2(
           "a",
           {
             class: "text-link",
-            href: appConfig.supportUrl,
-            target: "_blank",
-            rel: "noopener noreferrer",
+            href: mailto(
+              appConfig.contactEmail,
+              "Music Reps \u2014 feedback",
+              contactBody
+            ),
+            children: "Contact"
+          }
+        ),
+        appConfig.contactEmail && /* @__PURE__ */ u2(
+          "a",
+          {
+            class: "text-link",
+            href: mailto(
+              appConfig.contactEmail,
+              "Music Reps \u2014 support request",
+              supportBody
+            ),
             children: "Support"
           }
         ),
         /* @__PURE__ */ u2("span", { class: "settings-meta", children: [
-          "Build ",
+          "Build #",
           version
         ] })
       ] }) }),
@@ -9356,7 +9393,7 @@ body.native-sim #app {
   }
   function SettingsPanel({ settings, appConfig, version, useSolfege, setUseSolfege: setUseSolfege2, onOpenDev }) {
     return /* @__PURE__ */ u2(Stack, { gap: "component", class: "settings-page", children: [
-      /* @__PURE__ */ u2(Section, { heading: "General", children: /* @__PURE__ */ u2(
+      /* @__PURE__ */ u2(Section, { heading: "Preferences", children: /* @__PURE__ */ u2(
         SettingToggle,
         {
           label: "Note names",
@@ -9686,10 +9723,9 @@ body.native-sim #app {
     }
   }
   var APP_CONFIG = {
-    contactEmail: "",
-    supportUrl: safeUrl(""),
-    termsUrl: safeUrl(""),
-    privacyUrl: safeUrl("")
+    contactEmail: "musicrepsapp@gmail.com",
+    termsUrl: safeUrl("https://shnayder.github.io/musicreps/terms.html"),
+    privacyUrl: safeUrl("https://shnayder.github.io/musicreps/privacy.html")
   };
 
   // node_modules/.deno/@capacitor+preferences@8.0.1/node_modules/@capacitor/preferences/dist/esm/index.js
