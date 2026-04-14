@@ -17,10 +17,10 @@ export async function renderMarkdown(md: string): Promise<string> {
 // ---------------------------------------------------------------------------
 // HTML shell — matches the app's brand palette without importing styles.css
 // (styles.css is tightly coupled to the SPA structure and way too big for a
-// static legal page).
+// static page).
 // ---------------------------------------------------------------------------
 
-const LEGAL_CSS = `
+const PAGE_CSS = `
   :root {
     --color-bg: #faf7f2;
     --color-text: #1f2a24;
@@ -85,7 +85,7 @@ const LEGAL_CSS = `
   footer a { color: var(--color-muted); }
 `;
 
-export function assembleLegalHTML(
+export function assembleStaticPageHTML(
   { title, bodyHTML }: { title: string; bodyHTML: string },
 ): string {
   return `<!DOCTYPE html>
@@ -94,7 +94,7 @@ export function assembleLegalHTML(
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title} — Music Reps</title>
-  <style>${LEGAL_CSS}</style>
+  <style>${PAGE_CSS}</style>
 </head>
 <body>
   <header class="brand">

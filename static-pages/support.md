@@ -17,7 +17,7 @@ directly.
 
 ## Feature requests and feedback
 
-I'm happy to hear what you'd like to see next — what modes feel useful, what
+I'm happy to hear what you'd like to see next — which skills are useful, what
 feels frustrating, what's missing. Use the Contact link in Settings, or email
 [musicrepsapp@gmail.com](mailto:musicrepsapp@gmail.com).
 
@@ -32,13 +32,9 @@ runs once per input type and then adapts from there.
 ### Where is my progress stored?
 
 All progress is saved to your device's local storage. Nothing is sent to a
-server. Uninstalling the app or clearing site data removes it.
+server. Uninstalling the app will delete its data.
 
 ### Does the app work offline?
 
-Yes. Music Reps is a single-page web app packaged as a native app; once loaded,
-it doesn't need a network connection to practice.
-
-### Is there a paid version?
-
-No. Music Reps has no paid features, no ads, and no account system.
+Yes. It downloads updates when you're online, but doesn't need a network
+connection to practice.
