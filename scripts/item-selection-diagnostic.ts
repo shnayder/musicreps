@@ -9,7 +9,8 @@
 //
 // This is a diagnostic aid for understanding which items the selector
 // actually draws from on a given trial — no random draws are simulated.
-// Overflow items (e.g. beyond active's N_ACTIVE cap) are the key thing to
+// Overflow items (items that don't fit within the dynamic active cap —
+// see `effectiveActiveCap` — or the review cap) are the key thing to
 // notice: they are never drawn, even though they've been started.
 //
 // Usage:
