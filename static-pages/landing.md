@@ -27,8 +27,9 @@ many small reps that turn into automatic recall.
 
 ## Private by design
 
-Music Reps has no account system, no analytics, no ads, and no network calls.
-All your progress is stored on your device. See the
+Music Reps has no account system, no analytics, no ads, and no tracking.
+Your progress is stored on your device. The app may download updates when
+you're online, but you don't need a connection to practice. See the
 [privacy policy](./privacy.html) for details.
 
 ## Get it
