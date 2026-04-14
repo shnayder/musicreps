@@ -10,7 +10,7 @@
 // `useController` hook that can override prompt rendering, stats rendering,
 // engine lifecycle hooks, and keyboard handling.
 
-import { useMemo, useRef } from 'preact/hooks';
+import { useEffect, useMemo, useRef } from 'preact/hooks';
 import type { ModeHandle } from '../types.ts';
 
 import { useLearnerModel } from '../hooks/use-learner-model.ts';
@@ -186,6 +186,18 @@ export function GenericMode<Q>(
     container,
   );
   const sc = useSpeedCheckOverlay(engine, def, ctrl);
+
+  // Freeze the active scope while a round is in progress. See scope-lock.ts:
+  // recommendations can change mid-round as `selector.version` bumps, which
+  // would otherwise shift both the item pool and the answer button set while
+  // the user is mid-round. Locking keeps the scope stable from the first
+  // question of a round until we return to idle.
+  const enginePhase = engine.state.phase;
+  const setScopeLocked = groupScopeResult?.setScopeLocked;
+  useEffect(() => {
+    if (!setScopeLocked) return;
+    setScopeLocked(enginePhase !== 'idle');
+  }, [enginePhase, setScopeLocked]);
 
   const { currentQ, round, ps, handleSubmit } = useGenericDerivedState(
     def,
