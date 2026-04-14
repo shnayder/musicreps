@@ -2798,6 +2798,12 @@ body.native-sim {
   min-height: 100dvh;
   max-height: 100dvh;
 }
+/* Shrink #app to match: padding shouldn't push its content off-screen. */
+body.native-sim #app {
+  height: calc(100dvh - var(--native-safe-top) - var(--native-safe-bottom));
+  min-height: calc(100dvh - var(--native-safe-top) - var(--native-safe-bottom));
+  max-height: calc(100dvh - var(--native-safe-top) - var(--native-safe-bottom));
+}
 
 /* ==========================================================================
    19. MOBILE LAYOUT
@@ -2859,7 +2865,7 @@ body.native-sim {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="92a828 app-store-content"></div>
+  <div class="home-screen" id="home-screen" data-version="fd81d0 app-store-content"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
