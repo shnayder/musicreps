@@ -7,7 +7,7 @@ every message.
 
 If something in the app isn't working the way you expect:
 
-1. Tap **Settings → Support** in the app. That opens a pre-filled email with
+1. Tap **Settings → Contact** in the app. That opens a pre-filled email with
    your build number attached.
 2. Describe what you were doing, what you expected, and what happened instead.
 3. If possible, mention the device and OS version you're using.
