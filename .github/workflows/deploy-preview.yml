@@ -64,18 +64,16 @@ jobs:
       - name: E2E tests
         run: deno task e2e
         env:
-          APP_CONTACT_EMAIL: preview@example.com
           APP_SUPPORT_URL: https://github.com/shnayder/musicreps/issues
-          APP_TERMS_URL: https://example.com/terms
-          APP_PRIVACY_URL: https://example.com/privacy
+          APP_TERMS_URL: https://shnayder.github.io/musicreps/terms.html
+          APP_PRIVACY_URL: https://shnayder.github.io/musicreps/privacy.html
 
       - name: Build
         run: deno task build
         env:
-          APP_CONTACT_EMAIL: preview@example.com
           APP_SUPPORT_URL: https://github.com/shnayder/musicreps/issues
-          APP_TERMS_URL: https://example.com/terms
-          APP_PRIVACY_URL: https://example.com/privacy
+          APP_TERMS_URL: https://shnayder.github.io/musicreps/terms.html
+          APP_PRIVACY_URL: https://shnayder.github.io/musicreps/privacy.html
 
       - name: Deploy preview
         run: bash scripts/deploy-gh-pages.sh preview "${{ github.ref_name }}"

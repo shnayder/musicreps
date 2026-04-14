@@ -1,4 +1,5 @@
 import { assembleHTML, SERVICE_WORKER } from './src/build-template.ts';
+import { assembleLegalHTML, renderMarkdown } from './src/legal-template.ts';
 
 // ---------------------------------------------------------------------------
 // Version — derived from git at build time
@@ -422,6 +423,21 @@ if (import.meta.main) {
     }
     await Deno.writeTextFile(`${docsDir}/index.html`, html);
     await Deno.writeTextFile(`${docsDir}/sw.js`, SERVICE_WORKER);
+
+    // Static legal pages — rendered from legal/*.md into docs/*.html.
+    // These URLs go in the app's Settings screen and the App/Play Store
+    // listings via APP_PRIVACY_URL / APP_TERMS_URL.
+    for (
+      const page of [
+        { src: 'privacy', title: 'Privacy Policy' },
+        { src: 'terms', title: 'Terms of Use' },
+      ]
+    ) {
+      const md = await Deno.readTextFile(resolve(`./legal/${page.src}.md`));
+      const bodyHTML = renderMarkdown(md);
+      const legalHTML = assembleLegalHTML({ title: page.title, bodyHTML });
+      await Deno.writeTextFile(`${docsDir}/${page.src}.html`, legalHTML);
+    }
 
     // version.json — used by OTA updater to detect new releases
     const htmlBytes = new TextEncoder().encode(html);
