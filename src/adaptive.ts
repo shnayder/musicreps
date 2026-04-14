@@ -16,8 +16,27 @@ import { storage } from './storage.ts';
 // Working-set bucket constants. See exec-plan
 // "2026-04-12-within-level-working-sets" and backlog item #76.
 export const N_ACTIVE = 5;
+export const N_ACTIVE_EXPANDED = 7;
 export const M_REVIEW = 10;
 export const ACTIVE_BUCKET_BIAS = 0.7;
+
+/**
+ * Effective active-bucket cap given the final review bucket size.
+ *
+ * When review is empty or tiny, the 30% review-preferred trials fall
+ * through to active anyway, so we can afford a few more active items
+ * without splintering attention. When review is busy, we keep the cap
+ * tight so the user isn't juggling too many threads at once.
+ *
+ * - 0 review items    → 7 (N_ACTIVE_EXPANDED)
+ * - 1–3 review items  → 6
+ * - 4+ review items   → 5 (N_ACTIVE)
+ */
+export function effectiveActiveCap(reviewSize: number): number {
+  if (reviewSize === 0) return N_ACTIVE_EXPANDED;
+  if (reviewSize <= 3) return N_ACTIVE + 1;
+  return N_ACTIVE;
+}
 
 export const DEFAULT_CONFIG: AdaptiveConfig = {
   minTime: 1000,
@@ -213,7 +232,7 @@ export function needsReview(
 }
 
 export type WorkingBuckets = {
-  /** Up to N_ACTIVE items being actively learned. */
+  /** Up to `effectiveActiveCap(review.length)` items being actively learned (5–7). */
   active: string[];
   /** Up to M_REVIEW items needing review. */
   review: string[];
@@ -229,6 +248,12 @@ export type WorkingBuckets = {
  * category is full) are **omitted** — they are not silently reclassified
  * as fastFresh. They'll be picked up on a future trial once a cap slot
  * frees up. Safe because buckets recompute every trial.
+ *
+ * The active cap is **dynamic**: see `effectiveActiveCap`. Active is
+ * filled up to `N_ACTIVE_EXPANDED` during the walk, then trimmed from
+ * the tail once `review.length` is known. Trimmed items become
+ * overflow (same fate they'd have had under a static cap), preserving
+ * the fixed learning-order "earliest items first" semantics.
  *
  * `excludeId` (typically the last-selected item) is skipped entirely.
  */
@@ -246,7 +271,7 @@ export function computeBuckets(
     if (id === excludeId) continue;
     const speed = getSpeed(id);
     if (needsActiveLearning(speed)) {
-      if (active.length < N_ACTIVE) active.push(id);
+      if (active.length < N_ACTIVE_EXPANDED) active.push(id);
       continue;
     }
     const fresh = getFreshness(id);
@@ -256,6 +281,10 @@ export function computeBuckets(
     }
     fastFresh.push(id);
   }
+  // Trim the active tail once the final review size is known. Dropped
+  // items become overflow — same fate they'd have had under a static cap.
+  const cap = effectiveActiveCap(review.length);
+  if (active.length > cap) active.length = cap;
   return { active, review, fastFresh };
 }
 
