@@ -2,15 +2,16 @@
 // Intentionally self-contained: inline styles, no JS, no fonts — renders on
 // any browser including the barebones ones crawled by app-store reviewers.
 
-import { marked } from 'npm:marked@^14.1.0';
+import { marked } from 'npm:marked@^18.0.0';
 
 // ---------------------------------------------------------------------------
 // Markdown → HTML
 // ---------------------------------------------------------------------------
 
-export function renderMarkdown(md: string): string {
-  // marked returns string synchronously when `async: false` (default).
-  return marked.parse(md, { async: false }) as string;
+export async function renderMarkdown(md: string): Promise<string> {
+  // marked.parse can be Promise<string> depending on options; always await
+  // to keep the build pipeline type-safe regardless of marked's config.
+  return await marked.parse(md);
 }
 
 // ---------------------------------------------------------------------------
@@ -45,7 +46,7 @@ const LEGAL_CSS = `
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--color-border);
   }
-  header.brand a {
+  header.brand > a {
     display: inline-block;
     font-weight: 700;
     font-size: 1.1rem;
@@ -55,12 +56,13 @@ const LEGAL_CSS = `
   header.brand nav {
     display: inline-block;
     margin-left: 1rem;
-    font-size: 0.9rem;
   }
   header.brand nav a {
+    font-size: 0.9rem;
     color: var(--color-muted);
     font-weight: 400;
     margin-right: 0.75rem;
+    text-decoration: none;
   }
   header.brand nav a:hover { color: var(--color-brand); }
   h1 { font-size: 1.9rem; margin: 0 0 0.25rem; color: var(--color-brand); }

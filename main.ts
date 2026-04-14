@@ -434,7 +434,7 @@ if (import.meta.main) {
       ]
     ) {
       const md = await Deno.readTextFile(resolve(`./legal/${page.src}.md`));
-      const bodyHTML = renderMarkdown(md);
+      const bodyHTML = await renderMarkdown(md);
       const legalHTML = assembleLegalHTML({ title: page.title, bodyHTML });
       await Deno.writeTextFile(`${docsDir}/${page.src}.html`, legalHTML);
     }
