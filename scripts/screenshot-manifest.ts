@@ -70,6 +70,8 @@ export const MODE_IDS = [
   'scaleDegrees',
   'diatonicChords',
   'chordSpelling',
+  'guitarChordShapes',
+  'ukuleleChordShapes',
 ] as const;
 
 // All modes use QuizEngine — seed motor baselines so calibration is skipped.
@@ -96,6 +98,9 @@ export type ScreenshotEntry = {
   fixture?: FixtureDetail;
   localStorageData?: Record<string, string>;
   clickTab?: 'progress';
+  /** Extra click selectors (scoped to #mode-{modeId}) applied after tab
+   *  switching. Used e.g. to open a modal before capture. */
+  clickSelectors?: string[];
 };
 
 // ---------------------------------------------------------------------------
@@ -306,10 +311,13 @@ export function buildManifest(): ScreenshotEntry[] {
   });
 
   // Fretboard design moments: correct + wrong
+  // Item '5-8' = high E string, fret 8 = C natural.
   entries.push({
     name: 'design-fretboard-correct',
     modeId: 'fretboard',
-    fixture: quizCorrectFeedback(defaultItems.fretboard),
+    fixture: quizCorrectFeedback(defaultItems.fretboard, {
+      correctAnswer: 'C',
+    }),
   });
   entries.push({
     name: 'design-fretboard-wrong',
@@ -446,6 +454,70 @@ export function buildManifest(): ScreenshotEntry[] {
       clickTab: 'progress',
     });
   }
+
+  // Marketing story — targeted items + modal captures used by the App Store
+  // / Play Store screenshot manifest (scripts/marketing-manifest.ts).
+  entries.push({
+    name: 'marketing-scaleDegrees-D-4',
+    modeId: 'scaleDegrees',
+    fixture: quizActive('D:4:fwd'),
+  });
+  // Chord spelling: show intermediate state with D and F# already entered.
+  // clickSelectors tap the note buttons after the active fixture is applied.
+  entries.push({
+    name: 'marketing-chordSpelling-D7',
+    modeId: 'chordSpelling',
+    fixture: quizActive('D:dom7'),
+    // Chord spelling uses SplitNoteButtons (natural + accidental rows).
+    // Primary row: C D E F G A B. Secondary: ♭ ♮ ♯.
+    // Tap D + ♮ to enter "D", then F + ♯ to enter "F#".
+    clickSelectors: [
+      '.answer-grid-stack > .answer-grid:first-child > button:nth-child(2)',
+      '.answer-grid-stack > .answer-grid:last-child > button:nth-child(2)',
+      '.answer-grid-stack > .answer-grid:first-child > button:nth-child(4)',
+      '.answer-grid-stack > .answer-grid:last-child > button:nth-child(3)',
+    ],
+  });
+  // Guitar chord shapes Am: tap all 5 played positions, then click Check to
+  // land in the correct-feedback state with the chord highlighted.
+  // Voicing [0,1,2,2,0,'x']: string 0 fret 0, s1 f1, s2 f2, s3 f2, s4 f0.
+  entries.push({
+    name: 'marketing-guitarChordShapes-Am-correct',
+    modeId: 'guitarChordShapes',
+    fixture: quizActive('A:minor'),
+    clickSelectors: [
+      '.fb-tap[data-string="0"][data-fret="0"]',
+      '.fb-tap[data-string="1"][data-fret="1"]',
+      '.fb-tap[data-string="2"][data-fret="2"]',
+      '.fb-tap[data-string="3"][data-fret="2"]',
+      '.fb-tap[data-string="4"][data-fret="0"]',
+      '.next-btn',
+    ],
+  });
+  // Fretboard practice tab with the SpeedLevelModal open (tap the first
+  // level's progress bar). The modal is rendered by ProgressBarLabeled on
+  // the Practice tab; Progress tab uses heatmaps, not tappable bars.
+  // Reuses the fb-working group scenario so the bars are non-trivial.
+  const fbWorking = fbGroupScenarios.find(([l]) => l === 'fb-working')!;
+  const fbWorkingLocalStorage = {
+    ...perGroupScenario('fretboard', fbWorking[1]),
+    fretboard_enabledGroups: JSON.stringify(fbWorking[2]),
+  };
+  entries.push({
+    name: 'marketing-fretboard-practice-modal',
+    modeId: 'fretboard',
+    localStorageData: fbWorkingLocalStorage,
+    clickSelectors: ['.progress-bar-tappable'],
+  });
+  // Fretboard round-complete with non-zero progress: reuse the fb-working
+  // group scenario (g0 automatic, g1 mixed, g2 working) so the per-level
+  // progress bars are populated, then inject the round-complete engine state.
+  entries.push({
+    name: 'marketing-fretboard-round-complete',
+    modeId: 'fretboard',
+    localStorageData: fbWorkingLocalStorage,
+    fixture: quizRoundComplete('good'),
+  });
 
   return entries;
 }

@@ -28,6 +28,7 @@ import { getQuestion as getKSQuestion } from '../modes/key-signatures/logic.ts';
 import { getQuestion as getSDQuestion } from '../modes/scale-degrees/logic.ts';
 import { getQuestion as getDCQuestion } from '../modes/diatonic-chords/logic.ts';
 import { parseItem as parseCSItem } from '../modes/chord-spelling/logic.ts';
+import { parseItem as parseChordShapesItem } from '../modes/chord-shapes/logic.ts';
 import { getPositionsForNote } from '../modes/speed-tap/logic.ts';
 import { createFretboardHelpers } from '../quiz-fretboard-state.ts';
 import {
@@ -68,6 +69,8 @@ const modeQuestionFns: Record<string, (itemId: string) => unknown> = {
   diatonicChords: getDCQuestion,
   chordSpelling: parseCSItem,
   speedTap: (id) => ({ positions: getPositionsForNote(id) }),
+  guitarChordShapes: (id) => parseChordShapesItem('guitar', id),
+  ukuleleChordShapes: (id) => parseChordShapesItem('ukulele', id),
 };
 
 // ---------------------------------------------------------------------------
@@ -270,6 +273,8 @@ describe('fixture manifest completeness', () => {
     'diatonicChords',
     'chordSpelling',
     'speedTap',
+    'guitarChordShapes',
+    'ukuleleChordShapes',
   ];
 
   it('defaultItems covers every mode', () => {

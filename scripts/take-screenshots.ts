@@ -27,7 +27,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PREFERRED_PORT = 8002;
 let BASE_URL = '';
-const VIEWPORT = { width: 402, height: 873 };
+const PHONE_VIEWPORT = { width: 402, height: 873 };
+// iPad 13" logical size at 1x (store asset is 2064×2752 at 2x).
+const IPAD_VIEWPORT = { width: 1032, height: 1376 };
 
 // Parse CLI flags
 const args = process.argv.slice(2);
@@ -36,6 +38,8 @@ const dirIdx = args.indexOf('--dir');
 const OUT_DIR = dirIdx >= 0 && args[dirIdx + 1]
   ? path.resolve(args[dirIdx + 1])
   : path.resolve(__dirname, '..', 'screenshots');
+const ipadMode = args.includes('--ipad');
+const VIEWPORT = ipadMode ? IPAD_VIEWPORT : PHONE_VIEWPORT;
 const listMode = args.includes('--list');
 const onlyIdx = args.indexOf('--only');
 const onlyPatterns = onlyIdx >= 0 && args[onlyIdx + 1]
@@ -308,6 +312,16 @@ async function main() {
           const sel = `#mode-${entry.modeId} [data-tab="${entry.clickTab}"]`;
           await page.click(sel);
           await page.waitForTimeout(200);
+        }
+
+        // Optional extra clicks (e.g. open a modal) after navigation, fixture,
+        // and tab switch. Scoped to the current mode container.
+        if (entry.clickSelectors) {
+          for (const selector of entry.clickSelectors) {
+            const scoped = `#mode-${entry.modeId} ${selector}`;
+            await page.click(scoped);
+            await page.waitForTimeout(200);
+          }
         }
 
         await capture(entry.name);

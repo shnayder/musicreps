@@ -84,15 +84,21 @@ export function quizActive(itemId: string): FixtureDetail {
 // Quiz active: correct feedback
 // ---------------------------------------------------------------------------
 
-export function quizCorrectFeedback(itemId: string): FixtureDetail {
+export function quizCorrectFeedback(
+  itemId: string,
+  opts: { correctAnswer?: string; userInput?: string } = {},
+): FixtureDetail {
+  const correctAnswer = opts.correctAnswer ?? feedbackCorrect.displayAnswer;
+  const userInput = opts.userInput ?? correctAnswer;
+  const base = buildActiveState(itemId, {
+    correct: true,
+    correctAnswer,
+    masteredCount: sessionEarlyRound.automatic,
+    totalEnabledCount: sessionEarlyRound.total,
+    questionCount: 14,
+  });
   return {
-    engineState: buildActiveState(itemId, {
-      correct: true,
-      correctAnswer: feedbackCorrect.displayAnswer,
-      masteredCount: sessionEarlyRound.automatic,
-      totalEnabledCount: sessionEarlyRound.total,
-      questionCount: 14,
-    }),
+    engineState: { ...base, feedbackUserInput: userInput },
     timerPct: 55,
     timerText: '0:28',
     timerWarning: false,
