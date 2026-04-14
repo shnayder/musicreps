@@ -430,29 +430,52 @@ export function TrackSection(
 // SettingsAboutLegal — about/legal links for settings panel
 // ---------------------------------------------------------------------------
 
+function mailto(
+  email: string,
+  subject: string,
+  body: string,
+): string {
+  const qs = new URLSearchParams({ subject, body }).toString();
+  return `mailto:${email}?${qs}`;
+}
+
 function SettingsAboutLegal(
   { appConfig, version }: { appConfig: AppConfig; version: string },
 ) {
+  const contactBody =
+    `Hi,\n\n[What would you like to tell us?]\n\n---\nBuild: ${version}\n`;
+  const supportBody = `Hi,\n\nI ran into an issue with Music Reps.\n\n` +
+    `What I was doing:\n\nWhat I expected:\n\nWhat happened instead:\n\n` +
+    `---\nBuild: ${version}\n`;
   return (
     <>
       <Section heading='About'>
         <div class='settings-link-list'>
           {appConfig.contactEmail && (
-            <a class='text-link' href={`mailto:${appConfig.contactEmail}`}>
+            <a
+              class='text-link'
+              href={mailto(
+                appConfig.contactEmail,
+                'Music Reps — feedback',
+                contactBody,
+              )}
+            >
               Contact
             </a>
           )}
-          {appConfig.supportUrl && (
+          {appConfig.contactEmail && (
             <a
               class='text-link'
-              href={appConfig.supportUrl}
-              target='_blank'
-              rel='noopener noreferrer'
+              href={mailto(
+                appConfig.contactEmail,
+                'Music Reps — support request',
+                supportBody,
+              )}
             >
               Support
             </a>
           )}
-          <span class='settings-meta'>Build {version}</span>
+          <span class='settings-meta'>Build #{version}</span>
         </div>
       </Section>
 
@@ -500,7 +523,7 @@ export function SettingsPanel(
 ) {
   return (
     <Stack gap='component' class='settings-page'>
-      <Section heading='General'>
+      <Section heading='Preferences'>
         <SettingToggle
           label='Note names'
           options={[

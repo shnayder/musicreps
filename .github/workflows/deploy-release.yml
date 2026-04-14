@@ -53,6 +53,9 @@ jobs:
         run: deno task build
         env:
           BUILD_NUMBER: ${{ steps.commit-count.outputs.count }}
+          APP_CONTACT_EMAIL: musicrepsapp@gmail.com
+          APP_TERMS_URL: https://shnayder.github.io/musicreps/terms.html
+          APP_PRIVACY_URL: https://shnayder.github.io/musicreps/privacy.html
 
       - name: Deploy to release/
         run: bash scripts/deploy-gh-pages.sh release

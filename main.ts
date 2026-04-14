@@ -1,4 +1,5 @@
 import { assembleHTML, SERVICE_WORKER } from './src/build-template.ts';
+import { assembleLegalHTML, renderMarkdown } from './src/legal-template.ts';
 
 // ---------------------------------------------------------------------------
 // Version — derived from git at build time
@@ -48,7 +49,6 @@ function resolve(rel: string): string {
 async function bundleJS(entry = './src/app.ts'): Promise<string> {
   const entryPoint = resolve(entry);
   const appContactEmail = Deno.env.get('APP_CONTACT_EMAIL') || '';
-  const appSupportUrl = Deno.env.get('APP_SUPPORT_URL') || '';
   const appTermsUrl = Deno.env.get('APP_TERMS_URL') || '';
   const appPrivacyUrl = Deno.env.get('APP_PRIVACY_URL') || '';
   const cmd = new Deno.Command('npx', {
@@ -59,7 +59,6 @@ async function bundleJS(entry = './src/app.ts'): Promise<string> {
       '--jsx=automatic',
       '--jsx-import-source=preact',
       `--define:__APP_CONTACT_EMAIL__=${JSON.stringify(appContactEmail)}`,
-      `--define:__APP_SUPPORT_URL__=${JSON.stringify(appSupportUrl)}`,
       `--define:__APP_TERMS_URL__=${JSON.stringify(appTermsUrl)}`,
       `--define:__APP_PRIVACY_URL__=${JSON.stringify(appPrivacyUrl)}`,
       entryPoint,
@@ -422,6 +421,21 @@ if (import.meta.main) {
     }
     await Deno.writeTextFile(`${docsDir}/index.html`, html);
     await Deno.writeTextFile(`${docsDir}/sw.js`, SERVICE_WORKER);
+
+    // Static legal pages — rendered from legal/*.md into docs/*.html.
+    // These URLs go in the app's Settings screen and the App/Play Store
+    // listings via APP_PRIVACY_URL / APP_TERMS_URL.
+    for (
+      const page of [
+        { src: 'privacy', title: 'Privacy Policy' },
+        { src: 'terms', title: 'Terms of Use' },
+      ]
+    ) {
+      const md = await Deno.readTextFile(resolve(`./legal/${page.src}.md`));
+      const bodyHTML = await renderMarkdown(md);
+      const legalHTML = assembleLegalHTML({ title: page.title, bodyHTML });
+      await Deno.writeTextFile(`${docsDir}/${page.src}.html`, legalHTML);
+    }
 
     // version.json — used by OTA updater to detect new releases
     const htmlBytes = new TextEncoder().encode(html);

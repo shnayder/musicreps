@@ -9,6 +9,8 @@
     "npm:@capacitor/preferences@^8.0.1": "8.0.1_@capacitor+core@8.1.0",
     "npm:@types/node@^25.3.0": "25.3.0",
     "npm:esbuild@~0.27.3": "0.27.3",
+    "npm:marked@18": "18.0.0",
+    "npm:marked@^14.1.0": "14.1.4",
     "npm:playwright@^1.52.0": "1.58.2",
     "npm:preact-render-to-string@^6.6.6": "6.6.6_preact@10.28.4",
     "npm:preact@^10.28.4": "10.28.4",
@@ -498,6 +500,14 @@
     "lru-cache@11.2.6": {
       "integrity": "sha512-ESL2CrkS/2wTPfuend7Zhkzo2u0daGJ/A2VucJOgQ/C48S/zB8MMeMHSGKYpXhIjbPxfuezITkaBH1wqv00DDQ=="
     },
+    "marked@14.1.4": {
+      "integrity": "sha512-vkVZ8ONmUdPnjCKc5uTRvmkRbx4EAi2OkTOXmfTDhZz3OFqMNBM1oTTWwTr4HY4uAEojhzPf+Fy8F1DWa3Sndg==",
+      "bin": true
+    },
+    "marked@18.0.0": {
+      "integrity": "sha512-2e7Qiv/HJSXj8rDEpgTvGKsP8yYtI9xXHKDnrftrmnrJPaFNM7VRb2YCzWaX4BP1iCJ/XPduzDJZMFoqTCcIMA==",
+      "bin": true
+    },
     "minimatch@10.2.2": {
       "integrity": "sha512-+G4CpNBxa5MprY+04MbgOw1v7So6n5JY166pFi9KfYwT78fxScCeSNQSNzp6dpPSW2rONOps6Ocam1wFhCgoVw==",
       "dependencies": [
@@ -760,6 +770,7 @@
         "npm:@capacitor/preferences@^8.0.1",
         "npm:@types/node@^25.3.0",
         "npm:esbuild@~0.27.3",
+        "npm:marked@18",
         "npm:playwright@^1.52.0",
         "npm:preact-render-to-string@^6.6.6",
         "npm:preact@^10.28.4",
