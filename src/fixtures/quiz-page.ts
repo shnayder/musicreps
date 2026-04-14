@@ -31,6 +31,7 @@ function buildActiveState(
   opts: {
     correct?: boolean;
     correctAnswer?: string;
+    userInput?: string;
     masteredCount?: number;
     totalEnabledCount?: number;
     questionCount?: number;
@@ -45,6 +46,7 @@ function buildActiveState(
       opts.correct,
       opts.correctAnswer ?? 'D#',
       'Space for next',
+      opts.userInput,
     );
   }
   if (opts.questionCount !== undefined) {
@@ -84,11 +86,16 @@ export function quizActive(itemId: string): FixtureDetail {
 // Quiz active: correct feedback
 // ---------------------------------------------------------------------------
 
-export function quizCorrectFeedback(itemId: string): FixtureDetail {
+export function quizCorrectFeedback(
+  itemId: string,
+  opts: { correctAnswer?: string; userInput?: string } = {},
+): FixtureDetail {
+  const correctAnswer = opts.correctAnswer ?? feedbackCorrect.displayAnswer;
   return {
     engineState: buildActiveState(itemId, {
       correct: true,
-      correctAnswer: feedbackCorrect.displayAnswer,
+      correctAnswer,
+      userInput: opts.userInput ?? correctAnswer,
       masteredCount: sessionEarlyRound.automatic,
       totalEnabledCount: sessionEarlyRound.total,
       questionCount: 14,

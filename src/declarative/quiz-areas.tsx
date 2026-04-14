@@ -423,19 +423,26 @@ export function StandardQuizArea<Q>(
             narrowing={ctrl.narrowing}
             hideAccidentalsOverride={ctrl.hideAccidentals}
             columnsOverride={ctrl.buttonColumns}
-            feedback={engine.state.feedbackCorrect !== null &&
-                lastAnswerRef.current
-              ? {
-                correct: engine.state.feedbackCorrect,
-                userInput: toButtonValue(
-                  lastAnswerRef.current.comparison,
-                  lastAnswerRef.current.normalizedInput,
-                ),
-                displayAnswer: toButtonValue(
-                  lastAnswerRef.current.comparison,
-                  lastAnswerRef.current.expected,
-                ),
-              }
+            feedback={engine.state.feedbackCorrect !== null
+              ? (lastAnswerRef.current
+                ? {
+                  correct: engine.state.feedbackCorrect,
+                  userInput: toButtonValue(
+                    lastAnswerRef.current.comparison,
+                    lastAnswerRef.current.normalizedInput,
+                  ),
+                  displayAnswer: toButtonValue(
+                    lastAnswerRef.current.comparison,
+                    lastAnswerRef.current.expected,
+                  ),
+                }
+                : {
+                  // Fixture-driven feedback: engine state already holds the
+                  // canonical button values (no comparison context available).
+                  correct: engine.state.feedbackCorrect,
+                  userInput: engine.state.feedbackUserInput ?? '',
+                  displayAnswer: engine.state.feedbackDisplayAnswer ?? '',
+                })
               : null}
           />
           <AnswerInput

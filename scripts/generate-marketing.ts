@@ -17,6 +17,8 @@ import { execSync } from 'child_process';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import {
+  FORMAT_CAPTURE,
+  FORMAT_TEMPLATE_OVERRIDE,
   MARKETING_ASSETS,
   STORE_DIMENSIONS,
   type StoreFormat,
@@ -27,10 +29,16 @@ const PROJECT_ROOT = path.resolve(__dirname, '..');
 const TEMPLATES_DIR = path.join(__dirname, 'marketing-templates');
 const OUT_DIR = path.resolve(PROJECT_ROOT, 'screenshots', 'marketing');
 const RAW_DIR = path.join(OUT_DIR, 'raw');
+const RAW_IPAD_DIR = path.join(OUT_DIR, 'raw-ipad');
+
+function rawDirFor(viewport: 'phone' | 'ipad' | 'none'): string {
+  return viewport === 'ipad' ? RAW_IPAD_DIR : RAW_DIR;
+}
 
 // Store format → output subdirectory
 const FORMAT_DIR: Record<StoreFormat, string> = {
   ios69: 'ios',
+  ipad13: 'ipad',
   play: 'play',
   'play-feature': 'play',
 };
@@ -76,40 +84,51 @@ if (listMode) {
 // Pass 1: Capture raw screenshots
 // ---------------------------------------------------------------------------
 
-/** Screenshots needed by the current (possibly filtered) asset list. */
-function neededScreenshots(): string[] {
+/** Screenshots needed for a given capture viewport by the filtered asset list. */
+function neededScreenshots(viewport: 'phone' | 'ipad'): string[] {
   const set = new Set<string>();
   for (const asset of assets) {
+    const viewports = new Set(asset.formats.map((f) => FORMAT_CAPTURE[f]));
+    if (!viewports.has(viewport)) continue;
     for (const s of asset.screenshots) set.add(s);
   }
   return [...set];
 }
 
-function captureRawScreenshots(): void {
-  const needed = neededScreenshots();
+function captureRawForViewport(viewport: 'phone' | 'ipad'): void {
+  const needed = neededScreenshots(viewport);
+  if (needed.length === 0) return;
+  const dir = rawDirFor(viewport);
+  mkdirSync(dir, { recursive: true });
+
   if (!forceRaw && !skipRaw) {
-    // Check if all needed screenshots already exist
     const allExist = needed.every((n) =>
-      existsSync(path.join(RAW_DIR, `${n}.png`))
+      existsSync(path.join(dir, `${n}.png`))
     );
     if (allExist) {
       console.log(
-        `Raw screenshots cached (${needed.length} files). Use --force-raw to recapture.`,
+        `Raw ${viewport} screenshots cached (${needed.length} files). Use --force-raw to recapture.`,
       );
       return;
     }
   }
   if (skipRaw) {
-    console.log('Skipping raw screenshot capture (--skip-raw).');
+    console.log(`Skipping raw ${viewport} capture (--skip-raw).`);
     return;
   }
 
-  console.log(`Capturing ${needed.length} raw screenshots...`);
+  console.log(`Capturing ${needed.length} raw ${viewport} screenshots...`);
   const namesArg = needed.join(',');
+  const ipadFlag = viewport === 'ipad' ? ' --ipad' : '';
   execSync(
-    `npx tsx scripts/take-screenshots.ts --only ${namesArg} --dir "${RAW_DIR}"`,
+    `npx tsx scripts/take-screenshots.ts --only ${namesArg} --dir "${dir}"${ipadFlag}`,
     { cwd: PROJECT_ROOT, stdio: 'inherit' },
   );
+}
+
+function captureRawScreenshots(): void {
+  captureRawForViewport('phone');
+  captureRawForViewport('ipad');
 }
 
 // ---------------------------------------------------------------------------
@@ -133,16 +152,19 @@ async function renderAssets(): Promise<void> {
         });
         const page = await context.newPage();
 
-        // Load template
+        // Load template (with per-format override so iPad uses tablet frame)
+        const template = FORMAT_TEMPLATE_OVERRIDE[format] ?? asset.template;
         const templatePath = path.join(
           TEMPLATES_DIR,
-          `${asset.template}.html`,
+          `${template}.html`,
         );
         await page.goto(pathToFileURL(templatePath).href);
         await page.waitForLoadState('domcontentloaded');
 
-        // Inject data
-        const rawDirUrl = pathToFileURL(RAW_DIR).href;
+        // Inject data — pull raws from the viewport-matched raw dir.
+        const rawDirUrl = pathToFileURL(
+          rawDirFor(FORMAT_CAPTURE[format]),
+        ).href;
         await page.evaluate(
           (data: {
             screenshotUrls: string[];
@@ -236,7 +258,7 @@ async function renderAssets(): Promise<void> {
 // ---------------------------------------------------------------------------
 
 function generateIndex(): void {
-  const stores = ['ios', 'play'] as const;
+  const stores = ['ios', 'ipad', 'play'] as const;
   let html = `<!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8">
@@ -261,9 +283,12 @@ function generateIndex(): void {
     const files = readdirSync(dir).filter((f) => f.endsWith('.png')).sort();
     if (files.length === 0) continue;
 
-    html += `<h2>${
-      store === 'ios' ? 'iOS App Store' : 'Google Play Store'
-    }</h2>\n<div class="grid">\n`;
+    const title = store === 'ios'
+      ? 'iOS App Store (iPhone 6.9")'
+      : store === 'ipad'
+      ? 'iOS App Store (iPad 13")'
+      : 'Google Play Store';
+    html += `<h2>${title}</h2>\n<div class="grid">\n`;
     for (const file of files) {
       html += `<div class="card">
   <img src="${store}/${file}" alt="${file}">
@@ -289,17 +314,21 @@ async function main(): Promise<void> {
   captureRawScreenshots();
 
   // Verify all raw screenshots exist before rendering
-  const missing = neededScreenshots().filter(
-    (n) => !existsSync(path.join(RAW_DIR, `${n}.png`)),
-  );
-  if (missing.length > 0) {
-    console.error(`Missing raw screenshots: ${missing.join(', ')}`);
-    console.error('Run without --skip-raw to capture them.');
-    process.exit(1);
+  for (const viewport of ['phone', 'ipad'] as const) {
+    const missing = neededScreenshots(viewport).filter(
+      (n) => !existsSync(path.join(rawDirFor(viewport), `${n}.png`)),
+    );
+    if (missing.length > 0) {
+      console.error(
+        `Missing raw ${viewport} screenshots: ${missing.join(', ')}`,
+      );
+      console.error('Run without --skip-raw to capture them.');
+      process.exit(1);
+    }
   }
 
   // Clean stale output before rendering
-  for (const subdir of ['ios', 'play']) {
+  for (const subdir of ['ios', 'ipad', 'play']) {
     const dir = path.join(OUT_DIR, subdir);
     if (existsSync(dir)) rmSync(dir, { recursive: true });
   }

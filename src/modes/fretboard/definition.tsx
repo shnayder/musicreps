@@ -2,7 +2,13 @@
 // Creates a ModeDefinition for guitar or ukulele, with a useController hook
 // that manages SVG prompt rendering, heatmap stats, and keyboard narrowing.
 
-import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'preact/hooks';
 import type { Instrument } from '../../types.ts';
 import { isValidNoteInput } from '../../music-data.ts';
 import {
@@ -110,19 +116,24 @@ export function createFretboardDef(
 // Fretboard prompt renderer (highlighted position SVG)
 // ---------------------------------------------------------------------------
 
-function renderFretboardPrompt(
-  q: Question,
-  quizFbRef: { current: HTMLDivElement | null },
-  svgHTML: string,
-) {
-  const el = quizFbRef.current;
-  if (el) {
+function FretboardPrompt({
+  q,
+  svgHTML,
+  fbRef,
+}: {
+  q: Question;
+  svgHTML: string;
+  fbRef: { current: HTMLDivElement | null };
+}) {
+  useEffect(() => {
+    const el = fbRef.current;
+    if (!el) return;
     clearAll(el);
     setCircleFill(el, q.currentString, q.currentFret, FB_QUIZ_HL);
-  }
+  }, [q.currentString, q.currentFret, svgHTML]);
   return (
     <div
-      ref={quizFbRef}
+      ref={fbRef}
       // deno-lint-ignore react-no-danger
       dangerouslySetInnerHTML={{ __html: svgHTML }}
     />
@@ -215,7 +226,9 @@ function useFretboardController(
 
   // --- Prompt: SVG fretboard with highlighted position ---
   const renderPrompt = useCallback(
-    (q: Question) => renderFretboardPrompt(q, quizFbRef, svgHTML),
+    (q: Question) => (
+      <FretboardPrompt q={q} svgHTML={svgHTML} fbRef={quizFbRef} />
+    ),
     [svgHTML],
   );
 
