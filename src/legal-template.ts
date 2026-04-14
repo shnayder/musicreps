@@ -1,4 +1,4 @@
-// Minimal HTML shell for static legal pages (privacy, terms).
+// Minimal HTML shell for static pages (landing, support, privacy, terms).
 // Intentionally self-contained: inline styles, no JS, no fonts — renders on
 // any browser including the barebones ones crawled by app-store reviewers.
 
@@ -98,8 +98,9 @@ export function assembleLegalHTML(
 </head>
 <body>
   <header class="brand">
-    <a href="./index.html">Music Reps</a>
+    <a href="./landing.html">Music Reps</a>
     <nav>
+      <a href="./support.html">Support</a>
       <a href="./privacy.html">Privacy</a>
       <a href="./terms.html">Terms</a>
     </nav>

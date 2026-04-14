@@ -31,6 +31,7 @@ deno run --allow-write --allow-read main.ts --build
 Settings page links can be configured with environment variables at build time:
 
 - `APP_CONTACT_EMAIL`
+- `APP_SUPPORT_URL`
 - `APP_TERMS_URL`
 - `APP_PRIVACY_URL`
 
@@ -38,6 +39,7 @@ Example:
 
 ```bash
 APP_CONTACT_EMAIL=support@example.com \
+APP_SUPPORT_URL=https://example.com/support \
 APP_TERMS_URL=https://example.com/terms \
 APP_PRIVACY_URL=https://example.com/privacy \
 deno run --allow-write --allow-read --allow-env main.ts --build

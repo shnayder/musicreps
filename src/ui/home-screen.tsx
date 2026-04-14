@@ -444,9 +444,6 @@ function SettingsAboutLegal(
 ) {
   const contactBody =
     `Hi,\n\n[What would you like to tell us?]\n\n---\nBuild: ${version}\n`;
-  const supportBody = `Hi,\n\nI ran into an issue with Music Reps.\n\n` +
-    `What I was doing:\n\nWhat I expected:\n\nWhat happened instead:\n\n` +
-    `---\nBuild: ${version}\n`;
   return (
     <>
       <Section heading='About'>
@@ -463,14 +460,12 @@ function SettingsAboutLegal(
               Contact
             </a>
           )}
-          {appConfig.contactEmail && (
+          {appConfig.supportUrl && (
             <a
               class='text-link'
-              href={mailto(
-                appConfig.contactEmail,
-                'Music Reps — support request',
-                supportBody,
-              )}
+              href={appConfig.supportUrl}
+              target='_blank'
+              rel='noopener noreferrer'
             >
               Support
             </a>
