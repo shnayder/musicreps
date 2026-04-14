@@ -2842,7 +2842,7 @@ body.native-app .hint {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1404"></div>
+  <div class="home-screen" id="home-screen" data-version="#1406"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -9848,6 +9848,19 @@ body.native-app .hint {
     };
   }
 
+  // src/scope-lock.ts
+  function createScopeLock() {
+    return { locked: false, snapshot: null };
+  }
+  function nextScopeLockState(prev, locked, live) {
+    if (locked === prev.locked) return prev;
+    if (locked) return { locked: true, snapshot: live };
+    return { locked: false, snapshot: null };
+  }
+  function readScope(lock, live) {
+    return lock.locked && lock.snapshot !== null ? lock.snapshot : live;
+  }
+
   // src/mode-ui-state.ts
   function countAutomatic(itemIds, getSpeedScore) {
     let automatic = 0;
@@ -10234,7 +10247,18 @@ body.native-app .hint {
       [spec.allGroupIds, skippedGroups]
     );
     const rec = useRecommendationData(spec, activeGroupIds, notationVersion);
-    const enabledGroups = practiceMode === "suggested" && rec.suggestedScope.size > 0 ? rec.suggestedScope : customGroups;
+    const liveEnabledGroups = practiceMode === "suggested" && rec.suggestedScope.size > 0 ? rec.suggestedScope : customGroups;
+    const liveEnabledGroupsRef = A2(liveEnabledGroups);
+    liveEnabledGroupsRef.current = liveEnabledGroups;
+    const [scopeLock, setScopeLock] = d2(
+      createScopeLock
+    );
+    const setScopeLocked = q2((locked) => {
+      setScopeLock(
+        (prev) => nextScopeLockState(prev, locked, liveEnabledGroupsRef.current)
+      );
+    }, []);
+    const enabledGroups = readScope(scopeLock, liveEnabledGroups);
     const enabledItems = T2(() => {
       const items = [];
       for (const id of spec.allGroupIds) {
@@ -10270,7 +10294,8 @@ body.native-app .hint {
       practiceMode,
       setPracticeMode,
       suggestedScope: rec.suggestedScope,
-      suggestionLines: rec.suggestionLines
+      suggestionLines: rec.suggestionLines,
+      setScopeLocked
     };
   }
 
@@ -13097,6 +13122,12 @@ body.native-app .hint {
       container
     );
     const sc = useSpeedCheckOverlay(engine, def, ctrl);
+    const enginePhase = engine.state.phase;
+    const setScopeLocked = groupScopeResult?.setScopeLocked;
+    y2(() => {
+      if (!setScopeLocked) return;
+      setScopeLocked(enginePhase !== "idle");
+    }, [enginePhase, setScopeLocked]);
     const { currentQ, round, ps, handleSubmit } = useGenericDerivedState(
       def,
       engine,
