@@ -11,6 +11,12 @@
 
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks';
 import { storage } from '../storage.ts';
+import {
+  createScopeLock,
+  nextScopeLockState,
+  readScope,
+  type ScopeLock,
+} from '../scope-lock.ts';
 import type {
   AdaptiveSelector,
   GroupStatus,
@@ -100,6 +106,16 @@ export type GroupScopeResult = {
   suggestedScope: ReadonlySet<string>;
   /** Structured recommendation lines for the SuggestionLines component. */
   suggestionLines: SuggestionLine[];
+  /**
+   * Freeze or unfreeze the active scope. While locked, `enabledGroups`,
+   * `enabledItems`, `practicingLabel`, `getEnabledItems`, and
+   * `getPracticingLabel` all return the snapshot captured at the moment of
+   * locking — even if the underlying recommendation changes. Callers lock
+   * when a round starts and unlock when the round ends (or when returning
+   * to idle) so that the set of levels being practiced stays fixed
+   * mid-round.
+   */
+  setScopeLocked: (locked: boolean) => void;
 };
 
 // ---------------------------------------------------------------------------
@@ -233,10 +249,27 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
   const rec = useRecommendationData(spec, activeGroupIds, notationVersion);
 
   // --- Active scope: depends on practice mode ---
-  const enabledGroups: ReadonlySet<string> =
+  const liveEnabledGroups: ReadonlySet<string> =
     practiceMode === 'suggested' && rec.suggestedScope.size > 0
       ? rec.suggestedScope
       : customGroups;
+
+  // --- Lock: freeze active scope during a round -------------------------
+  // See scope-lock.ts. The engine calls `setScopeLocked(true)` when a round
+  // starts and `setScopeLocked(false)` on return to idle, so the set of
+  // levels being practiced stays stable even as `selector.version` bumps
+  // cause recommendations to recompute mid-round.
+  const liveEnabledGroupsRef = useRef(liveEnabledGroups);
+  liveEnabledGroupsRef.current = liveEnabledGroups;
+  const [scopeLock, setScopeLock] = useState<ScopeLock<ReadonlySet<string>>>(
+    createScopeLock,
+  );
+  const setScopeLocked = useCallback((locked: boolean) => {
+    setScopeLock((prev) =>
+      nextScopeLockState(prev, locked, liveEnabledGroupsRef.current)
+    );
+  }, []);
+  const enabledGroups = readScope(scopeLock, liveEnabledGroups);
 
   const enabledItems = useMemo(() => {
     const items: string[] = [];
@@ -277,5 +310,6 @@ export function useGroupScope(spec: GroupScopeSpec): GroupScopeResult {
     setPracticeMode,
     suggestedScope: rec.suggestedScope,
     suggestionLines: rec.suggestionLines,
+    setScopeLocked,
   };
 }
