@@ -145,6 +145,7 @@
   /* Error */
   --color-error: var(--error-600);
   --color-error-bg: var(--error-100);
+  --color-error-bg-strong: var(--error-200);
   --color-error-border: var(--error-300);
   --color-error-text: var(--error-800);
   --color-tap-selected: var(--color-accent);
@@ -275,8 +276,14 @@
   /* Interactive element sizes */
   --size-close-btn: 2.25rem;
   --size-content-inset: var(--pad-region);
-  --size-answer-grid: 272px;
-  --size-answer-grid-wide: 400px;
+  /* Answer button width. Both the 4-col and 6-col grids derive their
+     max-width from this token so 4+3 and 6+6 layouts have matching button
+     sizes. Shrunk on short screens (mobile layout block). */
+  --size-answer-btn: 64px;
+  --size-answer-grid: calc(4 * var(--size-answer-btn) + 3 * var(--gap-related));
+  --size-answer-grid-wide: calc(
+    6 * var(--size-answer-btn) + 5 * var(--gap-related)
+  );
 
   /* Elevation (box-shadow) */
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.1);
@@ -413,6 +420,15 @@
   --type-metric-effort-leading: var(--leading-none);
   --type-metric-effort-color: var(--color-tertiary);
 
+  /* Headline metric — used in screen headers (home stats bar, quiz round
+     counter). Matches heading-page weight/size so metric numbers carry the
+     same visual weight as page titles, keeping headers consistent across
+     screens. */
+  --type-metric-header-size: var(--type-heading-page-size);
+  --type-metric-header-weight: var(--type-heading-page-weight);
+  --type-metric-header-leading: var(--type-heading-page-leading);
+  --type-metric-header-color: var(--color-tertiary);
+
   /* -- Status: state communication -- */
   --type-status-size: var(--text-sm);
   --type-status-weight: var(--font-normal);
@@ -487,12 +503,13 @@ body {
   overscroll-behavior: none;
 }
 /* Viewport containment: #app only exists in the built app (build-template.ts),
-   so prototype/design pages that import styles.css are unaffected. */
+   so prototype/design pages that import styles.css are unaffected. #app is
+   the viewport anchor: an absolute height minus the top safe-area inset that
+   body already pads. Every descendant flexes from here. */
 #app {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 0;
+  height: calc(100dvh - env(safe-area-inset-top, 0px));
   overflow: hidden;
 }
 
@@ -504,7 +521,8 @@ body {
 .screen-layout {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - env(safe-area-inset-top, 0px));
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
@@ -734,8 +752,15 @@ body {
 /* ==========================================================================
    3. HOME SCREEN
    ========================================================================== */
-/* .home-screen: outer container — ScreenLayout fills the viewport inside it.
-   No styles needed; show/hide is on .home-screen.hidden below. */
+/* .home-screen: outer container — a flex child of #app so the inner
+   ScreenLayout fills the space left by the brand strip and any other
+   siblings. */
+.home-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
 .home-screen.hidden {
   display: none;
 }
@@ -748,40 +773,39 @@ body {
   padding: var(--gap-group) var(--size-content-inset);
   background: var(--color-chrome);
 }
-.home-title {
+/* --- Brand strip (top of every web screen, hidden on native) --- */
+.brand-strip {
+  flex-shrink: 0;
+  padding: var(--gap-group) var(--size-content-inset);
+  background: var(--color-chrome);
+  border-bottom: 1px solid var(--color-border-lighter);
+}
+body.native-app .brand-strip {
+  display: none;
+}
+.brand-strip-title {
   display: flex;
   align-items: center;
   gap: 0.4em;
+  margin: 0;
   font-family: var(--type-display-brand-family);
   font-size: var(--type-display-brand-size);
   font-weight: var(--type-display-brand-weight);
   line-height: var(--type-display-brand-leading);
   color: var(--type-display-brand-color);
 }
-.home-logo-mark {
+.brand-strip-mark {
   color: var(--color-brand);
   flex-shrink: 0;
 }
-.home-title::after {
-  display: none;
-}
-.home-tagline {
-  margin: var(--gap-group) 0 0;
-}
-/* On native apps, hide the title/tagline but keep the stats bar visible */
-.home-header.native .home-title,
-.home-header.native .home-tagline {
-  display: none;
+.brand-strip-tagline {
+  margin: var(--gap-related) 0 0;
 }
 /* --- Stats bar (home header) --- */
 .home-stats-bar {
   justify-content: center;
-  margin-top: var(--gap-group);
   font-size: var(--type-status-size);
   color: var(--type-status-color);
-}
-.home-header.native .home-stats-bar {
-  margin-top: 0;
 }
 .home-stat-sep {
   color: var(--color-text-muted);
@@ -1104,25 +1128,27 @@ body {
 /* ==========================================================================
    4. MODE CHROME
    ========================================================================== */
-.mode-top-bar {
-  padding: var(--gap-group) var(--size-content-inset);
-  background: var(--color-chrome);
-}
-/* mode-top-bar-row: replaced by Bar gap='group' */
-.mode-top-bar .skill-icon {
-  flex-shrink: 0;
-  color: var(--color-text-muted);
-}
 .close-btn {
   background: none;
   border: none;
+  /* Full-size X glyph. The button box is still --size-touch-target tall for
+     a 44px hit target, but we pull its layout contribution back to the title
+     line-height via a negative block margin so it doesn't inflate the
+     header row. The overflow lands in the surrounding chrome where it's
+     invisible. */
   font-size: var(--size-close-btn);
   cursor: pointer;
-  padding: var(--gap-related);
+  padding: 0 var(--gap-related);
   min-width: var(--size-touch-target);
   min-height: var(--size-touch-target);
+  margin-block: calc(
+    (
+      var(--type-heading-page-size) * var(--type-heading-page-leading)
+        - var(--size-touch-target)
+    )
+      / 2
+  );
   color: var(--color-text-light);
-  margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1139,13 +1165,6 @@ body {
 }
 .close-btn:active {
   background: var(--color-surface-pressed);
-}
-.mode-top-bar-text {
-  flex: 1;
-  min-width: 0;
-}
-.mode-description {
-  margin: var(--gap-micro) 0 0;
 }
 /* --- Settings page --- */
 .settings-page-header {
@@ -1247,6 +1266,7 @@ body {
   display: none;
   padding-top: 0;
   flex: 1;
+  min-height: 0;
 }
 .mode-screen.mode-active {
   display: flex;
@@ -1254,8 +1274,7 @@ body {
 }
 
 .quiz-session-header {
-  padding: var(--gap-related) var(--size-content-inset) var(--gap-related)
-    var(--gap-group);
+  padding: var(--gap-group) var(--size-content-inset);
   background: var(--color-chrome);
 }
 .quiz-countdown-group {
@@ -1761,11 +1780,6 @@ button {
   flex: 1;
   min-height: 0;
 }
-.mode-screen.phase-active .mode-top-bar,
-.mode-screen.phase-round-complete .mode-top-bar,
-.mode-screen.phase-calibration .mode-top-bar {
-  display: none;
-}
 /* --- Quiz area — two-zone layout: .quiz-content + .quiz-controls --- */
 .quiz-area {
   display: flex;
@@ -2124,6 +2138,14 @@ button {
   font-weight: var(--type-metric-effort-weight);
   line-height: var(--type-metric-effort-leading);
   color: var(--type-metric-effort-color);
+  font-variant-numeric: tabular-nums;
+}
+.text-metric-header {
+  font-size: var(--type-metric-header-size);
+  font-weight: var(--type-metric-header-weight);
+  line-height: var(--type-metric-header-leading);
+  color: var(--type-metric-header-color);
+  font-family: var(--font-display);
   font-variant-numeric: tabular-nums;
 }
 
@@ -2759,6 +2781,29 @@ body.native-app .keyboard-hint,
 body.native-app .hint {
   display: none;
 }
+/* Simulate iPhone 15 Pro safe-area insets when ?native is used in a desktop
+   browser (marketing pipeline). Chromium doesn't expose real env(safe-area-
+   inset-*) values, so the device-frame overlay would otherwise cover app
+   content. Real native builds get the actual env() values and never hit
+   these rules. */
+body.native-sim {
+  --native-safe-top: 24px;
+  --native-safe-bottom: 0px;
+  box-sizing: border-box;
+  padding-top: var(--native-safe-top);
+  padding-bottom: var(--native-safe-bottom);
+  /* Pin body to the viewport so padding eats into content rather than
+     pushing the layout below the visible area. */
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+}
+/* Shrink #app to match: padding shouldn't push its content off-screen. */
+body.native-sim #app {
+  height: calc(100dvh - var(--native-safe-top) - var(--native-safe-bottom));
+  min-height: calc(100dvh - var(--native-safe-top) - var(--native-safe-bottom));
+  max-height: calc(100dvh - var(--native-safe-top) - var(--native-safe-bottom));
+}
 
 /* ==========================================================================
    19. MOBILE LAYOUT
@@ -2766,7 +2811,6 @@ body.native-app .hint {
 @media (max-width: 599px) {
   :root {
     --size-content-inset: var(--gap-group);
-    --size-answer-grid: 220px;
     --type-answer-size: 1.1rem;
   }
 
@@ -2807,11 +2851,21 @@ body.native-app .hint {
   }
 }
 
+/* Short screens (iPhone SE and similar): shrink answer buttons so the
+   quiz controls + footer still fit without scrolling. Height-based so it
+   only kicks in when vertical space is actually scarce. */
+@media (max-height: 700px) {
+  :root {
+    --size-answer-btn: 52px;
+  }
+}
+
   </style>
 </head>
 <body>
   <div id="app">
-  <div class="home-screen" id="home-screen" data-version="#1387"></div>
+  <div class="brand-strip" id="brand-strip"></div>
+  <div class="home-screen" id="home-screen" data-version="#1410"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -4680,13 +4734,64 @@ body.native-app .hint {
     return note;
   }
 
+  // node_modules/.deno/preact@10.28.4/node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
+  var f2 = 0;
+  function u2(e3, t3, n2, o3, i3, u4) {
+    t3 || (t3 = {});
+    var a3, c3, p3 = t3;
+    if ("ref" in p3) for (c3 in p3 = {}, t3) "ref" == c3 ? a3 = t3[c3] : p3[c3] = t3[c3];
+    var l3 = { type: e3, props: p3, key: n2, ref: a3, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: --f2, __i: -1, __u: 0, __source: i3, __self: u4 };
+    if ("function" == typeof e3 && (a3 = e3.defaultProps)) for (c3 in a3) void 0 === p3[c3] && (p3[c3] = a3[c3]);
+    return l.vnode && l.vnode(l3), l3;
+  }
+
+  // src/ui/repeat-mark.tsx
+  function RepeatMark({ size = 24, class: cls }) {
+    return /* @__PURE__ */ u2(
+      "svg",
+      {
+        xmlns: "http://www.w3.org/2000/svg",
+        width: String(size),
+        height: String(size),
+        viewBox: "0 0 1024 1024",
+        fill: "currentColor",
+        stroke: "none",
+        "aria-hidden": "true",
+        class: cls,
+        children: [
+          /* @__PURE__ */ u2("circle", { cx: "350.6", cy: "366.9", r: "76.8" }),
+          /* @__PURE__ */ u2("circle", { cx: "350.6", cy: "674.1", r: "76.8" }),
+          /* @__PURE__ */ u2("rect", { x: "554.7", y: "136.5", width: "68.3", height: "768" }),
+          /* @__PURE__ */ u2("rect", { x: "682.7", y: "136.5", width: "136.5", height: "768" })
+        ]
+      }
+    );
+  }
+
+  // src/ui/text.tsx
+  function Text({ role, children, class: extra, as: Tag = "span", ...rest }) {
+    const cls = "text-" + role + (extra ? " " + extra : "");
+    return /* @__PURE__ */ u2(Tag, { class: cls, ...rest, children });
+  }
+
+  // src/ui/brand-strip.tsx
+  function BrandStrip() {
+    return /* @__PURE__ */ u2(k, { children: [
+      /* @__PURE__ */ u2("div", { class: "brand-strip-title", "aria-label": "Music Reps", children: [
+        /* @__PURE__ */ u2(RepeatMark, { size: 28, class: "brand-strip-mark", "aria-hidden": "true" }),
+        "Music Reps"
+      ] }),
+      /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "p", class: "brand-strip-tagline", children: "Make music fundamentals automatic so you can focus on playing." })
+    ] });
+  }
+
   // node_modules/.deno/preact@10.28.4/node_modules/preact/hooks/dist/hooks.module.js
   var t2;
   var r2;
-  var u2;
+  var u3;
   var i2;
   var o2 = 0;
-  var f2 = [];
+  var f3 = [];
   var c2 = l;
   var e2 = c2.__b;
   var a2 = c2.__r;
@@ -4759,7 +4864,7 @@ body.native-app .hint {
     }, t3);
   }
   function j2() {
-    for (var n2; n2 = f2.shift(); ) {
+    for (var n2; n2 = f3.shift(); ) {
       var t3 = n2.__H;
       if (n2.__P && t3) try {
         t3.__h.some(z2), t3.__h.some(B2), t3.__h = [];
@@ -4775,15 +4880,15 @@ body.native-app .hint {
   }, c2.__r = function(n2) {
     a2 && a2(n2), t2 = 0;
     var i3 = (r2 = n2.__c).__H;
-    i3 && (u2 === r2 ? (i3.__h = [], r2.__h = [], i3.__.some(function(n3) {
+    i3 && (u3 === r2 ? (i3.__h = [], r2.__h = [], i3.__.some(function(n3) {
       n3.__N && (n3.__ = n3.__N), n3.u = n3.__N = void 0;
-    })) : (i3.__h.some(z2), i3.__h.some(B2), i3.__h = [], t2 = 0)), u2 = r2;
+    })) : (i3.__h.some(z2), i3.__h.some(B2), i3.__h = [], t2 = 0)), u3 = r2;
   }, c2.diffed = function(n2) {
     v2 && v2(n2);
     var t3 = n2.__c;
-    t3 && t3.__H && (t3.__H.__h.length && (1 !== f2.push(t3) && i2 === c2.requestAnimationFrame || ((i2 = c2.requestAnimationFrame) || w2)(j2)), t3.__H.__.some(function(n3) {
+    t3 && t3.__H && (t3.__H.__h.length && (1 !== f3.push(t3) && i2 === c2.requestAnimationFrame || ((i2 = c2.requestAnimationFrame) || w2)(j2)), t3.__H.__.some(function(n3) {
       n3.u && (n3.__H = n3.u), n3.u = void 0;
-    })), u2 = r2 = null;
+    })), u3 = r2 = null;
   }, c2.__c = function(n2, t3) {
     t3.some(function(n3) {
       try {
@@ -5571,17 +5676,6 @@ body.native-app .hint {
     };
   }
 
-  // node_modules/.deno/preact@10.28.4/node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
-  var f3 = 0;
-  function u3(e3, t3, n2, o3, i3, u4) {
-    t3 || (t3 = {});
-    var a3, c3, p3 = t3;
-    if ("ref" in p3) for (c3 in p3 = {}, t3) "ref" == c3 ? a3 = t3[c3] : p3[c3] = t3[c3];
-    var l3 = { type: e3, props: p3, key: n2, ref: a3, __k: null, __: null, __b: 0, __e: null, __c: null, constructor: void 0, __v: --f3, __i: -1, __u: 0, __source: i3, __self: u4 };
-    if ("function" == typeof e3 && (a3 = e3.defaultProps)) for (c3 in a3) void 0 === p3[c3] && (p3[c3] = a3[c3]);
-    return l.vnode && l.vnode(l3), l3;
-  }
-
   // src/ui/icons.tsx
   var ICON_PROPS = {
     xmlns: "http://www.w3.org/2000/svg",
@@ -5597,77 +5691,77 @@ body.native-app .hint {
     "aria-hidden": "true"
   };
   function Guitar() {
-    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
-      /* @__PURE__ */ u3("path", { d: "m11.9 12.1 4.514-4.514" }),
-      /* @__PURE__ */ u3("path", { d: "M20.1 2.3a1 1 0 0 0-1.4 0l-1.114 1.114A2 2 0 0 0 17 4.828v1.344a2 2 0 0 1-.586 1.414A2 2 0 0 1 17.828 7h1.344a2 2 0 0 0 1.414-.586L21.7 5.3a1 1 0 0 0 0-1.4z" }),
-      /* @__PURE__ */ u3("path", { d: "m6 16 2 2" }),
-      /* @__PURE__ */ u3("path", { d: "M8.23 9.85A3 3 0 0 1 11 8a5 5 0 0 1 5 5 3 3 0 0 1-1.85 2.77l-.92.38A2 2 0 0 0 12 18a4 4 0 0 1-4 4 6 6 0 0 1-6-6 4 4 0 0 1 4-4 2 2 0 0 0 1.85-1.23z" })
+    return /* @__PURE__ */ u2("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u2("path", { d: "m11.9 12.1 4.514-4.514" }),
+      /* @__PURE__ */ u2("path", { d: "M20.1 2.3a1 1 0 0 0-1.4 0l-1.114 1.114A2 2 0 0 0 17 4.828v1.344a2 2 0 0 1-.586 1.414A2 2 0 0 1 17.828 7h1.344a2 2 0 0 0 1.414-.586L21.7 5.3a1 1 0 0 0 0-1.4z" }),
+      /* @__PURE__ */ u2("path", { d: "m6 16 2 2" }),
+      /* @__PURE__ */ u2("path", { d: "M8.23 9.85A3 3 0 0 1 11 8a5 5 0 0 1 5 5 3 3 0 0 1-1.85 2.77l-.92.38A2 2 0 0 0 12 18a4 4 0 0 1-4 4 6 6 0 0 1-6-6 4 4 0 0 1 4-4 2 2 0 0 0 1.85-1.23z" })
     ] });
   }
   function Zap() {
-    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: /* @__PURE__ */ u3("path", { d: "M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" }) });
+    return /* @__PURE__ */ u2("svg", { ...ICON_PROPS, children: /* @__PURE__ */ u2("path", { d: "M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" }) });
   }
   function Hash() {
-    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
-      /* @__PURE__ */ u3("line", { x1: "4", x2: "20", y1: "9", y2: "9" }),
-      /* @__PURE__ */ u3("line", { x1: "4", x2: "20", y1: "15", y2: "15" }),
-      /* @__PURE__ */ u3("line", { x1: "10", x2: "8", y1: "3", y2: "21" }),
-      /* @__PURE__ */ u3("line", { x1: "16", x2: "14", y1: "3", y2: "21" })
+    return /* @__PURE__ */ u2("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u2("line", { x1: "4", x2: "20", y1: "9", y2: "9" }),
+      /* @__PURE__ */ u2("line", { x1: "4", x2: "20", y1: "15", y2: "15" }),
+      /* @__PURE__ */ u2("line", { x1: "10", x2: "8", y1: "3", y2: "21" }),
+      /* @__PURE__ */ u2("line", { x1: "16", x2: "14", y1: "3", y2: "21" })
     ] });
   }
   function Ruler() {
-    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
-      /* @__PURE__ */ u3("path", { d: "M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z" }),
-      /* @__PURE__ */ u3("path", { d: "m14.5 12.5 2-2" }),
-      /* @__PURE__ */ u3("path", { d: "m11.5 9.5 2-2" }),
-      /* @__PURE__ */ u3("path", { d: "m8.5 6.5 2-2" }),
-      /* @__PURE__ */ u3("path", { d: "m17.5 15.5 2-2" })
+    return /* @__PURE__ */ u2("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u2("path", { d: "M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z" }),
+      /* @__PURE__ */ u2("path", { d: "m14.5 12.5 2-2" }),
+      /* @__PURE__ */ u2("path", { d: "m11.5 9.5 2-2" }),
+      /* @__PURE__ */ u2("path", { d: "m8.5 6.5 2-2" }),
+      /* @__PURE__ */ u2("path", { d: "m17.5 15.5 2-2" })
     ] });
   }
   function Calculator() {
-    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
-      /* @__PURE__ */ u3("rect", { width: "16", height: "20", x: "4", y: "2", rx: "2" }),
-      /* @__PURE__ */ u3("line", { x1: "8", x2: "16", y1: "6", y2: "6" }),
-      /* @__PURE__ */ u3("line", { x1: "16", x2: "16", y1: "14", y2: "18" }),
-      /* @__PURE__ */ u3("path", { d: "M16 10h.01" }),
-      /* @__PURE__ */ u3("path", { d: "M12 10h.01" }),
-      /* @__PURE__ */ u3("path", { d: "M8 10h.01" }),
-      /* @__PURE__ */ u3("path", { d: "M12 14h.01" }),
-      /* @__PURE__ */ u3("path", { d: "M8 14h.01" }),
-      /* @__PURE__ */ u3("path", { d: "M12 18h.01" }),
-      /* @__PURE__ */ u3("path", { d: "M8 18h.01" })
+    return /* @__PURE__ */ u2("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u2("rect", { width: "16", height: "20", x: "4", y: "2", rx: "2" }),
+      /* @__PURE__ */ u2("line", { x1: "8", x2: "16", y1: "6", y2: "6" }),
+      /* @__PURE__ */ u2("line", { x1: "16", x2: "16", y1: "14", y2: "18" }),
+      /* @__PURE__ */ u2("path", { d: "M16 10h.01" }),
+      /* @__PURE__ */ u2("path", { d: "M12 10h.01" }),
+      /* @__PURE__ */ u2("path", { d: "M8 10h.01" }),
+      /* @__PURE__ */ u2("path", { d: "M12 14h.01" }),
+      /* @__PURE__ */ u2("path", { d: "M8 14h.01" }),
+      /* @__PURE__ */ u2("path", { d: "M12 18h.01" }),
+      /* @__PURE__ */ u2("path", { d: "M8 18h.01" })
     ] });
   }
   function ListOrdered() {
-    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
-      /* @__PURE__ */ u3("path", { d: "M11 5h10" }),
-      /* @__PURE__ */ u3("path", { d: "M11 12h10" }),
-      /* @__PURE__ */ u3("path", { d: "M11 19h10" }),
-      /* @__PURE__ */ u3("path", { d: "M4 4h1v5" }),
-      /* @__PURE__ */ u3("path", { d: "M4 9h2" }),
-      /* @__PURE__ */ u3("path", { d: "M6.5 20H3.4c0-1 2.6-1.925 2.6-3.5a1.5 1.5 0 0 0-2.6-1.02" })
+    return /* @__PURE__ */ u2("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u2("path", { d: "M11 5h10" }),
+      /* @__PURE__ */ u2("path", { d: "M11 12h10" }),
+      /* @__PURE__ */ u2("path", { d: "M11 19h10" }),
+      /* @__PURE__ */ u2("path", { d: "M4 4h1v5" }),
+      /* @__PURE__ */ u2("path", { d: "M4 9h2" }),
+      /* @__PURE__ */ u2("path", { d: "M6.5 20H3.4c0-1 2.6-1.925 2.6-3.5a1.5 1.5 0 0 0-2.6-1.02" })
     ] });
   }
   function KeyRound() {
-    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
-      /* @__PURE__ */ u3("path", { d: "M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" }),
-      /* @__PURE__ */ u3("circle", { cx: "16.5", cy: "7.5", r: ".5", fill: "currentColor" })
+    return /* @__PURE__ */ u2("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u2("path", { d: "M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z" }),
+      /* @__PURE__ */ u2("circle", { cx: "16.5", cy: "7.5", r: ".5", fill: "currentColor" })
     ] });
   }
   function Signal() {
-    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
-      /* @__PURE__ */ u3("path", { d: "M2 20h.01" }),
-      /* @__PURE__ */ u3("path", { d: "M7 20v-4" }),
-      /* @__PURE__ */ u3("path", { d: "M12 20v-8" }),
-      /* @__PURE__ */ u3("path", { d: "M17 20V8" }),
-      /* @__PURE__ */ u3("path", { d: "M22 4v16" })
+    return /* @__PURE__ */ u2("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u2("path", { d: "M2 20h.01" }),
+      /* @__PURE__ */ u2("path", { d: "M7 20v-4" }),
+      /* @__PURE__ */ u2("path", { d: "M12 20v-8" }),
+      /* @__PURE__ */ u2("path", { d: "M17 20V8" }),
+      /* @__PURE__ */ u2("path", { d: "M22 4v16" })
     ] });
   }
   function SpellCheck() {
-    return /* @__PURE__ */ u3("svg", { ...ICON_PROPS, children: [
-      /* @__PURE__ */ u3("path", { d: "m6 16 6-12 6 12" }),
-      /* @__PURE__ */ u3("path", { d: "M8 12h8" }),
-      /* @__PURE__ */ u3("path", { d: "m16 20 2 2 4-4" })
+    return /* @__PURE__ */ u2("svg", { ...ICON_PROPS, children: [
+      /* @__PURE__ */ u2("path", { d: "m6 16 6-12 6 12" }),
+      /* @__PURE__ */ u2("path", { d: "M8 12h8" }),
+      /* @__PURE__ */ u2("path", { d: "m16 20 2 2 4-4" })
     ] });
   }
   var MODE_ICONS = {
@@ -5688,36 +5782,13 @@ body.native-app .hint {
   function SkillIcon({ modeId }) {
     const Icon = MODE_ICONS[modeId];
     if (!Icon) return null;
-    return /* @__PURE__ */ u3(Icon, {});
+    return /* @__PURE__ */ u2(Icon, {});
   }
 
   // src/ui/pill.tsx
   function Pill({ variant, children }) {
     const cls = variant ? `pill pill-${variant}` : "pill";
-    return /* @__PURE__ */ u3("span", { class: cls, children });
-  }
-
-  // src/ui/repeat-mark.tsx
-  function RepeatMark({ size = 24, class: cls }) {
-    return /* @__PURE__ */ u3(
-      "svg",
-      {
-        xmlns: "http://www.w3.org/2000/svg",
-        width: String(size),
-        height: String(size),
-        viewBox: "0 0 1024 1024",
-        fill: "currentColor",
-        stroke: "none",
-        "aria-hidden": "true",
-        class: cls,
-        children: [
-          /* @__PURE__ */ u3("circle", { cx: "350.6", cy: "366.9", r: "76.8" }),
-          /* @__PURE__ */ u3("circle", { cx: "350.6", cy: "674.1", r: "76.8" }),
-          /* @__PURE__ */ u3("rect", { x: "554.7", y: "136.5", width: "68.3", height: "768" }),
-          /* @__PURE__ */ u3("rect", { x: "682.7", y: "136.5", width: "136.5", height: "768" })
-        ]
-      }
-    );
+    return /* @__PURE__ */ u2("span", { class: cls, children });
   }
 
   // src/recommendations.ts
@@ -6400,22 +6471,27 @@ body.native-app .hint {
       useController: (enabledGroups) => useFretboardController(instrument, groups, enabledGroups)
     };
   }
-  function renderFretboardPrompt(q4, quizFbRef, svgHTML) {
-    const el = quizFbRef.current;
-    if (el) {
+  function FretboardPrompt({
+    q: q4,
+    svgHTML,
+    fbRef
+  }) {
+    y2(() => {
+      const el = fbRef.current;
+      if (!el) return;
       clearAll(el);
       setCircleFill(el, q4.currentString, q4.currentFret, FB_QUIZ_HL);
-    }
-    return /* @__PURE__ */ u3(
+    }, [q4.currentString, q4.currentFret, svgHTML]);
+    return /* @__PURE__ */ u2(
       "div",
       {
-        ref: quizFbRef,
+        ref: fbRef,
         dangerouslySetInnerHTML: { __html: svgHTML }
       }
     );
   }
   function renderFretboardStats(selector, instrument, svgHTML, progressFbRef) {
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       "div",
       {
         ref: (el) => {
@@ -6469,7 +6545,7 @@ body.native-app .hint {
       [pendingNote]
     );
     const renderPrompt = q2(
-      (q4) => renderFretboardPrompt(q4, quizFbRef, svgHTML),
+      (q4) => /* @__PURE__ */ u2(FretboardPrompt, { q: q4, svgHTML, fbRef: quizFbRef }),
       [svgHTML]
     );
     const renderStats = q2(
@@ -6630,8 +6706,8 @@ body.native-app .hint {
     stats: {
       kind: "table",
       getRows: getStatsRows2,
-      fwdHeader: "Interval\u2192Number",
-      revHeader: "Number\u2192Interval"
+      fwdHeader: "Interval \u2192 Number",
+      revHeader: "Number \u2192 Interval"
     }
   };
 
@@ -7549,7 +7625,7 @@ body.native-app .hint {
           html += '<td class="stats-cell" style="background:' + getStatsCellColor(selector, NOTES[j4].name) + '"></td>';
         }
         html += "</tr></tbody></table>";
-        return /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u2(
           "div",
           {
             dangerouslySetInnerHTML: { __html: html }
@@ -7780,7 +7856,7 @@ body.native-app .hint {
           html += "</tr>";
         }
         html += "</tbody></table>";
-        return /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u2(
           "div",
           {
             dangerouslySetInnerHTML: { __html: html }
@@ -8110,7 +8186,7 @@ body.native-app .hint {
   function ActionButton({ variant, children, onClick, disabled, class: extra, ...rest }) {
     const cls = variant === "primary" ? "page-action-btn page-action-primary" : "page-action-btn page-action-secondary";
     const full = cls + (extra ? " " + extra : "");
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       "button",
       {
         type: "button",
@@ -8124,20 +8200,14 @@ body.native-app .hint {
     );
   }
 
-  // src/ui/text.tsx
-  function Text({ role, children, class: extra, as: Tag = "span", ...rest }) {
-    const cls = "text-" + role + (extra ? " " + extra : "");
-    return /* @__PURE__ */ u3(Tag, { class: cls, ...rest, children });
-  }
-
   // src/ui/layout.tsx
   function Stack({ gap, children, class: extra, as: Tag = "div" }) {
     const cls = "stack stack-" + gap + (extra ? " " + extra : "");
-    return /* @__PURE__ */ u3(Tag, { class: cls, children });
+    return /* @__PURE__ */ u2(Tag, { class: cls, children });
   }
   function Bar({ gap, children, class: extra, as: Tag = "div" }) {
     const cls = "bar bar-" + gap + (extra ? " " + extra : "");
-    return /* @__PURE__ */ u3(Tag, { class: cls, children });
+    return /* @__PURE__ */ u2(Tag, { class: cls, children });
   }
   function Card({ children, variant = "card", accent, padding = "default", class: extra }) {
     let cls = "card";
@@ -8145,7 +8215,7 @@ body.native-app .hint {
     if (padding === "compact") cls += " card-compact";
     if (accent) cls += " card-accent-" + accent;
     if (extra) cls += " " + extra;
-    return /* @__PURE__ */ u3("div", { class: cls, children });
+    return /* @__PURE__ */ u2("div", { class: cls, children });
   }
   function Section({
     heading,
@@ -8155,8 +8225,8 @@ body.native-app .hint {
     class: extra
   }) {
     const cls = "section-block section-gap-" + gap + (extra ? " " + extra : "");
-    return /* @__PURE__ */ u3("section", { class: cls, children: [
-      /* @__PURE__ */ u3(Text, { role: headingRole, as: "h2", children: heading }),
+    return /* @__PURE__ */ u2("section", { class: cls, children: [
+      /* @__PURE__ */ u2(Text, { role: headingRole, as: "h2", children: heading }),
       children
     ] });
   }
@@ -8164,30 +8234,30 @@ body.native-app .hint {
   // src/ui/screen-layout.tsx
   function ScreenLayout({ children, class: extra }) {
     const cls = "screen-layout" + (extra ? " " + extra : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children });
+    return /* @__PURE__ */ u2("div", { class: cls, children });
   }
   function LayoutHeader({ children, class: extra }) {
     const cls = "layout-header" + (extra ? " " + extra : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children });
+    return /* @__PURE__ */ u2("div", { class: cls, children });
   }
   function LayoutMain({ children, scrollable = true, class: extra }) {
     const cls = "layout-main" + (scrollable ? " layout-main-scroll" : " layout-main-fixed") + (extra ? " " + extra : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children });
+    return /* @__PURE__ */ u2("div", { class: cls, children });
   }
   function LayoutFooter({ children, class: extra }) {
     if (!children) return null;
     const cls = "layout-footer" + (extra ? " " + extra : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children });
+    return /* @__PURE__ */ u2("div", { class: cls, children });
   }
   function QuizStage({ prompt, response }) {
-    return /* @__PURE__ */ u3("div", { class: "quiz-stage", children: [
-      /* @__PURE__ */ u3("div", { class: "quiz-stage-prompt", children: prompt }),
-      response != null && /* @__PURE__ */ u3("div", { class: "quiz-stage-response", children: response })
+    return /* @__PURE__ */ u2("div", { class: "quiz-stage", children: [
+      /* @__PURE__ */ u2("div", { class: "quiz-stage-prompt", children: prompt }),
+      response != null && /* @__PURE__ */ u2("div", { class: "quiz-stage-response", children: response })
     ] });
   }
   function CenteredContent({ children, class: extra }) {
     const cls = "centered-content" + (extra ? " " + extra : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children });
+    return /* @__PURE__ */ u2("div", { class: cls, children });
   }
 
   // node_modules/.deno/preact@10.28.4/node_modules/preact/compat/dist/compat.module.js
@@ -8425,7 +8495,7 @@ body.native-app .hint {
     );
     if (!open) return null;
     return $2(
-      /* @__PURE__ */ u3("div", { class: "modal-backdrop", ref: backdropRef, onClick: handleBackdrop, children: /* @__PURE__ */ u3(
+      /* @__PURE__ */ u2("div", { class: "modal-backdrop", ref: backdropRef, onClick: handleBackdrop, children: /* @__PURE__ */ u2(
         "div",
         {
           class: "modal-surface",
@@ -8433,9 +8503,9 @@ body.native-app .hint {
           "aria-modal": "true",
           "aria-label": title,
           children: [
-            /* @__PURE__ */ u3("div", { class: "modal-header", children: [
-              /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: title }),
-              /* @__PURE__ */ u3(
+            /* @__PURE__ */ u2("div", { class: "modal-header", children: [
+              /* @__PURE__ */ u2(Text, { role: "heading-section", as: "h2", children: title }),
+              /* @__PURE__ */ u2(
                 "button",
                 {
                   ref: closeBtnRef,
@@ -8447,7 +8517,7 @@ body.native-app .hint {
                 }
               )
             ] }),
-            /* @__PURE__ */ u3("div", { class: "modal-body", children })
+            /* @__PURE__ */ u2("div", { class: "modal-body", children })
           ]
         }
       ) }),
@@ -8467,28 +8537,28 @@ body.native-app .hint {
   function SpeedThresholdTable({ baseline }) {
     const thresholds = getCalibrationThresholds(baseline ?? DEFAULT_BASELINE_MS);
     const fmt = formatBaseline(baseline);
-    return /* @__PURE__ */ u3("div", { class: "speed-threshold-table", children: [
-      /* @__PURE__ */ u3("table", { class: "speed-legend-table", children: [
-        /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
-          /* @__PURE__ */ u3("th", {}),
-          /* @__PURE__ */ u3("th", { children: "Status" }),
-          /* @__PURE__ */ u3("th", { children: "Max time" }),
-          /* @__PURE__ */ u3("th", { children: "Meaning" })
+    return /* @__PURE__ */ u2("div", { class: "speed-threshold-table", children: [
+      /* @__PURE__ */ u2("table", { class: "speed-legend-table", children: [
+        /* @__PURE__ */ u2("thead", { children: /* @__PURE__ */ u2("tr", { children: [
+          /* @__PURE__ */ u2("th", {}),
+          /* @__PURE__ */ u2("th", { children: "Status" }),
+          /* @__PURE__ */ u2("th", { children: "Max time" }),
+          /* @__PURE__ */ u2("th", { children: "Meaning" })
         ] }) }),
-        /* @__PURE__ */ u3("tbody", { children: thresholds.map((t3) => /* @__PURE__ */ u3("tr", { children: [
-          /* @__PURE__ */ u3("td", { children: /* @__PURE__ */ u3(
+        /* @__PURE__ */ u2("tbody", { children: thresholds.map((t3) => /* @__PURE__ */ u2("tr", { children: [
+          /* @__PURE__ */ u2("td", { children: /* @__PURE__ */ u2(
             "span",
             {
               class: "heatmap-swatch",
               style: `background-color: var(${t3.colorToken})`
             }
           ) }),
-          /* @__PURE__ */ u3("td", { children: t3.label }),
-          /* @__PURE__ */ u3("td", { children: t3.maxMs !== null ? (t3.maxMs / 1e3).toFixed(1) + "s" : "\u2014" }),
-          /* @__PURE__ */ u3("td", { children: t3.meaning })
+          /* @__PURE__ */ u2("td", { children: t3.label }),
+          /* @__PURE__ */ u2("td", { children: t3.maxMs !== null ? (t3.maxMs / 1e3).toFixed(1) + "s" : "\u2014" }),
+          /* @__PURE__ */ u2("td", { children: t3.meaning })
         ] }, t3.label)) })
       ] }),
-      /* @__PURE__ */ u3(Text, { role: "supporting", as: "p", class: "speed-baseline-note", children: [
+      /* @__PURE__ */ u2(Text, { role: "supporting", as: "p", class: "speed-baseline-note", children: [
         "Response time baseline: ",
         fmt.value,
         fmt.isDefault && " (default)"
@@ -8499,13 +8569,13 @@ body.native-app .hint {
     return kind === "multi-level" ? "The bar shows a segment for each level in this skill, showing how quickly you answer." : "The bar shows a segment for each item, showing how quickly you answer.";
   }
   function SpeedLevelLegend({ kind = "single-level", baseline = null }) {
-    return /* @__PURE__ */ u3("div", { class: "speed-legend", children: [
-      /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", children: contextLine(kind) }),
-      /* @__PURE__ */ u3(SpeedThresholdTable, { baseline })
+    return /* @__PURE__ */ u2("div", { class: "speed-legend", children: [
+      /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "p", children: contextLine(kind) }),
+      /* @__PURE__ */ u2(SpeedThresholdTable, { baseline })
     ] });
   }
   function SpeedLevelModal({ open, onClose, kind = "single-level", baseline = null }) {
-    return /* @__PURE__ */ u3(Modal, { title: "Progress", open, onClose, children: /* @__PURE__ */ u3(SpeedLevelLegend, { kind, baseline }) });
+    return /* @__PURE__ */ u2(Modal, { title: "Progress", open, onClose, children: /* @__PURE__ */ u2(SpeedLevelLegend, { kind, baseline }) });
   }
 
   // src/ui/scope.tsx
@@ -8513,9 +8583,9 @@ body.native-app .hint {
     const totalSlots = segments.length;
     const usedFlex = segments.reduce((sum, s3) => sum + s3.weight, 0);
     const spacerFlex = totalSlots - usedFlex;
-    return /* @__PURE__ */ u3("div", { class: "group-progress-bar" + (disabled ? " skipped" : ""), children: [
+    return /* @__PURE__ */ u2("div", { class: "group-progress-bar" + (disabled ? " skipped" : ""), children: [
       segments.map(
-        (seg, i3) => seg.weight > 0 ? /* @__PURE__ */ u3(
+        (seg, i3) => seg.weight > 0 ? /* @__PURE__ */ u2(
           "div",
           {
             class: "group-bar-slice",
@@ -8524,7 +8594,7 @@ body.native-app .hint {
           i3
         ) : null
       ),
-      spacerFlex > 0 && /* @__PURE__ */ u3("div", { class: "group-bar-slice", style: `flex:${spacerFlex}` })
+      spacerFlex > 0 && /* @__PURE__ */ u2("div", { class: "group-bar-slice", style: `flex:${spacerFlex}` })
     ] });
   }
   function ProgressBarLabeled({
@@ -8537,8 +8607,8 @@ body.native-app .hint {
   }) {
     const [legendOpen, setLegendOpen] = d2(false);
     const cls = plain ? "progress-bar-plain" : "progress-bar-labeled";
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(k, { children: [
+      /* @__PURE__ */ u2(
         "button",
         {
           type: "button",
@@ -8546,12 +8616,12 @@ body.native-app .hint {
           onClick: () => setLegendOpen(true),
           "aria-label": label ? `${label}. Tap for speed level legend.` : "Tap for speed level legend",
           children: [
-            label && /* @__PURE__ */ u3(Text, { role: "label", as: "div", class: "progress-bar-label", children: label }),
-            /* @__PURE__ */ u3(GroupProgressBar, { segments, disabled })
+            label && /* @__PURE__ */ u2(Text, { role: "label", as: "div", class: "progress-bar-label", children: label }),
+            /* @__PURE__ */ u2(GroupProgressBar, { segments, disabled })
           ]
         }
       ),
-      /* @__PURE__ */ u3(
+      /* @__PURE__ */ u2(
         SpeedLevelModal,
         {
           open: legendOpen,
@@ -8565,7 +8635,7 @@ body.native-app .hint {
 
   // src/ui/mode-screen.tsx
   function CloseButton({ onClick, ariaLabel }) {
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       "button",
       {
         type: "button",
@@ -8599,7 +8669,7 @@ body.native-app .hint {
         )?.focus();
       });
     }
-    return /* @__PURE__ */ u3("div", { class: className, role: "tablist", children: tabs.map((tab) => /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2("div", { class: className, role: "tablist", children: tabs.map((tab) => /* @__PURE__ */ u2(
       "button",
       {
         type: "button",
@@ -8618,7 +8688,7 @@ body.native-app .hint {
     )) });
   }
   function TabPanels({ tabs, activeTab, prefix }) {
-    return /* @__PURE__ */ u3(k, { children: tabs.map((tab) => /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(k, { children: tabs.map((tab) => /* @__PURE__ */ u2(
       "div",
       {
         id: prefix + "-panel-" + tab.id,
@@ -8632,41 +8702,25 @@ body.native-app .hint {
   }
   function ScreenHeader({ title, icon, onClose, closeAriaLabel, right, class: extra }) {
     const cls = "screen-header" + (extra ? " " + extra : "");
-    return /* @__PURE__ */ u3("div", { class: cls, children: /* @__PURE__ */ u3(Bar, { gap: "group", children: [
-      onClose ? /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2("div", { class: cls, children: /* @__PURE__ */ u2(Bar, { gap: "group", children: [
+      onClose ? /* @__PURE__ */ u2(
         CloseButton,
         {
           ariaLabel: closeAriaLabel ?? "Close",
           onClick: onClose
         }
-      ) : /* @__PURE__ */ u3("div", { class: "screen-header-spacer" }),
-      /* @__PURE__ */ u3("div", { class: "screen-header-title", children: [
+      ) : /* @__PURE__ */ u2("div", { class: "screen-header-spacer" }),
+      /* @__PURE__ */ u2("div", { class: "screen-header-title", children: [
         icon,
-        /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", class: "mode-title", children: title })
+        /* @__PURE__ */ u2(Text, { role: "heading-page", as: "h1", class: "mode-title", children: title })
       ] }),
-      right ?? /* @__PURE__ */ u3("div", { class: "screen-header-spacer" })
-    ] }) });
-  }
-  function ModeTopBar({ modeId, title, description, onBack, showBack = true }) {
-    return /* @__PURE__ */ u3("div", { class: "mode-top-bar", children: /* @__PURE__ */ u3(Bar, { gap: "group", children: [
-      showBack && /* @__PURE__ */ u3(
-        CloseButton,
-        {
-          ariaLabel: "Back to home",
-          onClick: onBack
-        }
-      ),
-      modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
-      /* @__PURE__ */ u3("div", { class: "mode-top-bar-text", children: [
-        /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", class: "mode-title", children: title }),
-        description && /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "mode-description", children: description })
-      ] })
+      right ?? /* @__PURE__ */ u2("div", { class: "screen-header-spacer" })
     ] }) });
   }
   function StartButton({ onStart, disabled, validationMessage, label }) {
     const msgId = validationMessage ? "start-validation-msg" : void 0;
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(k, { children: [
+      /* @__PURE__ */ u2(
         ActionButton,
         {
           variant: "primary",
@@ -8677,7 +8731,7 @@ body.native-app .hint {
           children: label ?? "Practice"
         }
       ),
-      validationMessage ? /* @__PURE__ */ u3("div", { id: msgId, class: "start-validation-message", children: validationMessage }) : null
+      validationMessage ? /* @__PURE__ */ u2("div", { id: msgId, class: "start-validation-message", children: validationMessage }) : null
     ] });
   }
   function QuizSession({
@@ -8688,20 +8742,20 @@ body.native-app .hint {
     isLastQuestion,
     onClose
   }) {
-    return /* @__PURE__ */ u3("div", { class: "quiz-session", children: /* @__PURE__ */ u3(Bar, { gap: "component", class: "quiz-session-header", children: [
-      /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2("div", { class: "quiz-session", children: /* @__PURE__ */ u2(Bar, { gap: "component", class: "quiz-session-header", children: [
+      /* @__PURE__ */ u2(
         CloseButton,
         {
           ariaLabel: "Stop quiz",
           onClick: onClose
         }
       ),
-      /* @__PURE__ */ u3(Bar, { gap: "related", class: "quiz-countdown-group", children: [
-        /* @__PURE__ */ u3(
+      /* @__PURE__ */ u2(Bar, { gap: "related", class: "quiz-countdown-group", children: [
+        /* @__PURE__ */ u2(
           "div",
           {
             class: "quiz-countdown-bar" + (isWarning ? " round-timer-warning" : "") + (isLastQuestion ? " last-question" : ""),
-            children: /* @__PURE__ */ u3(
+            children: /* @__PURE__ */ u2(
               "div",
               {
                 class: "quiz-countdown-fill",
@@ -8710,22 +8764,22 @@ body.native-app .hint {
             )
           }
         ),
-        /* @__PURE__ */ u3(Text, { role: "metric-info", as: "span", class: "quiz-info-time", children: timeLeft || "" })
+        /* @__PURE__ */ u2(Text, { role: "metric-info", as: "span", class: "quiz-info-time", children: timeLeft || "" })
       ] }),
-      count && /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", class: "quiz-info-count", children: [
+      count && /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", class: "quiz-info-count", children: [
         count,
-        /* @__PURE__ */ u3(RepeatMark, { size: 13, class: "quiz-info-count-icon" })
+        /* @__PURE__ */ u2(RepeatMark, { size: 13, class: "quiz-info-count-icon" })
       ] })
     ] }) });
   }
   function RoundCompleteInfo({ heading, count, correct, levelBars }) {
-    return /* @__PURE__ */ u3(Stack, { gap: "component", class: "round-complete", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-page", as: "div", class: "round-complete-heading", children: heading || "" }),
-      count != null && /* @__PURE__ */ u3(Stack, { gap: "micro", class: "round-complete-count-group", children: [
-        /* @__PURE__ */ u3(Text, { role: "metric-hero", as: "div", class: "round-complete-count", children: count }),
-        /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "div", children: count === 1 ? "rep" : "reps" })
+    return /* @__PURE__ */ u2(Stack, { gap: "component", class: "round-complete", children: [
+      /* @__PURE__ */ u2(Text, { role: "heading-page", as: "div", class: "round-complete-heading", children: heading || "" }),
+      count != null && /* @__PURE__ */ u2(Stack, { gap: "micro", class: "round-complete-count-group", children: [
+        /* @__PURE__ */ u2(Text, { role: "metric-hero", as: "div", class: "round-complete-count", children: count }),
+        /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "div", children: count === 1 ? "rep" : "reps" })
       ] }),
-      /* @__PURE__ */ u3(
+      /* @__PURE__ */ u2(
         Text,
         {
           role: "status",
@@ -8734,7 +8788,7 @@ body.native-app .hint {
           children: correct || ""
         }
       ),
-      levelBars && levelBars.length > 0 && /* @__PURE__ */ u3(Stack, { gap: "group", class: "round-complete-progress", children: levelBars.map((entry) => /* @__PURE__ */ u3(
+      levelBars && levelBars.length > 0 && /* @__PURE__ */ u2(Stack, { gap: "group", class: "round-complete-progress", children: levelBars.map((entry) => /* @__PURE__ */ u2(
         ProgressBarLabeled,
         {
           label: entry.label,
@@ -8748,12 +8802,12 @@ body.native-app .hint {
   var noop = () => {
   };
   function RoundCompleteActions({ onContinue, onStop }) {
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: "page-action-row", children: [
-        /* @__PURE__ */ u3(ActionButton, { variant: "primary", onClick: onContinue ?? noop, children: "Keep Going" }),
-        /* @__PURE__ */ u3(ActionButton, { variant: "secondary", onClick: onStop ?? noop, children: "Stop" })
+    return /* @__PURE__ */ u2(k, { children: [
+      /* @__PURE__ */ u2("div", { class: "page-action-row", children: [
+        /* @__PURE__ */ u2(ActionButton, { variant: "primary", onClick: onContinue ?? noop, children: "Keep Going" }),
+        /* @__PURE__ */ u2(ActionButton, { variant: "secondary", onClick: onStop ?? noop, children: "Stop" })
       ] }),
-      /* @__PURE__ */ u3("div", { class: "hint hint-spacer", children: "\xA0" })
+      /* @__PURE__ */ u2("div", { class: "hint hint-spacer", children: "\xA0" })
     ] });
   }
   var TAB_ICONS = {
@@ -8770,8 +8824,8 @@ body.native-app .hint {
   };
   function TabIcon({ icon, text }) {
     const paths = TAB_ICONS[icon] ?? "";
-    return /* @__PURE__ */ u3("span", { class: "tab-icon-label", children: [
-      /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2("span", { class: "tab-icon-label", children: [
+      /* @__PURE__ */ u2(
         "svg",
         {
           xmlns: "http://www.w3.org/2000/svg",
@@ -8787,26 +8841,26 @@ body.native-app .hint {
           dangerouslySetInnerHTML: { __html: paths }
         }
       ),
-      /* @__PURE__ */ u3("span", { class: "tab-icon-text", children: text })
+      /* @__PURE__ */ u2("span", { class: "tab-icon-text", children: text })
     ] });
   }
   function BaselineInfo({ baseline, onRun }) {
     const value = baseline ? (baseline / 1e3).toFixed(1) + "s" : "1s";
-    const tag = baseline ? null : /* @__PURE__ */ u3(Text, { role: "supporting", class: "baseline-default-tag", children: "(default)" });
+    const tag = baseline ? null : /* @__PURE__ */ u2(Text, { role: "supporting", class: "baseline-default-tag", children: "(default)" });
     const btnLabel = baseline ? "Redo speed check" : "Run speed check";
-    return /* @__PURE__ */ u3("div", { class: "baseline-info", children: [
-      /* @__PURE__ */ u3("div", { class: "baseline-metric", children: [
-        /* @__PURE__ */ u3(Text, { role: "label", children: "Response time for note input" }),
-        /* @__PURE__ */ u3(Text, { role: "metric-primary", children: [
+    return /* @__PURE__ */ u2("div", { class: "baseline-info", children: [
+      /* @__PURE__ */ u2("div", { class: "baseline-metric", children: [
+        /* @__PURE__ */ u2(Text, { role: "label", children: "Response time for note input" }),
+        /* @__PURE__ */ u2(Text, { role: "metric-primary", children: [
           value,
-          tag && /* @__PURE__ */ u3(k, { children: [
+          tag && /* @__PURE__ */ u2(k, { children: [
             " ",
             tag
           ] })
         ] })
       ] }),
-      /* @__PURE__ */ u3(Text, { role: "supporting", as: "div", class: "baseline-explanation", children: "Timing thresholds are based on this measurement." }),
-      /* @__PURE__ */ u3(
+      /* @__PURE__ */ u2(Text, { role: "supporting", as: "div", class: "baseline-explanation", children: "Timing thresholds are based on this measurement." }),
+      /* @__PURE__ */ u2(
         "button",
         {
           type: "button",
@@ -8847,14 +8901,14 @@ body.native-app .hint {
     const tabs = [
       {
         id: "practice",
-        label: /* @__PURE__ */ u3("span", { class: "tab-icon-label", children: [
-          /* @__PURE__ */ u3(RepeatMark, { size: 24 }),
-          /* @__PURE__ */ u3("span", { class: "tab-icon-text", children: "Practice" })
+        label: /* @__PURE__ */ u2("span", { class: "tab-icon-label", children: [
+          /* @__PURE__ */ u2(RepeatMark, { size: 24 }),
+          /* @__PURE__ */ u2("span", { class: "tab-icon-text", children: "Practice" })
         ] }),
-        content: /* @__PURE__ */ u3(Stack, { gap: "region", children: [
-          hasSummary && /* @__PURE__ */ u3(Section, { heading: "Summary", children: [
-            description && /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", children: description }),
-            hasProgressBar && /* @__PURE__ */ u3(
+        content: /* @__PURE__ */ u2(Stack, { gap: "region", children: [
+          hasSummary && /* @__PURE__ */ u2(Section, { heading: "Summary", children: [
+            description && /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "p", children: description }),
+            hasProgressBar && /* @__PURE__ */ u2(
               ProgressBarLabeled,
               {
                 label: "Progress",
@@ -8869,9 +8923,9 @@ body.native-app .hint {
       },
       {
         id: "progress",
-        label: /* @__PURE__ */ u3(TabIcon, { icon: "progress", text: "Progress" }),
-        content: /* @__PURE__ */ u3(Stack, { gap: "region", children: [
-          hasProgressBar && /* @__PURE__ */ u3(Section, { heading: "Overall", children: /* @__PURE__ */ u3(
+        label: /* @__PURE__ */ u2(TabIcon, { icon: "progress", text: "Progress" }),
+        content: /* @__PURE__ */ u2(Stack, { gap: "region", children: [
+          hasProgressBar && /* @__PURE__ */ u2(Section, { heading: "Overall", children: /* @__PURE__ */ u2(
             ProgressBarLabeled,
             {
               label: "Progress",
@@ -8881,23 +8935,23 @@ body.native-app .hint {
             }
           ) }),
           progressExtra,
-          statsHeading && /* @__PURE__ */ u3(Section, { heading: statsHeading, gap: "group", children: /* @__PURE__ */ u3("div", { class: "stats-container", children: statsContent }) }),
-          !statsHeading && /* @__PURE__ */ u3("div", { class: "stats-container", children: statsContent }),
-          onCalibrate && /* @__PURE__ */ u3(Section, { heading: "Speed check", gap: "group", children: /* @__PURE__ */ u3(BaselineInfo, { baseline: baseline ?? null, onRun: onCalibrate }) })
+          statsHeading && /* @__PURE__ */ u2(Section, { heading: statsHeading, gap: "group", children: /* @__PURE__ */ u2("div", { class: "stats-container", children: statsContent }) }),
+          !statsHeading && /* @__PURE__ */ u2("div", { class: "stats-container", children: statsContent }),
+          onCalibrate && /* @__PURE__ */ u2(Section, { heading: "Speed check", gap: "group", children: /* @__PURE__ */ u2(BaselineInfo, { baseline: baseline ?? null, onRun: onCalibrate }) })
         ] })
       }
     ];
     if (aboutContent) {
       tabs.push({
         id: "about",
-        label: /* @__PURE__ */ u3(TabIcon, { icon: "about", text: "Info" }),
+        label: /* @__PURE__ */ u2(TabIcon, { icon: "about", text: "Info" }),
         content: aboutContent
       });
     }
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(LayoutMain, { children: /* @__PURE__ */ u3(TabPanels, { tabs, activeTab, prefix }) }),
-      /* @__PURE__ */ u3(LayoutFooter, { children: [
-        activeTab === "practice" && /* @__PURE__ */ u3("div", { class: "practice-zone-action", children: /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(k, { children: [
+      /* @__PURE__ */ u2(LayoutMain, { children: /* @__PURE__ */ u2(TabPanels, { tabs, activeTab, prefix }) }),
+      /* @__PURE__ */ u2(LayoutFooter, { children: [
+        activeTab === "practice" && /* @__PURE__ */ u2("div", { class: "practice-zone-action", children: /* @__PURE__ */ u2(
           StartButton,
           {
             onStart,
@@ -8906,7 +8960,7 @@ body.native-app .hint {
             label: startLabel
           }
         ) }),
-        /* @__PURE__ */ u3(
+        /* @__PURE__ */ u2(
           TabBar,
           {
             tabs,
@@ -8947,13 +9001,13 @@ body.native-app .hint {
         )?.focus();
       });
     }
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       "div",
       {
         class: "segmented-control",
         role: "radiogroup",
         "aria-labelledby": labelledBy,
-        children: options.map((opt) => /* @__PURE__ */ u3(
+        children: options.map((opt) => /* @__PURE__ */ u2(
           "button",
           {
             id: prefix + "-" + opt.value,
@@ -8974,9 +9028,9 @@ body.native-app .hint {
   var settingToggleLabelCounter = 0;
   function SettingToggle({ label, options, value, onChange }) {
     const labelId = T2(() => "stl-" + settingToggleLabelCounter++, []);
-    return /* @__PURE__ */ u3("div", { class: "settings-field", children: [
-      /* @__PURE__ */ u3(Text, { role: "label", as: "div", id: labelId, children: label }),
-      /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2("div", { class: "settings-field", children: [
+      /* @__PURE__ */ u2(Text, { role: "label", as: "div", id: labelId, children: label }),
+      /* @__PURE__ */ u2(
         SegmentedControl,
         {
           options,
@@ -9048,17 +9102,17 @@ body.native-app .hint {
     }
   }
   function TrackPill({ label }) {
-    return /* @__PURE__ */ u3(Pill, { variant: "track", children: label });
+    return /* @__PURE__ */ u2(Pill, { variant: "track", children: label });
   }
   function SkillCardHeader({ modeId, trackLabel }) {
     const name = MODE_NAMES[modeId] || modeId;
     const desc = MODE_DESCRIPTIONS[modeId] || "";
-    return /* @__PURE__ */ u3("span", { class: "skill-card-header", children: [
-      /* @__PURE__ */ u3(SkillIcon, { modeId }),
-      /* @__PURE__ */ u3("span", { class: "skill-card-header-text", children: [
-        trackLabel && /* @__PURE__ */ u3(TrackPill, { label: trackLabel }),
-        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "span", children: name }),
-        /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "span", children: desc })
+    return /* @__PURE__ */ u2("span", { class: "skill-card-header", children: [
+      /* @__PURE__ */ u2(SkillIcon, { modeId }),
+      /* @__PURE__ */ u2("span", { class: "skill-card-header-text", children: [
+        trackLabel && /* @__PURE__ */ u2(TrackPill, { label: trackLabel }),
+        /* @__PURE__ */ u2(Text, { role: "heading-section", as: "span", children: name }),
+        /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "span", children: desc })
       ] })
     ] });
   }
@@ -9073,7 +9127,7 @@ body.native-app .hint {
       },
       [modeId, onSelectMode]
     );
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       "div",
       {
         class: "home-mode-btn skill-card",
@@ -9083,7 +9137,7 @@ body.native-app .hint {
         onClick: () => onSelectMode(modeId),
         onKeyDown: handleKeyDown,
         children: [
-          /* @__PURE__ */ u3(
+          /* @__PURE__ */ u2(
             "button",
             {
               type: "button",
@@ -9097,8 +9151,8 @@ body.native-app .hint {
               children: isStarred ? "\u2605" : "\u2606"
             }
           ),
-          /* @__PURE__ */ u3(SkillCardHeader, { modeId }),
-          progress && progress.segments.length > 0 && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(GroupProgressBar, { segments: progress.segments }) })
+          /* @__PURE__ */ u2(SkillCardHeader, { modeId }),
+          progress && progress.segments.length > 0 && /* @__PURE__ */ u2("div", { class: "skill-card-progress", children: /* @__PURE__ */ u2(GroupProgressBar, { segments: progress.segments }) })
         ]
       }
     );
@@ -9122,7 +9176,7 @@ body.native-app .hint {
       },
       [modeId, onSelectMode]
     );
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       "div",
       {
         class: `home-mode-btn skill-card active-skill-card${hasRec ? " has-rec" : ""}`,
@@ -9131,8 +9185,8 @@ body.native-app .hint {
         tabIndex: 0,
         onClick: () => onSelectMode(modeId),
         onKeyDown: handleKeyDown,
-        children: /* @__PURE__ */ u3("div", { class: "skill-card-body", children: [
-          /* @__PURE__ */ u3(
+        children: /* @__PURE__ */ u2("div", { class: "skill-card-body", children: [
+          /* @__PURE__ */ u2(
             "button",
             {
               type: "button",
@@ -9146,18 +9200,18 @@ body.native-app .hint {
               children: "\u2605"
             }
           ),
-          /* @__PURE__ */ u3("span", { class: "skill-card-header", children: [
-            /* @__PURE__ */ u3(SkillIcon, { modeId }),
-            /* @__PURE__ */ u3("span", { class: "skill-card-header-text", children: [
-              /* @__PURE__ */ u3(Text, { role: "heading-section", as: "span", children: name }),
-              /* @__PURE__ */ u3(TrackPill, { label: trackLabel }),
-              hasRec && /* @__PURE__ */ u3("span", { class: "skill-rec-hint", children: [
-                /* @__PURE__ */ u3("strong", { children: rec.cueLabel }),
+          /* @__PURE__ */ u2("span", { class: "skill-card-header", children: [
+            /* @__PURE__ */ u2(SkillIcon, { modeId }),
+            /* @__PURE__ */ u2("span", { class: "skill-card-header-text", children: [
+              /* @__PURE__ */ u2(Text, { role: "heading-section", as: "span", children: name }),
+              /* @__PURE__ */ u2(TrackPill, { label: trackLabel }),
+              hasRec && /* @__PURE__ */ u2("span", { class: "skill-rec-hint", children: [
+                /* @__PURE__ */ u2("strong", { children: rec.cueLabel }),
                 rec.detail !== rec.cueLabel && (rec.detail.startsWith(rec.cueLabel) ? ` ${rec.detail.slice(rec.cueLabel.length).trimStart()}` : ` \u2014 ${rec.detail}`)
               ] })
             ] })
           ] }),
-          progress && (progress.segments.length > 0 || progress.activeGroupCount > 0) && /* @__PURE__ */ u3("div", { class: "skill-card-progress", children: /* @__PURE__ */ u3(
+          progress && (progress.segments.length > 0 || progress.activeGroupCount > 0) && /* @__PURE__ */ u2("div", { class: "skill-card-progress", children: /* @__PURE__ */ u2(
             GroupProgressBar,
             {
               segments: progress.segments.length > 0 ? progress.segments : notStartedSegments(progress.activeGroupCount)
@@ -9175,11 +9229,11 @@ body.native-app .hint {
   }
   function ActiveSkillsList({ starred, onToggleStar, onSelectMode, progress, recommendations }) {
     if (starred.size === 0) {
-      return /* @__PURE__ */ u3(Stack, { gap: "group", children: [
-        /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: "Active Skills" }),
-        /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "text-hint", children: [
+      return /* @__PURE__ */ u2(Stack, { gap: "group", children: [
+        /* @__PURE__ */ u2(Text, { role: "heading-section", as: "h2", children: "Active Skills" }),
+        /* @__PURE__ */ u2(Text, { role: "status", as: "p", class: "text-hint", children: [
           "Star the skills you want to automate in ",
-          /* @__PURE__ */ u3("strong", { children: "All Skills" }),
+          /* @__PURE__ */ u2("strong", { children: "All Skills" }),
           "."
         ] })
       ] });
@@ -9209,15 +9263,15 @@ body.native-app .hint {
     }
     const ordered = [...recommended, ...remaining];
     const allDone = recommendations.length === 0 && starred.size > 0;
-    return /* @__PURE__ */ u3(Stack, { gap: "group", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: "Active Skills" }),
-      allDone && /* @__PURE__ */ u3("p", { class: "active-skills-done", children: [
+    return /* @__PURE__ */ u2(Stack, { gap: "group", children: [
+      /* @__PURE__ */ u2(Text, { role: "heading-section", as: "h2", children: "Active Skills" }),
+      allDone && /* @__PURE__ */ u2("p", { class: "active-skills-done", children: [
         "All your starred skills are automatic. Nice work! Star new skills in",
         " ",
-        /* @__PURE__ */ u3("strong", { children: "All Skills" }),
+        /* @__PURE__ */ u2("strong", { children: "All Skills" }),
         " to keep going."
       ] }),
-      ordered.map(({ modeId, trackLabel, rec }) => /* @__PURE__ */ u3(
+      ordered.map(({ modeId, trackLabel, rec }) => /* @__PURE__ */ u2(
         ActiveSkillCard,
         {
           modeId,
@@ -9232,8 +9286,8 @@ body.native-app .hint {
     ] });
   }
   function TrackSection({ label, isExpanded, onToggle, children }) {
-    return /* @__PURE__ */ u3("div", { class: "track-accordion", children: [
-      /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2("div", { class: "track-accordion", children: [
+      /* @__PURE__ */ u2(
         "button",
         {
           type: "button",
@@ -9241,19 +9295,19 @@ body.native-app .hint {
           "aria-expanded": isExpanded,
           onClick: onToggle,
           children: [
-            /* @__PURE__ */ u3("span", { class: "track-accordion-chevron", children: isExpanded ? "\u25BE" : "\u25B8" }),
+            /* @__PURE__ */ u2("span", { class: "track-accordion-chevron", children: isExpanded ? "\u25BE" : "\u25B8" }),
             label
           ]
         }
       ),
-      isExpanded && /* @__PURE__ */ u3(Stack, { gap: "group", class: "track-accordion-body", children })
+      isExpanded && /* @__PURE__ */ u2(Stack, { gap: "group", class: "track-accordion-body", children })
     ] });
   }
   function SettingsAboutLegal({ appConfig, version }) {
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3(Section, { heading: "About", children: /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
-        appConfig.contactEmail && /* @__PURE__ */ u3("a", { class: "text-link", href: `mailto:${appConfig.contactEmail}`, children: "Contact" }),
-        appConfig.supportUrl && /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(k, { children: [
+      /* @__PURE__ */ u2(Section, { heading: "About", children: /* @__PURE__ */ u2("div", { class: "settings-link-list", children: [
+        appConfig.contactEmail && /* @__PURE__ */ u2("a", { class: "text-link", href: `mailto:${appConfig.contactEmail}`, children: "Contact" }),
+        appConfig.supportUrl && /* @__PURE__ */ u2(
           "a",
           {
             class: "text-link",
@@ -9263,13 +9317,13 @@ body.native-app .hint {
             children: "Support"
           }
         ),
-        /* @__PURE__ */ u3("span", { class: "settings-meta", children: [
+        /* @__PURE__ */ u2("span", { class: "settings-meta", children: [
           "Build ",
           version
         ] })
       ] }) }),
-      /* @__PURE__ */ u3(Section, { heading: "Legal", children: /* @__PURE__ */ u3("div", { class: "settings-link-list", children: [
-        appConfig.termsUrl && /* @__PURE__ */ u3(
+      /* @__PURE__ */ u2(Section, { heading: "Legal", children: /* @__PURE__ */ u2("div", { class: "settings-link-list", children: [
+        appConfig.termsUrl && /* @__PURE__ */ u2(
           "a",
           {
             class: "text-link",
@@ -9279,7 +9333,7 @@ body.native-app .hint {
             children: "Terms & conditions"
           }
         ),
-        appConfig.privacyUrl && /* @__PURE__ */ u3(
+        appConfig.privacyUrl && /* @__PURE__ */ u2(
           "a",
           {
             class: "text-link",
@@ -9293,8 +9347,8 @@ body.native-app .hint {
     ] });
   }
   function SettingsPanel({ settings, appConfig, version, useSolfege, setUseSolfege: setUseSolfege2, onOpenDev }) {
-    return /* @__PURE__ */ u3(Stack, { gap: "component", class: "settings-page", children: [
-      /* @__PURE__ */ u3(Section, { heading: "General", children: /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(Stack, { gap: "component", class: "settings-page", children: [
+      /* @__PURE__ */ u2(Section, { heading: "General", children: /* @__PURE__ */ u2(
         SettingToggle,
         {
           label: "Note names",
@@ -9310,22 +9364,22 @@ body.native-app .hint {
           }
         }
       ) }),
-      /* @__PURE__ */ u3(SettingsAboutLegal, { appConfig, version }),
-      onOpenDev && /* @__PURE__ */ u3(Section, { heading: "Developer", children: /* @__PURE__ */ u3("div", { class: "settings-link-list", children: /* @__PURE__ */ u3("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" }) }) })
+      /* @__PURE__ */ u2(SettingsAboutLegal, { appConfig, version }),
+      onOpenDev && /* @__PURE__ */ u2(Section, { heading: "Developer", children: /* @__PURE__ */ u2("div", { class: "settings-link-list", children: /* @__PURE__ */ u2("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" }) }) })
     ] });
   }
   function DevPage({ onClose }) {
     const [data] = d2(getDevPanelData);
-    return /* @__PURE__ */ u3(Stack, { gap: "component", class: "settings-page", children: [
-      /* @__PURE__ */ u3("div", { class: "settings-page-header", children: [
-        /* @__PURE__ */ u3(CloseButton, { ariaLabel: "Close", onClick: onClose }),
-        /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", class: "page-heading", children: "Dev" })
+    return /* @__PURE__ */ u2(Stack, { gap: "component", class: "settings-page", children: [
+      /* @__PURE__ */ u2("div", { class: "settings-page-header", children: [
+        /* @__PURE__ */ u2(CloseButton, { ariaLabel: "Close", onClick: onClose }),
+        /* @__PURE__ */ u2(Text, { role: "heading-page", as: "h1", class: "page-heading", children: "Dev" })
       ] }),
-      /* @__PURE__ */ u3(DevSection, { title: "Global", children: [
-        /* @__PURE__ */ u3(DevStatRow, { label: "Total reps", value: data.totalReps }),
-        /* @__PURE__ */ u3(DevStatRow, { label: "Days active", value: data.daysActive })
+      /* @__PURE__ */ u2(DevSection, { title: "Global", children: [
+        /* @__PURE__ */ u2(DevStatRow, { label: "Total reps", value: data.totalReps }),
+        /* @__PURE__ */ u2(DevStatRow, { label: "Days active", value: data.daysActive })
       ] }),
-      /* @__PURE__ */ u3(DevSection, { title: "Per Mode", children: /* @__PURE__ */ u3(
+      /* @__PURE__ */ u2(DevSection, { title: "Per Mode", children: /* @__PURE__ */ u2(
         DevTable,
         {
           headers: ["Mode", "Reps", "Items"],
@@ -9336,7 +9390,7 @@ body.native-app .hint {
           ])
         }
       ) }),
-      data.recentDays.length > 0 && /* @__PURE__ */ u3(DevSection, { title: "Recent Days", children: /* @__PURE__ */ u3(
+      data.recentDays.length > 0 && /* @__PURE__ */ u2(DevSection, { title: "Recent Days", children: /* @__PURE__ */ u2(
         DevTable,
         {
           headers: ["Date", "Reps"],
@@ -9346,31 +9400,31 @@ body.native-app .hint {
     ] });
   }
   function DevSection({ title, children }) {
-    return /* @__PURE__ */ u3(Section, { heading: title, children });
+    return /* @__PURE__ */ u2(Section, { heading: title, children });
   }
   function DevStatRow({ label, value }) {
-    return /* @__PURE__ */ u3("div", { class: "dev-stat-row", children: [
-      /* @__PURE__ */ u3("span", { children: label }),
-      /* @__PURE__ */ u3("span", { children: value })
+    return /* @__PURE__ */ u2("div", { class: "dev-stat-row", children: [
+      /* @__PURE__ */ u2("span", { children: label }),
+      /* @__PURE__ */ u2("span", { children: value })
     ] });
   }
   function DevTable({ headers, rows }) {
-    return /* @__PURE__ */ u3("table", { class: "dev-table", children: [
-      /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: headers.map((h3, i3) => /* @__PURE__ */ u3("th", { class: i3 > 0 ? "num" : "", children: h3 }, i3)) }) }),
-      /* @__PURE__ */ u3("tbody", { children: rows.map((row, ri) => /* @__PURE__ */ u3("tr", { children: row.map((cell, ci) => /* @__PURE__ */ u3("td", { class: ci > 0 ? "num" : "", children: cell }, ci)) }, ri)) })
+    return /* @__PURE__ */ u2("table", { class: "dev-table", children: [
+      /* @__PURE__ */ u2("thead", { children: /* @__PURE__ */ u2("tr", { children: headers.map((h3, i3) => /* @__PURE__ */ u2("th", { class: i3 > 0 ? "num" : "", children: h3 }, i3)) }) }),
+      /* @__PURE__ */ u2("tbody", { children: rows.map((row, ri) => /* @__PURE__ */ u2("tr", { children: row.map((cell, ci) => /* @__PURE__ */ u2("td", { class: ci > 0 ? "num" : "", children: cell }, ci)) }, ri)) })
     ] });
   }
   function AllSkillsList({ accordion, starred, onToggleExpand, onToggleStar, onSelectMode, progress }) {
-    return /* @__PURE__ */ u3(Stack, { gap: "group", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: "All Skills" }),
-      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "text-hint", children: "Star the skills you want to automate." }),
-      TRACKS.map((track) => /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(Stack, { gap: "group", children: [
+      /* @__PURE__ */ u2(Text, { role: "heading-section", as: "h2", children: "All Skills" }),
+      /* @__PURE__ */ u2(Text, { role: "status", as: "p", class: "text-hint", children: "Star the skills you want to automate." }),
+      TRACKS.map((track) => /* @__PURE__ */ u2(
         TrackSection,
         {
           label: track.label,
           isExpanded: accordion[track.id] !== false,
           onToggle: () => onToggleExpand(track.id),
-          children: track.skills.map((modeId) => /* @__PURE__ */ u3(
+          children: track.skills.map((modeId) => /* @__PURE__ */ u2(
             SkillCard,
             {
               modeId,
@@ -9390,94 +9444,85 @@ body.native-app .hint {
     settings: "Settings",
     about: "About"
   };
-  function HomeHeader({ isNativeApp, tab, repsToday, totalReps, daysActive }) {
+  function HomeHeader({ tab, repsToday, totalReps, daysActive }) {
     const pageTitle = TAB_TITLES[tab];
     if (pageTitle) {
-      return /* @__PURE__ */ u3("div", { class: `home-header${isNativeApp ? " native" : ""}`, children: /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h1", class: "page-heading", children: pageTitle }) });
+      return /* @__PURE__ */ u2("div", { class: "home-header", children: /* @__PURE__ */ u2(Text, { role: "heading-page", as: "h1", class: "page-heading", children: pageTitle }) });
     }
-    return /* @__PURE__ */ u3("div", { class: `home-header${isNativeApp ? " native" : ""}`, children: [
-      !isNativeApp && /* @__PURE__ */ u3(k, { children: [
-        /* @__PURE__ */ u3("h1", { class: "home-title", children: [
-          /* @__PURE__ */ u3(RepeatMark, { size: 28, class: "home-logo-mark" }),
-          "Music Reps"
-        ] }),
-        /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", class: "home-tagline", children: "Make music fundamentals automatic so you can focus on playing." })
+    return /* @__PURE__ */ u2("div", { class: "home-header", children: /* @__PURE__ */ u2(Bar, { gap: "group", class: "home-stats-bar", children: [
+      /* @__PURE__ */ u2("span", { class: "home-stat", children: [
+        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: repsToday.toLocaleString() }),
+        " today"
       ] }),
-      /* @__PURE__ */ u3(Bar, { gap: "group", class: "home-stats-bar", children: [
-        /* @__PURE__ */ u3("span", { class: "home-stat", children: [
-          /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", children: repsToday.toLocaleString() }),
-          " today"
-        ] }),
-        /* @__PURE__ */ u3("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
-        /* @__PURE__ */ u3("span", { class: "home-stat", children: [
-          /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", children: totalReps.toLocaleString() }),
-          " total"
-        ] }),
-        /* @__PURE__ */ u3("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
-        /* @__PURE__ */ u3("span", { class: "home-stat", children: [
-          /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", children: daysActive }),
-          daysActive === 1 ? " day" : " days"
-        ] })
+      /* @__PURE__ */ u2("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
+      /* @__PURE__ */ u2("span", { class: "home-stat", children: [
+        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: totalReps.toLocaleString() }),
+        " total"
+      ] }),
+      /* @__PURE__ */ u2("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
+      /* @__PURE__ */ u2("span", { class: "home-stat", children: [
+        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: daysActive }),
+        daysActive === 1 ? " day" : " days"
       ] })
-    ] });
+    ] }) });
   }
   function HomeAboutTab() {
-    return /* @__PURE__ */ u3(Stack, { gap: "component", class: "settings-page", children: [
-      /* @__PURE__ */ u3(Section, { heading: "What is Music Reps?", children: [
-        /* @__PURE__ */ u3(Text, { role: "body", as: "p", children: [
+    return /* @__PURE__ */ u2(Stack, { gap: "component", class: "settings-page", children: [
+      /* @__PURE__ */ u2(Section, { heading: "What is Music Reps?", children: [
+        /* @__PURE__ */ u2(Text, { role: "body", as: "p", children: [
           "Music Reps trains instant recall of music fundamentals, closing the gap between",
           " ",
-          /* @__PURE__ */ u3("em", { children: "\u201Cgive me a second, I know this\u201D" }),
+          /* @__PURE__ */ u2("em", { children: "\u201Cgive me a second, I know this\u201D" }),
           "\u2009 and",
           " ",
-          /* @__PURE__ */ u3("em", { children: "\u201Calready moving on.\u201D" })
+          /* @__PURE__ */ u2("em", { children: "\u201Calready moving on.\u201D" })
         ] }),
-        /* @__PURE__ */ u3(Text, { role: "body", as: "p", children: "There are likely musical skills you can do with some hesitation and mental effort: say locating the G on the B string of your guitar, or figuring out what key has 4 flats, or listing the notes in an Em7 chord. Doing reps makes them automatic, so you can focus on playing." })
+        /* @__PURE__ */ u2(Text, { role: "body", as: "p", children: "There are likely musical skills you can do with some hesitation and mental effort: say locating the G on the B string of your guitar, or figuring out what key has 4 flats, or listing the notes in an Em7 chord. Doing reps makes them automatic, so you can focus on playing." })
       ] }),
-      /* @__PURE__ */ u3(Section, { heading: "How it works", children: /* @__PURE__ */ u3("ul", { class: "home-about-list", children: [
-        /* @__PURE__ */ u3("li", { children: [
-          /* @__PURE__ */ u3("strong", { children: "Fast drills, many reps." }),
+      /* @__PURE__ */ u2(Section, { heading: "How it works", children: /* @__PURE__ */ u2("ul", { class: "home-about-list", children: [
+        /* @__PURE__ */ u2("li", { children: [
+          /* @__PURE__ */ u2("strong", { children: "Fast drills, many reps." }),
           " ",
           "Each skill asks rapid-fire questions to make the knowledge you already have automatic."
         ] }),
-        /* @__PURE__ */ u3("li", { children: [
-          /* @__PURE__ */ u3("strong", { children: "Speed is the goal." }),
+        /* @__PURE__ */ u2("li", { children: [
+          /* @__PURE__ */ u2("strong", { children: "Speed is the goal." }),
           " ",
           "When your response time drops from eight seconds to under one, you\u2019ve stopped counting and started knowing."
         ] }),
-        /* @__PURE__ */ u3("li", { children: [
-          /* @__PURE__ */ u3("strong", { children: "Spaced repetition." }),
+        /* @__PURE__ */ u2("li", { children: [
+          /* @__PURE__ */ u2("strong", { children: "Spaced repetition." }),
           " ",
           "The app focuses on what you haven\u2019t mastered and brings back material before you forget it."
         ] }),
-        /* @__PURE__ */ u3("li", { children: [
-          /* @__PURE__ */ u3("strong", { children: "No instrument needed." }),
+        /* @__PURE__ */ u2("li", { children: [
+          /* @__PURE__ */ u2("strong", { children: "No instrument needed." }),
           " ",
           "Use commuting, waiting, or any other spare minutes to advance your playing."
         ] }),
-        /* @__PURE__ */ u3("li", { children: [
-          /* @__PURE__ */ u3("strong", { children: "A few minutes at a time." }),
+        /* @__PURE__ */ u2("li", { children: [
+          /* @__PURE__ */ u2("strong", { children: "A few minutes at a time." }),
           " ",
           "Designed for short sessions \u2014 two to five minutes, a few times a day, over months and years."
         ] })
       ] }) }),
-      /* @__PURE__ */ u3(Section, { heading: "Getting started", children: /* @__PURE__ */ u3("ul", { class: "home-about-list", children: [
-        /* @__PURE__ */ u3("li", { children: [
+      /* @__PURE__ */ u2(Section, { heading: "Getting started", children: /* @__PURE__ */ u2("ul", { class: "home-about-list", children: [
+        /* @__PURE__ */ u2("li", { children: [
           "Browse ",
-          /* @__PURE__ */ u3("strong", { children: "All Skills" }),
+          /* @__PURE__ */ u2("strong", { children: "All Skills" }),
           " ",
           "to see what\u2019s available. Star the ones you want to work on."
         ] }),
-        /* @__PURE__ */ u3("li", { children: [
+        /* @__PURE__ */ u2("li", { children: [
           "Your starred skills appear on the ",
-          /* @__PURE__ */ u3("strong", { children: "Active" }),
+          /* @__PURE__ */ u2("strong", { children: "Active" }),
           " ",
           "tab with recommendations for what to practice next."
         ] }),
-        /* @__PURE__ */ u3("li", { children: [
+        /* @__PURE__ */ u2("li", { children: [
           "Track your speed and coverage in each skill\u2019s",
           " ",
-          /* @__PURE__ */ u3("strong", { children: "Progress" }),
+          /* @__PURE__ */ u2("strong", { children: "Progress" }),
           " tab."
         ] })
       ] }) })
@@ -9501,8 +9546,8 @@ body.native-app .hint {
     return [
       {
         id: "active",
-        label: /* @__PURE__ */ u3(TabIcon, { icon: "active-skills", text: "Active" }),
-        content: /* @__PURE__ */ u3(k, { children: /* @__PURE__ */ u3(
+        label: /* @__PURE__ */ u2(TabIcon, { icon: "active-skills", text: "Active" }),
+        content: /* @__PURE__ */ u2(k, { children: /* @__PURE__ */ u2(
           ActiveSkillsList,
           {
             starred,
@@ -9515,8 +9560,8 @@ body.native-app .hint {
       },
       {
         id: "all",
-        label: /* @__PURE__ */ u3(TabIcon, { icon: "all-skills", text: "All Skills" }),
-        content: /* @__PURE__ */ u3(k, { children: /* @__PURE__ */ u3(
+        label: /* @__PURE__ */ u2(TabIcon, { icon: "all-skills", text: "All Skills" }),
+        content: /* @__PURE__ */ u2(k, { children: /* @__PURE__ */ u2(
           AllSkillsList,
           {
             accordion,
@@ -9530,13 +9575,13 @@ body.native-app .hint {
       },
       {
         id: "about",
-        label: /* @__PURE__ */ u3(TabIcon, { icon: "about", text: "About" }),
-        content: /* @__PURE__ */ u3(HomeAboutTab, {})
+        label: /* @__PURE__ */ u2(TabIcon, { icon: "about", text: "About" }),
+        content: /* @__PURE__ */ u2(HomeAboutTab, {})
       },
       {
         id: "settings",
-        label: /* @__PURE__ */ u3(TabIcon, { icon: "settings", text: "Settings" }),
-        content: /* @__PURE__ */ u3(
+        label: /* @__PURE__ */ u2(TabIcon, { icon: "settings", text: "Settings" }),
+        content: /* @__PURE__ */ u2(
           SettingsPanel,
           {
             settings,
@@ -9550,7 +9595,7 @@ body.native-app .hint {
       }
     ];
   }
-  function HomeScreen({ onSelectMode, settings, appConfig, showDevLink, version, isNativeApp }) {
+  function HomeScreen({ onSelectMode, settings, appConfig, showDevLink, version }) {
     const [starred, setStarred] = d2(loadStarredSkills);
     const { progress, recommendations } = useHomeProgress(starred);
     const [accordion, setAccordion] = d2(loadAccordionState);
@@ -9596,21 +9641,20 @@ body.native-app .hint {
       onOpenDev: showDevLink ? () => setShowDev(true) : void 0
     });
     if (showDev) {
-      return /* @__PURE__ */ u3(DevPage, { onClose: () => setShowDev(false) });
+      return /* @__PURE__ */ u2(DevPage, { onClose: () => setShowDev(false) });
     }
-    return /* @__PURE__ */ u3(ScreenLayout, { class: "home-screen-layout", children: [
-      /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(ScreenLayout, { class: "home-screen-layout", children: [
+      /* @__PURE__ */ u2(LayoutHeader, { children: /* @__PURE__ */ u2(
         HomeHeader,
         {
-          isNativeApp,
           tab,
           repsToday: globalEffort.dailyReps[toLocalDateString(/* @__PURE__ */ new Date())] ?? 0,
           totalReps: globalEffort.totalReps,
           daysActive: globalEffort.daysActive
         }
       ) }),
-      /* @__PURE__ */ u3(LayoutMain, { children: /* @__PURE__ */ u3("div", { class: "home-content", children: /* @__PURE__ */ u3(TabPanels, { tabs, activeTab: tab, prefix }) }) }),
-      /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+      /* @__PURE__ */ u2(LayoutMain, { children: /* @__PURE__ */ u2("div", { class: "home-content", children: /* @__PURE__ */ u2(TabPanels, { tabs, activeTab: tab, prefix }) }) }),
+      /* @__PURE__ */ u2(LayoutFooter, { children: /* @__PURE__ */ u2(
         TabBar,
         {
           tabs,
@@ -9830,6 +9874,19 @@ body.native-app .hint {
         }
       }
     };
+  }
+
+  // src/scope-lock.ts
+  function createScopeLock() {
+    return { locked: false, snapshot: null };
+  }
+  function nextScopeLockState(prev, locked, live) {
+    if (locked === prev.locked) return prev;
+    if (locked) return { locked: true, snapshot: live };
+    return { locked: false, snapshot: null };
+  }
+  function readScope(lock, live) {
+    return lock.locked && lock.snapshot !== null ? lock.snapshot : live;
   }
 
   // src/mode-ui-state.ts
@@ -10218,7 +10275,18 @@ body.native-app .hint {
       [spec.allGroupIds, skippedGroups]
     );
     const rec = useRecommendationData(spec, activeGroupIds, notationVersion);
-    const enabledGroups = practiceMode === "suggested" && rec.suggestedScope.size > 0 ? rec.suggestedScope : customGroups;
+    const liveEnabledGroups = practiceMode === "suggested" && rec.suggestedScope.size > 0 ? rec.suggestedScope : customGroups;
+    const liveEnabledGroupsRef = A2(liveEnabledGroups);
+    liveEnabledGroupsRef.current = liveEnabledGroups;
+    const [scopeLock, setScopeLock] = d2(
+      createScopeLock
+    );
+    const setScopeLocked = q2((locked) => {
+      setScopeLock(
+        (prev) => nextScopeLockState(prev, locked, liveEnabledGroupsRef.current)
+      );
+    }, []);
+    const enabledGroups = readScope(scopeLock, liveEnabledGroups);
     const enabledItems = T2(() => {
       const items = [];
       for (const id of spec.allGroupIds) {
@@ -10254,40 +10322,41 @@ body.native-app .hint {
       practiceMode,
       setPracticeMode,
       suggestedScope: rec.suggestedScope,
-      suggestionLines: rec.suggestionLines
+      suggestionLines: rec.suggestionLines,
+      setScopeLocked
     };
   }
 
   // src/ui/practice-config.tsx
   function SkillHeader({ modeId, title, totalReps, onBack }) {
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       ScreenHeader,
       {
         title,
-        icon: modeId && /* @__PURE__ */ u3(SkillIcon, { modeId }),
+        icon: modeId && /* @__PURE__ */ u2(SkillIcon, { modeId }),
         onClose: onBack,
         closeAriaLabel: "Back to home",
-        right: totalReps != null ? /* @__PURE__ */ u3(Text, { role: "metric-effort", as: "span", class: "skill-header-reps", children: [
+        right: totalReps != null ? /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", class: "skill-header-reps", children: [
           totalReps.toLocaleString(),
-          /* @__PURE__ */ u3(RepeatMark, { size: 18, class: "skill-header-reps-icon" })
+          /* @__PURE__ */ u2(RepeatMark, { size: 18, class: "skill-header-reps-icon" })
         ] }) : void 0
       }
     );
   }
   function SuggestionLines({ lines }) {
     if (lines.length === 0) return null;
-    return /* @__PURE__ */ u3("div", { class: "suggestion-lines", children: lines.map((line, i3) => /* @__PURE__ */ u3("div", { class: "suggestion-line", children: [
-      /* @__PURE__ */ u3("span", { class: "suggestion-verb", children: line.verb }),
+    return /* @__PURE__ */ u2("div", { class: "suggestion-lines", children: lines.map((line, i3) => /* @__PURE__ */ u2("div", { class: "suggestion-line", children: [
+      /* @__PURE__ */ u2("span", { class: "suggestion-verb", children: line.verb }),
       " ",
       line.levels.join(", ")
     ] }, i3)) });
   }
   function LevelToggles({ labels, groupIds, active, onToggle }) {
-    return /* @__PURE__ */ u3(Card, { variant: "well", class: "level-toggles-section", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", class: "level-toggles-header", children: "Choose levels" }),
-      /* @__PURE__ */ u3("div", { class: "level-toggles", children: labels.map((label, i3) => {
+    return /* @__PURE__ */ u2(Card, { variant: "well", class: "level-toggles-section", children: [
+      /* @__PURE__ */ u2(Text, { role: "heading-subsection", as: "div", class: "level-toggles-header", children: "Choose levels" }),
+      /* @__PURE__ */ u2("div", { class: "level-toggles", children: labels.map((label, i3) => {
         const id = groupIds[i3];
-        return /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u2(
           "button",
           {
             type: "button",
@@ -10314,16 +10383,16 @@ body.native-app .hint {
     onToggleSkip
   }) {
     const st = status ?? "normal";
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       Card,
       {
         padding: "compact",
         class: "level-progress-card" + (st !== "normal" ? " " + st : ""),
-        children: /* @__PURE__ */ u3(Stack, { gap: "related", children: [
-          /* @__PURE__ */ u3("div", { class: "level-progress-header", children: [
-            /* @__PURE__ */ u3("span", { class: "level-progress-label", children: label }),
-            (onToggleKnown || onToggleSkip) && /* @__PURE__ */ u3("span", { class: "level-progress-actions", children: [
-              /* @__PURE__ */ u3(
+        children: /* @__PURE__ */ u2(Stack, { gap: "related", children: [
+          /* @__PURE__ */ u2("div", { class: "level-progress-header", children: [
+            /* @__PURE__ */ u2("span", { class: "level-progress-label", children: label }),
+            (onToggleKnown || onToggleSkip) && /* @__PURE__ */ u2("span", { class: "level-progress-actions", children: [
+              /* @__PURE__ */ u2(
                 "button",
                 {
                   type: "button",
@@ -10334,7 +10403,7 @@ body.native-app .hint {
                   children: "\u2713"
                 }
               ),
-              /* @__PURE__ */ u3(
+              /* @__PURE__ */ u2(
                 "button",
                 {
                   type: "button",
@@ -10347,8 +10416,8 @@ body.native-app .hint {
               )
             ] })
           ] }),
-          statusLabel && /* @__PURE__ */ u3("span", { class: "level-progress-status", children: [
-            statusColor && /* @__PURE__ */ u3(
+          statusLabel && /* @__PURE__ */ u2("span", { class: "level-progress-status", children: [
+            statusColor && /* @__PURE__ */ u2(
               "span",
               {
                 class: "level-status-swatch",
@@ -10357,8 +10426,8 @@ body.native-app .hint {
             ),
             statusLabel
           ] }),
-          pill && /* @__PURE__ */ u3("div", { class: "level-progress-pill-row", children: /* @__PURE__ */ u3(Pill, { variant: "notice", children: pill }) }),
-          /* @__PURE__ */ u3(
+          pill && /* @__PURE__ */ u2("div", { class: "level-progress-pill-row", children: /* @__PURE__ */ u2(Pill, { variant: "notice", children: pill }) }),
+          /* @__PURE__ */ u2(
             ProgressBarLabeled,
             {
               segments: colors.map((c3) => ({ color: c3, weight: 1 })),
@@ -10371,9 +10440,9 @@ body.native-app .hint {
     );
   }
   function PracticeConfig({ mode, onModeChange, suggestedContent, customContent }) {
-    return /* @__PURE__ */ u3(Stack, { gap: "group", class: "practice-config", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Practice setup" }),
-      /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(Stack, { gap: "group", class: "practice-config", children: [
+      /* @__PURE__ */ u2(Text, { role: "heading-section", children: "Practice setup" }),
+      /* @__PURE__ */ u2(
         SegmentedControl,
         {
           options: [
@@ -10405,7 +10474,7 @@ body.native-app .hint {
   function NoteButtons({ onAnswer, useFlats, hideAccidentals, narrowing, feedback, columns }) {
     const notes = hideAccidentals ? NATURAL_NOTES : NOTE_NAMES;
     const gridCls = columns === 6 ? "answer-grid answer-grid-6" : "answer-grid";
-    return /* @__PURE__ */ u3("div", { class: gridCls, children: notes.map((n2) => {
+    return /* @__PURE__ */ u2("div", { class: gridCls, children: notes.map((n2) => {
       let label;
       if (useFlats !== void 0) {
         const note = NOTES.find((x3) => x3.name === n2);
@@ -10418,7 +10487,7 @@ body.native-app .hint {
         btnCls += narrowing.has(n2) ? " kb-match" : " kb-dimmed";
       }
       btnCls += feedbackClass(feedback ?? null, n2, label);
-      return /* @__PURE__ */ u3(
+      return /* @__PURE__ */ u2(
         "button",
         {
           type: "button",
@@ -10440,7 +10509,8 @@ body.native-app .hint {
     answered,
     onAnswer,
     primaryFeedback,
-    secondaryFeedback
+    secondaryFeedback,
+    flushRef
   }) {
     const [pendingPri, setPendingPri] = d2(null);
     const [pendingSec, setPendingSec] = d2(null);
@@ -10459,6 +10529,20 @@ body.native-app .hint {
         setPendingSec(null);
       }
     }, [pendingPri, pendingSec, combine]);
+    const flushPending = q2(() => {
+      if (pendingPri && pendingSec === null) {
+        onAnswerRef.current(combine(pendingPri, ""));
+        setPendingPri(null);
+        setPendingSec(null);
+      }
+    }, [pendingPri, pendingSec, combine]);
+    y2(() => {
+      if (!flushRef) return;
+      flushRef.current = flushPending;
+      return () => {
+        flushRef.current = null;
+      };
+    }, [flushPending, flushRef]);
     const handlePri = q2((value) => {
       if (shortcut && value === shortcut.value) {
         onAnswerRef.current(shortcut.submit);
@@ -10472,8 +10556,8 @@ body.native-app .hint {
       setPendingSec((prev) => prev === value ? null : value);
     }, []);
     const isAnswered = !!answered || !!primaryFeedback || !!secondaryFeedback;
-    return /* @__PURE__ */ u3("div", { class: "answer-grid-stack", children: [
-      /* @__PURE__ */ u3("div", { class: "answer-grid", children: primaryItems.map(({ label, value }) => {
+    return /* @__PURE__ */ u2("div", { class: "answer-grid-stack", children: [
+      /* @__PURE__ */ u2("div", { class: "answer-grid", children: primaryItems.map(({ label, value }) => {
         let cls = "answer-btn";
         if (!isAnswered) {
           if (pendingPri === value) cls += " answer-btn-pending";
@@ -10483,7 +10567,7 @@ body.native-app .hint {
         if (primaryFeedback) {
           cls += feedbackClass(primaryFeedback, value, label);
         }
-        return /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u2(
           "button",
           {
             type: "button",
@@ -10496,7 +10580,7 @@ body.native-app .hint {
           value
         );
       }) }),
-      /* @__PURE__ */ u3("div", { class: "answer-grid", children: secondaryItems.map(({ label, value }) => {
+      /* @__PURE__ */ u2("div", { class: "answer-grid", children: secondaryItems.map(({ label, value }) => {
         let cls = "answer-btn";
         if (!isAnswered) {
           if (pendingSec === value) cls += " answer-btn-pending";
@@ -10506,7 +10590,7 @@ body.native-app .hint {
         if (secondaryFeedback) {
           cls += feedbackClass(secondaryFeedback, value, label);
         }
-        return /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u2(
           "button",
           {
             type: "button",
@@ -10534,29 +10618,30 @@ body.native-app .hint {
     // ♯
   ];
   var combineNote = (base, acc) => acc ? base + acc : base;
-  function SplitNoteButtons({ onAnswer, answered }) {
-    return /* @__PURE__ */ u3(
+  function SplitNoteButtons({ onAnswer, answered, flushRef }) {
+    return /* @__PURE__ */ u2(
       SplitButtons,
       {
         primaryItems: NOTE_ITEMS,
         secondaryItems: ACCIDENTAL_ITEMS,
         combine: combineNote,
         answered,
-        onAnswer
+        onAnswer,
+        flushRef
       }
     );
   }
   function NumberButtons({ start, end, onAnswer, narrowing, feedback }) {
     const nums = [];
     for (let i3 = start; i3 <= end; i3++) nums.push(i3);
-    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: nums.map((i3) => {
+    return /* @__PURE__ */ u2("div", { class: "answer-grid", children: nums.map((i3) => {
       const val = String(i3);
       let btnCls = "answer-btn";
       if (narrowing) {
         btnCls += narrowing.has(val) ? " kb-match" : " kb-dimmed";
       }
       btnCls += feedbackClass(feedback ?? null, val, val);
-      return /* @__PURE__ */ u3(
+      return /* @__PURE__ */ u2(
         "button",
         {
           type: "button",
@@ -10571,10 +10656,10 @@ body.native-app .hint {
     }) });
   }
   function IntervalButtons({ onAnswer, feedback }) {
-    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: INTERVAL_ABBREVS.map((iv) => {
+    return /* @__PURE__ */ u2("div", { class: "answer-grid", children: INTERVAL_ABBREVS.map((iv) => {
       let btnCls = "answer-btn";
       btnCls += feedbackClass(feedback ?? null, iv, iv);
-      return /* @__PURE__ */ u3(
+      return /* @__PURE__ */ u2(
         "button",
         {
           type: "button",
@@ -10626,7 +10711,7 @@ body.native-app .hint {
         displayAnswer: correct.secondary
       };
     }
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       SplitButtons,
       {
         primaryItems: KEYSIG_NUMBER_ITEMS,
@@ -10642,10 +10727,10 @@ body.native-app .hint {
     );
   }
   function DegreeButtons({ onAnswer, feedback }) {
-    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: DEGREE_LABELS.map(([val, label]) => {
+    return /* @__PURE__ */ u2("div", { class: "answer-grid", children: DEGREE_LABELS.map(([val, label]) => {
       let btnCls = "answer-btn";
       btnCls += feedbackClass(feedback ?? null, val, label);
-      return /* @__PURE__ */ u3(
+      return /* @__PURE__ */ u2(
         "button",
         {
           type: "button",
@@ -10660,10 +10745,10 @@ body.native-app .hint {
     }) });
   }
   function NumeralButtons({ onAnswer, feedback }) {
-    return /* @__PURE__ */ u3("div", { class: "answer-grid", children: ROMAN_NUMERALS.map((n2) => {
+    return /* @__PURE__ */ u2("div", { class: "answer-grid", children: ROMAN_NUMERALS.map((n2) => {
       let btnCls = "answer-btn";
       btnCls += feedbackClass(feedback ?? null, n2, n2);
-      return /* @__PURE__ */ u3(
+      return /* @__PURE__ */ u2(
         "button",
         {
           type: "button",
@@ -10685,16 +10770,16 @@ body.native-app .hint {
     else if (correct === false) extraCls += " page-action-wrong";
     let button;
     if (notice && !onNext && !onCheck) {
-      button = /* @__PURE__ */ u3("div", { class: "feedback-notice", children: notice });
+      button = /* @__PURE__ */ u2("div", { class: "feedback-notice", children: notice });
     } else if (onNext) {
-      button = /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: extraCls, onClick: onNext, children: label });
+      button = /* @__PURE__ */ u2(ActionButton, { variant: "primary", class: extraCls, onClick: onNext, children: label });
     } else if (onCheck) {
-      button = notice ? /* @__PURE__ */ u3("div", { class: "page-action-row", children: [
-        /* @__PURE__ */ u3("span", { class: "page-action-notice", children: notice }),
-        /* @__PURE__ */ u3(ActionButton, { variant: "primary", onClick: onCheck, children: "Check" })
-      ] }) : /* @__PURE__ */ u3(ActionButton, { variant: "primary", class: "next-btn", onClick: onCheck, children: "Check" });
+      button = notice ? /* @__PURE__ */ u2("div", { class: "page-action-row", children: [
+        /* @__PURE__ */ u2("span", { class: "page-action-notice", children: notice }),
+        /* @__PURE__ */ u2(ActionButton, { variant: "primary", onClick: onCheck, children: "Check" })
+      ] }) : /* @__PURE__ */ u2(ActionButton, { variant: "primary", class: "next-btn", onClick: onCheck, children: "Check" });
     } else {
-      button = /* @__PURE__ */ u3(
+      button = /* @__PURE__ */ u2(
         ActionButton,
         {
           variant: "primary",
@@ -10706,10 +10791,10 @@ body.native-app .hint {
         }
       );
     }
-    return /* @__PURE__ */ u3(k, { children: [
-      /* @__PURE__ */ u3("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
+    return /* @__PURE__ */ u2(k, { children: [
+      /* @__PURE__ */ u2("div", { class: className + " sr-only", "aria-live": "polite", children: text }),
       button,
-      /* @__PURE__ */ u3(
+      /* @__PURE__ */ u2(
         "div",
         {
           class: "hint",
@@ -10728,7 +10813,7 @@ body.native-app .hint {
   function KeyboardHint({ type }) {
     if (!type) return null;
     const text = type === "note" ? getUseSolfege() ? NOTE_HINT_SOLFEGE : NOTE_HINT_LETTER : HINT_TEXT[type];
-    return /* @__PURE__ */ u3("div", { class: "keyboard-hint", children: text });
+    return /* @__PURE__ */ u2("div", { class: "keyboard-hint", children: text });
   }
 
   // src/ui/speed-check.tsx
@@ -10754,13 +10839,13 @@ body.native-app .hint {
   var PAUSE_MS = 400;
   var WRONG_FEEDBACK_MS = 800;
   function SpeedCheckHeader({ count, onClose }) {
-    return /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(LayoutHeader, { children: /* @__PURE__ */ u2(
       ScreenHeader,
       {
         title: "Speed Check",
         onClose,
         closeAriaLabel: "Cancel speed check",
-        right: count ? /* @__PURE__ */ u3(Text, { role: "metric-info", children: count }) : void 0
+        right: count ? /* @__PURE__ */ u2(Text, { role: "metric-info", children: count }) : void 0
       }
     ) });
   }
@@ -10898,7 +10983,7 @@ body.native-app .hint {
     let cls = "answer-input";
     if (wrongFlash) cls += " answer-input-wrong answer-input-shake";
     else if (shake) cls += " answer-input-shake";
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       "input",
       {
         ref: inputRef,
@@ -10914,15 +10999,15 @@ body.native-app .hint {
     );
   }
   function SpeedCheckIntro({ title, text }) {
-    return /* @__PURE__ */ u3("div", { class: "calibration-results", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-section", as: "h2", children: title }),
-      /* @__PURE__ */ u3("p", { children: text })
+    return /* @__PURE__ */ u2("div", { class: "calibration-results", children: [
+      /* @__PURE__ */ u2(Text, { role: "heading-section", as: "h2", children: title }),
+      /* @__PURE__ */ u2("p", { children: text })
     ] });
   }
   function SpeedCheckResults({ baseline }) {
-    return /* @__PURE__ */ u3("div", { class: "calibration-results", children: [
-      /* @__PURE__ */ u3(Text, { role: "heading-page", as: "h2", children: "Speed Check Complete" }),
-      /* @__PURE__ */ u3(SpeedThresholdTable, { baseline })
+    return /* @__PURE__ */ u2("div", { class: "calibration-results", children: [
+      /* @__PURE__ */ u2(Text, { role: "heading-page", as: "h2", children: "Speed Check Complete" }),
+      /* @__PURE__ */ u2(SpeedThresholdTable, { baseline })
     ] });
   }
   function SpeedCheck({ config, onComplete, onCancel, fixture }) {
@@ -10960,16 +11045,16 @@ body.native-app .hint {
       return trials.startTrials();
     }, [fixture, phase, trials.startTrials]);
     if (phase === "intro") {
-      return /* @__PURE__ */ u3(ScreenLayout, { children: [
-        /* @__PURE__ */ u3(SpeedCheckHeader, { onClose: onCancel }),
-        /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(CenteredContent, { children: /* @__PURE__ */ u3(
+      return /* @__PURE__ */ u2(ScreenLayout, { children: [
+        /* @__PURE__ */ u2(SpeedCheckHeader, { onClose: onCancel }),
+        /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u2(CenteredContent, { children: /* @__PURE__ */ u2(
           SpeedCheckIntro,
           {
             title: config.introTitle,
             text: config.introText
           }
         ) }) }),
-        /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+        /* @__PURE__ */ u2(LayoutFooter, { children: /* @__PURE__ */ u2(
           ActionButton,
           {
             variant: "primary",
@@ -10981,43 +11066,43 @@ body.native-app .hint {
       ] });
     }
     if (phase === "running") {
-      return /* @__PURE__ */ u3(ScreenLayout, { children: [
-        /* @__PURE__ */ u3(
+      return /* @__PURE__ */ u2(ScreenLayout, { children: [
+        /* @__PURE__ */ u2(
           SpeedCheckHeader,
           {
             count: trials.trialProgress,
             onClose: onCancel
           }
         ),
-        /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(
+        /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u2(
           QuizStage,
           {
-            prompt: /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: trials.promptText }),
-            response: /* @__PURE__ */ u3(k, { children: [
-              /* @__PURE__ */ u3(
+            prompt: /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: trials.promptText }),
+            response: /* @__PURE__ */ u2(k, { children: [
+              /* @__PURE__ */ u2(
                 NoteButtons,
                 {
                   onAnswer: trials.handleTrialResponse,
                   feedback: trials.feedback
                 }
               ),
-              /* @__PURE__ */ u3(
+              /* @__PURE__ */ u2(
                 SpeedCheckInput,
                 {
                   onSubmit: trials.handleTrialResponse,
                   wrongFlash: trials.feedback?.correct === false
                 }
               ),
-              /* @__PURE__ */ u3(KeyboardHint, { type: "note" })
+              /* @__PURE__ */ u2(KeyboardHint, { type: "note" })
             ] })
           }
         ) })
       ] });
     }
-    return /* @__PURE__ */ u3(ScreenLayout, { children: [
-      /* @__PURE__ */ u3(SpeedCheckHeader, { onClose: onCancel }),
-      /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(CenteredContent, { children: /* @__PURE__ */ u3(SpeedCheckResults, { baseline }) }) }),
-      /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(ScreenLayout, { children: [
+      /* @__PURE__ */ u2(SpeedCheckHeader, { onClose: onCancel }),
+      /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u2(CenteredContent, { children: /* @__PURE__ */ u2(SpeedCheckResults, { baseline }) }) }),
+      /* @__PURE__ */ u2(LayoutFooter, { children: /* @__PURE__ */ u2(
         ActionButton,
         {
           variant: "primary",
@@ -11103,8 +11188,8 @@ body.native-app .hint {
     const tones = correctTones ?? [];
     const correctionCount = showCorrection ? Math.max(entries.length, tones.length) : 0;
     const missingCount = showCorrection ? Math.max(0, tones.length - entries.length) : 0;
-    return /* @__PURE__ */ u3(Card, { variant: "well", padding: "compact", class: "seq-slots-container seq-card", children: [
-      /* @__PURE__ */ u3("div", { class: "seq-slots", children: [
+    return /* @__PURE__ */ u2(Card, { variant: "well", padding: "compact", class: "seq-slots-container seq-card", children: [
+      /* @__PURE__ */ u2("div", { class: "seq-slots", children: [
         entries.map((entry, i3) => {
           let cls = "seq-slot";
           let content;
@@ -11115,25 +11200,25 @@ body.native-app .hint {
             content = entry.display;
             cls += " filled";
           }
-          return /* @__PURE__ */ u3("span", { class: cls, children: content }, i3);
+          return /* @__PURE__ */ u2("span", { class: cls, children: content }, i3);
         }),
         Array.from(
           { length: missingCount },
-          (_3, i3) => /* @__PURE__ */ u3("span", { class: "seq-slot", children: "\xA0" }, `m${i3}`)
+          (_3, i3) => /* @__PURE__ */ u2("span", { class: "seq-slot", children: "\xA0" }, `m${i3}`)
         ),
-        !evaluated && /* @__PURE__ */ u3("span", { class: "seq-slot seq-placeholder" })
+        !evaluated && /* @__PURE__ */ u2("span", { class: "seq-slot seq-placeholder" })
       ] }),
-      showCorrection ? /* @__PURE__ */ u3("div", { class: "seq-correct-row", children: Array.from({ length: correctionCount }, (_3, i3) => {
+      showCorrection ? /* @__PURE__ */ u2("div", { class: "seq-correct-row", children: Array.from({ length: correctionCount }, (_3, i3) => {
         const tone = tones[i3];
         const wasCorrect = evaluated && i3 < evaluated.length && evaluated[i3].correct;
-        return !tone || wasCorrect ? /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: "\xA0" }, i3) : /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: tone }, i3);
-      }) }) : /* @__PURE__ */ u3(
+        return !tone || wasCorrect ? /* @__PURE__ */ u2("span", { class: "seq-correct-note", children: "\xA0" }, i3) : /* @__PURE__ */ u2("span", { class: "seq-correct-note", children: tone }, i3);
+      }) }) : /* @__PURE__ */ u2(
         "div",
         {
           class: "seq-correct-row",
           "aria-hidden": "true",
           style: "visibility:hidden",
-          children: /* @__PURE__ */ u3("span", { class: "seq-correct-note", children: "\xA0" })
+          children: /* @__PURE__ */ u2("span", { class: "seq-correct-note", children: "\xA0" })
         }
       )
     ] });
@@ -11148,22 +11233,36 @@ body.native-app .hint {
       return fallback;
     }
   }
+  var OPEN_STRING_STROKE_WIDTH = "3.5";
+  var RING_STROKE_WIDTH = "3";
   function setCircleFill2(root, posKey, color) {
     const [s3, f4] = posKey.split("-");
     const circle = root.querySelector(
       'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
     );
-    if (circle) circle.style.fill = color;
+    if (!circle) return;
+    if (f4 === "0") {
+      circle.style.fill = "none";
+      circle.style.stroke = color;
+      circle.style.strokeWidth = OPEN_STRING_STROKE_WIDTH;
+    } else {
+      circle.style.fill = color;
+    }
   }
-  function setCircleRing(root, posKey, color) {
+  function setCircleRing(root, posKey, color, fillColor) {
     const [s3, f4] = posKey.split("-");
     const circle = root.querySelector(
       'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
     );
     if (!circle) return;
-    circle.style.fill = "none";
     circle.style.stroke = color;
-    circle.style.strokeWidth = "3";
+    if (f4 === "0") {
+      circle.style.fill = "none";
+      circle.style.strokeWidth = OPEN_STRING_STROKE_WIDTH;
+    } else {
+      circle.style.fill = fillColor;
+      circle.style.strokeWidth = RING_STROKE_WIDTH;
+    }
   }
   function clearAllCircles(root) {
     root.querySelectorAll(".fb-pos").forEach((c3) => {
@@ -11242,13 +11341,14 @@ body.native-app .hint {
       if (evaluated) {
         const colorOk = readCSSColor("--color-success", "#2e7d32");
         const colorBad = readCSSColor("--color-error", "#d32f2f");
+        const colorBadFill = readCSSColor("--color-error-bg-strong", "#f4c2c2");
         const colorMissed = readCSSColor("--color-success-reveal", "#66bb6a");
         const tappedSet = new Set(evaluated.perEntry.map((e3) => e3.positionKey));
         for (const entry of evaluated.perEntry) {
           if (entry.correct) {
             setCircleFill2(root, entry.positionKey, colorOk);
           } else {
-            setCircleRing(root, entry.positionKey, colorBad);
+            setCircleRing(root, entry.positionKey, colorBad, colorBadFill);
           }
         }
         for (const missed of evaluated.missed) {
@@ -11269,7 +11369,7 @@ body.native-app .hint {
         }
       }
     }, [tappedPositions, evaluated, svgHTML, mutedStrings, stringCount]);
-    return /* @__PURE__ */ u3("div", { class: "interactive-fretboard", children: /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2("div", { class: "interactive-fretboard", children: /* @__PURE__ */ u2(
       "div",
       {
         ref: wrapperRef,
@@ -11334,7 +11434,7 @@ body.native-app .hint {
     if (feedbackCorrect === false) cls += " answer-input-wrong";
     else if (feedbackCorrect === true) cls += " answer-input-correct";
     const label = placeholder ?? "Type answer, press Enter";
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       "input",
       {
         ref: inputRef,
@@ -11358,11 +11458,12 @@ body.native-app .hint {
     hideAccidentalsOverride,
     columnsOverride,
     feedback,
-    answered
+    answered,
+    splitFlushRef
   }) {
     switch (buttonsDef.kind) {
       case "note":
-        return /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u2(
           NoteButtons,
           {
             onAnswer,
@@ -11374,15 +11475,16 @@ body.native-app .hint {
           }
         );
       case "split-note":
-        return /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u2(
           SplitNoteButtons,
           {
             onAnswer,
-            answered
+            answered,
+            flushRef: splitFlushRef
           }
         );
       case "number":
-        return /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u2(
           NumberButtons,
           {
             start: buttonsDef.start,
@@ -11392,7 +11494,7 @@ body.native-app .hint {
           }
         );
       case "degree":
-        return /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u2(
           DegreeButtons,
           {
             onAnswer,
@@ -11400,7 +11502,7 @@ body.native-app .hint {
           }
         );
       case "numeral":
-        return /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u2(
           NumeralButtons,
           {
             onAnswer,
@@ -11408,7 +11510,7 @@ body.native-app .hint {
           }
         );
       case "interval":
-        return /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u2(
           IntervalButtons,
           {
             onAnswer,
@@ -11416,7 +11518,7 @@ body.native-app .hint {
           }
         );
       case "split-keysig":
-        return /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u2(
           SplitKeysigButtons,
           {
             onAnswer,
@@ -11436,17 +11538,18 @@ body.native-app .hint {
     seq,
     placeholder,
     promptText,
-    instruction
+    instruction,
+    splitFlushRef
   }) {
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       QuizStage,
       {
-        prompt: /* @__PURE__ */ u3(k, { children: [
-          instruction && /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
-          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText })
+        prompt: /* @__PURE__ */ u2(k, { children: [
+          instruction && /* @__PURE__ */ u2(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
+          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText })
         ] }),
-        response: /* @__PURE__ */ u3(k, { children: [
-          /* @__PURE__ */ u3(
+        response: /* @__PURE__ */ u2(k, { children: [
+          /* @__PURE__ */ u2(
             SequentialSlots,
             {
               entries: seq.entries,
@@ -11454,15 +11557,16 @@ body.native-app .hint {
               correctTones: seq.correctAnswer ? seq.correctAnswer.split(" ") : null
             }
           ),
-          /* @__PURE__ */ u3(
+          /* @__PURE__ */ u2(
             ResponseButtons,
             {
               buttonsDef: activeButtons,
               onAnswer: seq.handleInput,
-              answered: engine.state.answered
+              answered: engine.state.answered,
+              splitFlushRef
             }
           ),
-          def.sequential?.parseBatchInput && /* @__PURE__ */ u3(
+          def.sequential?.parseBatchInput && /* @__PURE__ */ u2(
             AnswerInput,
             {
               onSubmit: seq.handleBatch,
@@ -11475,13 +11579,13 @@ body.native-app .hint {
     );
   }
   function MultiTapQuizArea({ multiTapInput, promptText, instruction, stringCount, mutedStrings }) {
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       QuizStage,
       {
-        prompt: /* @__PURE__ */ u3(k, { children: [
-          instruction && /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
-          /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText }),
-          /* @__PURE__ */ u3(
+        prompt: /* @__PURE__ */ u2(k, { children: [
+          instruction && /* @__PURE__ */ u2(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
+          /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText }),
+          /* @__PURE__ */ u2(
             InteractiveFretboard,
             {
               onTap: multiTapInput.handleTap,
@@ -11508,15 +11612,15 @@ body.native-app .hint {
     lastAnswerRef,
     instruction
   }) {
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       QuizStage,
       {
-        prompt: /* @__PURE__ */ u3(k, { children: [
-          instruction && /* @__PURE__ */ u3(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
-          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u3(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText })
+        prompt: /* @__PURE__ */ u2(k, { children: [
+          instruction && /* @__PURE__ */ u2(Text, { role: "quiz-instruction", as: "div", class: "quiz-instruction", children: instruction }),
+          ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText })
         ] }),
-        response: /* @__PURE__ */ u3(k, { children: [
-          /* @__PURE__ */ u3(
+        response: /* @__PURE__ */ u2(k, { children: [
+          /* @__PURE__ */ u2(
             ResponseButtons,
             {
               buttonsDef: activeButtons,
@@ -11525,7 +11629,7 @@ body.native-app .hint {
               narrowing: ctrl.narrowing,
               hideAccidentalsOverride: ctrl.hideAccidentals,
               columnsOverride: ctrl.buttonColumns,
-              feedback: engine.state.feedbackCorrect !== null && lastAnswerRef.current ? {
+              feedback: engine.state.feedbackCorrect !== null ? lastAnswerRef.current ? {
                 correct: engine.state.feedbackCorrect,
                 userInput: toButtonValue(
                   lastAnswerRef.current.comparison,
@@ -11535,10 +11639,16 @@ body.native-app .hint {
                   lastAnswerRef.current.comparison,
                   lastAnswerRef.current.expected
                 )
+              } : {
+                // Fixture-driven feedback: engine state already holds the
+                // canonical button values (no comparison context available).
+                correct: engine.state.feedbackCorrect,
+                userInput: engine.state.feedbackUserInput ?? "",
+                displayAnswer: engine.state.feedbackDisplayAnswer ?? ""
               } : null
             }
           ),
-          /* @__PURE__ */ u3(
+          /* @__PURE__ */ u2(
             AnswerInput,
             {
               onSubmit: handleSubmit,
@@ -11547,7 +11657,7 @@ body.native-app .hint {
               feedbackCorrect: engine.state.feedbackCorrect
             }
           ),
-          /* @__PURE__ */ u3(KeyboardHint, { type: getHintType(activeButtons) })
+          /* @__PURE__ */ u2(KeyboardHint, { type: getHintType(activeButtons) })
         ] })
       }
     );
@@ -11569,10 +11679,15 @@ body.native-app .hint {
     lastAnswerRef
   }) {
     const phase = engine.state.phase;
+    const splitFlushRef = A2(null);
+    const handleCheckWithFlush = q2(() => {
+      splitFlushRef.current?.();
+      seq.handleCheck();
+    }, [seq]);
     if (phase === "round-complete") {
-      return /* @__PURE__ */ u3(ScreenLayout, { children: [
-        /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3("div", {}) }),
-        /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u3(CenteredContent, { children: /* @__PURE__ */ u3(
+      return /* @__PURE__ */ u2(ScreenLayout, { children: [
+        /* @__PURE__ */ u2(LayoutHeader, { children: /* @__PURE__ */ u2("div", {}) }),
+        /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u2(CenteredContent, { children: /* @__PURE__ */ u2(
           RoundCompleteInfo,
           {
             heading: "Round complete",
@@ -11581,7 +11696,7 @@ body.native-app .hint {
             levelBars
           }
         ) }) }),
-        /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+        /* @__PURE__ */ u2(LayoutFooter, { children: /* @__PURE__ */ u2(
           RoundCompleteActions,
           {
             onContinue: engine.continueQuiz,
@@ -11595,7 +11710,7 @@ body.native-app .hint {
       if (!def.multiTap?.getMutedStrings || !currentQ) return void 0;
       return new Set(def.multiTap.getMutedStrings(currentQ));
     }, [def, currentQ]);
-    const quizContent = def.multiTap ? /* @__PURE__ */ u3(
+    const quizContent = def.multiTap ? /* @__PURE__ */ u2(
       MultiTapQuizArea,
       {
         multiTapInput,
@@ -11604,7 +11719,7 @@ body.native-app .hint {
         stringCount: def.multiTap.stringCount,
         mutedStrings: mtMutedStrings
       }
-    ) : def.sequential ? /* @__PURE__ */ u3(
+    ) : def.sequential ? /* @__PURE__ */ u2(
       SequentialQuizArea,
       {
         def,
@@ -11615,9 +11730,10 @@ body.native-app .hint {
         seq,
         placeholder,
         promptText,
-        instruction
+        instruction,
+        splitFlushRef
       }
-    ) : /* @__PURE__ */ u3(
+    ) : /* @__PURE__ */ u2(
       StandardQuizArea,
       {
         engine,
@@ -11632,8 +11748,8 @@ body.native-app .hint {
         instruction
       }
     );
-    return /* @__PURE__ */ u3(ScreenLayout, { children: [
-      /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(ScreenLayout, { children: [
+      /* @__PURE__ */ u2(LayoutHeader, { children: /* @__PURE__ */ u2(
         QuizSession,
         {
           timeLeft: engine.timerText,
@@ -11644,8 +11760,8 @@ body.native-app .hint {
           onClose: engine.stop
         }
       ) }),
-      /* @__PURE__ */ u3(LayoutMain, { scrollable: false, children: quizContent }),
-      /* @__PURE__ */ u3(LayoutFooter, { children: /* @__PURE__ */ u3(
+      /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: quizContent }),
+      /* @__PURE__ */ u2(LayoutFooter, { children: /* @__PURE__ */ u2(
         FeedbackDisplay,
         {
           text: engine.state.feedbackText,
@@ -11653,7 +11769,7 @@ body.native-app .hint {
           hint: engine.state.hintText || void 0,
           correct: engine.state.feedbackCorrect,
           onNext: engine.state.answered ? engine.nextQuestion : void 0,
-          onCheck: !engine.state.answered ? def.sequential && !seq.evaluated && seq.entries.length > 0 ? seq.handleCheck : def.multiTap && !multiTapInput.evaluated && multiTapInput.tappedPositions.size > 0 ? multiTapInput.handleCheck : void 0 : void 0,
+          onCheck: !engine.state.answered ? def.sequential && !seq.evaluated && seq.entries.length > 0 ? handleCheckWithFlush : def.multiTap && !multiTapInput.evaluated && multiTapInput.tappedPositions.size > 0 ? multiTapInput.handleCheck : void 0 : void 0,
           label: engine.state.roundTimerExpired ? "Continue" : "Next",
           notice: engine.state.roundTimerExpired && !engine.state.answered ? "Last question" : void 0
         }
@@ -11665,24 +11781,24 @@ body.native-app .hint {
   function StatsTable({ selector, rows, fwdHeader, revHeader, fwd2Header, rev2Header }) {
     if (!rows || rows.length === 0) return null;
     const hasPair = !!(fwd2Header && rev2Header);
-    return /* @__PURE__ */ u3("table", { class: "stats-table", children: [
-      /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
-        /* @__PURE__ */ u3("th", { children: rows[0]._colHeader }),
-        /* @__PURE__ */ u3("th", { children: "#" }),
-        /* @__PURE__ */ u3("th", { children: fwdHeader }),
-        /* @__PURE__ */ u3("th", { children: revHeader }),
-        hasPair && /* @__PURE__ */ u3("th", { children: fwd2Header }),
-        hasPair && /* @__PURE__ */ u3("th", { children: rev2Header })
+    return /* @__PURE__ */ u2("table", { class: "stats-table", children: [
+      /* @__PURE__ */ u2("thead", { children: /* @__PURE__ */ u2("tr", { children: [
+        /* @__PURE__ */ u2("th", { children: rows[0]._colHeader }),
+        /* @__PURE__ */ u2("th", { children: "#" }),
+        /* @__PURE__ */ u2("th", { children: fwdHeader }),
+        /* @__PURE__ */ u2("th", { children: revHeader }),
+        hasPair && /* @__PURE__ */ u2("th", { children: fwd2Header }),
+        hasPair && /* @__PURE__ */ u2("th", { children: rev2Header })
       ] }) }),
-      /* @__PURE__ */ u3("tbody", { children: rows.map((row) => {
+      /* @__PURE__ */ u2("tbody", { children: rows.map((row) => {
         const fwdColor = getStatsCellColor(selector, row.fwdItemId);
         const revColor = getStatsCellColor(selector, row.revItemId);
-        return /* @__PURE__ */ u3("tr", { children: [
-          /* @__PURE__ */ u3("td", { children: row.label }),
-          /* @__PURE__ */ u3("td", { children: row.sublabel }),
-          /* @__PURE__ */ u3("td", { class: "stats-cell", style: { background: fwdColor } }),
-          /* @__PURE__ */ u3("td", { class: "stats-cell", style: { background: revColor } }),
-          hasPair && /* @__PURE__ */ u3(
+        return /* @__PURE__ */ u2("tr", { children: [
+          /* @__PURE__ */ u2("td", { children: row.label }),
+          /* @__PURE__ */ u2("td", { children: row.sublabel }),
+          /* @__PURE__ */ u2("td", { class: "stats-cell", style: { background: fwdColor } }),
+          /* @__PURE__ */ u2("td", { class: "stats-cell", style: { background: revColor } }),
+          hasPair && /* @__PURE__ */ u2(
             "td",
             {
               class: "stats-cell",
@@ -11694,7 +11810,7 @@ body.native-app .hint {
               }
             }
           ),
-          hasPair && /* @__PURE__ */ u3(
+          hasPair && /* @__PURE__ */ u2(
             "td",
             {
               class: "stats-cell",
@@ -11712,18 +11828,18 @@ body.native-app .hint {
   }
   function StatsGrid({ selector, colLabels, getItemId, notes }) {
     const noteList = notes || NOTES;
-    return /* @__PURE__ */ u3("table", { class: "stats-grid", children: [
-      /* @__PURE__ */ u3("thead", { children: /* @__PURE__ */ u3("tr", { children: [
-        /* @__PURE__ */ u3("th", {}),
-        colLabels.map((c3) => /* @__PURE__ */ u3("th", { children: c3 }, c3))
+    return /* @__PURE__ */ u2("table", { class: "stats-grid", children: [
+      /* @__PURE__ */ u2("thead", { children: /* @__PURE__ */ u2("tr", { children: [
+        /* @__PURE__ */ u2("th", {}),
+        colLabels.map((c3) => /* @__PURE__ */ u2("th", { children: c3 }, c3))
       ] }) }),
-      /* @__PURE__ */ u3("tbody", { children: noteList.map((note) => /* @__PURE__ */ u3("tr", { children: [
-        /* @__PURE__ */ u3("td", { class: "stats-grid-row-label", children: displayNote(note.name || note.displayName) }),
+      /* @__PURE__ */ u2("tbody", { children: noteList.map((note) => /* @__PURE__ */ u2("tr", { children: [
+        /* @__PURE__ */ u2("td", { class: "stats-grid-row-label", children: displayNote(note.name || note.displayName) }),
         colLabels.map((_3, i3) => {
           const itemId2 = getItemId(note.name, i3);
           const color = Array.isArray(itemId2) ? getStatsCellColorMerged(selector, itemId2) : getStatsCellColor(selector, itemId2);
           const light = heatmapNeedsLightText(color);
-          return /* @__PURE__ */ u3(
+          return /* @__PURE__ */ u2(
             "td",
             {
               class: "stats-cell",
@@ -11740,7 +11856,7 @@ body.native-app .hint {
   }
   function StatsLegend() {
     const html = buildStatsLegend();
-    return /* @__PURE__ */ u3("div", { dangerouslySetInnerHTML: { __html: html } });
+    return /* @__PURE__ */ u2("div", { dangerouslySetInnerHTML: { __html: html } });
   }
 
   // src/declarative/practice-views.tsx
@@ -11762,13 +11878,13 @@ body.native-app .hint {
       const g4 = groupScope.groups.find((g5) => g5.id === id);
       return g4 ? resolveGroupLabel(g4.label) : id;
     });
-    return /* @__PURE__ */ u3(k, { children: /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(k, { children: /* @__PURE__ */ u2(
       PracticeConfig,
       {
         mode: groupScopeResult.practiceMode,
         onModeChange: groupScopeResult.setPracticeMode,
-        suggestedContent: /* @__PURE__ */ u3(SuggestionLines, { lines: groupScopeResult.suggestionLines }),
-        customContent: /* @__PURE__ */ u3(
+        suggestedContent: /* @__PURE__ */ u2(SuggestionLines, { lines: groupScopeResult.suggestionLines }),
+        customContent: /* @__PURE__ */ u2(
           LevelToggles,
           {
             labels: groupLabels,
@@ -11783,7 +11899,7 @@ body.native-app .hint {
   function LevelProgressCards({ def, learner, groupScopeResult }) {
     const groupScope = def.scope.kind === "groups" ? def.scope : null;
     if (!groupScope) return null;
-    return /* @__PURE__ */ u3(Stack, { gap: "related", class: "level-progress-cards", children: groupScope.allGroupIds.map((id) => {
+    return /* @__PURE__ */ u2(Stack, { gap: "related", class: "level-progress-cards", children: groupScope.allGroupIds.map((id) => {
       const g4 = groupScope.groups.find((g5) => g5.id === id);
       const itemIds = groupScope.getItemIdsForGroup(id);
       const colors = progressBarColors(learner.selector, itemIds);
@@ -11795,7 +11911,7 @@ body.native-app .hint {
       const label = g4 ? resolveGroupLabel(
         g4.longLabel ?? g4.label
       ) : id;
-      return /* @__PURE__ */ u3(
+      return /* @__PURE__ */ u2(
         LevelProgressCard,
         {
           label,
@@ -11815,25 +11931,25 @@ body.native-app .hint {
   function AboutTab({ description, aboutDescription, beforeAfter }) {
     const beforeLines = typeof beforeAfter.before === "function" ? beforeAfter.before() : beforeAfter.before;
     const after = typeof beforeAfter.after === "function" ? beforeAfter.after() : beforeAfter.after;
-    return /* @__PURE__ */ u3(Stack, { gap: "section", class: "about-tab", children: [
-      /* @__PURE__ */ u3(Section, { heading: "What you're automating", gap: "group", children: [
-        /* @__PURE__ */ u3(Text, { role: "body-secondary", as: "p", children: description }),
-        /* @__PURE__ */ u3("div", { class: "about-columns", children: [
-          /* @__PURE__ */ u3(Card, { variant: "well", class: "about-col", children: /* @__PURE__ */ u3(Stack, { gap: "related", children: [
-            /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "Before" }),
-            beforeLines.map((line, i3) => /* @__PURE__ */ u3("p", { class: "about-col-text", children: line }, i3))
+    return /* @__PURE__ */ u2(Stack, { gap: "section", class: "about-tab", children: [
+      /* @__PURE__ */ u2(Section, { heading: "What you're automating", gap: "group", children: [
+        /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "p", children: description }),
+        /* @__PURE__ */ u2("div", { class: "about-columns", children: [
+          /* @__PURE__ */ u2(Card, { variant: "well", class: "about-col", children: /* @__PURE__ */ u2(Stack, { gap: "related", children: [
+            /* @__PURE__ */ u2(Text, { role: "heading-subsection", as: "div", children: "Before" }),
+            beforeLines.map((line, i3) => /* @__PURE__ */ u2("p", { class: "about-col-text", children: line }, i3))
           ] }) }),
-          /* @__PURE__ */ u3(Card, { class: "about-col about-col-after", children: /* @__PURE__ */ u3(Stack, { gap: "related", children: [
-            /* @__PURE__ */ u3(Text, { role: "heading-subsection", as: "div", children: "After" }),
-            /* @__PURE__ */ u3("p", { class: "about-col-text", children: after })
+          /* @__PURE__ */ u2(Card, { class: "about-col about-col-after", children: /* @__PURE__ */ u2(Stack, { gap: "related", children: [
+            /* @__PURE__ */ u2(Text, { role: "heading-subsection", as: "div", children: "After" }),
+            /* @__PURE__ */ u2("p", { class: "about-col-text", children: after })
           ] }) })
         ] })
       ] }),
-      aboutDescription && /* @__PURE__ */ u3(Section, { heading: "Why automate this?", gap: "group", children: /* @__PURE__ */ u3(Text, { role: "body", as: "p", children: aboutDescription }) }),
-      /* @__PURE__ */ u3(Text, { role: "status", as: "p", class: "text-hint", children: [
+      aboutDescription && /* @__PURE__ */ u2(Section, { heading: "Why automate this?", gap: "group", children: /* @__PURE__ */ u2(Text, { role: "body", as: "p", children: aboutDescription }) }),
+      /* @__PURE__ */ u2(Text, { role: "status", as: "p", class: "text-hint", children: [
         "Start practicing on the",
         " ",
-        /* @__PURE__ */ u3(RepeatMark, { size: 16, class: "about-tab-tip-icon" }),
+        /* @__PURE__ */ u2(RepeatMark, { size: 16, class: "about-tab-tip-icon" }),
         " tab below."
       ] })
     ] });
@@ -11851,7 +11967,7 @@ body.native-app .hint {
     const hasGroups = def.scope.kind === "groups" && groupScopeResult;
     const hasStats = def.stats.kind !== "none" || !!ctrl.renderStats;
     const customItemCount = hasGroups && groupScopeResult.practiceMode === "custom" ? groupScopeResult.enabledItems.length : null;
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       PracticeTab,
       {
         onStart: engine.start,
@@ -11862,15 +11978,15 @@ body.native-app .hint {
         scopeValid: !groupScopeResult || groupScopeResult.enabledGroups.size > 0,
         validationMessage: "Select at least one level",
         startLabel: customItemCount != null ? `Practice (${customItemCount} ${customItemCount === 1 ? "item" : "items"})` : void 0,
-        practiceContent: hasGroups ? /* @__PURE__ */ u3(
+        practiceContent: hasGroups ? /* @__PURE__ */ u2(
           GroupPracticeContent,
           {
             def,
             groupScopeResult
           }
-        ) : /* @__PURE__ */ u3(Stack, { gap: "group", class: "practice-config", children: [
-          /* @__PURE__ */ u3(Text, { role: "heading-section", children: "Recommendation" }),
-          /* @__PURE__ */ u3(
+        ) : /* @__PURE__ */ u2(Stack, { gap: "group", class: "practice-config", children: [
+          /* @__PURE__ */ u2(Text, { role: "heading-section", children: "Recommendation" }),
+          /* @__PURE__ */ u2(
             SuggestionLines,
             {
               lines: [singleLevelSuggestion(learner.selector, def.allItems)]
@@ -11878,9 +11994,9 @@ body.native-app .hint {
           )
         ] }),
         statsHeading: hasStats ? "Speed by item" : void 0,
-        statsContent: /* @__PURE__ */ u3(k, { children: [
-          ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : /* @__PURE__ */ u3(k, { children: [
-            def.stats.kind === "grid" && /* @__PURE__ */ u3(
+        statsContent: /* @__PURE__ */ u2(k, { children: [
+          ctrl.renderStats ? ctrl.renderStats(ps.statsSel) : /* @__PURE__ */ u2(k, { children: [
+            def.stats.kind === "grid" && /* @__PURE__ */ u2(
               StatsGrid,
               {
                 selector: ps.statsSel,
@@ -11889,7 +12005,7 @@ body.native-app .hint {
                 notes: def.stats.notes
               }
             ),
-            def.stats.kind === "table" && /* @__PURE__ */ u3(
+            def.stats.kind === "table" && /* @__PURE__ */ u2(
               StatsTable,
               {
                 selector: ps.statsSel,
@@ -11901,9 +12017,9 @@ body.native-app .hint {
               }
             )
           ] }),
-          hasStats && /* @__PURE__ */ u3(StatsLegend, {})
+          hasStats && /* @__PURE__ */ u2(StatsLegend, {})
         ] }),
-        progressExtra: hasGroups ? /* @__PURE__ */ u3(Section, { heading: "Level progress", gap: "group", children: /* @__PURE__ */ u3(
+        progressExtra: hasGroups ? /* @__PURE__ */ u2(Section, { heading: "Level progress", gap: "group", children: /* @__PURE__ */ u2(
           LevelProgressCards,
           {
             def,
@@ -11915,7 +12031,7 @@ body.native-app .hint {
         onCalibrate,
         activeTab: ps.activeTab,
         onTabSwitch: ps.setActiveTab,
-        aboutContent: /* @__PURE__ */ u3(
+        aboutContent: /* @__PURE__ */ u2(
           AboutTab,
           {
             description: def.description,
@@ -12914,20 +13030,6 @@ body.native-app .hint {
   }
 
   // src/declarative/generic-mode.tsx
-  function ModeHeader({ def, isIdle, totalReps, navigateHome }) {
-    if (isIdle) {
-      return /* @__PURE__ */ u3(
-        SkillHeader,
-        {
-          modeId: def.id,
-          title: def.name,
-          totalReps,
-          onBack: navigateHome
-        }
-      );
-    }
-    return /* @__PURE__ */ u3(ModeTopBar, { modeId: def.id, title: def.name, showBack: false });
-  }
   function GenericModeBody({
     def,
     engine,
@@ -12963,17 +13065,17 @@ body.native-app .hint {
       return sum;
     }, [def.allItems, learner.selector, learner.selector.version, phase]);
     if (isIdle) {
-      return /* @__PURE__ */ u3(ScreenLayout, { children: [
-        /* @__PURE__ */ u3(LayoutHeader, { children: /* @__PURE__ */ u3(
-          ModeHeader,
+      return /* @__PURE__ */ u2(ScreenLayout, { children: [
+        /* @__PURE__ */ u2(LayoutHeader, { children: /* @__PURE__ */ u2(
+          SkillHeader,
           {
-            def,
-            isIdle: true,
+            modeId: def.id,
+            title: def.name,
             totalReps,
-            navigateHome
+            onBack: navigateHome
           }
         ) }),
-        /* @__PURE__ */ u3(
+        /* @__PURE__ */ u2(
           IdlePracticeView,
           {
             def,
@@ -12989,7 +13091,7 @@ body.native-app .hint {
       ] });
     }
     if (sc.speedCheck) {
-      return /* @__PURE__ */ u3(
+      return /* @__PURE__ */ u2(
         SpeedCheck,
         {
           config: NOTE_BUTTON_CONFIG,
@@ -13002,7 +13104,7 @@ body.native-app .hint {
         }
       );
     }
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       QuizActiveView,
       {
         def,
@@ -13054,6 +13156,12 @@ body.native-app .hint {
       container
     );
     const sc = useSpeedCheckOverlay(engine, def, ctrl);
+    const enginePhase = engine.state.phase;
+    const setScopeLocked = groupScopeResult?.setScopeLocked;
+    y2(() => {
+      if (!setScopeLocked) return;
+      setScopeLocked(enginePhase !== "idle");
+    }, [enginePhase, setScopeLocked]);
     const { currentQ, round, ps, handleSubmit } = useGenericDerivedState(
       def,
       engine,
@@ -13068,7 +13176,7 @@ body.native-app .hint {
       sc.presentationPhase,
       sc.deactivateCleanup
     );
-    return /* @__PURE__ */ u3(
+    return /* @__PURE__ */ u2(
       GenericModeBody,
       {
         def,
@@ -13151,6 +13259,14 @@ body.native-app .hint {
     if (isNativeApp || simulateNative) {
       document.body.classList.add("native-app");
     }
+    if (simulateNative && !isNativeApp) {
+      document.body.classList.add("native-sim");
+    }
+    const brandRoot = document.getElementById("brand-strip");
+    if (brandRoot) {
+      brandRoot.textContent = "";
+      J(_(BrandStrip, {}), brandRoot);
+    }
     const homeRoot = document.getElementById("home-screen");
     const version = homeRoot.dataset.version || "";
     homeRoot.textContent = "";
@@ -13160,8 +13276,7 @@ body.native-app .hint {
         settings,
         appConfig: APP_CONFIG,
         showDevLink: true,
-        version,
-        isNativeApp
+        version
       }),
       homeRoot
     );
