@@ -14,8 +14,10 @@ import {
   createMemoryStorage,
   DEFAULT_CONFIG,
   deriveScaledConfig,
+  effectiveActiveCap,
   M_REVIEW,
   N_ACTIVE,
+  N_ACTIVE_EXPANDED,
   needsActiveLearning,
   needsReview,
   selectWeighted,
@@ -451,23 +453,27 @@ describe('computeBuckets', () => {
   const freshAll = () => 1;
   const unseen = () => null;
 
-  it('puts all unseen items into active, capped at N_ACTIVE', () => {
+  it('puts all unseen items into active, capped at the expanded cap when review is empty', () => {
     const items = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
     const b = computeBuckets(items, unseen, freshAll, null);
-    assert.deepEqual(b.active, ['a', 'b', 'c', 'd', 'e']);
+    // Review is empty → active cap expands to N_ACTIVE_EXPANDED (7).
+    assert.deepEqual(b.active, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
     assert.deepEqual(b.review, []);
     assert.deepEqual(b.fastFresh, []);
-    assert.equal(b.active.length, N_ACTIVE);
+    assert.equal(b.active.length, N_ACTIVE_EXPANDED);
   });
 
   it('omits overflow items — fastFresh never receives them', () => {
-    const items = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+    const items = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
     const b = computeBuckets(items, unseen, freshAll, null);
-    // f and g are unseen → would go to active but it's full → omitted
-    assert.ok(!b.fastFresh.includes('f'));
-    assert.ok(!b.fastFresh.includes('g'));
-    assert.ok(!b.review.includes('f'));
-    assert.ok(!b.review.includes('g'));
+    // With review empty the active cap is 7, so h and i overflow.
+    assert.equal(b.active.length, N_ACTIVE_EXPANDED);
+    assert.ok(!b.active.includes('h'));
+    assert.ok(!b.active.includes('i'));
+    assert.ok(!b.fastFresh.includes('h'));
+    assert.ok(!b.fastFresh.includes('i'));
+    assert.ok(!b.review.includes('h'));
+    assert.ok(!b.review.includes('i'));
   });
 
   it('skips excludeId from all buckets', () => {
@@ -532,6 +538,105 @@ describe('computeBuckets', () => {
     assert.deepEqual(b.fastFresh, ['a', 'b']);
     assert.deepEqual(b.active, []);
     assert.deepEqual(b.review, []);
+  });
+
+  // Dynamic active cap based on review bucket size. See effectiveActiveCap.
+
+  it('active cap expands to 7 when review is empty', () => {
+    // 9 unseen items, zero review → active fills to 7, last 2 overflow.
+    const items = Array.from({ length: 9 }, (_, i) => `u${i}`);
+    const b = computeBuckets(items, unseen, freshAll, null);
+    assert.equal(b.active.length, N_ACTIVE_EXPANDED);
+    assert.equal(b.review.length, 0);
+  });
+
+  it('active cap is 6 when review has 1–3 items', () => {
+    // 8 unseen/slow + 2 fast-stale → review has 2, active cap is 6.
+    // Exercises the tail-trim: single pass fills active to 7, then
+    // final review.length=2 trims active back to 6 (s6 becomes overflow).
+    const slowIds = ['s0', 's1', 's2', 's3', 's4', 's5', 's6', 's7'];
+    const staleIds = ['r0', 'r1'];
+    const items = [...slowIds, ...staleIds];
+    const speed = (id: string) => (slowIds.includes(id) ? 0.4 : 0.95);
+    const fresh = (id: string) => (slowIds.includes(id) ? 1 : 0.1);
+    const b = computeBuckets(items, speed, fresh, null);
+    assert.equal(b.review.length, 2);
+    assert.equal(b.active.length, N_ACTIVE + 1);
+    assert.deepEqual(b.active, slowIds.slice(0, 6));
+    // s6 and s7 are overflow, not in any bucket.
+    for (const id of ['s6', 's7']) {
+      assert.ok(!b.active.includes(id));
+      assert.ok(!b.review.includes(id));
+      assert.ok(!b.fastFresh.includes(id));
+    }
+  });
+
+  it('active cap is 6 when review has exactly 1 item', () => {
+    // Band boundary: review=1 should still land in the 6-cap band.
+    const slowIds = ['s0', 's1', 's2', 's3', 's4', 's5', 's6'];
+    const staleIds = ['r0'];
+    const items = [...slowIds, ...staleIds];
+    const speed = (id: string) => (slowIds.includes(id) ? 0.4 : 0.95);
+    const fresh = (id: string) => (slowIds.includes(id) ? 1 : 0.1);
+    const b = computeBuckets(items, speed, fresh, null);
+    assert.equal(b.review.length, 1);
+    assert.equal(b.active.length, N_ACTIVE + 1);
+  });
+
+  it('active cap is still 6 when review has exactly 3 items', () => {
+    const slowIds = ['s0', 's1', 's2', 's3', 's4', 's5', 's6'];
+    const staleIds = ['r0', 'r1', 'r2'];
+    const items = [...slowIds, ...staleIds];
+    const speed = (id: string) => (slowIds.includes(id) ? 0.4 : 0.95);
+    const fresh = (id: string) => (slowIds.includes(id) ? 1 : 0.1);
+    const b = computeBuckets(items, speed, fresh, null);
+    assert.equal(b.review.length, 3);
+    assert.equal(b.active.length, N_ACTIVE + 1);
+  });
+
+  it('active cap stays at 5 when review has ≥4 items', () => {
+    const slowIds = ['s0', 's1', 's2', 's3', 's4', 's5', 's6'];
+    const staleIds = ['r0', 'r1', 'r2', 'r3'];
+    const items = [...slowIds, ...staleIds];
+    const speed = (id: string) => (slowIds.includes(id) ? 0.4 : 0.95);
+    const fresh = (id: string) => (slowIds.includes(id) ? 1 : 0.1);
+    const b = computeBuckets(items, speed, fresh, null);
+    assert.equal(b.review.length, 4);
+    assert.equal(b.active.length, N_ACTIVE);
+    assert.deepEqual(b.active, slowIds.slice(0, 5));
+  });
+
+  it('dropped active items become overflow, not fastFresh', () => {
+    // 8 slow items + 4 stale → active trims from 7 down to 5; s5, s6, s7
+    // and the untouched-overflow s7 must not land in fastFresh or review.
+    const slowIds = ['s0', 's1', 's2', 's3', 's4', 's5', 's6', 's7'];
+    const staleIds = ['r0', 'r1', 'r2', 'r3'];
+    const items = [...slowIds, ...staleIds];
+    const speed = (id: string) => (slowIds.includes(id) ? 0.4 : 0.95);
+    const fresh = (id: string) => (slowIds.includes(id) ? 1 : 0.1);
+    const b = computeBuckets(items, speed, fresh, null);
+    assert.equal(b.active.length, N_ACTIVE);
+    for (const id of ['s5', 's6', 's7']) {
+      assert.ok(!b.active.includes(id));
+      assert.ok(!b.review.includes(id));
+      assert.ok(!b.fastFresh.includes(id));
+    }
+  });
+});
+
+describe('effectiveActiveCap', () => {
+  it('returns 7 when review is empty', () => {
+    assert.equal(effectiveActiveCap(0), N_ACTIVE_EXPANDED);
+  });
+  it('returns 6 for 1–3 review items', () => {
+    assert.equal(effectiveActiveCap(1), N_ACTIVE + 1);
+    assert.equal(effectiveActiveCap(2), N_ACTIVE + 1);
+    assert.equal(effectiveActiveCap(3), N_ACTIVE + 1);
+  });
+  it('returns 5 for 4+ review items', () => {
+    assert.equal(effectiveActiveCap(4), N_ACTIVE);
+    assert.equal(effectiveActiveCap(10), N_ACTIVE);
+    assert.equal(effectiveActiveCap(100), N_ACTIVE);
   });
 });
 
@@ -664,7 +769,7 @@ describe('createAdaptiveSelector', () => {
     );
   });
 
-  it('working set: only draws from first N_ACTIVE items when all unseen', () => {
+  it('working set: only draws from first N_ACTIVE_EXPANDED items when all unseen and review empty', () => {
     const storage = createMemoryStorage();
     // Deterministic RNG: first call picks bucket (use 0 to prefer active),
     // second call picks within the bucket.
@@ -679,18 +784,17 @@ describe('createAdaptiveSelector', () => {
         return r;
       },
     );
-    const items = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'];
+    const items = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'];
     const seen = new Set<string>();
     for (let i = 0; i < 30; i++) {
       const pick = selector.selectNext(items);
       seen.add(pick);
-      // Don't record a response — keep them all unseen. Because the
-      // last-selected is excluded each trial, we should see picks from
-      // the first 6 positions (active holds the first 5 non-excluded).
+      // Don't record a response — keep them all unseen. Review is empty,
+      // so the active cap expands to N_ACTIVE_EXPANDED (7). With the
+      // last-selected excluded each trial, picks come from the first 8
+      // positions (7 active + 1 excluded-last).
     }
-    // First 5 unseen items should dominate; later items only surface
-    // when one of them is the excluded lastSelected.
-    const earlyItems = items.slice(0, 6);
+    const earlyItems = items.slice(0, N_ACTIVE_EXPANDED + 1);
     for (const id of seen) {
       assert.ok(
         earlyItems.includes(id),
