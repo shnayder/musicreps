@@ -2781,6 +2781,29 @@ body.native-app .keyboard-hint,
 body.native-app .hint {
   display: none;
 }
+/* Simulate iPhone 15 Pro safe-area insets when ?native is used in a desktop
+   browser (marketing pipeline). Chromium doesn't expose real env(safe-area-
+   inset-*) values, so the device-frame overlay would otherwise cover app
+   content. Real native builds get the actual env() values and never hit
+   these rules. */
+body.native-sim {
+  --native-safe-top: 24px;
+  --native-safe-bottom: 0px;
+  box-sizing: border-box;
+  padding-top: var(--native-safe-top);
+  padding-bottom: var(--native-safe-bottom);
+  /* Pin body to the viewport so padding eats into content rather than
+     pushing the layout below the visible area. */
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+}
+/* Shrink #app to match: padding shouldn't push its content off-screen. */
+body.native-sim #app {
+  height: calc(100dvh - var(--native-safe-top) - var(--native-safe-bottom));
+  min-height: calc(100dvh - var(--native-safe-top) - var(--native-safe-bottom));
+  max-height: calc(100dvh - var(--native-safe-top) - var(--native-safe-bottom));
+}
 
 /* ==========================================================================
    19. MOBILE LAYOUT
@@ -2842,7 +2865,7 @@ body.native-app .hint {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1406"></div>
+  <div class="home-screen" id="home-screen" data-version="#1410"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -6448,16 +6471,21 @@ body.native-app .hint {
       useController: (enabledGroups) => useFretboardController(instrument, groups, enabledGroups)
     };
   }
-  function renderFretboardPrompt(q4, quizFbRef, svgHTML) {
-    const el = quizFbRef.current;
-    if (el) {
+  function FretboardPrompt({
+    q: q4,
+    svgHTML,
+    fbRef
+  }) {
+    y2(() => {
+      const el = fbRef.current;
+      if (!el) return;
       clearAll(el);
       setCircleFill(el, q4.currentString, q4.currentFret, FB_QUIZ_HL);
-    }
+    }, [q4.currentString, q4.currentFret, svgHTML]);
     return /* @__PURE__ */ u2(
       "div",
       {
-        ref: quizFbRef,
+        ref: fbRef,
         dangerouslySetInnerHTML: { __html: svgHTML }
       }
     );
@@ -6517,7 +6545,7 @@ body.native-app .hint {
       [pendingNote]
     );
     const renderPrompt = q2(
-      (q4) => renderFretboardPrompt(q4, quizFbRef, svgHTML),
+      (q4) => /* @__PURE__ */ u2(FretboardPrompt, { q: q4, svgHTML, fbRef: quizFbRef }),
       [svgHTML]
     );
     const renderStats = q2(
@@ -11601,7 +11629,7 @@ body.native-app .hint {
               narrowing: ctrl.narrowing,
               hideAccidentalsOverride: ctrl.hideAccidentals,
               columnsOverride: ctrl.buttonColumns,
-              feedback: engine.state.feedbackCorrect !== null && lastAnswerRef.current ? {
+              feedback: engine.state.feedbackCorrect !== null ? lastAnswerRef.current ? {
                 correct: engine.state.feedbackCorrect,
                 userInput: toButtonValue(
                   lastAnswerRef.current.comparison,
@@ -11611,6 +11639,12 @@ body.native-app .hint {
                   lastAnswerRef.current.comparison,
                   lastAnswerRef.current.expected
                 )
+              } : {
+                // Fixture-driven feedback: engine state already holds the
+                // canonical button values (no comparison context available).
+                correct: engine.state.feedbackCorrect,
+                userInput: engine.state.feedbackUserInput ?? "",
+                displayAnswer: engine.state.feedbackDisplayAnswer ?? ""
               } : null
             }
           ),
@@ -13224,6 +13258,9 @@ body.native-app .hint {
     const simulateNative = new URLSearchParams(globalThis.location?.search ?? "").has("native");
     if (isNativeApp || simulateNative) {
       document.body.classList.add("native-app");
+    }
+    if (simulateNative && !isNativeApp) {
+      document.body.classList.add("native-sim");
     }
     const brandRoot = document.getElementById("brand-strip");
     if (brandRoot) {
