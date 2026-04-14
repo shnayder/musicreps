@@ -1,6 +1,6 @@
 # Support
 
-Music Reps is a small one-person project. Support is best-effort but I read
+Music Reps is a one-person project at the moment. Support is best-effort but I read
 every message.
 
 ## Report a bug
@@ -23,15 +23,15 @@ feels frustrating, what's missing. Use the Contact link in Settings, or email
 
 ## Common questions
 
-### Why does the app need calibration?
+### How does the app know what fast-enough is?
 
-Music Reps measures how long it takes you to press a button on your specific
-device so that "fast enough" means the same thing regardless of hardware. It
-runs once per input type and then adapts from there.
+Each skill uses a default response time target for answers to count as automatic. If what feels automatic to you isn't
+appearing that way in the app, you can run a short speed check from a skill's Progress tab to replace the default with a
+measurement of your own input speed.
 
 ### Where is my progress stored?
 
-All progress is saved to your device's local storage. Nothing is sent to a
+All progress is saved on your device. Nothing is sent to a
 server. Uninstalling the app will delete its data.
 
 ### Does the app work offline?

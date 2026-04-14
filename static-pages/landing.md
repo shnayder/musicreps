@@ -4,17 +4,16 @@
 
 Music Reps is a fast-drill practice app for guitarists and musicians who want
 instant, automatic recall of the fundamentals — fretboard notes, intervals,
-scales, chords, key signatures. Short sessions. No account. No ads. No tracking.
+scales, chords, key signatures. Short sessions. No account. No ads.
 
 ## What you practice
 
-- **Fretboard notes** on guitar and ukulele
+- **Fretboard notes and chord shapes** on guitar and ukulele
 - **Intervals** — name ↔ semitones, interval math
 - **Keys & scales** — key signatures, scale degrees, diatonic chords
-- **Chords** — chord spelling and chord shapes
+- **Chords** — chord spelling
 
-Eleven modes in all. Practice whatever you're weakest at, or let the app pick
-for you.
+Practice whatever you're weakest at or whatever will help you most when you're playing.
 
 ## How it works
 
