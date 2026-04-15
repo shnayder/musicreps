@@ -48,6 +48,61 @@ export interface VersionManifest {
   version: string;
   sha256: string;
   timestamp: string;
+  // When true, bypass the monotonic downgrade gate. Used for emergency
+  // rollbacks — publish an older release with this flag so clients on newer
+  // builds will accept it.
+  allowDowngrade?: boolean;
+}
+
+// Parse a release version string like "#456" → 456. Anything else (dev
+// builds: "a1b2c3 my-feature", "dev", empty) returns +Infinity so it is
+// treated as "newer than any release" and never auto-downgraded.
+export function parseReleaseNum(version: string): number {
+  const m = /^#(\d+)$/.exec(version);
+  return m ? parseInt(m[1], 10) : Number.POSITIVE_INFINITY;
+}
+
+export type UpdateDecision =
+  | 'apply'
+  | 'up-to-date'
+  | 'skip-dev'
+  | 'skip-downgrade'
+  | 'skip-invalid-manifest';
+
+// Decide whether to apply an OTA update given the running version, any
+// already-downloaded-but-unapplied state version, and the manifest. The
+// "floor" is the highest release number we have locally; we only move
+// forward unless the manifest explicitly allows a downgrade.
+export function shouldApplyUpdate(
+  manifest: VersionManifest,
+  runningVersion: string,
+  stateVersion: string,
+  allowDowngradeOverride = false,
+): UpdateDecision {
+  // Manifest version must be a well-formed release number. If it isn't
+  // (corrupted JSON, legacy string, wrong CDN path), refuse to apply —
+  // otherwise +Infinity math would make the broken manifest look newer
+  // than every real release.
+  const manifestNum = parseReleaseNum(manifest.version);
+  if (!Number.isFinite(manifestNum)) return 'skip-invalid-manifest';
+
+  const runningNum = parseReleaseNum(runningVersion);
+  // Only a stateVersion that cleanly parses as a release contributes to the
+  // floor. An empty string (no OTA cached) or a garbage value (shouldn't
+  // happen in prod, but don't let a stray non-release string pin the floor
+  // at +Infinity and block all future updates) is ignored.
+  const stateNum = parseReleaseNum(stateVersion);
+  const floor = Number.isFinite(stateNum)
+    ? Math.max(runningNum, stateNum)
+    : runningNum;
+  const allowDowngrade = manifest.allowDowngrade || allowDowngradeOverride;
+  if (manifestNum === floor) return 'up-to-date';
+  if (manifestNum > floor) return 'apply';
+  if (allowDowngrade) return 'apply';
+  // Running version isn't a release build → floor is +Infinity and we'll
+  // always land here. Report it distinctly so the log is accurate.
+  if (!Number.isFinite(runningNum)) return 'skip-dev';
+  return 'skip-downgrade';
 }
 
 export interface OTAState {
@@ -78,11 +133,16 @@ export async function checkForUpdateCore(
   const manifest = await deps.fetchManifest();
   if (!manifest) return 'fetch-failed';
 
-  // 2. Compare to current version (including already-downloaded-but-not-applied)
+  // 2. Decide whether to apply: only move forward unless manifest or debug
+  //    override explicitly permits a downgrade.
   const state = await deps.getState();
-  const knownVersion = state.version || deps.getRunningVersion();
-
-  if (manifest.version === knownVersion) return 'up-to-date';
+  const decision = shouldApplyUpdate(
+    manifest,
+    deps.getRunningVersion(),
+    state.version,
+    (globalThis as any).__otaAllowDowngrade === true,
+  );
+  if (decision !== 'apply') return decision;
 
   // 3. Download index.html
   const html = await deps.fetchHtml();
@@ -159,6 +219,12 @@ async function checkForUpdate(): Promise<void> {
     const messages: Record<string, string> = {
       'fetch-failed': '[OTA] version.json fetch failed',
       'up-to-date': '[OTA] up to date',
+      'skip-dev':
+        '[OTA] running a dev build, skipping (set window.__otaAllowDowngrade to override)',
+      'skip-downgrade':
+        '[OTA] manifest is older than running build, skipping (set allowDowngrade to override)',
+      'skip-invalid-manifest':
+        '[OTA] manifest version is not a valid release (#N), refusing to apply',
       'download-failed': '[OTA] index.html download failed',
       'hash-mismatch': '[OTA] hash mismatch, discarding',
       'update-registered':
@@ -197,7 +263,10 @@ export function scheduleUpdateCheck(): void {
     }
   });
 
-  // Debug hook: window.__otaForceCheck() bypasses throttle
+  // Debug hooks:
+  //   window.__otaForceCheck()       — bypass the 1h throttle
+  //   window.__otaAllowDowngrade = true — bypass the monotonic gate
+  // Together they let a dev build pull and apply a prod OTA for testing.
   (window as any).__otaForceCheck = () => {
     lastCheckTime = 0;
     return checkForUpdate();
