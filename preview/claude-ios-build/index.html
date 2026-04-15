@@ -2865,7 +2865,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="8893f0 ios-build"></div>
+  <div class="home-screen" id="home-screen" data-version="71c662 ios-build"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -9758,10 +9758,11 @@ Build: ${version}
     return m3 ? parseInt(m3[1], 10) : Number.POSITIVE_INFINITY;
   }
   function shouldApplyUpdate(manifest, runningVersion, stateVersion, allowDowngradeOverride = false) {
+    const manifestNum = parseReleaseNum(manifest.version);
+    if (!Number.isFinite(manifestNum)) return "skip-invalid-manifest";
     const runningNum = parseReleaseNum(runningVersion);
     const stateNum = parseReleaseNum(stateVersion);
     const floor = Number.isFinite(stateNum) ? Math.max(runningNum, stateNum) : runningNum;
-    const manifestNum = parseReleaseNum(manifest.version);
     const allowDowngrade = manifest.allowDowngrade || allowDowngradeOverride;
     if (manifestNum === floor) return "up-to-date";
     if (manifestNum > floor) return "apply";
@@ -9841,6 +9842,7 @@ Build: ${version}
         "up-to-date": "[OTA] up to date",
         "skip-dev": "[OTA] running a dev build, skipping (set window.__otaAllowDowngrade to override)",
         "skip-downgrade": "[OTA] manifest is older than running build, skipping (set allowDowngrade to override)",
+        "skip-invalid-manifest": "[OTA] manifest version is not a valid release (#N), refusing to apply",
         "download-failed": "[OTA] index.html download failed",
         "hash-mismatch": "[OTA] hash mismatch, discarding",
         "update-registered": "[OTA] update registered, will apply on next restart"
