@@ -2865,7 +2865,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1428"></div>
+  <div class="home-screen" id="home-screen" data-version="#1431"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -9739,12 +9739,34 @@ Build: ${version}
     const hash = await crypto.subtle.digest("SHA-256", data);
     return Array.from(new Uint8Array(hash)).map((b2) => b2.toString(16).padStart(2, "0")).join("");
   }
+  function parseReleaseNum(version) {
+    const m3 = /^#(\d+)$/.exec(version);
+    return m3 ? parseInt(m3[1], 10) : Number.POSITIVE_INFINITY;
+  }
+  function shouldApplyUpdate(manifest, runningVersion, stateVersion, allowDowngradeOverride = false) {
+    const manifestNum = parseReleaseNum(manifest.version);
+    if (!Number.isFinite(manifestNum)) return "skip-invalid-manifest";
+    const runningNum = parseReleaseNum(runningVersion);
+    const stateNum = parseReleaseNum(stateVersion);
+    const floor = Number.isFinite(stateNum) ? Math.max(runningNum, stateNum) : runningNum;
+    const allowDowngrade = manifest.allowDowngrade || allowDowngradeOverride;
+    if (manifestNum === floor) return "up-to-date";
+    if (manifestNum > floor) return "apply";
+    if (allowDowngrade) return "apply";
+    if (!Number.isFinite(runningNum)) return "skip-dev";
+    return "skip-downgrade";
+  }
   async function checkForUpdateCore(deps) {
     const manifest = await deps.fetchManifest();
     if (!manifest) return "fetch-failed";
     const state = await deps.getState();
-    const knownVersion = state.version || deps.getRunningVersion();
-    if (manifest.version === knownVersion) return "up-to-date";
+    const decision = shouldApplyUpdate(
+      manifest,
+      deps.getRunningVersion(),
+      state.version,
+      globalThis.__otaAllowDowngrade === true
+    );
+    if (decision !== "apply") return decision;
     const html = await deps.fetchHtml();
     if (!html) return "download-failed";
     const hash = await sha256Hex(html);
@@ -9804,6 +9826,9 @@ Build: ${version}
       const messages = {
         "fetch-failed": "[OTA] version.json fetch failed",
         "up-to-date": "[OTA] up to date",
+        "skip-dev": "[OTA] running a dev build, skipping (set window.__otaAllowDowngrade to override)",
+        "skip-downgrade": "[OTA] manifest is older than running build, skipping (set allowDowngrade to override)",
+        "skip-invalid-manifest": "[OTA] manifest version is not a valid release (#N), refusing to apply",
         "download-failed": "[OTA] index.html download failed",
         "hash-mismatch": "[OTA] hash mismatch, discarding",
         "update-registered": "[OTA] update registered, will apply on next restart"
