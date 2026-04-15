@@ -66,7 +66,8 @@ export type UpdateDecision =
   | 'apply'
   | 'up-to-date'
   | 'skip-dev'
-  | 'skip-downgrade';
+  | 'skip-downgrade'
+  | 'skip-invalid-manifest';
 
 // Decide whether to apply an OTA update given the running version, any
 // already-downloaded-but-unapplied state version, and the manifest. The
@@ -78,6 +79,13 @@ export function shouldApplyUpdate(
   stateVersion: string,
   allowDowngradeOverride = false,
 ): UpdateDecision {
+  // Manifest version must be a well-formed release number. If it isn't
+  // (corrupted JSON, legacy string, wrong CDN path), refuse to apply —
+  // otherwise +Infinity math would make the broken manifest look newer
+  // than every real release.
+  const manifestNum = parseReleaseNum(manifest.version);
+  if (!Number.isFinite(manifestNum)) return 'skip-invalid-manifest';
+
   const runningNum = parseReleaseNum(runningVersion);
   // Only a stateVersion that cleanly parses as a release contributes to the
   // floor. An empty string (no OTA cached) or a garbage value (shouldn't
@@ -87,7 +95,6 @@ export function shouldApplyUpdate(
   const floor = Number.isFinite(stateNum)
     ? Math.max(runningNum, stateNum)
     : runningNum;
-  const manifestNum = parseReleaseNum(manifest.version);
   const allowDowngrade = manifest.allowDowngrade || allowDowngradeOverride;
   if (manifestNum === floor) return 'up-to-date';
   if (manifestNum > floor) return 'apply';
@@ -216,6 +223,8 @@ async function checkForUpdate(): Promise<void> {
         '[OTA] running a dev build, skipping (set window.__otaAllowDowngrade to override)',
       'skip-downgrade':
         '[OTA] manifest is older than running build, skipping (set allowDowngrade to override)',
+      'skip-invalid-manifest':
+        '[OTA] manifest version is not a valid release (#N), refusing to apply',
       'download-failed': '[OTA] index.html download failed',
       'hash-mismatch': '[OTA] hash mismatch, discarding',
       'update-registered':

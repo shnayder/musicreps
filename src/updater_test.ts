@@ -264,6 +264,30 @@ describe('shouldApplyUpdate', () => {
     );
   });
 
+  it('refuses to apply a manifest with a malformed version', () => {
+    assert.equal(
+      shouldApplyUpdate(mani('v2'), '#455', ''),
+      'skip-invalid-manifest',
+    );
+    assert.equal(
+      shouldApplyUpdate(mani('a1b2c3'), '#455', ''),
+      'skip-invalid-manifest',
+    );
+    assert.equal(
+      shouldApplyUpdate(mani(''), '#455', ''),
+      'skip-invalid-manifest',
+    );
+  });
+
+  it('refuses malformed manifest even when allowDowngrade is set', () => {
+    // A broken manifest with allowDowngrade should still be rejected —
+    // we have no way to know what version it represents.
+    assert.equal(
+      shouldApplyUpdate(mani('v2', true), '#455', ''),
+      'skip-invalid-manifest',
+    );
+  });
+
   it('ignores a garbage state version (defensive)', () => {
     // A non-release stateVersion must NOT pin the floor at +Infinity and
     // block all future updates. Fall back to the running version as floor.
