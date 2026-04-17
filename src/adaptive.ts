@@ -488,12 +488,6 @@ export function computeGroupRecommendations(
       totalCount: items.length,
     };
   });
-  results.sort((a, b) => {
-    const workDiff = (b.workingCount + b.unseenCount) -
-      (a.workingCount + a.unseenCount);
-    if (workDiff !== 0) return workDiff;
-    return a.groupId.localeCompare(b.groupId);
-  });
   return results;
 }
 
