@@ -289,9 +289,9 @@ describe('engineUpdateIdleMessage', () => {
     assert.equal(s.masteryText, '');
   });
 
-  it('mastered takes priority over needs review', () => {
+  it('review takes priority over mastered', () => {
     const s = engineUpdateIdleMessage(initialEngineState(), true, true);
-    assert.equal(s.masteryText, 'Looks like you\u2019ve got this!');
+    assert.equal(s.masteryText, 'Time to review?');
   });
 });
 
