@@ -2865,7 +2865,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1433"></div>
+  <div class="home-screen" id="home-screen" data-version="#1435"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -11918,11 +11918,11 @@ Build: ${version}
   function singleLevelSuggestion(selector, allItems2) {
     const anySeen = allItems2.some((id) => selector.getStats(id) !== null);
     if (!anySeen) return { verb: "Start", levels: [] };
-    if (selector.checkAllAutomatic(allItems2)) {
-      return { verb: "All items automatic! Practice something else", levels: [] };
-    }
     if (selector.checkNeedsReview(allItems2)) {
       return { verb: "Review", levels: [] };
+    }
+    if (selector.checkAllAutomatic(allItems2)) {
+      return { verb: "All items automatic! Practice something else", levels: [] };
     }
     return { verb: "Practice", levels: [] };
   }
@@ -12217,15 +12217,15 @@ Build: ${version}
   }
   function engineUpdateIdleMessage(state, allMastered, needsReview2) {
     if (state.phase !== "idle") return state;
+    if (needsReview2) {
+      return { ...state, masteryText: "Time to review?", showMastery: true };
+    }
     if (allMastered) {
       return {
         ...state,
         masteryText: "Looks like you\u2019ve got this!",
         showMastery: true
       };
-    }
-    if (needsReview2) {
-      return { ...state, masteryText: "Time to review?", showMastery: true };
     }
     return { ...state, masteryText: "", showMastery: false };
   }
