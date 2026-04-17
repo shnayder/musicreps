@@ -2865,7 +2865,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1431"></div>
+  <div class="home-screen" id="home-screen" data-version="#1433"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -8914,7 +8914,7 @@ body.native-sim #app {
           /* @__PURE__ */ u2("span", { class: "tab-icon-text", children: "Practice" })
         ] }),
         content: /* @__PURE__ */ u2(Stack, { gap: "region", children: [
-          hasSummary && /* @__PURE__ */ u2(Section, { heading: "Summary", children: [
+          hasSummary && /* @__PURE__ */ u2(Section, { heading: "Summary", gap: "group", children: [
             description && /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "p", children: description }),
             hasProgressBar && /* @__PURE__ */ u2(
               ProgressBarLabeled,
@@ -8933,7 +8933,7 @@ body.native-sim #app {
         id: "progress",
         label: /* @__PURE__ */ u2(TabIcon, { icon: "progress", text: "Progress" }),
         content: /* @__PURE__ */ u2(Stack, { gap: "region", children: [
-          hasProgressBar && /* @__PURE__ */ u2(Section, { heading: "Overall", children: /* @__PURE__ */ u2(
+          hasProgressBar && /* @__PURE__ */ u2(Section, { heading: "Overall", gap: "group", children: /* @__PURE__ */ u2(
             ProgressBarLabeled,
             {
               label: "Progress",
