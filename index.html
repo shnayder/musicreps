@@ -2865,7 +2865,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1435"></div>
+  <div class="home-screen" id="home-screen" data-version="#1437"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -10471,6 +10471,7 @@ Build: ${version}
               )
             ] })
           ] }),
+          pill && /* @__PURE__ */ u2("div", { class: "level-progress-pill-row", children: /* @__PURE__ */ u2(Pill, { variant: "notice", children: pill }) }),
           statusLabel && /* @__PURE__ */ u2("span", { class: "level-progress-status", children: [
             statusColor && /* @__PURE__ */ u2(
               "span",
@@ -10481,7 +10482,6 @@ Build: ${version}
             ),
             statusLabel
           ] }),
-          pill && /* @__PURE__ */ u2("div", { class: "level-progress-pill-row", children: /* @__PURE__ */ u2(Pill, { variant: "notice", children: pill }) }),
           /* @__PURE__ */ u2(
             ProgressBarLabeled,
             {
