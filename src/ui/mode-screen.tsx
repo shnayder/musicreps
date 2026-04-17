@@ -596,7 +596,7 @@ export function PracticeTab(
       content: (
         <Stack gap='region'>
           {hasSummary && (
-            <Section heading='Summary'>
+            <Section heading='Summary' gap='group'>
               {description && (
                 <Text role='body-secondary' as='p'>
                   {description}
@@ -622,7 +622,7 @@ export function PracticeTab(
       content: (
         <Stack gap='region'>
           {hasProgressBar && (
-            <Section heading='Overall'>
+            <Section heading='Overall' gap='group'>
               <ProgressBarLabeled
                 label='Progress'
                 segments={segs}
