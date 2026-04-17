@@ -172,6 +172,11 @@ export function LevelProgressCard(
             </span>
           )}
         </div>
+        {pill && (
+          <div class='level-progress-pill-row'>
+            <Pill variant='notice'>{pill}</Pill>
+          </div>
+        )}
         {statusLabel && (
           <span class='level-progress-status'>
             {statusColor && (
@@ -182,11 +187,6 @@ export function LevelProgressCard(
             )}
             {statusLabel}
           </span>
-        )}
-        {pill && (
-          <div class='level-progress-pill-row'>
-            <Pill variant='notice'>{pill}</Pill>
-          </div>
         )}
         <ProgressBarLabeled
           segments={colors.map((c) => ({ color: c, weight: 1 }))}
