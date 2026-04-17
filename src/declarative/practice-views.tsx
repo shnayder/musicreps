@@ -41,11 +41,13 @@ export function singleLevelSuggestion(
 ): SuggestionLine {
   const anySeen = allItems.some((id) => selector.getStats(id) !== null);
   if (!anySeen) return { verb: 'Start', levels: [] };
-  if (selector.checkAllAutomatic(allItems)) {
-    return { verb: 'All items automatic! Practice something else', levels: [] };
-  }
+  // Check review before automatic: stale items need review even if all are
+  // fast.  This matches the home-screen recommendation pipeline priority.
   if (selector.checkNeedsReview(allItems)) {
     return { verb: 'Review', levels: [] };
+  }
+  if (selector.checkAllAutomatic(allItems)) {
+    return { verb: 'All items automatic! Practice something else', levels: [] };
   }
   return { verb: 'Practice', levels: [] };
 }

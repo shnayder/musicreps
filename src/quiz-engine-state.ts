@@ -176,15 +176,16 @@ export function engineUpdateIdleMessage(
   needsReview: boolean,
 ): EngineState {
   if (state.phase !== 'idle') return state;
+  // Review takes priority: stale items need attention even if all are fast.
+  if (needsReview) {
+    return { ...state, masteryText: 'Time to review?', showMastery: true };
+  }
   if (allMastered) {
     return {
       ...state,
       masteryText: 'Looks like you\u2019ve got this!',
       showMastery: true,
     };
-  }
-  if (needsReview) {
-    return { ...state, masteryText: 'Time to review?', showMastery: true };
   }
   return { ...state, masteryText: '', showMastery: false };
 }

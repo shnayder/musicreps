@@ -72,10 +72,10 @@ function getSingleLevelVerb(state: RecommendationState): string {
 
   const anySeen = allItems.some((id) => selector.getStats(id) !== null);
   if (!anySeen) return 'Start';
+  if (selector.checkNeedsReview(allItems)) return 'Review';
   if (selector.checkAllAutomatic(allItems)) {
     return 'All items automatic! Practice something else';
   }
-  if (selector.checkNeedsReview(allItems)) return 'Review';
   return 'Practice';
 }
 

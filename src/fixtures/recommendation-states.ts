@@ -168,15 +168,10 @@ export const NOTE_SEMI_LEARNING: RecommendationState = {
   ]),
 };
 
-/** Items were fast but are now stale.
- *  BUG: single-level logic doesn't distinguish stale from needs-review.
- *  checkNeedsReview requires ALL items speed >= 0.5 which mixed items don't
- *  meet, and pure stale items trigger checkAllAutomatic first.
- *  Currently produces "All items automatic! Practice something else" —
- *  should produce "Review" once single-level review detection is fixed. */
+/** Items were fast but are now stale → Review. */
 export const NOTE_SEMI_SOLID_STALE: RecommendationState = {
   name: 'noteSemitones-solid-stale',
-  expectedVerbs: ['All items automatic! Practice something else'],
+  expectedVerbs: ['Review'],
   namespace: 'noteSemitones',
   kind: 'single-level',
   localStorageData: perGroupScenario('noteSemitones', [
