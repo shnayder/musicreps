@@ -2802,7 +2802,8 @@ body.native-sim #app {
   }
 
   .next-btn,
-  .start-btn {
+  .start-btn,
+  .feedback-notice {
     margin: var(--gap-group) auto var(--gap-group);
   }
 
