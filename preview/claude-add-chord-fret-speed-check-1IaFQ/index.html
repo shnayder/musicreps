@@ -2884,7 +2884,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="2c395a add-chord-fret-speed-check-1IaFQ"></div>
+  <div class="home-screen" id="home-screen" data-version="e2970e add-chord-fret-speed-check-1IaFQ"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -11234,7 +11234,8 @@ Build: ${version}
       handleTrialResponse,
       startTrials,
       setTrialProgress,
-      setPromptText
+      setPromptText,
+      setCurrentTarget
     };
   }
   function SpeedCheckInput({ onSubmit, wrongFlash }) {
@@ -11291,7 +11292,7 @@ Build: ${version}
     );
   }
   var EMPTY_POSITION_SET = /* @__PURE__ */ new Set();
-  function FretboardSpeedCheckResponse({ stringCount, targetPosition, onTap }) {
+  function FretboardSpeedCheckTarget({ stringCount, targetPosition, onTap }) {
     const fretCount = T2(() => CALIBRATION_MAX_FRET + 1, []);
     return /* @__PURE__ */ u2(
       InteractiveFretboard,
@@ -11330,6 +11331,9 @@ Build: ${version}
       if (fixture?.trialProgress) trials.setTrialProgress(fixture.trialProgress);
       if (fixture?.promptAnswer) {
         trials.setPromptText(config.trialPrompt(fixture.promptAnswer));
+        if (config.variant === "fretboard") {
+          trials.setCurrentTarget(fixture.promptAnswer);
+        }
       }
     }, [fixture]);
     y2(() => {
@@ -11373,6 +11377,7 @@ Build: ${version}
       ] });
     }
     if (phase === "running") {
+      const promptNode = /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: trials.promptText });
       return /* @__PURE__ */ u2(ScreenLayout, { children: [
         /* @__PURE__ */ u2(
           SpeedCheckHeader,
@@ -11381,18 +11386,32 @@ Build: ${version}
             onClose: onCancel
           }
         ),
-        /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u2(
+        /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: config.variant === "fretboard" ? (
+          // Fretboard in the prompt slot so the existing 70/30 CSS
+          // rule (.quiz-stage:has(.quiz-stage-prompt svg.fretboard))
+          // gives the fretboard the majority of the vertical space.
+          /* @__PURE__ */ u2(
+            QuizStage,
+            {
+              prompt: /* @__PURE__ */ u2(k, { children: [
+                promptNode,
+                /* @__PURE__ */ u2(
+                  FretboardSpeedCheckTarget,
+                  {
+                    stringCount: config.stringCount,
+                    targetPosition: trials.currentTarget,
+                    onTap: trials.handleTrialResponse
+                  }
+                )
+              ] }),
+              response: null
+            }
+          )
+        ) : /* @__PURE__ */ u2(
           QuizStage,
           {
-            prompt: /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: trials.promptText }),
-            response: config.variant === "fretboard" ? /* @__PURE__ */ u2(
-              FretboardSpeedCheckResponse,
-              {
-                stringCount: config.stringCount ?? 6,
-                targetPosition: trials.currentTarget,
-                onTap: trials.handleTrialResponse
-              }
-            ) : /* @__PURE__ */ u2(k, { children: [
+            prompt: promptNode,
+            response: /* @__PURE__ */ u2(k, { children: [
               /* @__PURE__ */ u2(
                 NoteButtons,
                 {
