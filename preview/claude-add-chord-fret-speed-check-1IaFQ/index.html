@@ -1665,21 +1665,6 @@ body.native-app .brand-strip {
 }
 .fb-pos.fb-target {
   fill: var(--color-tap-selected);
-  stroke: var(--color-tap-selected);
-  stroke-width: 2;
-  animation: fb-target-pulse 0.9s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-@keyframes fb-target-pulse {
-  0%, 100% {
-    opacity: 0.45;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.2);
-  }
 }
 .fb-tap {
   fill: transparent;
@@ -2884,7 +2869,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="e2970e add-chord-fret-speed-check-1IaFQ"></div>
+  <div class="home-screen" id="home-screen" data-version="ce21c9 add-chord-fret-speed-check-1IaFQ"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -10959,17 +10944,7 @@ Build: ${version}
       c3.style.fill = "";
       c3.style.stroke = "";
       c3.style.strokeWidth = "";
-      c3.classList.remove(TARGET_CLASS);
     });
-  }
-  var TARGET_CLASS = "fb-target";
-  function setCircleTarget(root, posKey) {
-    const [s3, f4] = posKey.split("-");
-    const circle = root.querySelector(
-      'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
-    );
-    if (!circle) return;
-    circle.classList.add(TARGET_CLASS);
   }
   var MUTE_MARKER_CLASS = "fb-mute-marker";
   function renderMuteMarkers(root, mutedStrings, sc) {
@@ -11018,7 +10993,8 @@ Build: ${version}
     stringCount = 6,
     fretCount = 13,
     mutedStrings,
-    targetPosition
+    targetPosition,
+    wrongTapPosition
   }) {
     const wrapperRef = A2(null);
     const svgHTML = T2(
@@ -11068,7 +11044,12 @@ Build: ${version}
         for (const posKey of tappedPositions) {
           setCircleFill2(root, posKey, colorSel);
         }
-        if (targetPosition) setCircleTarget(root, targetPosition);
+        if (targetPosition) setCircleFill2(root, targetPosition, colorSel);
+        if (wrongTapPosition) {
+          const colorBad = readCSSColor("--color-error", "#d32f2f");
+          const colorBadFill = readCSSColor("--color-error-bg-strong", "#f4c2c2");
+          setCircleRing(root, wrongTapPosition, colorBad, colorBadFill);
+        }
       }
     }, [
       tappedPositions,
@@ -11076,7 +11057,8 @@ Build: ${version}
       svgHTML,
       mutedStrings,
       stringCount,
-      targetPosition
+      targetPosition,
+      wrongTapPosition
     ]);
     return /* @__PURE__ */ u2("div", { class: "interactive-fretboard", children: /* @__PURE__ */ u2(
       "div",
@@ -11292,7 +11274,7 @@ Build: ${version}
     );
   }
   var EMPTY_POSITION_SET = /* @__PURE__ */ new Set();
-  function FretboardSpeedCheckTarget({ stringCount, targetPosition, onTap }) {
+  function FretboardSpeedCheckTarget({ stringCount, targetPosition, wrongTapPosition, onTap }) {
     const fretCount = T2(() => CALIBRATION_MAX_FRET + 1, []);
     return /* @__PURE__ */ u2(
       InteractiveFretboard,
@@ -11302,7 +11284,8 @@ Build: ${version}
         evaluated: null,
         stringCount,
         fretCount,
-        targetPosition
+        targetPosition,
+        wrongTapPosition
       }
     );
   }
@@ -11377,7 +11360,10 @@ Build: ${version}
       ] });
     }
     if (phase === "running") {
-      const promptNode = /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: trials.promptText });
+      const isFretboard = config.variant === "fretboard";
+      const promptContent = isFretboard ? trials.promptText || "\xA0" : trials.promptText;
+      const promptNode = /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptContent });
+      const wrongTap = trials.feedback?.correct === false ? trials.feedback.userInput : null;
       return /* @__PURE__ */ u2(ScreenLayout, { children: [
         /* @__PURE__ */ u2(
           SpeedCheckHeader,
@@ -11386,7 +11372,7 @@ Build: ${version}
             onClose: onCancel
           }
         ),
-        /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: config.variant === "fretboard" ? (
+        /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: isFretboard ? (
           // Fretboard in the prompt slot so the existing 70/30 CSS
           // rule (.quiz-stage:has(.quiz-stage-prompt svg.fretboard))
           // gives the fretboard the majority of the vertical space.
@@ -11400,6 +11386,7 @@ Build: ${version}
                   {
                     stringCount: config.stringCount,
                     targetPosition: trials.currentTarget,
+                    wrongTapPosition: wrongTap,
                     onTap: trials.handleTrialResponse
                   }
                 )
