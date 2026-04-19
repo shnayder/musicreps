@@ -145,28 +145,56 @@ export function voicingSummary(strings: StringAction[]): string {
 // Group definitions
 // ---------------------------------------------------------------------------
 
+/**
+ * Scope groups, in display order. Each entry carries:
+ *   - id: the scope group key (stored in localStorage, used for filtering)
+ *   - label: the capitalized UI label for the scope toggle
+ *   - longLabel: the full-sentence description
+ *   - shortLabel: the lowercase label used in summary lines
+ *     (e.g. "major & 7th")
+ *   - qualities: which ChordQuality values belong to this group.
+ *     The 'sus' group bundles sus2 and sus4 together — learners
+ *     typically meet them as the same concept (a suspension of the 3rd).
+ */
 export const QUALITY_GROUPS = [
-  { id: 'major', label: 'Major', longLabel: 'Major chords' },
-  { id: 'minor', label: 'Minor', longLabel: 'Minor chords' },
-  { id: 'dom7', label: '7th', longLabel: 'Dominant 7th chords' },
-  { id: 'm7', label: 'm7', longLabel: 'Minor 7th chords' },
-  { id: 'sus', label: 'sus', longLabel: 'Suspended chords' },
+  {
+    id: 'major',
+    label: 'Major',
+    longLabel: 'Major chords',
+    shortLabel: 'major',
+    qualities: ['major'] as ChordQuality[],
+  },
+  {
+    id: 'minor',
+    label: 'Minor',
+    longLabel: 'Minor chords',
+    shortLabel: 'minor',
+    qualities: ['minor'] as ChordQuality[],
+  },
+  {
+    id: 'dom7',
+    label: '7th',
+    longLabel: 'Dominant 7th chords',
+    shortLabel: '7th',
+    qualities: ['dom7'] as ChordQuality[],
+  },
+  {
+    id: 'm7',
+    label: 'm7',
+    longLabel: 'Minor 7th chords',
+    shortLabel: 'm7',
+    qualities: ['m7'] as ChordQuality[],
+  },
+  {
+    id: 'sus',
+    label: 'sus',
+    longLabel: 'Suspended chords',
+    shortLabel: 'sus',
+    qualities: ['sus2', 'sus4'] as ChordQuality[],
+  },
 ];
 
 export const ALL_GROUP_IDS: string[] = QUALITY_GROUPS.map((g) => g.id);
-
-/**
- * Which ChordQuality values belong to each scope group. The 'sus' group
- * bundles both sus2 and sus4 together — learners typically meet them as
- * the same concept (a suspension of the 3rd) and practice them together.
- */
-const GROUP_QUALITIES: Record<string, ChordQuality[]> = {
-  major: ['major'],
-  minor: ['minor'],
-  dom7: ['dom7'],
-  m7: ['m7'],
-  sus: ['sus2', 'sus4'],
-};
 
 /**
  * Circle-of-fifths root order for sorting chord voicings within a quality
@@ -182,7 +210,8 @@ export function getItemIdsForGroup(
   instrument: 'guitar' | 'ukulele',
   groupId: string,
 ): string[] {
-  const qualities = GROUP_QUALITIES[groupId] ?? [];
+  const group = QUALITY_GROUPS.find((g) => g.id === groupId);
+  const qualities = group?.qualities ?? [];
   const voicings = getVoicings(instrument).filter((v) =>
     qualities.includes(v.quality)
   );
@@ -198,16 +227,8 @@ export function getItemIdsForGroup(
 
 export function formatGroupLabel(enabledGroups: ReadonlySet<string>): string {
   if (enabledGroups.size === ALL_GROUP_IDS.length) return 'all chords';
-  const order = ['major', 'minor', 'dom7', 'm7', 'sus'];
-  const short: Record<string, string> = {
-    major: 'major',
-    minor: 'minor',
-    dom7: '7th',
-    m7: 'm7',
-    sus: 'sus',
-  };
-  return order
-    .filter((id) => enabledGroups.has(id))
-    .map((id) => short[id])
+  return QUALITY_GROUPS
+    .filter((g) => enabledGroups.has(g.id))
+    .map((g) => g.shortLabel)
     .join(' & ');
 }

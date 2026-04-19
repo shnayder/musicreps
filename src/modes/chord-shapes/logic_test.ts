@@ -309,10 +309,15 @@ function pitchClassOfNoteName(name: string): number {
   return ((pc % 12) + 12) % 12;
 }
 
-function expectedPitchClasses(v: ChordVoicing): Set<number> {
+function chordTypeFor(v: ChordVoicing) {
   const typeName = QUALITY_TO_CHORD_TYPE_NAME[v.quality];
-  const chordType = CHORD_TYPES.find((t) => t.name === typeName)!;
+  const chordType = CHORD_TYPES.find((t) => t.name === typeName);
   assert.ok(chordType, `Unknown chord type for quality ${v.quality}`);
+  return chordType;
+}
+
+function expectedPitchClasses(v: ChordVoicing): Set<number> {
+  const chordType = chordTypeFor(v);
   const rootPc = pitchClassOfNoteName(v.root);
   return new Set(chordType.intervals.map((iv) => (rootPc + iv) % 12));
 }
@@ -325,8 +330,7 @@ function expectedPitchClasses(v: ChordVoicing): Set<number> {
  * substitute), and the 7th (for 7th chords) to all be present.
  */
 function requiredPitchClasses(v: ChordVoicing): Set<number> {
-  const typeName = QUALITY_TO_CHORD_TYPE_NAME[v.quality];
-  const chordType = CHORD_TYPES.find((t) => t.name === typeName)!;
+  const chordType = chordTypeFor(v);
   const rootPc = pitchClassOfNoteName(v.root);
   return new Set(
     chordType.intervals

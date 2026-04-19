@@ -6,7 +6,9 @@
 //   number = fret to press (0 = open string)
 //   'x'    = muted / not played
 //
-// String order: index 0 = highest-pitched string, last = lowest-pitched string.
+// String order is physical (1st string to last), not pitch-ordered —
+// ukulele's re-entrant G string sounds higher than C or E but is listed
+// last by convention.
 // Guitar: [e, B, G, D, A, E]   Ukulele: [A, E, C, G]
 
 export type StringAction = number | 'x';
