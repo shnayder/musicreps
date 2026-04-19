@@ -5,6 +5,7 @@
 import type { Instrument } from '../../types.ts';
 import { NATURAL_NOTES, noteMatchesInput, NOTES } from '../../music-data.ts';
 import { createFretboardHelpers } from '../../quiz-fretboard-state.ts';
+import type { QuestionContext } from '../../declarative/types.ts';
 
 // ---------------------------------------------------------------------------
 // Group definition types
@@ -149,7 +150,7 @@ export type Question = {
 export function getQuestion(
   instrument: Instrument,
   itemId: string,
-  ctx?: { useFlats: boolean },
+  ctx?: QuestionContext,
 ): Question {
   const fb = getHelpers(instrument);
   const base = fb.parseFretboardItem(itemId);
