@@ -165,8 +165,8 @@ algorithm details, and step-by-step "adding a new quiz mode" checklist.
 | Scale Degrees        | 144 (12 keys x 6 degrees x 2 dirs) | Note or degree          | `D:5:fwd`, `C:7:rev`   |
 | Diatonic Chords      | 168 (12 keys x 7 degrees x 2 dirs) | Note or numeral         | `Bb:IV:fwd`, `C:D:rev` |
 | Chord Spelling       | ~132 (12 roots x chord types)      | Sequential notes        | `C:major`, `F#:dim`    |
-| Guitar Chord Shapes  | 15 (6 maj + 3 min + 6 dom7)        | Multi-tap fretboard     | `C:major`, `A:dom7`    |
-| Ukulele Chord Shapes | 13 (6 maj + 3 min + 4 dom7)        | Multi-tap fretboard     | `C:major`, `G:dom7`    |
+| Guitar Chord Shapes  | 29 (maj, min, dom7, m7, sus)       | Multi-tap fretboard     | `C:major`, `D:sus4`    |
+| Ukulele Chord Shapes | 26 (maj, min, dom7, m7, sus)       | Multi-tap fretboard     | `C:major`, `A:m7`      |
 
 Bidirectional modes track each direction as a separate item.
 

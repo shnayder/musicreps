@@ -74,8 +74,8 @@ describe('MODE_PROGRESS_MANIFEST', () => {
       diatonicChords: 3, // chord groups
       chordSpelling: 7, // spelling groups (groups 0-6)
       speedTap: 2, // naturals, sharps/flats
-      guitarChordShapes: 3, // major, minor, dom7
-      ukuleleChordShapes: 3, // major, minor, dom7
+      guitarChordShapes: 5, // major, minor, dom7, m7, sus
+      ukuleleChordShapes: 5, // major, minor, dom7, m7, sus
     };
 
     for (const entry of MODE_PROGRESS_MANIFEST) {
