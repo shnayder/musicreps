@@ -327,6 +327,7 @@ export function IdlePracticeView<Q>(
         )
         : undefined}
       baseline={onCalibrate ? learner.motorBaseline : undefined}
+      motorTaskType={def.motorTaskType}
       onCalibrate={onCalibrate}
       activeTab={ps.activeTab}
       onTabSwitch={ps.setActiveTab}

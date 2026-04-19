@@ -18,7 +18,11 @@ import { useGroupScope } from '../hooks/use-group-scope.ts';
 
 import { LayoutHeader, ScreenLayout } from '../ui/screen-layout.tsx';
 import { SkillHeader } from '../ui/practice-config.tsx';
-import { NOTE_BUTTON_CONFIG, SpeedCheck } from '../ui/speed-check.tsx';
+import {
+  makeFretboardTapConfig,
+  NOTE_BUTTON_CONFIG,
+  SpeedCheck,
+} from '../ui/speed-check.tsx';
 import type { ModeDefinition } from './types.ts';
 import { getInputPlaceholder } from './answer-utils.ts';
 import { QuizActiveView } from './quiz-areas.tsx';
@@ -107,9 +111,12 @@ function GenericModeBody<Q>(
   }
 
   if (sc.speedCheck) {
+    const speedCheckConfig = def.motorTaskType === 'fretboard-tap'
+      ? makeFretboardTapConfig(def.multiTap?.stringCount ?? 6)
+      : NOTE_BUTTON_CONFIG;
     return (
       <SpeedCheck
-        config={NOTE_BUTTON_CONFIG}
+        config={speedCheckConfig}
         fixture={typeof sc.speedCheck === 'object' ? sc.speedCheck : undefined}
         onComplete={(baseline) => {
           learner.applyBaseline(baseline);

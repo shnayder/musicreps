@@ -88,7 +88,19 @@ function clearAllCircles(root: HTMLElement): void {
     c.style.fill = '';
     c.style.stroke = '';
     c.style.strokeWidth = '';
+    c.classList.remove(TARGET_CLASS);
   });
+}
+
+const TARGET_CLASS = 'fb-target';
+
+function setCircleTarget(root: HTMLElement, posKey: string): void {
+  const [s, f] = posKey.split('-');
+  const circle = root.querySelector(
+    'circle.fb-pos[data-string="' + s + '"][data-fret="' + f + '"]',
+  ) as SVGElement | null;
+  if (!circle) return;
+  circle.classList.add(TARGET_CLASS);
 }
 
 // ---------------------------------------------------------------------------
@@ -108,6 +120,9 @@ type InteractiveFretboardProps = {
   fretCount?: number;
   /** String indices to mark as muted (X above nut). Shown only after evaluation. */
   mutedStrings?: ReadonlySet<number>;
+  /** Optional "string-fret" key to visually highlight as a target prompt
+   *  (used by the fretboard speed check). Pulses to draw attention. */
+  targetPosition?: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -170,6 +185,7 @@ export function InteractiveFretboard(
     stringCount = 6,
     fretCount = 13,
     mutedStrings,
+    targetPosition,
   }: InteractiveFretboardProps,
 ) {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -232,8 +248,18 @@ export function InteractiveFretboard(
       for (const posKey of tappedPositions) {
         setCircleFill(root, posKey, colorSel);
       }
+      // Speed-check target prompt: pulse the target fret. Styled in CSS
+      // via the .fb-target class on the .fb-pos circle.
+      if (targetPosition) setCircleTarget(root, targetPosition);
     }
-  }, [tappedPositions, evaluated, svgHTML, mutedStrings, stringCount]);
+  }, [
+    tappedPositions,
+    evaluated,
+    svgHTML,
+    mutedStrings,
+    stringCount,
+    targetPosition,
+  ]);
 
   return (
     <div class='interactive-fretboard'>

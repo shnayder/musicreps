@@ -384,3 +384,27 @@ export function pickCalibrationNote(
   } while (note === prevNote && pool.length > 1);
   return note;
 }
+
+/** Inclusive upper fret bound for fretboard-tap calibration (frets 0..6). */
+export const CALIBRATION_MAX_FRET = 6;
+
+/**
+ * Pick a random fretboard position for calibration trials.
+ * Uniform over string x fret in [0..stringCount) x [0..CALIBRATION_MAX_FRET].
+ * No consecutive repeats. Returns a "string-fret" position key.
+ */
+export function pickCalibrationFretPosition(
+  prevKey: string | null,
+  stringCount: number,
+  rng?: () => number,
+): string {
+  const rand = rng || Math.random;
+  const fretRange = CALIBRATION_MAX_FRET + 1;
+  let key: string;
+  do {
+    const s = Math.floor(rand() * stringCount);
+    const f = Math.floor(rand() * fretRange);
+    key = s + '-' + f;
+  } while (key === prevKey && stringCount * fretRange > 1);
+  return key;
+}
