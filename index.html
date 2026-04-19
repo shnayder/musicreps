@@ -1663,6 +1663,9 @@ body.native-app .brand-strip {
   transition: fill var(--duration-base);
   pointer-events: all;
 }
+.fb-pos.fb-target {
+  fill: var(--color-tap-selected);
+}
 .fb-tap {
   fill: transparent;
   stroke: none;
@@ -2866,7 +2869,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1442"></div>
+  <div class="home-screen" id="home-screen" data-version="#1447"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -4733,6 +4736,18 @@ body.native-sim #app {
       note = pool[Math.floor(rand() * pool.length)];
     } while (note === prevNote && pool.length > 1);
     return note;
+  }
+  var CALIBRATION_MAX_FRET = 6;
+  function pickCalibrationFretPosition(prevKey, stringCount, rng) {
+    const rand = rng || Math.random;
+    const fretRange = CALIBRATION_MAX_FRET + 1;
+    let key;
+    do {
+      const s3 = Math.floor(rand() * stringCount);
+      const f4 = Math.floor(rand() * fretRange);
+      key = s3 + "-" + f4;
+    } while (key === prevKey && stringCount * fretRange > 1);
+    return key;
   }
 
   // node_modules/.deno/preact@10.28.4/node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
@@ -8950,13 +8965,17 @@ body.native-sim #app {
       /* @__PURE__ */ u2("span", { class: "tab-icon-text", children: text })
     ] });
   }
-  function BaselineInfo({ baseline, onRun }) {
+  function baselineMetricLabel(motorTaskType) {
+    if (motorTaskType === "fretboard-tap") return "Response time for fret tap";
+    return "Response time for note input";
+  }
+  function BaselineInfo({ baseline, onRun, motorTaskType }) {
     const value = baseline ? (baseline / 1e3).toFixed(1) + "s" : "1s";
     const tag = baseline ? null : /* @__PURE__ */ u2(Text, { role: "supporting", class: "baseline-default-tag", children: "(default)" });
     const btnLabel = baseline ? "Redo speed check" : "Run speed check";
     return /* @__PURE__ */ u2("div", { class: "baseline-info", children: [
       /* @__PURE__ */ u2("div", { class: "baseline-metric", children: [
-        /* @__PURE__ */ u2(Text, { role: "label", children: "Response time for note input" }),
+        /* @__PURE__ */ u2(Text, { role: "label", children: baselineMetricLabel(motorTaskType) }),
         /* @__PURE__ */ u2(Text, { role: "metric-primary", children: [
           value,
           tag && /* @__PURE__ */ u2(k, { children: [
@@ -8984,6 +9003,7 @@ body.native-sim #app {
     statsHeading,
     onCalibrate,
     baseline,
+    motorTaskType,
     activeTab,
     onTabSwitch,
     scopeValid,
@@ -9043,7 +9063,14 @@ body.native-sim #app {
           progressExtra,
           statsHeading && /* @__PURE__ */ u2(Section, { heading: statsHeading, gap: "group", children: /* @__PURE__ */ u2("div", { class: "stats-container", children: statsContent }) }),
           !statsHeading && /* @__PURE__ */ u2("div", { class: "stats-container", children: statsContent }),
-          onCalibrate && /* @__PURE__ */ u2(Section, { heading: "Speed check", gap: "group", children: /* @__PURE__ */ u2(BaselineInfo, { baseline: baseline ?? null, onRun: onCalibrate }) })
+          onCalibrate && /* @__PURE__ */ u2(Section, { heading: "Speed check", gap: "group", children: /* @__PURE__ */ u2(
+            BaselineInfo,
+            {
+              baseline: baseline ?? null,
+              onRun: onCalibrate,
+              motorTaskType
+            }
+          ) })
         ] })
       }
     ];
@@ -10969,6 +10996,177 @@ Build: ${version}
     return /* @__PURE__ */ u2("div", { class: "keyboard-hint", children: text });
   }
 
+  // src/ui/interactive-fretboard.tsx
+  function readCSSColor(prop, fallback) {
+    try {
+      const val = getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+      return val || fallback;
+    } catch (_3) {
+      return fallback;
+    }
+  }
+  var OPEN_STRING_STROKE_WIDTH = "3.5";
+  var RING_STROKE_WIDTH = "3";
+  function setCircleFill2(root, posKey, color) {
+    const [s3, f4] = posKey.split("-");
+    const circle = root.querySelector(
+      'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
+    );
+    if (!circle) return;
+    if (f4 === "0") {
+      circle.style.fill = "none";
+      circle.style.stroke = color;
+      circle.style.strokeWidth = OPEN_STRING_STROKE_WIDTH;
+    } else {
+      circle.style.fill = color;
+    }
+  }
+  function setCircleRing(root, posKey, color, fillColor) {
+    const [s3, f4] = posKey.split("-");
+    const circle = root.querySelector(
+      'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
+    );
+    if (!circle) return;
+    circle.style.stroke = color;
+    if (f4 === "0") {
+      circle.style.fill = "none";
+      circle.style.strokeWidth = OPEN_STRING_STROKE_WIDTH;
+    } else {
+      circle.style.fill = fillColor;
+      circle.style.strokeWidth = RING_STROKE_WIDTH;
+    }
+  }
+  function clearAllCircles(root) {
+    root.querySelectorAll(".fb-pos").forEach((c3) => {
+      c3.style.fill = "";
+      c3.style.stroke = "";
+      c3.style.strokeWidth = "";
+    });
+  }
+  var MUTE_MARKER_CLASS = "fb-mute-marker";
+  function renderMuteMarkers(root, mutedStrings, sc) {
+    const svg = root.querySelector("svg.fretboard");
+    if (!svg) return;
+    svg.querySelectorAll("." + MUTE_MARKER_CLASS).forEach((el) => el.remove());
+    const colorMuted = readCSSColor("--color-text-secondary", "#888");
+    const cy = noteY(0);
+    const half = POSITION_CIRCLE_R * 0.7;
+    for (const s3 of mutedStrings) {
+      const cx = stringX(s3, sc);
+      const line1 = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
+      const line2 = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "line"
+      );
+      for (const ln2 of [line1, line2]) {
+        ln2.setAttribute("class", MUTE_MARKER_CLASS);
+        ln2.setAttribute("stroke", colorMuted);
+        ln2.setAttribute("stroke-width", "2.5");
+        ln2.setAttribute("stroke-linecap", "round");
+        ln2.setAttribute("pointer-events", "none");
+      }
+      line1.setAttribute("x1", String(cx - half));
+      line1.setAttribute("y1", String(cy - half));
+      line1.setAttribute("x2", String(cx + half));
+      line1.setAttribute("y2", String(cy + half));
+      line2.setAttribute("x1", String(cx + half));
+      line2.setAttribute("y1", String(cy - half));
+      line2.setAttribute("x2", String(cx - half));
+      line2.setAttribute("y2", String(cy + half));
+      svg.appendChild(line1);
+      svg.appendChild(line2);
+    }
+  }
+  function clearMuteMarkers(root) {
+    root.querySelectorAll("." + MUTE_MARKER_CLASS).forEach((el) => el.remove());
+  }
+  function InteractiveFretboard({
+    onTap,
+    tappedPositions,
+    evaluated,
+    stringCount = 6,
+    fretCount = 13,
+    mutedStrings,
+    targetPosition,
+    wrongTapPosition
+  }) {
+    const wrapperRef = A2(null);
+    const svgHTML = T2(
+      () => fretboardSVG({ tapTargets: true, stringCount, fretCount }),
+      [stringCount, fretCount]
+    );
+    const handleClick = q2((e3) => {
+      const el = e3.target.closest(
+        ".fb-tap[data-string][data-fret]"
+      );
+      if (!el) return;
+      const s3 = el.dataset.string;
+      const f4 = el.dataset.fret;
+      onTap(s3 + "-" + f4);
+    }, [onTap]);
+    y2(() => {
+      const root = wrapperRef.current;
+      if (!root) return;
+      clearAllCircles(root);
+      clearMuteMarkers(root);
+      if (evaluated) {
+        const colorOk = readCSSColor("--color-success", "#2e7d32");
+        const colorBad = readCSSColor("--color-error", "#d32f2f");
+        const colorBadFill = readCSSColor("--color-error-bg-strong", "#f4c2c2");
+        const colorMissed = readCSSColor("--color-success-reveal", "#66bb6a");
+        const tappedSet = new Set(evaluated.perEntry.map((e3) => e3.positionKey));
+        for (const entry of evaluated.perEntry) {
+          if (entry.correct) {
+            setCircleFill2(root, entry.positionKey, colorOk);
+          } else {
+            setCircleRing(root, entry.positionKey, colorBad, colorBadFill);
+          }
+        }
+        for (const missed of evaluated.missed) {
+          if (!tappedSet.has(missed)) {
+            setCircleFill2(root, missed, colorMissed);
+          }
+        }
+        if (mutedStrings && mutedStrings.size > 0) {
+          renderMuteMarkers(root, mutedStrings, stringCount);
+        }
+      } else {
+        const colorSel = readCSSColor(
+          "--color-tap-selected",
+          "hsl(210, 60%, 50%)"
+        );
+        for (const posKey of tappedPositions) {
+          setCircleFill2(root, posKey, colorSel);
+        }
+        if (targetPosition) setCircleFill2(root, targetPosition, colorSel);
+        if (wrongTapPosition) {
+          const colorBad = readCSSColor("--color-error", "#d32f2f");
+          const colorBadFill = readCSSColor("--color-error-bg-strong", "#f4c2c2");
+          setCircleRing(root, wrongTapPosition, colorBad, colorBadFill);
+        }
+      }
+    }, [
+      tappedPositions,
+      evaluated,
+      svgHTML,
+      mutedStrings,
+      stringCount,
+      targetPosition,
+      wrongTapPosition
+    ]);
+    return /* @__PURE__ */ u2("div", { class: "interactive-fretboard", children: /* @__PURE__ */ u2(
+      "div",
+      {
+        ref: wrapperRef,
+        onClick: handleClick,
+        dangerouslySetInnerHTML: { __html: svgHTML }
+      }
+    ) });
+  }
+
   // src/ui/speed-check.tsx
   function noteAnswerMatches(input, expected) {
     if (input === expected) return true;
@@ -10982,10 +11180,26 @@ Build: ${version}
     trialPrompt: (note) => `Press ${note}`,
     generateAnswer: pickCalibrationNote,
     checkAnswer: noteAnswerMatches,
-    label: "note button entry"
+    label: "note button entry",
+    variant: "text"
   };
+  function makeFretboardTapConfig(stringCount) {
+    return {
+      taskType: "fretboard-tap",
+      introTitle: "Measuring fret tap times",
+      introText: "We\u2019ll highlight a fret \u2014 tap it as fast as you can. This measures your fretboard tap speed so the app can set personalized timing targets. 10 quick trials.",
+      // Fretboard variant doesn't use text prompt — the dot is the prompt.
+      trialPrompt: () => "",
+      generateAnswer: (prev, rng) => pickCalibrationFretPosition(prev, stringCount, rng),
+      checkAnswer: (input, expected) => input === expected,
+      label: "fret tap",
+      variant: "fretboard",
+      stringCount
+    };
+  }
   var IMPLEMENTED_TASK_TYPES = /* @__PURE__ */ new Set([
-    "note-button"
+    "note-button",
+    "fretboard-tap"
   ]);
   var TOTAL_TRIALS = 10;
   var WARMUP_TRIALS = 2;
@@ -11014,6 +11228,7 @@ Build: ${version}
     });
     const [trialProgress, setTrialProgress] = d2("");
     const [promptText, setPromptText] = d2("");
+    const [currentTarget, setCurrentTarget] = d2(null);
     const [feedback, setFeedback] = d2(null);
     const feedbackTimerRef = A2(null);
     const onDoneRef = A2(onDone);
@@ -11036,6 +11251,7 @@ Build: ${version}
       state.startTime = performance.now();
       setTrialProgress(state.trialIndex + 1 + " / " + TOTAL_TRIALS);
       setPromptText(config.trialPrompt(answer));
+      setCurrentTarget(answer);
       setFeedback(null);
     }, [config]);
     const handleTrialResponse = q2((input) => {
@@ -11061,6 +11277,7 @@ Build: ${version}
       state.trialIndex++;
       state.targetNote = null;
       setPromptText("\u2713");
+      setCurrentTarget(null);
       setFeedback(null);
       if (state.trialIndex >= TOTAL_TRIALS) {
         state.active = false;
@@ -11091,11 +11308,13 @@ Build: ${version}
       trialRef,
       trialProgress,
       promptText,
+      currentTarget,
       feedback,
       handleTrialResponse,
       startTrials,
       setTrialProgress,
-      setPromptText
+      setPromptText,
+      setCurrentTarget
     };
   }
   function SpeedCheckInput({ onSubmit, wrongFlash }) {
@@ -11151,6 +11370,22 @@ Build: ${version}
       }
     );
   }
+  var EMPTY_POSITION_SET = /* @__PURE__ */ new Set();
+  function FretboardSpeedCheckTarget({ stringCount, targetPosition, wrongTapPosition, onTap }) {
+    const fretCount = T2(() => CALIBRATION_MAX_FRET + 1, []);
+    return /* @__PURE__ */ u2(
+      InteractiveFretboard,
+      {
+        onTap,
+        tappedPositions: EMPTY_POSITION_SET,
+        evaluated: null,
+        stringCount,
+        fretCount,
+        targetPosition,
+        wrongTapPosition
+      }
+    );
+  }
   function SpeedCheckIntro({ title, text }) {
     return /* @__PURE__ */ u2("div", { class: "calibration-results", children: [
       /* @__PURE__ */ u2(Text, { role: "heading-section", as: "h2", children: title }),
@@ -11176,6 +11411,9 @@ Build: ${version}
       if (fixture?.trialProgress) trials.setTrialProgress(fixture.trialProgress);
       if (fixture?.promptAnswer) {
         trials.setPromptText(config.trialPrompt(fixture.promptAnswer));
+        if (config.variant === "fretboard") {
+          trials.setCurrentTarget(fixture.promptAnswer);
+        }
       }
     }, [fixture]);
     y2(() => {
@@ -11219,6 +11457,10 @@ Build: ${version}
       ] });
     }
     if (phase === "running") {
+      const isFretboard = config.variant === "fretboard";
+      const promptContent = isFretboard ? trials.promptText || "\xA0" : trials.promptText;
+      const promptNode = /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptContent });
+      const wrongTap = trials.feedback?.correct === false ? trials.feedback.userInput : null;
       return /* @__PURE__ */ u2(ScreenLayout, { children: [
         /* @__PURE__ */ u2(
           SpeedCheckHeader,
@@ -11227,10 +11469,32 @@ Build: ${version}
             onClose: onCancel
           }
         ),
-        /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u2(
+        /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: isFretboard ? (
+          // Fretboard in the prompt slot so the existing 70/30 CSS
+          // rule (.quiz-stage:has(.quiz-stage-prompt svg.fretboard))
+          // gives the fretboard the majority of the vertical space.
+          /* @__PURE__ */ u2(
+            QuizStage,
+            {
+              prompt: /* @__PURE__ */ u2(k, { children: [
+                promptNode,
+                /* @__PURE__ */ u2(
+                  FretboardSpeedCheckTarget,
+                  {
+                    stringCount: config.stringCount,
+                    targetPosition: trials.currentTarget,
+                    wrongTapPosition: wrongTap,
+                    onTap: trials.handleTrialResponse
+                  }
+                )
+              ] }),
+              response: null
+            }
+          )
+        ) : /* @__PURE__ */ u2(
           QuizStage,
           {
-            prompt: /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: trials.promptText }),
+            prompt: promptNode,
             response: /* @__PURE__ */ u2(k, { children: [
               /* @__PURE__ */ u2(
                 NoteButtons,
@@ -11375,161 +11639,6 @@ Build: ${version}
         }
       )
     ] });
-  }
-
-  // src/ui/interactive-fretboard.tsx
-  function readCSSColor(prop, fallback) {
-    try {
-      const val = getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
-      return val || fallback;
-    } catch (_3) {
-      return fallback;
-    }
-  }
-  var OPEN_STRING_STROKE_WIDTH = "3.5";
-  var RING_STROKE_WIDTH = "3";
-  function setCircleFill2(root, posKey, color) {
-    const [s3, f4] = posKey.split("-");
-    const circle = root.querySelector(
-      'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
-    );
-    if (!circle) return;
-    if (f4 === "0") {
-      circle.style.fill = "none";
-      circle.style.stroke = color;
-      circle.style.strokeWidth = OPEN_STRING_STROKE_WIDTH;
-    } else {
-      circle.style.fill = color;
-    }
-  }
-  function setCircleRing(root, posKey, color, fillColor) {
-    const [s3, f4] = posKey.split("-");
-    const circle = root.querySelector(
-      'circle.fb-pos[data-string="' + s3 + '"][data-fret="' + f4 + '"]'
-    );
-    if (!circle) return;
-    circle.style.stroke = color;
-    if (f4 === "0") {
-      circle.style.fill = "none";
-      circle.style.strokeWidth = OPEN_STRING_STROKE_WIDTH;
-    } else {
-      circle.style.fill = fillColor;
-      circle.style.strokeWidth = RING_STROKE_WIDTH;
-    }
-  }
-  function clearAllCircles(root) {
-    root.querySelectorAll(".fb-pos").forEach((c3) => {
-      c3.style.fill = "";
-      c3.style.stroke = "";
-      c3.style.strokeWidth = "";
-    });
-  }
-  var MUTE_MARKER_CLASS = "fb-mute-marker";
-  function renderMuteMarkers(root, mutedStrings, sc) {
-    const svg = root.querySelector("svg.fretboard");
-    if (!svg) return;
-    svg.querySelectorAll("." + MUTE_MARKER_CLASS).forEach((el) => el.remove());
-    const colorMuted = readCSSColor("--color-text-secondary", "#888");
-    const cy = noteY(0);
-    const half = POSITION_CIRCLE_R * 0.7;
-    for (const s3 of mutedStrings) {
-      const cx = stringX(s3, sc);
-      const line1 = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "line"
-      );
-      const line2 = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "line"
-      );
-      for (const ln2 of [line1, line2]) {
-        ln2.setAttribute("class", MUTE_MARKER_CLASS);
-        ln2.setAttribute("stroke", colorMuted);
-        ln2.setAttribute("stroke-width", "2.5");
-        ln2.setAttribute("stroke-linecap", "round");
-        ln2.setAttribute("pointer-events", "none");
-      }
-      line1.setAttribute("x1", String(cx - half));
-      line1.setAttribute("y1", String(cy - half));
-      line1.setAttribute("x2", String(cx + half));
-      line1.setAttribute("y2", String(cy + half));
-      line2.setAttribute("x1", String(cx + half));
-      line2.setAttribute("y1", String(cy - half));
-      line2.setAttribute("x2", String(cx - half));
-      line2.setAttribute("y2", String(cy + half));
-      svg.appendChild(line1);
-      svg.appendChild(line2);
-    }
-  }
-  function clearMuteMarkers(root) {
-    root.querySelectorAll("." + MUTE_MARKER_CLASS).forEach((el) => el.remove());
-  }
-  function InteractiveFretboard({
-    onTap,
-    tappedPositions,
-    evaluated,
-    stringCount = 6,
-    fretCount = 13,
-    mutedStrings
-  }) {
-    const wrapperRef = A2(null);
-    const svgHTML = T2(
-      () => fretboardSVG({ tapTargets: true, stringCount, fretCount }),
-      [stringCount, fretCount]
-    );
-    const handleClick = q2((e3) => {
-      const el = e3.target.closest(
-        ".fb-tap[data-string][data-fret]"
-      );
-      if (!el) return;
-      const s3 = el.dataset.string;
-      const f4 = el.dataset.fret;
-      onTap(s3 + "-" + f4);
-    }, [onTap]);
-    y2(() => {
-      const root = wrapperRef.current;
-      if (!root) return;
-      clearAllCircles(root);
-      clearMuteMarkers(root);
-      if (evaluated) {
-        const colorOk = readCSSColor("--color-success", "#2e7d32");
-        const colorBad = readCSSColor("--color-error", "#d32f2f");
-        const colorBadFill = readCSSColor("--color-error-bg-strong", "#f4c2c2");
-        const colorMissed = readCSSColor("--color-success-reveal", "#66bb6a");
-        const tappedSet = new Set(evaluated.perEntry.map((e3) => e3.positionKey));
-        for (const entry of evaluated.perEntry) {
-          if (entry.correct) {
-            setCircleFill2(root, entry.positionKey, colorOk);
-          } else {
-            setCircleRing(root, entry.positionKey, colorBad, colorBadFill);
-          }
-        }
-        for (const missed of evaluated.missed) {
-          if (!tappedSet.has(missed)) {
-            setCircleFill2(root, missed, colorMissed);
-          }
-        }
-        if (mutedStrings && mutedStrings.size > 0) {
-          renderMuteMarkers(root, mutedStrings, stringCount);
-        }
-      } else {
-        const colorSel = readCSSColor(
-          "--color-tap-selected",
-          "hsl(210, 60%, 50%)"
-        );
-        for (const posKey of tappedPositions) {
-          setCircleFill2(root, posKey, colorSel);
-        }
-      }
-    }, [tappedPositions, evaluated, svgHTML, mutedStrings, stringCount]);
-    return /* @__PURE__ */ u2("div", { class: "interactive-fretboard", children: /* @__PURE__ */ u2(
-      "div",
-      {
-        ref: wrapperRef,
-        onClick: handleClick,
-        dangerouslySetInnerHTML: { __html: svgHTML }
-      }
-    ) });
   }
 
   // src/declarative/quiz-areas.tsx
@@ -12181,6 +12290,7 @@ Build: ${version}
           }
         ) }) : void 0,
         baseline: onCalibrate ? learner.motorBaseline : void 0,
+        motorTaskType: def.motorTaskType,
         onCalibrate,
         activeTab: ps.activeTab,
         onTabSwitch: ps.setActiveTab,
@@ -13244,10 +13354,11 @@ Build: ${version}
       ] });
     }
     if (sc.speedCheck) {
+      const speedCheckConfig = def.motorTaskType === "fretboard-tap" ? makeFretboardTapConfig(def.multiTap?.stringCount ?? 6) : NOTE_BUTTON_CONFIG;
       return /* @__PURE__ */ u2(
         SpeedCheck,
         {
-          config: NOTE_BUTTON_CONFIG,
+          config: speedCheckConfig,
           fixture: typeof sc.speedCheck === "object" ? sc.speedCheck : void 0,
           onComplete: (baseline) => {
             learner.applyBaseline(baseline);
