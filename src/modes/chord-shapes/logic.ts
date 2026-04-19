@@ -6,6 +6,7 @@
 import type { MultiTapEvalResult } from '../../declarative/types.ts';
 import { displayNote } from '../../music-data.ts';
 import {
+  type ChordQuality,
   type ChordVoicing,
   getVoicings,
   type StringAction,
@@ -89,7 +90,7 @@ function buildQuestion(v: ChordVoicing): Question {
   };
 }
 
-/** Display name for a chord: "C", "Am", "G7". */
+/** Display name for a chord: "C", "Am", "G7", "Am7", "Dsus4". */
 export function chordDisplayName(v: ChordVoicing): string {
   return displayNote(v.root) + v.symbol;
 }
@@ -148,9 +149,24 @@ export const QUALITY_GROUPS = [
   { id: 'major', label: 'Major', longLabel: 'Major chords' },
   { id: 'minor', label: 'Minor', longLabel: 'Minor chords' },
   { id: 'dom7', label: '7th', longLabel: 'Dominant 7th chords' },
+  { id: 'm7', label: 'm7', longLabel: 'Minor 7th chords' },
+  { id: 'sus', label: 'sus', longLabel: 'Suspended chords' },
 ];
 
 export const ALL_GROUP_IDS: string[] = QUALITY_GROUPS.map((g) => g.id);
+
+/**
+ * Which ChordQuality values belong to each scope group. The 'sus' group
+ * bundles both sus2 and sus4 together — learners typically meet them as
+ * the same concept (a suspension of the 3rd) and practice them together.
+ */
+const GROUP_QUALITIES: Record<string, ChordQuality[]> = {
+  major: ['major'],
+  minor: ['minor'],
+  dom7: ['dom7'],
+  m7: ['m7'],
+  sus: ['sus2', 'sus4'],
+};
 
 /**
  * Circle-of-fifths root order for sorting chord voicings within a quality
@@ -166,19 +182,32 @@ export function getItemIdsForGroup(
   instrument: 'guitar' | 'ukulele',
   groupId: string,
 ): string[] {
-  const voicings = getVoicings(instrument).filter((v) => v.quality === groupId);
-  voicings.sort((a, b) =>
-    (CHORD_SHAPE_ROOT_ORDER[a.root] ?? 99) -
-    (CHORD_SHAPE_ROOT_ORDER[b.root] ?? 99)
+  const qualities = GROUP_QUALITIES[groupId] ?? [];
+  const voicings = getVoicings(instrument).filter((v) =>
+    qualities.includes(v.quality)
   );
+  voicings.sort((a, b) => {
+    const rootDiff = (CHORD_SHAPE_ROOT_ORDER[a.root] ?? 99) -
+      (CHORD_SHAPE_ROOT_ORDER[b.root] ?? 99);
+    if (rootDiff !== 0) return rootDiff;
+    // Within the same root, keep sus2 before sus4 (musical reading order).
+    return a.quality.localeCompare(b.quality);
+  });
   return voicings.map(itemId);
 }
 
 export function formatGroupLabel(enabledGroups: ReadonlySet<string>): string {
-  if (enabledGroups.size === 3) return 'all chords';
-  const labels: string[] = [];
-  if (enabledGroups.has('major')) labels.push('major');
-  if (enabledGroups.has('minor')) labels.push('minor');
-  if (enabledGroups.has('dom7')) labels.push('7th');
-  return labels.join(' & ');
+  if (enabledGroups.size === ALL_GROUP_IDS.length) return 'all chords';
+  const order = ['major', 'minor', 'dom7', 'm7', 'sus'];
+  const short: Record<string, string> = {
+    major: 'major',
+    minor: 'minor',
+    dom7: '7th',
+    m7: 'm7',
+    sus: 'sus',
+  };
+  return order
+    .filter((id) => enabledGroups.has(id))
+    .map((id) => short[id])
+    .join(' & ');
 }
