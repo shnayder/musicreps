@@ -9,6 +9,7 @@ import { Text } from './text.tsx';
 import { Bar, Section, Stack } from './layout.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
 import type { ProgressSegment } from '../stats-display.ts';
+import type { MotorTaskType } from '../types.ts';
 import { ProgressBarLabeled } from './scope.tsx';
 import type { ProgressBarKind } from './speed-level-legend.tsx';
 
@@ -493,8 +494,17 @@ export function TabIcon({ icon, text }: { icon: string; text: string }) {
 // to avoid circular dependency)
 // ---------------------------------------------------------------------------
 
+function baselineMetricLabel(motorTaskType: MotorTaskType | undefined): string {
+  if (motorTaskType === 'fretboard-tap') return 'Response time for fret tap';
+  return 'Response time for note input';
+}
+
 function BaselineInfo(
-  { baseline, onRun }: { baseline: number | null; onRun: () => void },
+  { baseline, onRun, motorTaskType }: {
+    baseline: number | null;
+    onRun: () => void;
+    motorTaskType?: MotorTaskType;
+  },
 ) {
   const value = baseline ? (baseline / 1000).toFixed(1) + 's' : '1s';
   const tag = baseline
@@ -504,7 +514,7 @@ function BaselineInfo(
   return (
     <div class='baseline-info'>
       <div class='baseline-metric'>
-        <Text role='label'>Response time for note input</Text>
+        <Text role='label'>{baselineMetricLabel(motorTaskType)}</Text>
         <Text role='metric-primary'>
           {value}
           {tag && <>{' '}{tag}</>}
@@ -536,6 +546,7 @@ export function PracticeTab(
     statsHeading,
     onCalibrate,
     baseline,
+    motorTaskType,
     activeTab,
     onTabSwitch,
     scopeValid,
@@ -555,6 +566,8 @@ export function PracticeTab(
     statsHeading?: string;
     onCalibrate?: () => void;
     baseline?: number | null;
+    /** Motor task type — used to label the baseline metric. */
+    motorTaskType?: MotorTaskType;
     activeTab: ModeTab;
     onTabSwitch: (tab: ModeTab) => void;
     scopeValid?: boolean;
@@ -640,7 +653,11 @@ export function PracticeTab(
           {!statsHeading && <div class='stats-container'>{statsContent}</div>}
           {onCalibrate && (
             <Section heading='Speed check' gap='group'>
-              <BaselineInfo baseline={baseline ?? null} onRun={onCalibrate} />
+              <BaselineInfo
+                baseline={baseline ?? null}
+                onRun={onCalibrate}
+                motorTaskType={motorTaskType}
+              />
             </Section>
           )}
         </Stack>

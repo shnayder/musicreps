@@ -1635,6 +1635,9 @@ body.native-app .brand-strip {
   transition: fill var(--duration-base);
   pointer-events: all;
 }
+.fb-pos.fb-target {
+  fill: var(--color-tap-selected);
+}
 .fb-tap {
   fill: transparent;
   stroke: none;
