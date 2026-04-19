@@ -335,7 +335,7 @@ function SpeedCheckInput(
 
 // ---------------------------------------------------------------------------
 // FretboardSpeedCheckTarget — fretboard-tap variant of the trial prompt.
-// Renders an InteractiveFretboard with the target fret pulsing; taps are
+// Renders an InteractiveFretboard with the target fret highlighted; taps are
 // forwarded to the trial loop as "string-fret" position keys. Rendered in
 // the prompt slot so the 70/30 fretboard layout rule kicks in.
 // ---------------------------------------------------------------------------
@@ -343,9 +343,10 @@ function SpeedCheckInput(
 const EMPTY_POSITION_SET: ReadonlySet<string> = new Set<string>();
 
 function FretboardSpeedCheckTarget(
-  { stringCount, targetPosition, onTap }: {
+  { stringCount, targetPosition, wrongTapPosition, onTap }: {
     stringCount: number;
     targetPosition: string | null;
+    wrongTapPosition: string | null;
     onTap: (positionKey: string) => void;
   },
 ) {
@@ -360,6 +361,7 @@ function FretboardSpeedCheckTarget(
       stringCount={stringCount}
       fretCount={fretCount}
       targetPosition={targetPosition}
+      wrongTapPosition={wrongTapPosition}
     />
   );
 }
@@ -481,11 +483,21 @@ export function SpeedCheck(
   }
 
   if (phase === 'running') {
+    const isFretboard = config.variant === 'fretboard';
+    // Fretboard variant: always render a prompt character (nbsp when empty)
+    // so the row's height is constant and the fretboard below doesn't jump
+    // when ✓/✗ feedback appears.
+    const promptContent = isFretboard
+      ? (trials.promptText || '\u00A0')
+      : trials.promptText;
     const promptNode = (
       <Text role='quiz-prompt' as='div' class='quiz-prompt'>
-        {trials.promptText}
+        {promptContent}
       </Text>
     );
+    const wrongTap = trials.feedback?.correct === false
+      ? trials.feedback.userInput
+      : null;
     return (
       <ScreenLayout>
         <SpeedCheckHeader
@@ -493,7 +505,7 @@ export function SpeedCheck(
           onClose={onCancel}
         />
         <LayoutMain scrollable={false}>
-          {config.variant === 'fretboard'
+          {isFretboard
             ? (
               // Fretboard in the prompt slot so the existing 70/30 CSS
               // rule (.quiz-stage:has(.quiz-stage-prompt svg.fretboard))
@@ -505,6 +517,7 @@ export function SpeedCheck(
                     <FretboardSpeedCheckTarget
                       stringCount={config.stringCount}
                       targetPosition={trials.currentTarget}
+                      wrongTapPosition={wrongTap}
                       onTap={trials.handleTrialResponse}
                     />
                   </>

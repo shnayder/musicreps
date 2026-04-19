@@ -88,19 +88,7 @@ function clearAllCircles(root: HTMLElement): void {
     c.style.fill = '';
     c.style.stroke = '';
     c.style.strokeWidth = '';
-    c.classList.remove(TARGET_CLASS);
   });
-}
-
-const TARGET_CLASS = 'fb-target';
-
-function setCircleTarget(root: HTMLElement, posKey: string): void {
-  const [s, f] = posKey.split('-');
-  const circle = root.querySelector(
-    'circle.fb-pos[data-string="' + s + '"][data-fret="' + f + '"]',
-  ) as SVGElement | null;
-  if (!circle) return;
-  circle.classList.add(TARGET_CLASS);
 }
 
 // ---------------------------------------------------------------------------
@@ -121,8 +109,13 @@ type InteractiveFretboardProps = {
   /** String indices to mark as muted (X above nut). Shown only after evaluation. */
   mutedStrings?: ReadonlySet<number>;
   /** Optional "string-fret" key to visually highlight as a target prompt
-   *  (used by the fretboard speed check). Pulses to draw attention. */
+   *  (used by the fretboard speed check). Rendered with the same styling
+   *  as a tapped position. */
   targetPosition?: string | null;
+  /** Optional "string-fret" key of a wrong tap to flash (used by the
+   *  fretboard speed check during the wrong-feedback window). Rendered
+   *  with an error-colored ring. */
+  wrongTapPosition?: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -186,6 +179,7 @@ export function InteractiveFretboard(
     fretCount = 13,
     mutedStrings,
     targetPosition,
+    wrongTapPosition,
   }: InteractiveFretboardProps,
 ) {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -240,7 +234,7 @@ export function InteractiveFretboard(
         renderMuteMarkers(root, mutedStrings, stringCount);
       }
     } else {
-      // During collection: highlight tapped positions
+      // During collection: highlight tapped positions.
       const colorSel = readCSSColor(
         '--color-tap-selected',
         'hsl(210, 60%, 50%)',
@@ -248,9 +242,16 @@ export function InteractiveFretboard(
       for (const posKey of tappedPositions) {
         setCircleFill(root, posKey, colorSel);
       }
-      // Speed-check target prompt: pulse the target fret. Styled in CSS
-      // via the .fb-target class on the .fb-pos circle.
-      if (targetPosition) setCircleTarget(root, targetPosition);
+      // Speed-check target prompt: fixed dot at the target fret, same
+      // styling as a tapped position.
+      if (targetPosition) setCircleFill(root, targetPosition, colorSel);
+      // Wrong-tap feedback: draw an error ring at the user's tap so it
+      // reads as "this was wrong" while the ✗ is showing.
+      if (wrongTapPosition) {
+        const colorBad = readCSSColor('--color-error', '#d32f2f');
+        const colorBadFill = readCSSColor('--color-error-bg-strong', '#f4c2c2');
+        setCircleRing(root, wrongTapPosition, colorBad, colorBadFill);
+      }
     }
   }, [
     tappedPositions,
@@ -259,6 +260,7 @@ export function InteractiveFretboard(
     mutedStrings,
     stringCount,
     targetPosition,
+    wrongTapPosition,
   ]);
 
   return (
