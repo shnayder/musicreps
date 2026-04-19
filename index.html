@@ -2866,7 +2866,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1439"></div>
+  <div class="home-screen" id="home-screen" data-version="#1442"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -7691,13 +7691,44 @@ body.native-sim #app {
     { root: "A", quality: "minor", symbol: "m", strings: [0, 1, 2, 2, 0, "x"] },
     { root: "E", quality: "minor", symbol: "m", strings: [0, 0, 0, 2, 2, 0] },
     { root: "D", quality: "minor", symbol: "m", strings: [1, 3, 2, 0, "x", "x"] },
+    // Bm — A-shape barre at fret 2 (x24432)
+    { root: "B", quality: "minor", symbol: "m", strings: [2, 3, 4, 4, 2, "x"] },
     // --- Dominant 7th ---
     { root: "A", quality: "dom7", symbol: "7", strings: [0, 2, 0, 2, 0, "x"] },
     { root: "B", quality: "dom7", symbol: "7", strings: [2, 0, 2, 1, 2, "x"] },
     { root: "C", quality: "dom7", symbol: "7", strings: [0, 1, 3, 2, 3, "x"] },
     { root: "D", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0, "x", "x"] },
     { root: "E", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0, 2, 0] },
-    { root: "G", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0, 2, 3] }
+    { root: "G", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0, 2, 3] },
+    // F7 — full barre at fret 1 (131211)
+    { root: "F", quality: "dom7", symbol: "7", strings: [1, 1, 2, 1, 3, 1] },
+    // --- Minor 7th ---
+    // Open-position m7 shapes
+    { root: "A", quality: "m7", symbol: "m7", strings: [0, 1, 0, 2, 0, "x"] },
+    { root: "E", quality: "m7", symbol: "m7", strings: [0, 0, 0, 0, 2, 0] },
+    { root: "D", quality: "m7", symbol: "m7", strings: [1, 1, 2, 0, "x", "x"] },
+    { root: "B", quality: "m7", symbol: "m7", strings: [2, 0, 2, 0, 2, "x"] },
+    // Barre m7 shapes
+    { root: "F", quality: "m7", symbol: "m7", strings: [1, 1, 1, 1, 3, 1] },
+    { root: "G", quality: "m7", symbol: "m7", strings: [3, 3, 3, 3, 5, 3] },
+    { root: "C", quality: "m7", symbol: "m7", strings: [3, 4, 3, 5, 3, "x"] },
+    // --- Suspended 2nd ---
+    {
+      root: "D",
+      quality: "sus2",
+      symbol: "sus2",
+      strings: [0, 3, 2, 0, "x", "x"]
+    },
+    { root: "A", quality: "sus2", symbol: "sus2", strings: [0, 0, 2, 2, 0, "x"] },
+    // --- Suspended 4th ---
+    {
+      root: "D",
+      quality: "sus4",
+      symbol: "sus4",
+      strings: [3, 3, 2, 0, "x", "x"]
+    },
+    { root: "A", quality: "sus4", symbol: "sus4", strings: [0, 3, 2, 2, 0, "x"] },
+    { root: "E", quality: "sus4", symbol: "sus4", strings: [0, 0, 2, 2, 2, 0] }
   ];
   var UKULELE_VOICINGS = [
     // --- Major ---                          // Chart (G C E A)
@@ -7713,6 +7744,10 @@ body.native-sim #app {
     // 2220
     { root: "Bb", quality: "major", symbol: "", strings: [1, 1, 2, 3] },
     // 3211
+    { root: "E", quality: "major", symbol: "", strings: [2, 4, 4, 4] },
+    // 4442
+    { root: "B", quality: "major", symbol: "", strings: [2, 2, 3, 4] },
+    // 4322
     // --- Minor ---
     { root: "A", quality: "minor", symbol: "m", strings: [0, 0, 0, 2] },
     // 2000
@@ -7722,9 +7757,37 @@ body.native-sim #app {
     // 0432
     // --- Dominant 7th ---
     { root: "C", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0] },
+    // 0001
     { root: "G", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0] },
+    // 0212
     { root: "A", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0] },
-    { root: "D", quality: "dom7", symbol: "7", strings: [3, 2, 2, 2] }
+    // 0100
+    { root: "D", quality: "dom7", symbol: "7", strings: [3, 2, 2, 2] },
+    // 2223
+    { root: "E", quality: "dom7", symbol: "7", strings: [2, 0, 2, 1] },
+    // 1202
+    { root: "B", quality: "dom7", symbol: "7", strings: [2, 2, 3, 2] },
+    // 2322
+    { root: "F", quality: "dom7", symbol: "7", strings: [3, 1, 3, 2] },
+    // 2313
+    // --- Minor 7th ---
+    { root: "A", quality: "m7", symbol: "m7", strings: [0, 0, 0, 0] },
+    // 0000
+    { root: "D", quality: "m7", symbol: "m7", strings: [3, 1, 2, 2] },
+    // 2213
+    { root: "E", quality: "m7", symbol: "m7", strings: [2, 0, 2, 0] },
+    // 0202
+    { root: "B", quality: "m7", symbol: "m7", strings: [2, 2, 2, 2] },
+    // 2222
+    { root: "C", quality: "m7", symbol: "m7", strings: [3, 3, 3, 3] },
+    // 3333
+    { root: "G", quality: "m7", symbol: "m7", strings: [1, 1, 2, 0] },
+    // 0211
+    // --- Suspended 4th ---
+    { root: "D", quality: "sus4", symbol: "sus4", strings: [0, 3, 2, 0] },
+    // 0230
+    { root: "A", quality: "sus4", symbol: "sus4", strings: [0, 0, 2, 2] }
+    // 2200
   ];
   function getVoicings(instrument) {
     return instrument === "guitar" ? GUITAR_VOICINGS : UKULELE_VOICINGS;
@@ -7801,28 +7864,62 @@ body.native-sim #app {
     };
   }
   var QUALITY_GROUPS = [
-    { id: "major", label: "Major", longLabel: "Major chords" },
-    { id: "minor", label: "Minor", longLabel: "Minor chords" },
-    { id: "dom7", label: "7th", longLabel: "Dominant 7th chords" }
+    {
+      id: "major",
+      label: "Major",
+      longLabel: "Major chords",
+      shortLabel: "major",
+      qualities: ["major"]
+    },
+    {
+      id: "minor",
+      label: "Minor",
+      longLabel: "Minor chords",
+      shortLabel: "minor",
+      qualities: ["minor"]
+    },
+    {
+      id: "dom7",
+      label: "7th",
+      longLabel: "Dominant 7th chords",
+      shortLabel: "7th",
+      qualities: ["dom7"]
+    },
+    {
+      id: "m7",
+      label: "m7",
+      longLabel: "Minor 7th chords",
+      shortLabel: "m7",
+      qualities: ["m7"]
+    },
+    {
+      id: "sus",
+      label: "sus",
+      longLabel: "Suspended chords",
+      shortLabel: "sus",
+      qualities: ["sus2", "sus4"]
+    }
   ];
   var ALL_GROUP_IDS8 = QUALITY_GROUPS.map((g4) => g4.id);
   var CHORD_SHAPE_ROOT_ORDER = Object.fromEntries(
     ["C", "G", "D", "A", "E", "B", "F#", "Db", "Ab", "Eb", "Bb", "F"].map((r3, i3) => [r3, i3])
   );
   function getItemIdsForGroup9(instrument, groupId) {
-    const voicings = getVoicings(instrument).filter((v3) => v3.quality === groupId);
-    voicings.sort(
-      (a3, b2) => (CHORD_SHAPE_ROOT_ORDER[a3.root] ?? 99) - (CHORD_SHAPE_ROOT_ORDER[b2.root] ?? 99)
+    const group = QUALITY_GROUPS.find((g4) => g4.id === groupId);
+    const qualities = group?.qualities ?? [];
+    const voicings = getVoicings(instrument).filter(
+      (v3) => qualities.includes(v3.quality)
     );
+    voicings.sort((a3, b2) => {
+      const rootDiff = (CHORD_SHAPE_ROOT_ORDER[a3.root] ?? 99) - (CHORD_SHAPE_ROOT_ORDER[b2.root] ?? 99);
+      if (rootDiff !== 0) return rootDiff;
+      return a3.quality.localeCompare(b2.quality);
+    });
     return voicings.map(itemId);
   }
   function formatGroupLabel2(enabledGroups) {
-    if (enabledGroups.size === 3) return "all chords";
-    const labels = [];
-    if (enabledGroups.has("major")) labels.push("major");
-    if (enabledGroups.has("minor")) labels.push("minor");
-    if (enabledGroups.has("dom7")) labels.push("7th");
-    return labels.join(" & ");
+    if (enabledGroups.size === ALL_GROUP_IDS8.length) return "all chords";
+    return QUALITY_GROUPS.filter((g4) => enabledGroups.has(g4.id)).map((g4) => g4.shortLabel).join(" & ");
   }
 
   // src/modes/chord-shapes/definition.tsx
