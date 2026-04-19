@@ -142,14 +142,18 @@ export type Question = {
   currentString: number;
   currentFret: number;
   currentNote: string;
+  /** Per-round spelling preference for accidentals (flats when true). */
+  useFlats: boolean;
 };
 
 export function getQuestion(
   instrument: Instrument,
   itemId: string,
+  ctx?: { useFlats: boolean },
 ): Question {
   const fb = getHelpers(instrument);
-  return fb.parseFretboardItem(itemId);
+  const base = fb.parseFretboardItem(itemId);
+  return { ...base, useFlats: ctx?.useFlats ?? false };
 }
 
 // ---------------------------------------------------------------------------

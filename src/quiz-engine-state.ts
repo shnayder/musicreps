@@ -22,6 +22,7 @@ export function initialEngineState(): EngineState {
     roundTimerExpired: false,
     roundResponseTimes: [],
     roundDurationMs: 0,
+    roundUseFlats: false,
 
     // Progress tracking
     masteredCount: 0,
@@ -49,8 +50,12 @@ export function initialEngineState(): EngineState {
 /**
  * Transition: start the quiz (first round).
  * Caller should invoke mode.onStart() separately, then call engineNextQuestion.
+ * `rng` is injectable for deterministic tests; defaults to Math.random.
  */
-export function engineStart(state: EngineState): EngineState {
+export function engineStart(
+  state: EngineState,
+  rng: () => number = Math.random,
+): EngineState {
   return {
     ...state,
     phase: 'active',
@@ -63,6 +68,7 @@ export function engineStart(state: EngineState): EngineState {
     roundCorrect: 0,
     roundTimerExpired: false,
     roundResponseTimes: [],
+    roundUseFlats: rng() < 0.5,
   };
 }
 
@@ -146,8 +152,12 @@ export function engineRoundComplete(state: EngineState): EngineState {
 /**
  * Transition: continue to the next round.
  * Resets round counters but preserves session totals and quiz state.
+ * `rng` is injectable for deterministic tests; defaults to Math.random.
  */
-export function engineContinueRound(state: EngineState): EngineState {
+export function engineContinueRound(
+  state: EngineState,
+  rng: () => number = Math.random,
+): EngineState {
   return {
     ...state,
     phase: 'active',
@@ -156,6 +166,7 @@ export function engineContinueRound(state: EngineState): EngineState {
     roundCorrect: 0,
     roundTimerExpired: false,
     roundResponseTimes: [],
+    roundUseFlats: rng() < 0.5,
   };
 }
 

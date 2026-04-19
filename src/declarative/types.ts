@@ -268,6 +268,19 @@ export type ModeController<Q> = {
 };
 
 // ---------------------------------------------------------------------------
+// Question context — round-scoped state passed to getQuestion
+// ---------------------------------------------------------------------------
+
+/** Round-scoped context threaded into `getQuestion` so modes can react to
+ *  per-round state without reaching into the engine directly. */
+export type QuestionContext = {
+  /** Per-round random flag: when true, modes that honor it spell accidentals
+   *  using flats (Bb) instead of sharps (A#). Set by engineStart and
+   *  engineContinueRound. */
+  useFlats: boolean;
+};
+
+// ---------------------------------------------------------------------------
 // ModeDefinition — the full declarative mode specification
 // ---------------------------------------------------------------------------
 
@@ -305,8 +318,10 @@ type ModeDefinitionBase<Q> = {
   allItems: string[];
 
   // --- Pure logic ---
-  /** Parse an item ID into a question object. */
-  getQuestion: (itemId: string) => Q;
+  /** Parse an item ID into a question object. The optional ctx carries
+   *  round-scoped state (e.g., per-round random accidental spelling). Modes
+   *  that don't care can ignore it. */
+  getQuestion: (itemId: string, ctx?: QuestionContext) => Q;
   /** Generate prompt text from a question. */
   getPromptText: (q: Q) => string;
   /** Instruction shown above the prompt during quiz (e.g., "What note is this?"). */
