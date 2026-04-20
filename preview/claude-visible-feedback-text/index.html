@@ -2889,7 +2889,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="47d2bd visible-feedback-text"></div>
+  <div class="home-screen" id="home-screen" data-version="8df5a7 visible-feedback-text"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -3955,6 +3955,7 @@ body.native-sim #app {
   );
   function isValidNoteInput(input) {
     if (VALID_NOTE_INPUTS.has(input.toLowerCase())) return true;
+    if (/^[A-Ga-g](##|bb)$/.test(input)) return true;
     if (_useSolfege) {
       const letter = resolveSolfegeToLetter(input);
       if (letter && VALID_NOTE_INPUTS.has(letter.toLowerCase())) return true;
