@@ -140,6 +140,8 @@ const VALID_NOTE_INPUTS: ReadonlySet<string> = new Set(
  *  In solfège mode, also accepts solfège syllables (do, re, mi, …). */
 export function isValidNoteInput(input: string): boolean {
   if (VALID_NOTE_INPUTS.has(input.toLowerCase())) return true;
+  // Accept double accidentals (e.g. F##, Ebb) — valid spelled notes
+  if (/^[A-Ga-g](##|bb)$/.test(input)) return true;
   if (_useSolfege) {
     const letter = resolveSolfegeToLetter(input);
     if (letter && VALID_NOTE_INPUTS.has(letter.toLowerCase())) return true;

@@ -162,8 +162,14 @@ describe('isValidNoteInput', () => {
     }
   });
 
+  it('accepts double accidentals', () => {
+    for (const s of ['F##', 'C##', 'Ebb', 'Dbb', 'f##', 'ebb']) {
+      assert.ok(isValidNoteInput(s), `should accept: ${s}`);
+    }
+  });
+
   it('rejects invalid input', () => {
-    for (const s of ['', 'X', 'CC', 'C##', '1', 'do', 'xyz', 'Cbb']) {
+    for (const s of ['', 'X', 'CC', '1', 'do', 'xyz', 'C###', 'Cbbb']) {
       assert.ok(!isValidNoteInput(s), `should reject: ${s}`);
     }
   });
