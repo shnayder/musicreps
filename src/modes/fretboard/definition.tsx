@@ -260,11 +260,11 @@ function useFretboardController(
 
     onAnswer: (itemId, result) => {
       if (quizFbRef.current) {
-        const q = getQuestion(instrument, itemId);
+        const [currentString, currentFret] = itemId.split('-').map(Number);
         const color = result.correct
           ? 'var(--color-success)'
           : 'var(--color-error)';
-        setCircleFill(quizFbRef.current, q.currentString, q.currentFret, color);
+        setCircleFill(quizFbRef.current, currentString, currentFret, color);
       }
     },
 
