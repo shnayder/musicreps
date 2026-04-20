@@ -63,22 +63,48 @@ public class OTAUpdatePlugin: CAPPlugin, CAPBridgedPlugin {
         return try? String(contentsOfFile: path, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    /// True when the bundled app version is >= the cached OTA version,
-    /// meaning the OTA cache is stale and should be discarded.
-    private func bundledIsNewerThanOTA() -> Bool {
+    private enum OTAResetReason {
+        case none               // keep OTA
+        case devBuild(String)   // bundled is a dev build (hash), always newer
+        case malformedOTA(String) // stored OTA version is not a valid #N
+        case newerBundled(Int, Int) // bundled release > OTA release
+        case sameBundled(Int)   // bundled release == OTA release
+
+        var shouldReset: Bool {
+            switch self {
+            case .none: return false
+            default: return true
+            }
+        }
+
+        var logMessage: String {
+            switch self {
+            case .none: return ""
+            case .devBuild(let v): return "bundled is dev build (\(v)), discarding OTA"
+            case .malformedOTA(let v): return "OTA version malformed (\(v)), discarding"
+            case .newerBundled(let b, let o): return "bundled #\(b) > OTA #\(o), discarding stale OTA"
+            case .sameBundled(let v): return "bundled #\(v) == OTA, discarding redundant OTA"
+            }
+        }
+    }
+
+    /// Check whether the bundled app is newer than the cached OTA version.
+    private func checkBundledVsOTA() -> OTAResetReason {
         guard let otaVersion = defaults.string(forKey: kVersion), !otaVersion.isEmpty else {
-            return false // no OTA version stored
+            return .none
         }
         guard let bundled = bundledVersion() else {
-            return false // can't read bundled version, keep OTA
+            return .none
         }
         guard let otaNum = parseReleaseNum(otaVersion) else {
-            return true // OTA version is malformed, reset
+            return .malformedOTA(otaVersion)
         }
         guard let bundledNum = parseReleaseNum(bundled) else {
-            return true // bundled is a dev build (hash), treat as newer
+            return .devBuild(bundled)
         }
-        return bundledNum >= otaNum
+        if bundledNum > otaNum { return .newerBundled(bundledNum, otaNum) }
+        if bundledNum == otaNum { return .sameBundled(bundledNum) }
+        return .none
     }
 
     override public func load() {
@@ -89,10 +115,9 @@ public class OTAUpdatePlugin: CAPPlugin, CAPBridgedPlugin {
 
         // If the bundled app has been updated (App Store / Xcode rebuild)
         // past the cached OTA version, discard the stale OTA and use bundled.
-        if status != "none" && bundledIsNewerThanOTA() {
-            let otaVer = defaults.string(forKey: kVersion) ?? "?"
-            let bundledVer = bundledVersion() ?? "?"
-            print("[OTA] bundled \(bundledVer) >= OTA \(otaVer), resetting to bundled")
+        let resetReason = checkBundledVsOTA()
+        if status != "none" && resetReason.shouldReset {
+            print("[OTA] \(resetReason.logMessage)")
             if let relPath = relPath, let absPath = resolveAbsPath(relPath) {
                 cleanupUpdateFiles(absPath)
             }
