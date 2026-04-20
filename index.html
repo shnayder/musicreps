@@ -2870,7 +2870,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1469"></div>
+  <div class="home-screen" id="home-screen" data-version="#1472"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -8059,6 +8059,8 @@ body.native-sim #app {
     return {
       modeId: def.id,
       namespace: def.namespace,
+      motorTaskType: def.motorTaskType,
+      getResponseCount: def.getExpectedResponseCount,
       groups: scope.kind === "groups" ? scope.groups.map((g4) => ({
         id: g4.id,
         label: g4.label,
@@ -8079,7 +8081,12 @@ body.native-sim #app {
   }
   function computeSkillRecommendation(entry, storage2, motorBaseline, skippedGroups, config) {
     const cfg = motorBaseline !== null ? deriveScaledConfig(motorBaseline) : void 0;
-    const selector = createAdaptiveSelector(storage2, cfg);
+    const selector = createAdaptiveSelector(
+      storage2,
+      cfg,
+      Math.random,
+      entry.getResponseCount ?? null
+    );
     const allGroupIds = entry.groups.filter((g4) => !skippedGroups.has(g4.id)).map((g4) => g4.id);
     if (allGroupIds.length === 0) return notStarted(entry.modeId);
     const groupById = new Map(entry.groups.map((g4) => [g4.id, g4]));
@@ -8201,7 +8208,12 @@ body.native-sim #app {
   }
   function computeProgressForMode(entry, storage2, motorBaseline, skippedGroups) {
     const cfg = motorBaseline !== null ? deriveScaledConfig(motorBaseline) : void 0;
-    const selector = createAdaptiveSelector(storage2, cfg);
+    const selector = createAdaptiveSelector(
+      storage2,
+      cfg,
+      Math.random,
+      entry.getResponseCount ?? null
+    );
     const input = entry.groups.length === 1 ? { kind: "items", itemIds: entry.allItemIds() } : {
       kind: "groups",
       groups: entry.groups.map((g4) => ({
@@ -8219,34 +8231,38 @@ body.native-sim #app {
       activeGroupCount
     };
   }
-  function computeAllProgress(createStorage = createStorageAdapter, motorBaseline = null, getSkipped = loadSkippedGroups) {
+  function computeAllProgress(createStorage = createStorageAdapter, getBaseline = readMotorBaseline, getSkipped = loadSkippedGroups) {
+    const resolveBaseline = typeof getBaseline === "function" ? getBaseline : () => getBaseline;
     const result = /* @__PURE__ */ new Map();
     for (const entry of MODE_PROGRESS_MANIFEST) {
       const skipped = getSkipped(entry.namespace);
+      const baseline = resolveBaseline(entry.motorTaskType ?? "note-button");
       result.set(
         entry.modeId,
         computeProgressForMode(
           entry,
           createStorage(entry.namespace),
-          motorBaseline,
+          baseline,
           skipped
         )
       );
     }
     return result;
   }
-  function computeAllRecommendations(starred, createStorage = createStorageAdapter, motorBaseline = null, getSkipped = loadSkippedGroups, definitionOrder) {
+  function computeAllRecommendations(starred, createStorage = createStorageAdapter, getBaseline = readMotorBaseline, getSkipped = loadSkippedGroups, definitionOrder) {
     if (starred.size === 0) return [];
+    const resolveBaseline = typeof getBaseline === "function" ? getBaseline : () => getBaseline;
     const config = {};
     const perSkill = [];
     for (const entry of MODE_PROGRESS_MANIFEST) {
       if (!starred.has(entry.modeId)) continue;
       const skipped = getSkipped(entry.namespace);
+      const baseline = resolveBaseline(entry.motorTaskType ?? "note-button");
       perSkill.push(
         computeSkillRecommendation(
           entry,
           createStorage(entry.namespace),
-          motorBaseline,
+          baseline,
           skipped,
           config
         )
@@ -8255,9 +8271,9 @@ body.native-sim #app {
     const order = definitionOrder ?? MODE_PROGRESS_MANIFEST.map((e3) => e3.modeId);
     return rankSkillRecommendations(perSkill, order);
   }
-  function readMotorBaseline() {
+  function readMotorBaseline(taskType = "note-button") {
     try {
-      const raw = storage.getItem("motorBaseline_note-button");
+      const raw = storage.getItem("motorBaseline_" + taskType);
       if (raw) {
         const n2 = Number(raw);
         if (!isNaN(n2) && n2 > 0) return n2;
@@ -8290,15 +8306,14 @@ body.native-sim #app {
     }, []);
     const starredKey = T2(() => [...starred].sort().join(","), [starred]);
     return T2(() => {
-      const baseline = readMotorBaseline();
       const progress = computeAllProgress(
         createStorageAdapter,
-        baseline
+        readMotorBaseline
       );
       const recommendations = computeAllRecommendations(
         starred,
         createStorageAdapter,
-        baseline
+        readMotorBaseline
       );
       return { progress, recommendations };
     }, [refreshKey, starredKey]);
