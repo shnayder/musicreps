@@ -2869,7 +2869,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1456"></div>
+  <div class="home-screen" id="home-screen" data-version="#1459"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -5391,11 +5391,6 @@ body.native-sim #app {
         totalCount: items.length
       };
     });
-    results.sort((a3, b2) => {
-      const workDiff = b2.workingCount + b2.unseenCount - (a3.workingCount + a3.unseenCount);
-      if (workDiff !== 0) return workDiff;
-      return a3.groupId.localeCompare(b2.groupId);
-    });
     return results;
   }
   function checkAllItemsAutomatic(getSpeedScore, items) {
@@ -5903,10 +5898,7 @@ body.native-sim #app {
     for (const s3 of statuses) {
       if (s3.reviewStatus === "soon" && (s3.speedLabel === "solid" || s3.speedLabel === "automatic")) {
         recs.push({ groupId: s3.groupId, type: "review" });
-      }
-    }
-    for (const s3 of statuses) {
-      if (s3.speedLabel === "starting" || s3.speedLabel === "hesitant" || s3.speedLabel === "learning") {
+      } else if (s3.speedLabel === "starting" || s3.speedLabel === "hesitant" || s3.speedLabel === "learning") {
         recs.push({ groupId: s3.groupId, type: "practice" });
       }
     }
@@ -8116,9 +8108,8 @@ body.native-sim #app {
     if (result.levelRecs.length === 0) {
       return { modeId, type: "automatic", urgency: 0, cueLabel: "", detail: "" };
     }
-    const firstType = result.levelRecs[0].type;
-    if (firstType === "review") {
-      const reviewIds = result.levelRecs.filter((r3) => r3.type === "review").map((r3) => r3.groupId);
+    const reviewIds = result.levelRecs.filter((r3) => r3.type === "review").map((r3) => r3.groupId);
+    if (reviewIds.length > 0) {
       const detail = singleGroup ? "Review" : `Review ${groupLabelText(reviewIds, labelMap)}`;
       return {
         modeId,
@@ -8128,6 +8119,7 @@ body.native-sim #app {
         detail
       };
     }
+    const firstType = result.levelRecs[0].type;
     if (firstType === "practice" || firstType === "automate") {
       const practiceIds = result.levelRecs.filter((r3) => r3.type === "practice" || r3.type === "automate").map((r3) => r3.groupId);
       const detail = singleGroup ? "Practice" : `Practice ${groupLabelText(practiceIds, labelMap)}`;
