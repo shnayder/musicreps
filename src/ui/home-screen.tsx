@@ -124,23 +124,23 @@ export function SkillCardHeader(
   const name = MODE_NAMES[modeId] || modeId;
   const desc = MODE_DESCRIPTIONS[modeId] || '';
   return (
-    <span class='skill-card-header'>
+    <div class='skill-card-header'>
       <SkillIcon modeId={modeId} />
-      <span class='skill-card-content'>
-        <span class='skill-card-title-block'>
+      <div class='skill-card-content'>
+        <div class='skill-card-title-block'>
           <Text role='heading-card' as='span'>{name}</Text>
           {trackLabel && <TrackPill label={trackLabel} />}
           {!trackLabel && desc && (
             <Text role='body-secondary' as='span'>{desc}</Text>
           )}
-        </span>
+        </div>
         {progress && progress.segments.length > 0 && (
           <div class='skill-card-progress'>
             <GroupProgressBar segments={progress.segments} />
           </div>
         )}
-      </span>
-    </span>
+      </div>
+    </div>
   );
 }
 
@@ -262,13 +262,13 @@ function ActiveSkillCard(
         >
           {'\u2605'}
         </button>
-        <span class='skill-card-header'>
+        <div class='skill-card-header'>
           <SkillIcon modeId={modeId} />
-          <span class='skill-card-content'>
-            <span class='skill-card-title-block'>
+          <div class='skill-card-content'>
+            <div class='skill-card-title-block'>
               <Text role='heading-card' as='span'>{name}</Text>
               <TrackPill label={trackLabel} />
-            </span>
+            </div>
             {hasRec && (
               <span class='skill-rec-hint'>
                 <strong>{rec!.cueLabel}</strong>
@@ -290,8 +290,8 @@ function ActiveSkillCard(
                   />
                 </div>
               )}
-          </span>
-        </span>
+          </div>
+        </div>
       </div>
     </div>
   );

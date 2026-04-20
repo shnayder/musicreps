@@ -322,7 +322,7 @@
   --type-heading-card-size: var(--text-lg);
   --type-heading-card-weight: var(--font-medium);
   --type-heading-card-leading: var(--leading-tight);
-  --type-heading-card-color: var(--neutral-700);
+  --type-heading-card-color: var(--color-text);
   --type-heading-card-family: var(--font-display);
 
   --type-heading-subsection-size: var(--text-base);
@@ -1029,8 +1029,6 @@ body.native-app .brand-strip {
   font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
   color: var(--color-text);
-  margin-top: var(--gap-group);
-  margin-bottom: var(--gap-related);
 }
 .skill-rec-hint > strong {
   color: var(--color-notice-text);

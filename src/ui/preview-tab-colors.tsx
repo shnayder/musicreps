@@ -230,7 +230,7 @@ function AccentSection({ tabId }: { tabId: string }) {
             name: '--color-accent-muted',
             note: 'brand-400 · Secondary accent',
           },
-          { name: '--color-toggle-active', note: 'brand-600 · Toggle fill' },
+          { name: '--color-toggle-active', note: 'brand-500 · Toggle fill' },
           { name: '--color-chrome', note: 'neutral-150 · Segmented bg' },
         ]}
       />
