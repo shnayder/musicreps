@@ -91,7 +91,7 @@ const RAMPS = [
       '950',
     ],
   },
-  { name: 'brand', hueVar: '--hue-brand', steps: ['100', '600', '800'] },
+  { name: 'brand', hueVar: '--hue-brand', steps: ['100', '200', '400', '500', '600', '800'] },
   { name: 'success', hueVar: '--hue-success', steps: ['100', '600', '800'] },
   {
     name: 'error',
@@ -154,7 +154,7 @@ function BrandSuccessSection({ tabId }: { tabId: string }) {
     <Section title='Brand / Success' tabId={tabId}>
       <SwatchGrid
         items={[
-          { name: '--color-brand', note: 'brand-600 · CTA, active toggles' },
+          { name: '--color-brand', note: 'brand-500 · CTA, active toggles' },
           { name: '--color-brand-dark', note: 'brand-800 · Hover, pressed' },
           { name: '--color-brand-bg', note: 'brand-200 · Brand background' },
           { name: '--color-brand-border', note: 'brand-600 · Brand borders' },
@@ -222,7 +222,7 @@ function AccentSection({ tabId }: { tabId: string }) {
       <SwatchGrid
         items={[
           { name: '--color-accent', note: 'brand-600 · Slot underline' },
-          { name: '--color-accent-muted', note: 'hsl · Secondary accent' },
+          { name: '--color-accent-muted', note: 'brand-400 · Secondary accent' },
           { name: '--color-toggle-active', note: 'brand-600 · Toggle fill' },
           { name: '--color-chrome', note: 'neutral-75 · Segmented bg' },
         ]}

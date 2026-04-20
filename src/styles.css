@@ -71,6 +71,8 @@
   /* Brand scale — forest green, anchored on #2D4C3B */
   --brand-100: hsl(var(--hue-brand), 25%, 92%);
   --brand-200: hsl(var(--hue-brand), 35%, 85%);
+  --brand-400: hsl(var(--hue-brand), 30%, 55%);
+  --brand-500: hsl(var(--hue-brand), 30%, 40%);
   --brand-600: #2d4c3b;
   --brand-800: hsl(var(--hue-brand), 30%, 16%);
 
@@ -105,7 +107,7 @@
      ================================================================ */
 
   /* Brand */
-  --color-brand: var(--brand-600);
+  --color-brand: var(--brand-500);
   --color-brand-dark: var(--brand-800);
   --color-brand-bg: var(--brand-200);
   /* Success (correct answers — can diverge from brand) */
@@ -138,7 +140,7 @@
   --color-highlight: var(--notice-600);
   /* UI accents — unified with brand (one accent, not five) */
   --color-accent: var(--brand-600);
-  --color-accent-muted: hsl(var(--hue-brand), 30%, 55%);
+  --color-accent-muted: var(--brand-400);
   --color-toggle-active: var(--color-brand);
   /* Tertiary accent (warm sienna) */
   --color-tertiary: #a0522d;
@@ -1054,14 +1056,15 @@ body.native-app .brand-strip {
 .skill-card-content {
   display: flex;
   flex-direction: column;
+  gap: var(--gap-group);
   min-width: 0;
 }
-.skill-card-content > .pill {
-  align-self: flex-start;
-  margin-bottom: 1px;
+.skill-card-title-block {
+  display: flex;
+  flex-direction: column;
 }
-.active-skill-card .skill-card-content > .pill {
-  margin-bottom: 0;
+.skill-card-title-block > .pill {
+  align-self: flex-start;
   margin-top: 2px;
 }
 .skill-icon {
@@ -1072,9 +1075,7 @@ body.native-app .brand-strip {
 .skill-card.has-rec {
   border-left-color: var(--color-notice);
 }
-.skill-card-progress {
-  margin-top: var(--gap-related);
-}
+.skill-card-progress {}
 /* --- Text link (reusable) --- */
 .text-link {
   font-size: var(--type-control-size);
