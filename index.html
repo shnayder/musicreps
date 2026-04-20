@@ -67,7 +67,7 @@
   --for-hsl-previews-in-vscode2: hsl(32, 95%, 44%); /* secondary: #D97706 */
 
   /* Anchor hues — the main knobs for color exploration */
-  --hue-neutral: 45; /* warm cream (was 240 cool blue-gray) */
+  --hue-neutral: 67; /* was 45 warm cream, trying 67; originally 240 cool blue-gray */
   --hue-brand: 147; /* forest green (was 123) */
   --hue-success: 147; /* correct-answer feedback (split from brand) */
   --hue-error: 4;
@@ -99,6 +99,8 @@
   /* Brand scale — forest green, anchored on #2D4C3B */
   --brand-100: hsl(var(--hue-brand), 25%, 92%);
   --brand-200: hsl(var(--hue-brand), 35%, 85%);
+  --brand-400: hsl(var(--hue-brand), 30%, 55%);
+  --brand-500: hsl(var(--hue-brand), 30%, 40%);
   --brand-600: #2d4c3b;
   --brand-800: hsl(var(--hue-brand), 30%, 16%);
 
@@ -133,7 +135,7 @@
      ================================================================ */
 
   /* Brand */
-  --color-brand: var(--brand-600);
+  --color-brand: var(--brand-500);
   --color-brand-dark: var(--brand-800);
   --color-brand-bg: var(--brand-200);
   /* Success (correct answers — can diverge from brand) */
@@ -166,13 +168,14 @@
   --color-highlight: var(--notice-600);
   /* UI accents — unified with brand (one accent, not five) */
   --color-accent: var(--brand-600);
-  --color-accent-muted: hsl(var(--hue-brand), 30%, 55%);
+  --color-accent-muted: var(--brand-400);
   --color-toggle-active: var(--color-brand);
   /* Tertiary accent (warm sienna) */
   --color-tertiary: #a0522d;
   /* Text */
   --color-text: var(--neutral-800);
-  --color-text-muted: var(--neutral-650);
+  /* --color-text-medium: var(--neutral-700); */
+  --color-text-muted: var(--neutral-700);
   --color-text-light: var(--neutral-550);
   /* Surfaces & backgrounds */
   --color-canvas: var(--neutral-50);
@@ -186,7 +189,7 @@
   --color-surface-pressed: var(--neutral-350);
   --color-surface-accent: var(--neutral-250);
   /* Chrome (segmented controls, toolbar fills, nav bars) */
-  --color-chrome: var(--neutral-75);
+  --color-chrome: var(--neutral-150);
   /* Borders */
   --color-border: var(--neutral-550);
   --color-border-light: var(--neutral-400);
@@ -332,22 +335,28 @@
   --type-display-brand-family: var(--font-display);
 
   /* -- Heading: structural hierarchy -- */
-  --type-heading-page-size: var(--text-lg);
+  --type-heading-page-size: var(--text-md);
   --type-heading-page-weight: var(--font-medium);
   --type-heading-page-leading: var(--leading-tight);
-  --type-heading-page-color: var(--color-text-muted);
+  --type-heading-page-color: var(--color-text);
   --type-heading-page-family: var(--font-display);
 
-  --type-heading-section-size: var(--text-lg);
+  --type-heading-section-size: var(--text-md);
   --type-heading-section-weight: var(--font-medium);
   --type-heading-section-leading: var(--leading-tight);
-  --type-heading-section-color: var(--color-tertiary);
+  --type-heading-section-color: var(--color-text);
   --type-heading-section-family: var(--font-display);
+
+  --type-heading-card-size: var(--text-lg);
+  --type-heading-card-weight: var(--font-medium);
+  --type-heading-card-leading: var(--leading-tight);
+  --type-heading-card-color: var(--color-text);
+  --type-heading-card-family: var(--font-display);
 
   --type-heading-subsection-size: var(--text-base);
   --type-heading-subsection-weight: var(--font-semibold);
   --type-heading-subsection-leading: var(--leading-tight);
-  --type-heading-subsection-color: var(--color-text-muted);
+  --type-heading-subsection-color: var(--color-text);
   --type-heading-subsection-family: var(--font-display);
 
   /* -- Body: readable content -- */
@@ -482,7 +491,7 @@ h1, h2, h3, p {
 }
 html {
   font-size: 106.25%; /* 17px base — aligns with Apple HIG body size */
-  background: var(--color-canvas);
+  background: var(--color-chrome);
   overscroll-behavior: none;
 }
 body {
@@ -497,7 +506,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   color: var(--color-text);
-  background: var(--color-canvas);
+  background: var(--color-chrome);
   border-left: 1px solid var(--color-border-lighter);
   border-right: 1px solid var(--color-border-lighter);
   overscroll-behavior: none;
@@ -536,6 +545,7 @@ body {
   isolation: isolate; /* stacking context so watermark z-index:-1 works */
   flex: 1;
   min-height: 0;
+  background: var(--color-canvas);
   padding-left: max(var(--size-content-inset), env(safe-area-inset-left, 0));
   padding-right: max(var(--size-content-inset), env(safe-area-inset-right, 0));
 }
@@ -1047,8 +1057,6 @@ body.native-app .brand-strip {
   font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
   color: var(--color-text);
-  margin-top: var(--gap-group);
-  margin-bottom: var(--gap-related);
 }
 .skill-rec-hint > strong {
   color: var(--color-notice-text);
@@ -1067,22 +1075,11 @@ body.native-app .brand-strip {
 .skill-card {
   position: relative;
 }
-.skill-card-header {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
-}
-.skill-card-header-text {
-  display: flex;
-  flex-direction: column;
+.skill-card-content {
   min-width: 0;
 }
-.skill-card-header-text > .pill {
+.skill-card-title-block > .pill {
   align-self: flex-start;
-  margin-bottom: 1px;
-}
-.active-skill-card .skill-card-header-text > .pill {
-  margin-bottom: 0;
   margin-top: 2px;
 }
 .skill-icon {
@@ -1092,9 +1089,6 @@ body.native-app .brand-strip {
 /* Left border swaps to notice color when card has a recommendation. */
 .skill-card.has-rec {
   border-left-color: var(--color-notice);
-}
-.skill-card-progress {
-  margin-top: var(--gap-related);
 }
 /* --- Text link (reusable) --- */
 .text-link {
@@ -1138,16 +1132,16 @@ body.native-app .brand-strip {
      invisible. */
   font-size: var(--size-close-btn);
   cursor: pointer;
-  padding: 0 var(--gap-related);
+  padding: 0;
   min-width: var(--size-touch-target);
   min-height: var(--size-touch-target);
-  margin-block: calc(
+  margin: calc(
     (
       var(--type-heading-page-size) * var(--type-heading-page-leading)
         - var(--size-touch-target)
     )
       / 2
-  );
+  ) 0;
   color: var(--color-text-light);
   display: flex;
   align-items: center;
@@ -2044,6 +2038,13 @@ button {
   line-height: var(--type-heading-section-leading);
   color: var(--type-heading-section-color);
 }
+.text-heading-card {
+  font-family: var(--type-heading-card-family);
+  font-size: var(--type-heading-card-size);
+  font-weight: var(--type-heading-card-weight);
+  line-height: var(--type-heading-card-leading);
+  color: var(--type-heading-card-color);
+}
 .text-heading-subsection {
   font-family: var(--type-heading-subsection-family);
   font-size: var(--type-heading-subsection-size);
@@ -2869,7 +2870,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1459"></div>
+  <div class="home-screen" id="home-screen" data-version="#1469"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -6345,42 +6346,42 @@ body.native-sim #app {
     {
       id: "frets-0-3-natural",
       label: () => fretLabel(0, 3),
-      longLabel: () => fretLabel(0, 3) + ", naturals",
+      longLabel: () => fretLabel(0, 3) + " naturals",
       frets: [0, 3],
       noteFilter: "natural"
     },
     {
       id: "frets-0-3-sharps",
-      label: () => fretLabel(0, 3) + " \u266F/\u266D",
-      longLabel: () => fretLabel(0, 3) + " \u266F/\u266D",
+      label: () => fretLabel(0, 3) + "\xA0\u266F/\u266D",
+      longLabel: () => fretLabel(0, 3) + "\xA0\u266F/\u266D",
       frets: [0, 3],
       noteFilter: "sharps-flats"
     },
     {
       id: "frets-4-8-natural",
       label: () => fretLabel(4, 8),
-      longLabel: () => fretLabel(4, 8) + ", naturals",
+      longLabel: () => fretLabel(4, 8) + " naturals",
       frets: [4, 8],
       noteFilter: "natural"
     },
     {
       id: "frets-4-8-sharps",
-      label: () => fretLabel(4, 8) + " \u266F/\u266D",
-      longLabel: () => fretLabel(4, 8) + " \u266F/\u266D",
+      label: () => fretLabel(4, 8) + "\xA0\u266F/\u266D",
+      longLabel: () => fretLabel(4, 8) + "\xA0\u266F/\u266D",
       frets: [4, 8],
       noteFilter: "sharps-flats"
     },
     {
       id: "frets-9-12-natural",
       label: () => fretLabel(9, 12),
-      longLabel: () => fretLabel(9, 12) + ", naturals",
+      longLabel: () => fretLabel(9, 12) + " naturals",
       frets: [9, 12],
       noteFilter: "natural"
     },
     {
       id: "frets-9-12-sharps",
-      label: () => fretLabel(9, 12) + " \u266F/\u266D",
-      longLabel: () => fretLabel(9, 12) + " \u266F/\u266D",
+      label: () => fretLabel(9, 12) + "\xA0\u266F/\u266D",
+      longLabel: () => fretLabel(9, 12) + "\xA0\u266F/\u266D",
       frets: [9, 12],
       noteFilter: "sharps-flats"
     }
@@ -9237,15 +9238,18 @@ body.native-sim #app {
   function TrackPill({ label }) {
     return /* @__PURE__ */ u2(Pill, { variant: "track", children: label });
   }
-  function SkillCardHeader({ modeId, trackLabel }) {
+  function SkillCardHeader({ modeId, trackLabel, progress }) {
     const name = MODE_NAMES[modeId] || modeId;
     const desc = MODE_DESCRIPTIONS[modeId] || "";
-    return /* @__PURE__ */ u2("span", { class: "skill-card-header", children: [
+    return /* @__PURE__ */ u2(Bar, { gap: "group", class: "skill-card-header", children: [
       /* @__PURE__ */ u2(SkillIcon, { modeId }),
-      /* @__PURE__ */ u2("span", { class: "skill-card-header-text", children: [
-        trackLabel && /* @__PURE__ */ u2(TrackPill, { label: trackLabel }),
-        /* @__PURE__ */ u2(Text, { role: "heading-section", as: "span", children: name }),
-        /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "span", children: desc })
+      /* @__PURE__ */ u2(Stack, { gap: "group", class: "skill-card-content", children: [
+        /* @__PURE__ */ u2(Stack, { gap: "micro", class: "skill-card-title-block", children: [
+          /* @__PURE__ */ u2(Text, { role: "heading-card", as: "span", children: name }),
+          trackLabel && /* @__PURE__ */ u2(TrackPill, { label: trackLabel }),
+          !trackLabel && desc && /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "span", children: desc })
+        ] }),
+        progress && progress.segments.length > 0 && /* @__PURE__ */ u2(GroupProgressBar, { segments: progress.segments })
       ] })
     ] });
   }
@@ -9284,8 +9288,7 @@ body.native-sim #app {
               children: isStarred ? "\u2605" : "\u2606"
             }
           ),
-          /* @__PURE__ */ u2(SkillCardHeader, { modeId }),
-          progress && progress.segments.length > 0 && /* @__PURE__ */ u2("div", { class: "skill-card-progress", children: /* @__PURE__ */ u2(GroupProgressBar, { segments: progress.segments }) })
+          /* @__PURE__ */ u2(SkillCardHeader, { modeId, progress })
         ]
       }
     );
@@ -9333,23 +9336,25 @@ body.native-sim #app {
               children: "\u2605"
             }
           ),
-          /* @__PURE__ */ u2("span", { class: "skill-card-header", children: [
+          /* @__PURE__ */ u2(Bar, { gap: "group", class: "skill-card-header", children: [
             /* @__PURE__ */ u2(SkillIcon, { modeId }),
-            /* @__PURE__ */ u2("span", { class: "skill-card-header-text", children: [
-              /* @__PURE__ */ u2(Text, { role: "heading-section", as: "span", children: name }),
-              /* @__PURE__ */ u2(TrackPill, { label: trackLabel }),
+            /* @__PURE__ */ u2(Stack, { gap: "group", class: "skill-card-content", children: [
+              /* @__PURE__ */ u2(Stack, { gap: "micro", class: "skill-card-title-block", children: [
+                /* @__PURE__ */ u2(Text, { role: "heading-card", as: "span", children: name }),
+                /* @__PURE__ */ u2(TrackPill, { label: trackLabel })
+              ] }),
               hasRec && /* @__PURE__ */ u2("span", { class: "skill-rec-hint", children: [
                 /* @__PURE__ */ u2("strong", { children: rec.cueLabel }),
                 rec.detail !== rec.cueLabel && (rec.detail.startsWith(rec.cueLabel) ? ` ${rec.detail.slice(rec.cueLabel.length).trimStart()}` : ` \u2014 ${rec.detail}`)
-              ] })
+              ] }),
+              progress && (progress.segments.length > 0 || progress.activeGroupCount > 0) && /* @__PURE__ */ u2(
+                GroupProgressBar,
+                {
+                  segments: progress.segments.length > 0 ? progress.segments : notStartedSegments(progress.activeGroupCount)
+                }
+              )
             ] })
-          ] }),
-          progress && (progress.segments.length > 0 || progress.activeGroupCount > 0) && /* @__PURE__ */ u2("div", { class: "skill-card-progress", children: /* @__PURE__ */ u2(
-            GroupProgressBar,
-            {
-              segments: progress.segments.length > 0 ? progress.segments : notStartedSegments(progress.activeGroupCount)
-            }
-          ) })
+          ] })
         ] })
       }
     );
