@@ -1820,10 +1820,10 @@ button {
    ========================================================================== */
 
 /* Info line rendered above the answer grid (e.g., Interval Math surfacing
-   the correct double-accidental spelling after an enharmonic tap). */
+   the correct double-accidental spelling after an enharmonic tap).
+   Color comes from the body-secondary text role. */
 .above-buttons-text {
   text-align: center;
-  color: var(--color-text-muted);
   margin: 0 auto var(--gap-related);
   max-width: var(--size-answer-grid);
 }
@@ -2879,7 +2879,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="ce0df5 fix-interval-math-bugs-ayhif"></div>
+  <div class="home-screen" id="home-screen" data-version="9485a6 fix-interval-math-bugs-ayhif"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -11960,7 +11960,7 @@ Build: ${version}
           aboveButtons && /* @__PURE__ */ u2(
             Text,
             {
-              role: "body",
+              role: "body-secondary",
               as: "div",
               class: "above-buttons-text",
               children: aboveButtons
