@@ -127,9 +127,13 @@ export function SkillCardHeader(
     <span class='skill-card-header'>
       <SkillIcon modeId={modeId} />
       <span class='skill-card-content'>
-        {trackLabel && <TrackPill label={trackLabel} />}
-        <Text role='heading-card' as='span'>{name}</Text>
-        <Text role='body-secondary' as='span'>{desc}</Text>
+        <span class='skill-card-title-block'>
+          <Text role='heading-card' as='span'>{name}</Text>
+          {trackLabel && <TrackPill label={trackLabel} />}
+          {!trackLabel && desc && (
+            <Text role='body-secondary' as='span'>{desc}</Text>
+          )}
+        </span>
         {progress && progress.segments.length > 0 && (
           <div class='skill-card-progress'>
             <GroupProgressBar segments={progress.segments} />
@@ -261,8 +265,10 @@ function ActiveSkillCard(
         <span class='skill-card-header'>
           <SkillIcon modeId={modeId} />
           <span class='skill-card-content'>
-            <Text role='heading-card' as='span'>{name}</Text>
-            <TrackPill label={trackLabel} />
+            <span class='skill-card-title-block'>
+              <Text role='heading-card' as='span'>{name}</Text>
+              <TrackPill label={trackLabel} />
+            </span>
             {hasRec && (
               <span class='skill-rec-hint'>
                 <strong>{rec!.cueLabel}</strong>
