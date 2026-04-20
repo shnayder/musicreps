@@ -2869,7 +2869,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1447"></div>
+  <div class="home-screen" id="home-screen" data-version="#1450"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -6435,9 +6435,10 @@ body.native-sim #app {
   function getAllGroupIds(instrument) {
     return getGroups(instrument).map((g4) => g4.id);
   }
-  function getQuestion(instrument, itemId2) {
+  function getQuestion(instrument, itemId2, ctx) {
     const fb = getHelpers(instrument);
-    return fb.parseFretboardItem(itemId2);
+    const base = fb.parseFretboardItem(itemId2);
+    return { ...base, useFlats: ctx?.useFlats ?? false };
   }
   function formatLabel(instrument, enabledGroups) {
     const groups = getGroups(instrument);
@@ -6472,14 +6473,21 @@ body.native-sim #app {
       beforeAfter: MODE_BEFORE_AFTER[instrument.id],
       itemNoun: "positions",
       allItems: allItems2,
-      getQuestion: (itemId2) => getQuestion(instrument, itemId2),
+      getQuestion: (itemId2, ctx) => getQuestion(instrument, itemId2, ctx),
       getPromptText: () => "Name this note",
       quizInstruction: "What note is this?",
       answer: {
         getExpectedValue: (q4) => q4.currentNote,
-        comparison: "note-enharmonic"
+        comparison: "note-enharmonic",
+        getDisplayAnswer: (q4) => {
+          const note = NOTES.find((n2) => n2.name === q4.currentNote);
+          return displayNote(
+            pickAccidentalName(note?.displayName ?? q4.currentNote, q4.useFlats)
+          );
+        }
       },
       validateInput: (_q, input) => isValidNoteInput(input),
+      getUseFlats: (q4) => q4.useFlats,
       buttons: { kind: "note", columns: 6 },
       scope: {
         kind: "groups",
@@ -12324,6 +12332,7 @@ Build: ${version}
       roundTimerExpired: false,
       roundResponseTimes: [],
       roundDurationMs: 0,
+      roundUseFlats: false,
       // Progress tracking
       masteredCount: 0,
       totalEnabledCount: 0,
@@ -12342,7 +12351,7 @@ Build: ${version}
       answersEnabled: false
     };
   }
-  function engineStart(state) {
+  function engineStart(state, rng = Math.random) {
     return {
       ...state,
       phase: "active",
@@ -12354,7 +12363,8 @@ Build: ${version}
       roundAnswered: 0,
       roundCorrect: 0,
       roundTimerExpired: false,
-      roundResponseTimes: []
+      roundResponseTimes: [],
+      roundUseFlats: rng() < 0.5
     };
   }
   function engineNextQuestion(state, nextItemId, nowMs) {
@@ -12409,7 +12419,7 @@ Build: ${version}
       hintText: ""
     };
   }
-  function engineContinueRound(state) {
+  function engineContinueRound(state, rng = Math.random) {
     return {
       ...state,
       phase: "active",
@@ -12417,7 +12427,8 @@ Build: ${version}
       roundAnswered: 0,
       roundCorrect: 0,
       roundTimerExpired: false,
-      roundResponseTimes: []
+      roundResponseTimes: [],
+      roundUseFlats: rng() < 0.5
     };
   }
   function engineStop(_state) {
@@ -13190,8 +13201,14 @@ Build: ${version}
   function useGenericDerivedState(def, engine, learner, groupScopeResult, currentQRef, seqInput, multiTapInput, isSequential, container, onMount, presentationPhase, deactivateCleanup) {
     const currentQ = T2(() => {
       const id = engine.state.currentItemId;
-      return !id || engine.state.phase === "idle" ? null : def.getQuestion(id);
-    }, [engine.state.currentItemId, engine.state.phase, def]);
+      if (!id || engine.state.phase === "idle") return null;
+      return def.getQuestion(id, { useFlats: engine.state.roundUseFlats });
+    }, [
+      engine.state.currentItemId,
+      engine.state.phase,
+      engine.state.roundUseFlats,
+      def
+    ]);
     currentQRef.current = currentQ;
     if (isSequential) seqInput.resetOnItemChange(engine.state.currentItemId);
     if (def.multiTap) multiTapInput.resetOnItemChange(engine.state.currentItemId);
