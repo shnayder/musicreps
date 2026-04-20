@@ -115,9 +115,10 @@ export function TrackPill(
 // ---------------------------------------------------------------------------
 
 export function SkillCardHeader(
-  { modeId, trackLabel }: {
+  { modeId, trackLabel, progress }: {
     modeId: string;
     trackLabel?: string;
+    progress?: ModeProgress;
   },
 ) {
   const name = MODE_NAMES[modeId] || modeId;
@@ -125,10 +126,15 @@ export function SkillCardHeader(
   return (
     <span class='skill-card-header'>
       <SkillIcon modeId={modeId} />
-      <span class='skill-card-header-text'>
+      <span class='skill-card-content'>
         {trackLabel && <TrackPill label={trackLabel} />}
-        <Text role='heading-section' as='span'>{name}</Text>
+        <Text role='heading-card' as='span'>{name}</Text>
         <Text role='body-secondary' as='span'>{desc}</Text>
+        {progress && progress.segments.length > 0 && (
+          <div class='skill-card-progress'>
+            <GroupProgressBar segments={progress.segments} />
+          </div>
+        )}
       </span>
     </span>
   );
@@ -189,12 +195,7 @@ export function SkillCard(
       >
         {isStarred ? '\u2605' : '\u2606'}
       </button>
-      <SkillCardHeader modeId={modeId} />
-      {progress && progress.segments.length > 0 && (
-        <div class='skill-card-progress'>
-          <GroupProgressBar segments={progress.segments} />
-        </div>
-      )}
+      <SkillCardHeader modeId={modeId} progress={progress} />
     </div>
   );
 }
@@ -259,8 +260,8 @@ function ActiveSkillCard(
         </button>
         <span class='skill-card-header'>
           <SkillIcon modeId={modeId} />
-          <span class='skill-card-header-text'>
-            <Text role='heading-section' as='span'>{name}</Text>
+          <span class='skill-card-content'>
+            <Text role='heading-card' as='span'>{name}</Text>
             <TrackPill label={trackLabel} />
             {hasRec && (
               <span class='skill-rec-hint'>
@@ -271,20 +272,20 @@ function ActiveSkillCard(
                     : ` \u2014 ${rec!.detail}`)}
               </span>
             )}
+            {progress &&
+              (progress.segments.length > 0 ||
+                progress.activeGroupCount > 0) &&
+              (
+                <div class='skill-card-progress'>
+                  <GroupProgressBar
+                    segments={progress.segments.length > 0
+                      ? progress.segments
+                      : notStartedSegments(progress.activeGroupCount)}
+                  />
+                </div>
+              )}
           </span>
         </span>
-        {progress &&
-          (progress.segments.length > 0 ||
-            progress.activeGroupCount > 0) &&
-          (
-            <div class='skill-card-progress'>
-              <GroupProgressBar
-                segments={progress.segments.length > 0
-                  ? progress.segments
-                  : notStartedSegments(progress.activeGroupCount)}
-              />
-            </div>
-          )}
       </div>
     </div>
   );

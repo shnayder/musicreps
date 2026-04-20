@@ -144,7 +144,8 @@
   --color-tertiary: #a0522d;
   /* Text */
   --color-text: var(--neutral-800);
-  --color-text-muted: var(--neutral-650);
+  /* --color-text-medium: var(--neutral-700); */
+  --color-text-muted: var(--neutral-700);
   --color-text-light: var(--neutral-550);
   /* Surfaces & backgrounds */
   --color-canvas: var(--neutral-50);
@@ -304,22 +305,28 @@
   --type-display-brand-family: var(--font-display);
 
   /* -- Heading: structural hierarchy -- */
-  --type-heading-page-size: var(--text-lg);
+  --type-heading-page-size: var(--text-md);
   --type-heading-page-weight: var(--font-medium);
   --type-heading-page-leading: var(--leading-tight);
-  --type-heading-page-color: var(--color-text-muted);
+  --type-heading-page-color: var(--color-text);
   --type-heading-page-family: var(--font-display);
 
-  --type-heading-section-size: var(--text-lg);
+  --type-heading-section-size: var(--text-md);
   --type-heading-section-weight: var(--font-medium);
   --type-heading-section-leading: var(--leading-tight);
-  --type-heading-section-color: var(--color-tertiary);
+  --type-heading-section-color: var(--color-text);
   --type-heading-section-family: var(--font-display);
+
+  --type-heading-card-size: var(--text-lg);
+  --type-heading-card-weight: var(--font-medium);
+  --type-heading-card-leading: var(--leading-tight);
+  --type-heading-card-color: var(--neutral-700);
+  --type-heading-card-family: var(--font-display);
 
   --type-heading-subsection-size: var(--text-base);
   --type-heading-subsection-weight: var(--font-semibold);
   --type-heading-subsection-leading: var(--leading-tight);
-  --type-heading-subsection-color: var(--color-text-muted);
+  --type-heading-subsection-color: var(--color-text);
   --type-heading-subsection-family: var(--font-display);
 
   /* -- Body: readable content -- */
@@ -1044,16 +1051,16 @@ body.native-app .brand-strip {
   align-items: center;
   gap: var(--gap-group);
 }
-.skill-card-header-text {
+.skill-card-content {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
-.skill-card-header-text > .pill {
+.skill-card-content > .pill {
   align-self: flex-start;
   margin-bottom: 1px;
 }
-.active-skill-card .skill-card-header-text > .pill {
+.active-skill-card .skill-card-content > .pill {
   margin-bottom: 0;
   margin-top: 2px;
 }
@@ -1110,16 +1117,16 @@ body.native-app .brand-strip {
      invisible. */
   font-size: var(--size-close-btn);
   cursor: pointer;
-  padding: 0 var(--gap-related);
+  padding: 0;
   min-width: var(--size-touch-target);
   min-height: var(--size-touch-target);
-  margin-block: calc(
+  margin: calc(
     (
       var(--type-heading-page-size) * var(--type-heading-page-leading)
         - var(--size-touch-target)
     )
       / 2
-  );
+  ) 0;
   color: var(--color-text-light);
   display: flex;
   align-items: center;
@@ -2015,6 +2022,13 @@ button {
   font-weight: var(--type-heading-section-weight);
   line-height: var(--type-heading-section-leading);
   color: var(--type-heading-section-color);
+}
+.text-heading-card {
+  font-family: var(--type-heading-card-family);
+  font-size: var(--type-heading-card-size);
+  font-weight: var(--type-heading-card-weight);
+  line-height: var(--type-heading-card-leading);
+  color: var(--type-heading-card-color);
 }
 .text-heading-subsection {
   font-family: var(--type-heading-subsection-family);

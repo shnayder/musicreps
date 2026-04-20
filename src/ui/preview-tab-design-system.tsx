@@ -269,6 +269,7 @@ const ROLE_GROUPS: Array<{
     roles: [
       { role: 'heading-page', sample: 'Guitar Fretboard' },
       { role: 'heading-section', sample: 'Section Title' },
+      { role: 'heading-card', sample: 'Card Title' },
       { role: 'heading-subsection', sample: 'Subsection' },
     ],
   },
