@@ -350,7 +350,7 @@
   --type-heading-card-size: var(--text-lg);
   --type-heading-card-weight: var(--font-medium);
   --type-heading-card-leading: var(--leading-tight);
-  --type-heading-card-color: var(--neutral-700);
+  --type-heading-card-color: var(--color-text);
   --type-heading-card-family: var(--font-display);
 
   --type-heading-subsection-size: var(--text-base);
@@ -1057,8 +1057,6 @@ body.native-app .brand-strip {
   font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
   color: var(--color-text);
-  margin-top: var(--gap-group);
-  margin-bottom: var(--gap-related);
 }
 .skill-rec-hint > strong {
   color: var(--color-notice-text);
@@ -2884,7 +2882,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="a7f53b design-cleanup-typography-cards"></div>
+  <div class="home-screen" id="home-screen" data-version="7344b2 design-cleanup-typography-cards"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -9255,10 +9253,10 @@ body.native-sim #app {
   function SkillCardHeader({ modeId, trackLabel, progress }) {
     const name = MODE_NAMES[modeId] || modeId;
     const desc = MODE_DESCRIPTIONS[modeId] || "";
-    return /* @__PURE__ */ u2("span", { class: "skill-card-header", children: [
+    return /* @__PURE__ */ u2("div", { class: "skill-card-header", children: [
       /* @__PURE__ */ u2(SkillIcon, { modeId }),
-      /* @__PURE__ */ u2("span", { class: "skill-card-content", children: [
-        /* @__PURE__ */ u2("span", { class: "skill-card-title-block", children: [
+      /* @__PURE__ */ u2("div", { class: "skill-card-content", children: [
+        /* @__PURE__ */ u2("div", { class: "skill-card-title-block", children: [
           /* @__PURE__ */ u2(Text, { role: "heading-card", as: "span", children: name }),
           trackLabel && /* @__PURE__ */ u2(TrackPill, { label: trackLabel }),
           !trackLabel && desc && /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "span", children: desc })
@@ -9350,10 +9348,10 @@ body.native-sim #app {
               children: "\u2605"
             }
           ),
-          /* @__PURE__ */ u2("span", { class: "skill-card-header", children: [
+          /* @__PURE__ */ u2("div", { class: "skill-card-header", children: [
             /* @__PURE__ */ u2(SkillIcon, { modeId }),
-            /* @__PURE__ */ u2("span", { class: "skill-card-content", children: [
-              /* @__PURE__ */ u2("span", { class: "skill-card-title-block", children: [
+            /* @__PURE__ */ u2("div", { class: "skill-card-content", children: [
+              /* @__PURE__ */ u2("div", { class: "skill-card-title-block", children: [
                 /* @__PURE__ */ u2(Text, { role: "heading-card", as: "span", children: name }),
                 /* @__PURE__ */ u2(TrackPill, { label: trackLabel })
               ] }),
