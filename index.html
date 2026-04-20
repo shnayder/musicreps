@@ -2870,7 +2870,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1472"></div>
+  <div class="home-screen" id="home-screen" data-version="#1475"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -3778,6 +3778,20 @@ body.native-sim #app {
       } catch {
         _fallback.delete(key);
       }
+    },
+    keys() {
+      try {
+        const ls = getLocalStorage();
+        if (!ls) return [..._fallback.keys()];
+        const out = [];
+        for (let i3 = 0; i3 < ls.length; i3++) {
+          const k3 = ls.key(i3);
+          if (k3 !== null) out.push(k3);
+        }
+        return out;
+      } catch {
+        return [..._fallback.keys()];
+      }
     }
   };
   var _preferences = null;
@@ -3796,6 +3810,9 @@ body.native-sim #app {
         cache.delete(key);
         prefs.remove({ key }).catch(() => {
         });
+      },
+      keys() {
+        return [...cache.keys()];
       }
     };
   }
@@ -3803,7 +3820,8 @@ body.native-sim #app {
   var storage = {
     getItem: (key) => _storage.getItem(key),
     setItem: (key, value) => _storage.setItem(key, value),
-    removeItem: (key) => _storage.removeItem(key)
+    removeItem: (key) => _storage.removeItem(key),
+    keys: () => _storage.keys()
   };
   function isNative() {
     return !!(typeof window !== "undefined" && // deno-lint-ignore no-explicit-any
@@ -5809,6 +5827,62 @@ body.native-sim #app {
   function Pill({ variant, children }) {
     const cls = variant ? `pill pill-${variant}` : "pill";
     return /* @__PURE__ */ u2("span", { class: cls, children });
+  }
+
+  // src/export-data.ts
+  function buildExport(opts) {
+    const src = opts.source ?? storage;
+    const now = opts.now ?? /* @__PURE__ */ new Date();
+    const keys = [...src.keys()].sort();
+    const data = {};
+    for (const key of keys) {
+      const raw = src.getItem(key);
+      if (raw === null) continue;
+      data[key] = parseValue(raw);
+    }
+    return {
+      schemaVersion: 1,
+      exportedAt: now.toISOString(),
+      appVersion: opts.appVersion,
+      backend: opts.backend,
+      keyCount: Object.keys(data).length,
+      data
+    };
+  }
+  function parseValue(raw) {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return raw;
+    }
+  }
+  function exportFilename(appVersion, now) {
+    const stamp = formatTimestamp(now);
+    const safe = sanitizeVersion(appVersion);
+    const suffix = safe ? `${safe}-` : "";
+    return `musicreps-export-${suffix}${stamp}.json`;
+  }
+  function sanitizeVersion(v3) {
+    return v3.replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+  function formatTimestamp(d4) {
+    const pad = (n2) => String(n2).padStart(2, "0");
+    return `${d4.getFullYear()}${pad(d4.getMonth() + 1)}${pad(d4.getDate())}-${pad(d4.getHours())}${pad(d4.getMinutes())}${pad(d4.getSeconds())}`;
+  }
+  function detectBackend() {
+    return isNative() ? "native" : "web";
+  }
+  function downloadExport(payload, filename) {
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a3 = document.createElement("a");
+    a3.href = url;
+    a3.download = filename;
+    document.body.appendChild(a3);
+    a3.click();
+    a3.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 6e4);
   }
 
   // src/recommendations.ts
@@ -9543,8 +9617,14 @@ Build: ${version}
       onOpenDev && /* @__PURE__ */ u2(Section, { heading: "Developer", children: /* @__PURE__ */ u2("div", { class: "settings-link-list", children: /* @__PURE__ */ u2("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" }) }) })
     ] });
   }
-  function DevPage({ onClose }) {
+  function DevPage({ version, onClose }) {
     const [data] = d2(getDevPanelData);
+    const handleExport = q2(() => {
+      const backend = detectBackend();
+      const now = /* @__PURE__ */ new Date();
+      const payload = buildExport({ appVersion: version, backend, now });
+      downloadExport(payload, exportFilename(version, now));
+    }, [version]);
     return /* @__PURE__ */ u2(Stack, { gap: "component", class: "settings-page", children: [
       /* @__PURE__ */ u2("div", { class: "settings-page-header", children: [
         /* @__PURE__ */ u2(CloseButton, { ariaLabel: "Close", onClick: onClose }),
@@ -9571,7 +9651,8 @@ Build: ${version}
           headers: ["Date", "Reps"],
           rows: data.recentDays.map((d4) => [d4.date, String(d4.count)])
         }
-      ) })
+      ) }),
+      /* @__PURE__ */ u2(DevSection, { title: "Export", children: /* @__PURE__ */ u2("div", { class: "settings-link-list", children: /* @__PURE__ */ u2("button", { type: "button", class: "text-link", onClick: handleExport, children: "Export data" }) }) })
     ] });
   }
   function DevSection({ title, children }) {
@@ -9816,7 +9897,7 @@ Build: ${version}
       onOpenDev: showDevLink ? () => setShowDev(true) : void 0
     });
     if (showDev) {
-      return /* @__PURE__ */ u2(DevPage, { onClose: () => setShowDev(false) });
+      return /* @__PURE__ */ u2(DevPage, { version, onClose: () => setShowDev(false) });
     }
     return /* @__PURE__ */ u2(ScreenLayout, { class: "home-screen-layout", children: [
       /* @__PURE__ */ u2(LayoutHeader, { children: /* @__PURE__ */ u2(
