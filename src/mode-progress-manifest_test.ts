@@ -88,6 +88,40 @@ describe('MODE_PROGRESS_MANIFEST', () => {
   });
 });
 
+describe('motor task type + response count forwarding', () => {
+  it('forwards motorTaskType from mode definitions', () => {
+    // These are the non-default task types — regressions here would silently
+    // break home/skill progress-bar color parity.
+    const expected: Record<string, string> = {
+      guitarChordShapes: 'fretboard-tap',
+      ukuleleChordShapes: 'fretboard-tap',
+      speedTap: 'fretboard-tap',
+      chordSpelling: 'chord-sequence',
+    };
+    for (const [modeId, taskType] of Object.entries(expected)) {
+      const entry = getModeProgress(modeId)!;
+      assert.equal(
+        entry.motorTaskType,
+        taskType,
+        `${modeId} should forward motorTaskType`,
+      );
+    }
+  });
+
+  it('forwards getResponseCount for multi-response modes', () => {
+    const chordShapes = getModeProgress('guitarChordShapes')!;
+    assert.ok(
+      chordShapes.getResponseCount,
+      'guitarChordShapes should forward getResponseCount',
+    );
+    const someId = chordShapes.allItemIds()[0];
+    assert.ok(
+      chordShapes.getResponseCount!(someId) > 1,
+      `guitarChordShapes item ${someId} should be multi-response`,
+    );
+  });
+});
+
 describe('getModeProgress', () => {
   it('returns entry for known mode', () => {
     const entry = getModeProgress('semitoneMath');
