@@ -3,7 +3,7 @@
 // recomputed on mount and on navigate-home.
 
 import { useEffect, useMemo, useState } from 'preact/hooks';
-import type { StorageAdapter } from '../types.ts';
+import type { MotorTaskType, StorageAdapter } from '../types.ts';
 import { storage } from '../storage.ts';
 import {
   createAdaptiveSelector,
@@ -66,7 +66,8 @@ export function loadSkippedGroups(namespace: string): ReadonlySet<string> {
 }
 
 /** Compute progress for a single mode, filtering out skipped groups.
- *  Returns empty segments if no items have been practiced (not started). */
+ *  Returns empty segments if no items have been practiced (not started).
+ *  `motorBaseline` should be the baseline for this mode's `motorTaskType`. */
 export function computeProgressForMode(
   entry: ModeProgressEntry,
   storage: StorageAdapter,
@@ -76,7 +77,12 @@ export function computeProgressForMode(
   const cfg = motorBaseline !== null
     ? deriveScaledConfig(motorBaseline)
     : undefined;
-  const selector = createAdaptiveSelector(storage, cfg);
+  const selector = createAdaptiveSelector(
+    storage,
+    cfg,
+    Math.random,
+    entry.getResponseCount ?? null,
+  );
 
   const input: ProgressColorInput = entry.groups.length === 1
     ? { kind: 'items', itemIds: entry.allItemIds() }
@@ -105,21 +111,30 @@ export function computeProgressForMode(
   };
 }
 
-/** Compute progress for all modes. Exported for testing. */
+/** Baseline lookup by motor task type. */
+export type BaselineReader = (taskType: MotorTaskType) => number | null;
+
+/** Compute progress for all modes. Exported for testing.
+ *  `getBaseline` resolves the per-task-type motor baseline; accepts either a
+ *  lookup function or a scalar (applied to all modes). */
 export function computeAllProgress(
   createStorage: (ns: string) => StorageAdapter = createStorageAdapter,
-  motorBaseline: number | null = null,
+  getBaseline: BaselineReader | number | null = readMotorBaseline,
   getSkipped: (ns: string) => ReadonlySet<string> = loadSkippedGroups,
 ): Map<string, ModeProgress> {
+  const resolveBaseline: BaselineReader = typeof getBaseline === 'function'
+    ? getBaseline
+    : () => getBaseline;
   const result = new Map<string, ModeProgress>();
   for (const entry of MODE_PROGRESS_MANIFEST) {
     const skipped = getSkipped(entry.namespace);
+    const baseline = resolveBaseline(entry.motorTaskType ?? 'note-button');
     result.set(
       entry.modeId,
       computeProgressForMode(
         entry,
         createStorage(entry.namespace),
-        motorBaseline,
+        baseline,
         skipped,
       ),
     );
@@ -138,23 +153,27 @@ export function computeAllProgress(
 export function computeAllRecommendations(
   starred: ReadonlySet<string>,
   createStorage: (ns: string) => StorageAdapter = createStorageAdapter,
-  motorBaseline: number | null = null,
+  getBaseline: BaselineReader | number | null = readMotorBaseline,
   getSkipped: (ns: string) => ReadonlySet<string> = loadSkippedGroups,
   definitionOrder?: string[],
 ): SkillRecommendation[] {
   if (starred.size === 0) return [];
 
+  const resolveBaseline: BaselineReader = typeof getBaseline === 'function'
+    ? getBaseline
+    : () => getBaseline;
   const config = {};
   const perSkill: SkillRecommendation[] = [];
 
   for (const entry of MODE_PROGRESS_MANIFEST) {
     if (!starred.has(entry.modeId)) continue;
     const skipped = getSkipped(entry.namespace);
+    const baseline = resolveBaseline(entry.motorTaskType ?? 'note-button');
     perSkill.push(
       computeSkillRecommendation(
         entry,
         createStorage(entry.namespace),
-        motorBaseline,
+        baseline,
         skipped,
         config,
       ),
@@ -171,9 +190,11 @@ export function computeAllRecommendations(
 // ---------------------------------------------------------------------------
 
 /** Read motor baseline from storage (with NaN guard). */
-function readMotorBaseline(): number | null {
+function readMotorBaseline(
+  taskType: MotorTaskType = 'note-button',
+): number | null {
   try {
-    const raw = storage.getItem('motorBaseline_note-button');
+    const raw = storage.getItem('motorBaseline_' + taskType);
     if (raw) {
       const n = Number(raw);
       if (!isNaN(n) && n > 0) return n;
@@ -242,15 +263,14 @@ export function useHomeProgress(
   const starredKey = useMemo(() => [...starred].sort().join(','), [starred]);
 
   return useMemo(() => {
-    const baseline = readMotorBaseline();
     const progress = computeAllProgress(
       createStorageAdapter,
-      baseline,
+      readMotorBaseline,
     );
     const recommendations = computeAllRecommendations(
       starred,
       createStorageAdapter,
-      baseline,
+      readMotorBaseline,
     );
     return { progress, recommendations };
     // eslint-disable-next-line react-hooks/exhaustive-deps

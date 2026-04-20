@@ -62,7 +62,12 @@ export function computeSkillRecommendation(
   const cfg = motorBaseline !== null
     ? deriveScaledConfig(motorBaseline)
     : undefined;
-  const selector = createAdaptiveSelector(storage, cfg);
+  const selector = createAdaptiveSelector(
+    storage,
+    cfg,
+    Math.random,
+    entry.getResponseCount ?? null,
+  );
 
   // Build active group IDs (all minus skipped).
   const allGroupIds: string[] = entry.groups
