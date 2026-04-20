@@ -1792,10 +1792,10 @@ button {
    ========================================================================== */
 
 /* Info line rendered above the answer grid (e.g., Interval Math surfacing
-   the correct double-accidental spelling after an enharmonic tap). */
+   the correct double-accidental spelling after an enharmonic tap).
+   Color comes from the body-secondary text role. */
 .above-buttons-text {
   text-align: center;
-  color: var(--color-text-muted);
   margin: 0 auto var(--gap-related);
   max-width: var(--size-answer-grid);
 }

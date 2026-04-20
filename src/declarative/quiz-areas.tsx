@@ -426,7 +426,7 @@ export function StandardQuizArea<Q>(
         <>
           {aboveButtons && (
             <Text
-              role='body'
+              role='body-secondary'
               as='div'
               class='above-buttons-text'
             >

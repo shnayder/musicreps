@@ -90,6 +90,16 @@ describe('toButtonValue', () => {
     assert.equal(toButtonValue('note-enharmonic', 'C'), 'C');
   });
 
+  it('note-enharmonic maps double sharps to enharmonic natural', () => {
+    assert.equal(toButtonValue('note-enharmonic', 'F##'), 'G');
+    assert.equal(toButtonValue('note-enharmonic', 'C##'), 'D');
+  });
+
+  it('note-enharmonic maps double flats to enharmonic natural', () => {
+    assert.equal(toButtonValue('note-enharmonic', 'Ebb'), 'D');
+    assert.equal(toButtonValue('note-enharmonic', 'Dbb'), 'C');
+  });
+
   it('exact passes through unchanged', () => {
     assert.equal(toButtonValue('exact', 'IV'), 'IV');
   });
