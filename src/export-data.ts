@@ -35,7 +35,7 @@ export function buildExport(opts: {
     exportedAt: now.toISOString(),
     appVersion: opts.appVersion,
     backend: opts.backend,
-    keyCount: keys.length,
+    keyCount: Object.keys(data).length,
     data,
   };
 }
@@ -78,14 +78,13 @@ export function downloadExport(
   const json = JSON.stringify(payload, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  try {
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // Defer revocation so Safari / mobile Chrome have time to read the blob
+  // before the URL is released (otherwise the download can silently fail).
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
