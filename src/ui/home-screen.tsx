@@ -115,22 +115,30 @@ export function TrackPill(
 // ---------------------------------------------------------------------------
 
 export function SkillCardHeader(
-  { modeId, trackLabel }: {
+  { modeId, trackLabel, progress }: {
     modeId: string;
     trackLabel?: string;
+    progress?: ModeProgress;
   },
 ) {
   const name = MODE_NAMES[modeId] || modeId;
   const desc = MODE_DESCRIPTIONS[modeId] || '';
   return (
-    <span class='skill-card-header'>
+    <Bar gap='group' class='skill-card-header'>
       <SkillIcon modeId={modeId} />
-      <span class='skill-card-header-text'>
-        {trackLabel && <TrackPill label={trackLabel} />}
-        <Text role='heading-section' as='span'>{name}</Text>
-        <Text role='body-secondary' as='span'>{desc}</Text>
-      </span>
-    </span>
+      <Stack gap='group' class='skill-card-content'>
+        <Stack gap='micro' class='skill-card-title-block'>
+          <Text role='heading-card' as='span'>{name}</Text>
+          {trackLabel && <TrackPill label={trackLabel} />}
+          {!trackLabel && desc && (
+            <Text role='body-secondary' as='span'>{desc}</Text>
+          )}
+        </Stack>
+        {progress && progress.segments.length > 0 && (
+          <GroupProgressBar segments={progress.segments} />
+        )}
+      </Stack>
+    </Bar>
   );
 }
 
@@ -189,12 +197,7 @@ export function SkillCard(
       >
         {isStarred ? '\u2605' : '\u2606'}
       </button>
-      <SkillCardHeader modeId={modeId} />
-      {progress && progress.segments.length > 0 && (
-        <div class='skill-card-progress'>
-          <GroupProgressBar segments={progress.segments} />
-        </div>
-      )}
+      <SkillCardHeader modeId={modeId} progress={progress} />
     </div>
   );
 }
@@ -257,11 +260,13 @@ function ActiveSkillCard(
         >
           {'\u2605'}
         </button>
-        <span class='skill-card-header'>
+        <Bar gap='group' class='skill-card-header'>
           <SkillIcon modeId={modeId} />
-          <span class='skill-card-header-text'>
-            <Text role='heading-section' as='span'>{name}</Text>
-            <TrackPill label={trackLabel} />
+          <Stack gap='group' class='skill-card-content'>
+            <Stack gap='micro' class='skill-card-title-block'>
+              <Text role='heading-card' as='span'>{name}</Text>
+              <TrackPill label={trackLabel} />
+            </Stack>
             {hasRec && (
               <span class='skill-rec-hint'>
                 <strong>{rec!.cueLabel}</strong>
@@ -271,20 +276,18 @@ function ActiveSkillCard(
                     : ` \u2014 ${rec!.detail}`)}
               </span>
             )}
-          </span>
-        </span>
-        {progress &&
-          (progress.segments.length > 0 ||
-            progress.activeGroupCount > 0) &&
-          (
-            <div class='skill-card-progress'>
-              <GroupProgressBar
-                segments={progress.segments.length > 0
-                  ? progress.segments
-                  : notStartedSegments(progress.activeGroupCount)}
-              />
-            </div>
-          )}
+            {progress &&
+              (progress.segments.length > 0 ||
+                progress.activeGroupCount > 0) &&
+              (
+                <GroupProgressBar
+                  segments={progress.segments.length > 0
+                    ? progress.segments
+                    : notStartedSegments(progress.activeGroupCount)}
+                />
+              )}
+          </Stack>
+        </Bar>
       </div>
     </div>
   );

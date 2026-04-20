@@ -10,6 +10,7 @@ export type TextRole =
   // Heading
   | 'heading-page'
   | 'heading-section'
+  | 'heading-card'
   | 'heading-subsection'
   // Body
   | 'body'
