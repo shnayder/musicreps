@@ -2870,7 +2870,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="a5333d add-export-data-button-c93j6"></div>
+  <div class="home-screen" id="home-screen" data-version="34c879 add-export-data-button-c93j6"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -5845,7 +5845,7 @@ body.native-sim #app {
       exportedAt: now.toISOString(),
       appVersion: opts.appVersion,
       backend: opts.backend,
-      keyCount: keys.length,
+      keyCount: Object.keys(data).length,
       data
     };
   }
@@ -5876,16 +5876,13 @@ body.native-sim #app {
     const json = JSON.stringify(payload, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    try {
-      const a3 = document.createElement("a");
-      a3.href = url;
-      a3.download = filename;
-      document.body.appendChild(a3);
-      a3.click();
-      a3.remove();
-    } finally {
-      URL.revokeObjectURL(url);
-    }
+    const a3 = document.createElement("a");
+    a3.href = url;
+    a3.download = filename;
+    document.body.appendChild(a3);
+    a3.click();
+    a3.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 6e4);
   }
 
   // src/recommendations.ts
