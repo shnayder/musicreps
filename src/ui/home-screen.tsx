@@ -575,45 +575,49 @@ function DevPage(
   }, [version]);
 
   return (
-    <Stack gap='component' class='settings-page'>
-      <div class='settings-page-header'>
-        <CloseButton ariaLabel='Close' onClick={onClose} />
-        <Text role='heading-page' as='h1' class='page-heading'>Dev</Text>
-      </div>
+    <ScreenLayout>
+      <LayoutMain>
+        <Stack gap='component' class='settings-page'>
+          <div class='settings-page-header'>
+            <CloseButton ariaLabel='Close' onClick={onClose} />
+            <Text role='heading-page' as='h1' class='page-heading'>Dev</Text>
+          </div>
 
-      <DevSection title='Global'>
-        <DevStatRow label='Total reps' value={data.totalReps} />
-        <DevStatRow label='Days active' value={data.daysActive} />
-      </DevSection>
+          <DevSection title='Global'>
+            <DevStatRow label='Total reps' value={data.totalReps} />
+            <DevStatRow label='Days active' value={data.daysActive} />
+          </DevSection>
 
-      <DevSection title='Per Mode'>
-        <DevTable
-          headers={['Mode', 'Reps', 'Items']}
-          rows={data.modeEfforts.map((m) => [
-            MODE_NAMES[m.id] || m.id,
-            String(m.totalReps),
-            `${m.itemsStarted}/${m.totalItems}`,
-          ])}
-        />
-      </DevSection>
+          <DevSection title='Per Mode'>
+            <DevTable
+              headers={['Mode', 'Reps', 'Items']}
+              rows={data.modeEfforts.map((m) => [
+                MODE_NAMES[m.id] || m.id,
+                String(m.totalReps),
+                `${m.itemsStarted}/${m.totalItems}`,
+              ])}
+            />
+          </DevSection>
 
-      {data.recentDays.length > 0 && (
-        <DevSection title='Recent Days'>
-          <DevTable
-            headers={['Date', 'Reps']}
-            rows={data.recentDays.map((d) => [d.date, String(d.count)])}
-          />
-        </DevSection>
-      )}
+          {data.recentDays.length > 0 && (
+            <DevSection title='Recent Days'>
+              <DevTable
+                headers={['Date', 'Reps']}
+                rows={data.recentDays.map((d) => [d.date, String(d.count)])}
+              />
+            </DevSection>
+          )}
 
-      <DevSection title='Export'>
-        <div class='settings-link-list'>
-          <button type='button' class='text-link' onClick={handleExport}>
-            Export data
-          </button>
-        </div>
-      </DevSection>
-    </Stack>
+          <DevSection title='Export'>
+            <div class='settings-link-list'>
+              <button type='button' class='text-link' onClick={handleExport}>
+                Export data
+              </button>
+            </div>
+          </DevSection>
+        </Stack>
+      </LayoutMain>
+    </ScreenLayout>
   );
 }
 
