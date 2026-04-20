@@ -95,7 +95,7 @@ export function computeSkillRecommendation(
   return classifySkill(entry, result);
 }
 
-/** Classify a skill based on its first levelRec type. */
+/** Classify a skill based on its levelRec types. */
 function classifySkill(
   entry: ModeProgressEntry,
   result: ReturnType<typeof computeRecommendations>,
@@ -112,12 +112,13 @@ function classifySkill(
     return { modeId, type: 'automatic', urgency: 0, cueLabel: '', detail: '' };
   }
 
-  const firstType = result.levelRecs[0].type;
+  // Review and practice are a single tier (interleaved by level order),
+  // so check for any review recs rather than just the first rec type.
+  const reviewIds = result.levelRecs
+    .filter((r) => r.type === 'review')
+    .map((r) => r.groupId);
 
-  if (firstType === 'review') {
-    const reviewIds = result.levelRecs
-      .filter((r) => r.type === 'review')
-      .map((r) => r.groupId);
+  if (reviewIds.length > 0) {
     const detail = singleGroup
       ? 'Review'
       : `Review ${groupLabelText(reviewIds, labelMap)}`;
@@ -129,6 +130,8 @@ function classifySkill(
       detail,
     };
   }
+
+  const firstType = result.levelRecs[0].type;
 
   if (firstType === 'practice' || firstType === 'automate') {
     const practiceIds = result.levelRecs
