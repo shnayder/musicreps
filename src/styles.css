@@ -39,8 +39,7 @@
   --for-hsl-previews-in-vscode2: hsl(32, 95%, 44%); /* secondary: #D97706 */
 
   /* Anchor hues — the main knobs for color exploration */
-  --hue-neutral-orig: 45; /* warm cream (was 240 cool blue-gray) */
-  --hue-neutral: 67; /* 45 -> 67 as an experiment */
+  --hue-neutral: 67; /* was 45 warm cream, trying 67; originally 240 cool blue-gray */
   --hue-brand: 147; /* forest green (was 123) */
   --hue-success: 147; /* correct-answer feedback (split from brand) */
   --hue-error: 4;
@@ -1077,7 +1076,6 @@ body.native-app .brand-strip {
 .skill-card.has-rec {
   border-left-color: var(--color-notice);
 }
-.skill-card-progress {}
 /* --- Text link (reusable) --- */
 .text-link {
   font-size: var(--type-control-size);

@@ -2,9 +2,9 @@
 // Group definitions, item ID generation, question/answer checking.
 // Parameterized by Instrument for multi-instrument reuse.
 
-import type { Instrument } from "../../types.ts";
-import { NATURAL_NOTES, noteMatchesInput, NOTES } from "../../music-data.ts";
-import { createFretboardHelpers } from "../../quiz-fretboard-state.ts";
+import type { Instrument } from '../../types.ts';
+import { NATURAL_NOTES, noteMatchesInput, NOTES } from '../../music-data.ts';
+import { createFretboardHelpers } from '../../quiz-fretboard-state.ts';
 
 // ---------------------------------------------------------------------------
 // Group definition types
@@ -15,7 +15,7 @@ export type FretboardGroup = {
   label: () => string;
   longLabel: () => string;
   frets: [number, number]; // [startFret, endFret] inclusive
-  noteFilter: "natural" | "sharps-flats";
+  noteFilter: 'natural' | 'sharps-flats';
 };
 
 // ---------------------------------------------------------------------------
@@ -23,51 +23,51 @@ export type FretboardGroup = {
 // ---------------------------------------------------------------------------
 
 function fretLabel(start: number, end: number): string {
-  return "Frets " + start + "\u2013" + end;
+  return 'Frets ' + start + '\u2013' + end;
 }
 
 const FRET_GROUPS: FretboardGroup[] = [
   {
-    id: "frets-0-3-natural",
+    id: 'frets-0-3-natural',
     label: () => fretLabel(0, 3),
-    longLabel: () => fretLabel(0, 3) + " naturals",
+    longLabel: () => fretLabel(0, 3) + ' naturals',
     frets: [0, 3],
-    noteFilter: "natural",
+    noteFilter: 'natural',
   },
   {
-    id: "frets-0-3-sharps",
-    label: () => fretLabel(0, 3) + "\u00A0\u266F/\u266D",
-    longLabel: () => fretLabel(0, 3) + "\u00A0\u266F/\u266D",
+    id: 'frets-0-3-sharps',
+    label: () => fretLabel(0, 3) + '\u00A0\u266F/\u266D',
+    longLabel: () => fretLabel(0, 3) + '\u00A0\u266F/\u266D',
     frets: [0, 3],
-    noteFilter: "sharps-flats",
+    noteFilter: 'sharps-flats',
   },
   {
-    id: "frets-4-8-natural",
+    id: 'frets-4-8-natural',
     label: () => fretLabel(4, 8),
-    longLabel: () => fretLabel(4, 8) + " naturals",
+    longLabel: () => fretLabel(4, 8) + ' naturals',
     frets: [4, 8],
-    noteFilter: "natural",
+    noteFilter: 'natural',
   },
   {
-    id: "frets-4-8-sharps",
-    label: () => fretLabel(4, 8) + "\u00A0\u266F/\u266D",
-    longLabel: () => fretLabel(4, 8) + "\u00A0\u266F/\u266D",
+    id: 'frets-4-8-sharps',
+    label: () => fretLabel(4, 8) + '\u00A0\u266F/\u266D',
+    longLabel: () => fretLabel(4, 8) + '\u00A0\u266F/\u266D',
     frets: [4, 8],
-    noteFilter: "sharps-flats",
+    noteFilter: 'sharps-flats',
   },
   {
-    id: "frets-9-12-natural",
+    id: 'frets-9-12-natural',
     label: () => fretLabel(9, 12),
-    longLabel: () => fretLabel(9, 12) + " naturals",
+    longLabel: () => fretLabel(9, 12) + ' naturals',
     frets: [9, 12],
-    noteFilter: "natural",
+    noteFilter: 'natural',
   },
   {
-    id: "frets-9-12-sharps",
-    label: () => fretLabel(9, 12) + "\u00A0\u266F/\u266D",
-    longLabel: () => fretLabel(9, 12) + "\u00A0\u266F/\u266D",
+    id: 'frets-9-12-sharps',
+    label: () => fretLabel(9, 12) + '\u00A0\u266F/\u266D',
+    longLabel: () => fretLabel(9, 12) + '\u00A0\u266F/\u266D',
     frets: [9, 12],
-    noteFilter: "sharps-flats",
+    noteFilter: 'sharps-flats',
   },
 ];
 
@@ -123,7 +123,7 @@ export function getAllItems(instrument: Instrument): string[] {
   const items: string[] = [];
   for (let f = 0; f < instrument.fretCount; f++) {
     for (let s = instrument.stringCount - 1; s >= 0; s--) {
-      items.push(s + "-" + f);
+      items.push(s + '-' + f);
     }
   }
   return items;
@@ -158,10 +158,10 @@ export function formatLabel(
   enabledGroups: ReadonlySet<string>,
 ): string {
   const groups = getGroups(instrument);
-  if (enabledGroups.size === groups.length) return "all groups";
+  if (enabledGroups.size === groups.length) return 'all groups';
   // Preserve group order by iterating in definition order
   const labels = groups
     .filter((g) => enabledGroups.has(g.id))
     .map((g) => g.label());
-  return labels.join(", ");
+  return labels.join(', ');
 }

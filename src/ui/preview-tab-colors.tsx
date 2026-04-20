@@ -91,7 +91,11 @@ const RAMPS = [
       '950',
     ],
   },
-  { name: 'brand', hueVar: '--hue-brand', steps: ['100', '200', '400', '500', '600', '800'] },
+  {
+    name: 'brand',
+    hueVar: '--hue-brand',
+    steps: ['100', '200', '400', '500', '600', '800'],
+  },
   { name: 'success', hueVar: '--hue-success', steps: ['100', '600', '800'] },
   {
     name: 'error',
@@ -222,9 +226,12 @@ function AccentSection({ tabId }: { tabId: string }) {
       <SwatchGrid
         items={[
           { name: '--color-accent', note: 'brand-600 · Slot underline' },
-          { name: '--color-accent-muted', note: 'brand-400 · Secondary accent' },
+          {
+            name: '--color-accent-muted',
+            note: 'brand-400 · Secondary accent',
+          },
           { name: '--color-toggle-active', note: 'brand-600 · Toggle fill' },
-          { name: '--color-chrome', note: 'neutral-75 · Segmented bg' },
+          { name: '--color-chrome', note: 'neutral-150 · Segmented bg' },
         ]}
       />
     </Section>
@@ -237,7 +244,7 @@ function TextSection({ tabId }: { tabId: string }) {
       <SwatchGrid
         items={[
           { name: '--color-text', note: 'neutral-800 · Primary text' },
-          { name: '--color-text-muted', note: 'neutral-650 · Secondary' },
+          { name: '--color-text-muted', note: 'neutral-700 · Secondary' },
           { name: '--color-text-light', note: 'neutral-550 · Tertiary' },
         ]}
       />
@@ -251,7 +258,7 @@ function SurfaceSection({ tabId }: { tabId: string }) {
       <SwatchGrid
         items={[
           { name: '--color-canvas', note: 'neutral-50 · Page background' },
-          { name: '--color-chrome', note: 'neutral-75 · Top bar, tab bar' },
+          { name: '--color-chrome', note: 'neutral-150 · Top bar, tab bar' },
           { name: '--color-well', note: 'neutral-100 · Recessed containers' },
           { name: '--color-card', note: 'neutral-0 · Elevated cards' },
           { name: '--color-surface', note: 'neutral-75 · Inactive toggles' },
