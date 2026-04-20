@@ -30,7 +30,9 @@ async function getVersion(): Promise<string> {
       // branch === 'HEAD' happens on detached-HEAD checkouts (e.g. tag builds).
       const envCount = Deno.env.get('BUILD_NUMBER');
       if (envCount) return `#${envCount}`;
-      return hash;
+      // Local builds: commit count matches CI's GitHub API count.
+      const localCount = await gitText('rev-list', '--count', 'HEAD');
+      return `#${localCount}`;
     }
     const suffix = branch.includes('/')
       ? branch.slice(branch.lastIndexOf('/') + 1)
