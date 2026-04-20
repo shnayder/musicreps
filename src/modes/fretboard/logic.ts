@@ -5,6 +5,7 @@
 import type { Instrument } from '../../types.ts';
 import { NATURAL_NOTES, noteMatchesInput, NOTES } from '../../music-data.ts';
 import { createFretboardHelpers } from '../../quiz-fretboard-state.ts';
+import type { QuestionContext } from '../../declarative/types.ts';
 
 // ---------------------------------------------------------------------------
 // Group definition types
@@ -142,11 +143,18 @@ export type Question = {
   currentString: number;
   currentFret: number;
   currentNote: string;
+  /** Per-round spelling preference for accidentals (flats when true). */
+  useFlats: boolean;
 };
 
-export function getQuestion(instrument: Instrument, itemId: string): Question {
+export function getQuestion(
+  instrument: Instrument,
+  itemId: string,
+  ctx?: QuestionContext,
+): Question {
   const fb = getHelpers(instrument);
-  return fb.parseFretboardItem(itemId);
+  const base = fb.parseFretboardItem(itemId);
+  return { ...base, useFlats: ctx?.useFlats ?? false };
 }
 
 // ---------------------------------------------------------------------------

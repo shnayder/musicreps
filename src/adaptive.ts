@@ -457,7 +457,7 @@ export function computeLevelPercentile(
 }
 
 /**
- * Classify items per group by speed score, sorted by needsWork descending.
+ * Classify items per group by speed score. Preserves input order.
  * Automatic: speed ≥ 0.9, Working: seen but speed < 0.9, Unseen: no data.
  */
 export function computeGroupRecommendations(
@@ -487,12 +487,6 @@ export function computeGroupRecommendations(
       automaticCount,
       totalCount: items.length,
     };
-  });
-  results.sort((a, b) => {
-    const workDiff = (b.workingCount + b.unseenCount) -
-      (a.workingCount + a.unseenCount);
-    if (workDiff !== 0) return workDiff;
-    return a.groupId.localeCompare(b.groupId);
   });
   return results;
 }
