@@ -2870,7 +2870,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1475"></div>
+  <div class="home-screen" id="home-screen" data-version="#1477"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -9625,7 +9625,7 @@ Build: ${version}
       const payload = buildExport({ appVersion: version, backend, now });
       downloadExport(payload, exportFilename(version, now));
     }, [version]);
-    return /* @__PURE__ */ u2(Stack, { gap: "component", class: "settings-page", children: [
+    return /* @__PURE__ */ u2(ScreenLayout, { children: /* @__PURE__ */ u2(LayoutMain, { children: /* @__PURE__ */ u2(Stack, { gap: "component", class: "settings-page", children: [
       /* @__PURE__ */ u2("div", { class: "settings-page-header", children: [
         /* @__PURE__ */ u2(CloseButton, { ariaLabel: "Close", onClick: onClose }),
         /* @__PURE__ */ u2(Text, { role: "heading-page", as: "h1", class: "page-heading", children: "Dev" })
@@ -9653,7 +9653,7 @@ Build: ${version}
         }
       ) }),
       /* @__PURE__ */ u2(DevSection, { title: "Export", children: /* @__PURE__ */ u2("div", { class: "settings-link-list", children: /* @__PURE__ */ u2("button", { type: "button", class: "text-link", onClick: handleExport, children: "Export data" }) }) })
-    ] });
+    ] }) }) });
   }
   function DevSection({ title, children }) {
     return /* @__PURE__ */ u2(Section, { heading: title, children });
