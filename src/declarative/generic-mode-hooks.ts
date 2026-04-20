@@ -224,8 +224,14 @@ export function useGenericDerivedState<Q>(
 ) {
   const currentQ = useMemo(() => {
     const id = engine.state.currentItemId;
-    return (!id || engine.state.phase === 'idle') ? null : def.getQuestion(id);
-  }, [engine.state.currentItemId, engine.state.phase, def]);
+    if (!id || engine.state.phase === 'idle') return null;
+    return def.getQuestion(id, { useFlats: engine.state.roundUseFlats });
+  }, [
+    engine.state.currentItemId,
+    engine.state.phase,
+    engine.state.roundUseFlats,
+    def,
+  ]);
   currentQRef.current = currentQ;
   if (isSequential) seqInput.resetOnItemChange(engine.state.currentItemId);
   if (def.multiTap) multiTapInput.resetOnItemChange(engine.state.currentItemId);

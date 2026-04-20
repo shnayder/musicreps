@@ -87,6 +87,13 @@ describe('engineStart', () => {
     assert.equal(s.roundCorrect, 0);
     assert.equal(s.roundTimerExpired, false);
   });
+
+  it('rolls roundUseFlats from the injected rng', () => {
+    const flatRng = engineStart(initialEngineState(), () => 0.1);
+    assert.equal(flatRng.roundUseFlats, true);
+    const sharpRng = engineStart(initialEngineState(), () => 0.9);
+    assert.equal(sharpRng.roundUseFlats, false);
+  });
 });
 
 describe('engineNextQuestion', () => {
@@ -460,6 +467,13 @@ describe('engineContinueRound', () => {
   it('preserves session question count', () => {
     const s = engineContinueRound(roundComplete);
     assert.equal(s.questionCount, 1); // from the one question before round complete
+  });
+
+  it('rolls roundUseFlats from the injected rng', () => {
+    const flatRng = engineContinueRound(roundComplete, () => 0.1);
+    assert.equal(flatRng.roundUseFlats, true);
+    const sharpRng = engineContinueRound(roundComplete, () => 0.9);
+    assert.equal(sharpRng.roundUseFlats, false);
   });
 });
 
