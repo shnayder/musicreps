@@ -426,6 +426,7 @@ if (import.meta.main) {
     }
     await Deno.writeTextFile(`${docsDir}/index.html`, html);
     await Deno.writeTextFile(`${docsDir}/sw.js`, SERVICE_WORKER);
+    await Deno.writeTextFile(`${docsDir}/bundled-version.txt`, version);
 
     // Static pages — rendered from static-pages/*.md into docs/*.html.
     // These URLs go in the app's Settings screen and the App/Play Store

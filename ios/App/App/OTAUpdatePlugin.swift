@@ -48,11 +48,57 @@ public class OTAUpdatePlugin: CAPPlugin, CAPBridgedPlugin {
         return absPath
     }
 
+    /// Parse a release version string like "#456" → 456.
+    /// Returns nil for non-release strings (dev hashes, empty, etc.).
+    private func parseReleaseNum(_ version: String) -> Int? {
+        guard version.hasPrefix("#") else { return nil }
+        return Int(version.dropFirst())
+    }
+
+    /// Read the bundled version from bundled-version.txt in the app's public/ dir.
+    private func bundledVersion() -> String? {
+        guard let path = Bundle.main.path(forResource: "bundled-version", ofType: "txt", inDirectory: "public") else {
+            return nil
+        }
+        return try? String(contentsOfFile: path, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// True when the bundled app version is >= the cached OTA version,
+    /// meaning the OTA cache is stale and should be discarded.
+    private func bundledIsNewerThanOTA() -> Bool {
+        guard let otaVersion = defaults.string(forKey: kVersion), !otaVersion.isEmpty else {
+            return false // no OTA version stored
+        }
+        guard let bundled = bundledVersion() else {
+            return false // can't read bundled version, keep OTA
+        }
+        guard let otaNum = parseReleaseNum(otaVersion) else {
+            return true // OTA version is malformed, reset
+        }
+        guard let bundledNum = parseReleaseNum(bundled) else {
+            return true // bundled is a dev build (hash), treat as newer
+        }
+        return bundledNum >= otaNum
+    }
+
     override public func load() {
         let status = defaults.string(forKey: kStatus) ?? "none"
         let relPath = defaults.string(forKey: kRelPath)
 
         print("[OTA] load() status=\(status) relPath=\(relPath ?? "nil")")
+
+        // If the bundled app has been updated (App Store / Xcode rebuild)
+        // past the cached OTA version, discard the stale OTA and use bundled.
+        if status != "none" && bundledIsNewerThanOTA() {
+            let otaVer = defaults.string(forKey: kVersion) ?? "?"
+            let bundledVer = bundledVersion() ?? "?"
+            print("[OTA] bundled \(bundledVer) >= OTA \(otaVer), resetting to bundled")
+            if let relPath = relPath, let absPath = resolveAbsPath(relPath) {
+                cleanupUpdateFiles(absPath)
+            }
+            resetState()
+            return
+        }
 
         switch status {
         case "ready":
