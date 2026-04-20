@@ -1047,20 +1047,8 @@ body.native-app .brand-strip {
 .skill-card {
   position: relative;
 }
-.skill-card-header {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
-}
 .skill-card-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-group);
   min-width: 0;
-}
-.skill-card-title-block {
-  display: flex;
-  flex-direction: column;
 }
 .skill-card-title-block > .pill {
   align-self: flex-start;

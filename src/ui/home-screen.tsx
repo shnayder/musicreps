@@ -124,23 +124,21 @@ export function SkillCardHeader(
   const name = MODE_NAMES[modeId] || modeId;
   const desc = MODE_DESCRIPTIONS[modeId] || '';
   return (
-    <div class='skill-card-header'>
+    <Bar gap='group' class='skill-card-header'>
       <SkillIcon modeId={modeId} />
-      <div class='skill-card-content'>
-        <div class='skill-card-title-block'>
+      <Stack gap='group' class='skill-card-content'>
+        <Stack gap='micro' class='skill-card-title-block'>
           <Text role='heading-card' as='span'>{name}</Text>
           {trackLabel && <TrackPill label={trackLabel} />}
           {!trackLabel && desc && (
             <Text role='body-secondary' as='span'>{desc}</Text>
           )}
-        </div>
+        </Stack>
         {progress && progress.segments.length > 0 && (
-          <div class='skill-card-progress'>
-            <GroupProgressBar segments={progress.segments} />
-          </div>
+          <GroupProgressBar segments={progress.segments} />
         )}
-      </div>
-    </div>
+      </Stack>
+    </Bar>
   );
 }
 
@@ -262,13 +260,13 @@ function ActiveSkillCard(
         >
           {'\u2605'}
         </button>
-        <div class='skill-card-header'>
+        <Bar gap='group' class='skill-card-header'>
           <SkillIcon modeId={modeId} />
-          <div class='skill-card-content'>
-            <div class='skill-card-title-block'>
+          <Stack gap='group' class='skill-card-content'>
+            <Stack gap='micro' class='skill-card-title-block'>
               <Text role='heading-card' as='span'>{name}</Text>
               <TrackPill label={trackLabel} />
-            </div>
+            </Stack>
             {hasRec && (
               <span class='skill-rec-hint'>
                 <strong>{rec!.cueLabel}</strong>
@@ -282,16 +280,14 @@ function ActiveSkillCard(
               (progress.segments.length > 0 ||
                 progress.activeGroupCount > 0) &&
               (
-                <div class='skill-card-progress'>
-                  <GroupProgressBar
-                    segments={progress.segments.length > 0
-                      ? progress.segments
-                      : notStartedSegments(progress.activeGroupCount)}
-                  />
-                </div>
+                <GroupProgressBar
+                  segments={progress.segments.length > 0
+                    ? progress.segments
+                    : notStartedSegments(progress.activeGroupCount)}
+                />
               )}
-          </div>
-        </div>
+          </Stack>
+        </Bar>
       </div>
     </div>
   );
