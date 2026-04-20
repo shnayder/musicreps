@@ -2889,7 +2889,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="14f821 visible-feedback-text"></div>
+  <div class="home-screen" id="home-screen" data-version="47d2bd visible-feedback-text"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -11976,7 +11976,7 @@ Build: ${version}
               "\u2713 ",
               displayNote(displayAnswer)
             ] })
-          ] }) }) : /* @__PURE__ */ u2("div", { class: "answer-feedback-text", style: "visibility:hidden", children: "\xA0" }),
+          ] }) }) : !ctrl.renderPrompt && /* @__PURE__ */ u2("div", { class: "answer-feedback-text", style: "visibility:hidden", children: "\xA0" }),
           /* @__PURE__ */ u2(
             ResponseButtons,
             {
