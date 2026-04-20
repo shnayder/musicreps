@@ -54,7 +54,7 @@ import type {
   SequentialEntryResult,
 } from './types.ts';
 import type { MultiTapInputHandle } from './use-multi-tap-input.ts';
-import { toButtonValue } from './answer-utils.ts';
+import { resolveAnswerSpec, toButtonValue } from './answer-utils.ts';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -367,6 +367,7 @@ export function MultiTapQuizArea(
 
 export function StandardQuizArea<Q>(
   {
+    def,
     engine,
     ctrl,
     currentQ,
@@ -378,6 +379,7 @@ export function StandardQuizArea<Q>(
     lastAnswerRef,
     instruction,
   }: {
+    def: ModeDefinition<Q>;
     engine: ReturnType<typeof useQuizEngine>;
     ctrl: ModeController<Q>;
     currentQ: Q | null;
@@ -396,6 +398,12 @@ export function StandardQuizArea<Q>(
     instruction?: string;
   },
 ) {
+  const aboveButtons = currentQ && def.answer
+    ? resolveAnswerSpec(def, currentQ).getAboveButtonsText?.(
+      currentQ,
+      engine.state.answered,
+    )
+    : null;
   return (
     <QuizStage
       prompt={
@@ -416,6 +424,15 @@ export function StandardQuizArea<Q>(
       }
       response={
         <>
+          {aboveButtons && (
+            <Text
+              role='body'
+              as='div'
+              class='above-buttons-text'
+            >
+              {aboveButtons}
+            </Text>
+          )}
           <ResponseButtons
             buttonsDef={activeButtons}
             onAnswer={handleSubmit}
@@ -583,6 +600,7 @@ export function QuizActiveView<Q>(
     )
     : (
       <StandardQuizArea
+        def={def}
         engine={engine}
         ctrl={ctrl}
         currentQ={currentQ}

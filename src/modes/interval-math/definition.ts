@@ -4,7 +4,7 @@
 import {
   displayNote,
   isValidNoteInput,
-  pickAccidentalName,
+  parseSpelledNote,
 } from '../../music-data.ts';
 import {
   MODE_ABOUT_DESCRIPTIONS,
@@ -37,10 +37,19 @@ export const INTERVAL_MATH_DEF: ModeDefinition<Question> = {
   getPromptText: (q) => q.promptText,
   quizInstruction: 'What note?',
   answer: {
-    getExpectedValue: (q) => q.answer.name,
+    getExpectedValue: (q) => q.answerSpelled,
     comparison: 'note-enharmonic',
-    getDisplayAnswer: (q) =>
-      displayNote(pickAccidentalName(q.answer.displayName, q.useFlats)),
+    getDisplayAnswer: (q) => displayNote(q.answerSpelled),
+    // For double-accidental answers (F##, Ebb): there's no matching button in
+    // the 12-chromatic grid, so accept the enharmonic tap but surface the
+    // correct spelling above the buttons (visible on mobile, where no
+    // "Incorrect — ..." footer line exists).
+    getAboveButtonsText: (q, answered) => {
+      if (!answered) return null;
+      const { accidental } = parseSpelledNote(q.answerSpelled);
+      if (Math.abs(accidental) < 2) return null;
+      return 'Correct spelling: ' + displayNote(q.answerSpelled);
+    },
   },
   validateInput: (_q, input) => isValidNoteInput(input),
   getUseFlats: (q) => q.useFlats,

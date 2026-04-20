@@ -264,6 +264,65 @@ export function spelledNoteSemitone(name: string) {
   return (((NATURAL_SEMITONES[letter] + accidental) % 12) + 12) % 12;
 }
 
+/** Canonical 12-chromatic name for any spelled note, including doubles. */
+export function spelledNoteToCanonical(name: string): string {
+  return NOTES[spelledNoteSemitone(name)].name;
+}
+
+/**
+ * Letter-step count from the root for each interval abbreviation.
+ * A 2nd moves 1 letter, a 3rd moves 2 letters, etc. TT is spelled as A4.
+ */
+export const INTERVAL_LETTER_OFFSETS: Record<string, number> = {
+  m2: 1,
+  M2: 1,
+  m3: 2,
+  M3: 2,
+  P4: 3,
+  TT: 3,
+  P5: 4,
+  m6: 5,
+  M6: 5,
+  m7: 6,
+  M7: 6,
+  P8: 7,
+};
+
+/**
+ * Add or subtract an interval from a root, preserving letter-name stepping.
+ * Returns a spelled name — may include double accidentals (e.g., 'F##', 'Ebb').
+ *
+ * @example addInterval('D', 'm2', '+') → 'Eb'
+ * @example addInterval('G#', 'm2', '-') → 'F##'
+ */
+export function addInterval(
+  rootName: string,
+  intervalAbbrev: string,
+  direction: '+' | '-',
+): string {
+  const root = parseSpelledNote(rootName);
+  const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
+  const rootSemitone = spelledNoteSemitone(rootName);
+  const letterOffset = INTERVAL_LETTER_OFFSETS[intervalAbbrev];
+  const interval = INTERVALS.find((i) => i.abbrev === intervalAbbrev)!;
+  const semitones = interval.num;
+
+  let targetLetterIdx: number;
+  let targetSemitone: number;
+  if (direction === '+') {
+    targetLetterIdx = (rootLetterIdx + letterOffset) % 7;
+    targetSemitone = (rootSemitone + semitones) % 12;
+  } else {
+    targetLetterIdx = (rootLetterIdx - letterOffset + 7) % 7;
+    targetSemitone = ((rootSemitone - semitones) % 12 + 12) % 12;
+  }
+  const targetLetter = LETTER_NAMES[targetLetterIdx];
+  const naturalSemitone = NATURAL_SEMITONES[targetLetter];
+  let acc = (targetSemitone - naturalSemitone + 12) % 12;
+  if (acc > 6) acc -= 12;
+  return spelledNoteName(targetLetter, acc);
+}
+
 /**
  * Get the note name for a scale degree in a major key.
  * keyRoot: e.g., 'D', 'Bb', 'F#'. degree: 1-7 (1 = root).

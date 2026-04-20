@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { MODE_BEFORE_AFTER } from './mode-catalog.ts';
 import {
+  addInterval,
   CHORD_ROOTS,
   CHORD_TYPES,
   chordDisplayName,
@@ -12,6 +13,7 @@ import {
   getChordTones,
   getScaleDegreeNote,
   getUseSolfege,
+  INTERVAL_LETTER_OFFSETS,
   intervalByNum,
   intervalMatchesInput,
   INTERVALS,
@@ -43,6 +45,7 @@ import {
   spelledNoteMatchesSemitone,
   spelledNoteName,
   spelledNoteSemitone,
+  spelledNoteToCanonical,
   STRING_OFFSETS,
 } from './music-data.ts';
 
@@ -1041,6 +1044,107 @@ describe('directional convention agrees with letter-name arithmetic', () => {
         );
       }
     }
+  });
+});
+
+describe('addInterval (letter-correct interval arithmetic)', () => {
+  it('D + m2 = Eb (a 2nd above D)', () => {
+    assert.equal(addInterval('D', 'm2', '+'), 'Eb');
+  });
+
+  it('C + m2 = Db (not C#)', () => {
+    assert.equal(addInterval('C', 'm2', '+'), 'Db');
+  });
+
+  it('D - m2 = C#', () => {
+    assert.equal(addInterval('D', 'm2', '-'), 'C#');
+  });
+
+  it('G# - m2 = F## (double sharp)', () => {
+    assert.equal(addInterval('G#', 'm2', '-'), 'F##');
+  });
+
+  it('A# + M3 = C## (double sharp on ascending from sharp root)', () => {
+    assert.equal(addInterval('A#', 'M3', '+'), 'C##');
+  });
+
+  it('C + TT = F# (tritone as augmented 4th)', () => {
+    assert.equal(addInterval('C', 'TT', '+'), 'F#');
+  });
+
+  it('F + M7 = E (no accidental)', () => {
+    assert.equal(addInterval('F', 'M7', '+'), 'E');
+  });
+
+  it('B + m2 = C (enharmonic natural)', () => {
+    assert.equal(addInterval('B', 'm2', '+'), 'C');
+  });
+
+  it('Eb + m3 = Gb (flat-to-flat)', () => {
+    assert.equal(addInterval('Eb', 'm3', '+'), 'Gb');
+  });
+
+  it('preserves semitone count for all roots and intervals', () => {
+    for (const root of NOTES) {
+      for (const interval of INTERVALS) {
+        if (interval.abbrev === 'P8') continue;
+        for (const dir of ['+', '-'] as const) {
+          const result = addInterval(root.name, interval.abbrev, dir);
+          const expected = dir === '+'
+            ? (root.num + interval.num) % 12
+            : ((root.num - interval.num) % 12 + 12) % 12;
+          assert.equal(
+            spelledNoteSemitone(result),
+            expected,
+            `${root.name}${dir}${interval.abbrev}=${result}: semitone mismatch`,
+          );
+        }
+      }
+    }
+  });
+
+  it('steps the letter name by INTERVAL_LETTER_OFFSETS', () => {
+    for (const root of NOTES) {
+      for (const interval of INTERVALS) {
+        if (interval.abbrev === 'P8') continue;
+        const offset = INTERVAL_LETTER_OFFSETS[interval.abbrev];
+        const rootLetterIdx = LETTER_NAMES.indexOf(root.name[0]);
+        for (const dir of ['+', '-'] as const) {
+          const result = addInterval(root.name, interval.abbrev, dir);
+          const expectedLetterIdx = dir === '+'
+            ? (rootLetterIdx + offset) % 7
+            : (rootLetterIdx - offset + 7) % 7;
+          assert.equal(
+            LETTER_NAMES.indexOf(result[0]),
+            expectedLetterIdx,
+            `${root.name}${dir}${interval.abbrev}=${result}: letter mismatch`,
+          );
+        }
+      }
+    }
+  });
+});
+
+describe('spelledNoteToCanonical', () => {
+  it('maps double sharps to enharmonic natural', () => {
+    assert.equal(spelledNoteToCanonical('F##'), 'G');
+    assert.equal(spelledNoteToCanonical('C##'), 'D');
+  });
+
+  it('maps double flats to enharmonic natural', () => {
+    assert.equal(spelledNoteToCanonical('Dbb'), 'C');
+    assert.equal(spelledNoteToCanonical('Gbb'), 'F');
+  });
+
+  it('maps single accidentals to canonical sharp names', () => {
+    assert.equal(spelledNoteToCanonical('Eb'), 'D#');
+    assert.equal(spelledNoteToCanonical('Db'), 'C#');
+    assert.equal(spelledNoteToCanonical('F#'), 'F#');
+  });
+
+  it('passes naturals through', () => {
+    assert.equal(spelledNoteToCanonical('C'), 'C');
+    assert.equal(spelledNoteToCanonical('E'), 'E');
   });
 });
 

@@ -145,14 +145,14 @@ describe('getQuestion("C+m3")', () => {
     assert.equal(q.interval.abbrev, 'm3');
   });
 
-  it('has useFlats false for addition', () => {
+  it('answerSpelled is Eb (C + m3 = a 3rd above C = E-flat)', () => {
     const q = getQuestion('C+m3');
-    assert.equal(q.useFlats, false);
+    assert.equal(q.answerSpelled, 'Eb');
   });
 
-  it('answer is D# (C + minor 3rd = 3 semitones = D#)', () => {
+  it('useFlats follows the spelled answer (flat answer → flats)', () => {
     const q = getQuestion('C+m3');
-    assert.equal(q.answer.num, 3);
+    assert.equal(q.useFlats, true);
   });
 
   it('promptText contains note name, op, and interval abbreviation', () => {
@@ -170,63 +170,75 @@ describe('getQuestion("G-P5")', () => {
     assert.equal(q.note.name, 'G');
   });
 
-  it('has useFlats true for subtraction', () => {
+  it('answerSpelled is C (G - P5 = a 5th below G = C natural)', () => {
     const q = getQuestion('G-P5');
+    assert.equal(q.answerSpelled, 'C');
+  });
+
+  it('useFlats falls back to direction when answer is natural', () => {
+    const q = getQuestion('G-P5');
+    assert.equal(q.useFlats, true); // natural answer, op='-' → flats
+  });
+});
+
+describe('getQuestion — letter-correct spelling', () => {
+  it('D+m2 = Eb (a 2nd above D, not D#)', () => {
+    const q = getQuestion('D+m2');
+    assert.equal(q.answerSpelled, 'Eb');
     assert.equal(q.useFlats, true);
   });
 
-  it('answer is C (G - P5 = 7 semitones down)', () => {
-    const q = getQuestion('G-P5');
-    assert.equal(q.answer.name, 'C');
-  });
-});
-
-describe('getQuestion edge cases', () => {
-  it('C+m2 answer is C# (1 semitone up)', () => {
+  it('C+m2 = Db (not C#)', () => {
     const q = getQuestion('C+m2');
-    assert.equal(q.answer.num, 1);
+    assert.equal(q.answerSpelled, 'Db');
   });
 
-  it('C-m2 answer is B (1 semitone down)', () => {
+  it('D-m2 = C# (a 2nd below D)', () => {
+    const q = getQuestion('D-m2');
+    assert.equal(q.answerSpelled, 'C#');
+    assert.equal(q.useFlats, false); // sharp answer → sharps
+  });
+
+  it('G#-m2 = F## (a 2nd below G#, double sharp)', () => {
+    const q = getQuestion('G#-m2');
+    assert.equal(q.answerSpelled, 'F##');
+    assert.equal(q.useFlats, false); // positive accidental → sharps
+  });
+
+  it('C+M3 = E (natural 3rd)', () => {
+    const q = getQuestion('C+M3');
+    assert.equal(q.answerSpelled, 'E');
+  });
+
+  it('C-m2 = B (enharmonic natural)', () => {
     const q = getQuestion('C-m2');
-    assert.equal(q.answer.name, 'B');
+    assert.equal(q.answerSpelled, 'B');
   });
 
-  it('B+m2 answer wraps to C (num 0)', () => {
+  it('B+m2 = C (wraps to natural)', () => {
     const q = getQuestion('B+m2');
-    assert.equal(q.answer.name, 'C');
+    assert.equal(q.answerSpelled, 'C');
   });
 
-  it('interval object has num property matching semitone count', () => {
+  it('F+M7 = E (a 7th above F, no accidental)', () => {
+    const q = getQuestion('F+M7');
+    assert.equal(q.answerSpelled, 'E');
+  });
+
+  it('C+P4 = F (a 4th above C)', () => {
     const q = getQuestion('C+P4');
     assert.equal(q.interval.num, 5); // P4 = 5 semitones
-    assert.equal(q.answer.num, 5); // C + 5 = F
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Expected values (used by answer spec)
-// ---------------------------------------------------------------------------
-
-describe('getQuestion expected values', () => {
-  it('answer.name is the expected note value', () => {
-    const q = getQuestion('C+M3');
-    assert.equal(q.answer.name, 'E');
+    assert.equal(q.answerSpelled, 'F');
   });
 
-  it('C+m2 answer.name is C#', () => {
-    const q = getQuestion('C+m2');
-    assert.equal(q.answer.name, 'C#');
+  it('A#+M3 = C## (double sharp on ascending from sharp root)', () => {
+    const q = getQuestion('A#+M3');
+    assert.equal(q.answerSpelled, 'C##');
   });
 
-  it('D-m2 answer.name is C#', () => {
-    const q = getQuestion('D-m2');
-    assert.equal(q.answer.name, 'C#');
-  });
-
-  it('useFlats=false for addition, true for subtraction', () => {
-    assert.equal(getQuestion('C+m3').useFlats, false);
-    assert.equal(getQuestion('D-m2').useFlats, true);
+  it('C+TT = F# (tritone spelled as A4 — offset 3 letters)', () => {
+    const q = getQuestion('C+TT');
+    assert.equal(q.answerSpelled, 'F#');
   });
 });
 
