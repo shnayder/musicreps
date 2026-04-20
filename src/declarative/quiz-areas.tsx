@@ -452,7 +452,7 @@ export function StandardQuizArea<Q>(
                   )}
               </div>
             )
-            : (
+            : !ctrl.renderPrompt && (
               <div class='answer-feedback-text' style='visibility:hidden'>
                 &nbsp;
               </div>
