@@ -11,6 +11,12 @@ import { SkillIcon } from './icons.tsx';
 import { Pill } from './pill.tsx';
 import type { SettingsController } from '../types.ts';
 import { storage } from '../storage.ts';
+import {
+  buildExport,
+  detectBackend,
+  downloadExport,
+  exportFilename,
+} from '../export-data.ts';
 import type { AppConfig } from '../app-config.ts';
 import {
   type ModeProgress,
@@ -556,8 +562,18 @@ export function SettingsPanel(
 // DevPage — dev stats page (same conditional-render pattern as SettingsPage)
 // ---------------------------------------------------------------------------
 
-function DevPage({ onClose }: { onClose: () => void }) {
+function DevPage(
+  { version, onClose }: { version: string; onClose: () => void },
+) {
   const [data] = useState<DevPanelData>(getDevPanelData);
+
+  const handleExport = useCallback(() => {
+    const backend = detectBackend();
+    const now = new Date();
+    const payload = buildExport({ appVersion: version, backend, now });
+    downloadExport(payload, exportFilename(version, now));
+  }, [version]);
+
   return (
     <Stack gap='component' class='settings-page'>
       <div class='settings-page-header'>
@@ -589,6 +605,14 @@ function DevPage({ onClose }: { onClose: () => void }) {
           />
         </DevSection>
       )}
+
+      <DevSection title='Export'>
+        <div class='settings-link-list'>
+          <button type='button' class='text-link' onClick={handleExport}>
+            Export data
+          </button>
+        </div>
+      </DevSection>
     </Stack>
   );
 }
@@ -959,7 +983,7 @@ export function HomeScreen(
   });
 
   if (showDev) {
-    return <DevPage onClose={() => setShowDev(false)} />;
+    return <DevPage version={version} onClose={() => setShowDev(false)} />;
   }
 
   return (

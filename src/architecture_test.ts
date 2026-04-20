@@ -131,6 +131,7 @@ const DISPLAY = new Set([
   'src/mode-ui-state.ts',
   'src/quiz-fretboard-state.ts',
   'src/dev-panel.ts',
+  'src/export-data.ts',
 ]);
 
 const BUILD_TIME = new Set([
