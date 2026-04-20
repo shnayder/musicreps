@@ -1075,20 +1075,8 @@ body.native-app .brand-strip {
 .skill-card {
   position: relative;
 }
-.skill-card-header {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
-}
 .skill-card-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-group);
   min-width: 0;
-}
-.skill-card-title-block {
-  display: flex;
-  flex-direction: column;
 }
 .skill-card-title-block > .pill {
   align-self: flex-start;
@@ -2882,7 +2870,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="478b8a design-cleanup-typography-cards"></div>
+  <div class="home-screen" id="home-screen" data-version="37c52b design-cleanup-typography-cards"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -5404,11 +5392,6 @@ body.native-sim #app {
         totalCount: items.length
       };
     });
-    results.sort((a3, b2) => {
-      const workDiff = b2.workingCount + b2.unseenCount - (a3.workingCount + a3.unseenCount);
-      if (workDiff !== 0) return workDiff;
-      return a3.groupId.localeCompare(b2.groupId);
-    });
     return results;
   }
   function checkAllItemsAutomatic(getSpeedScore, items) {
@@ -5916,10 +5899,7 @@ body.native-sim #app {
     for (const s3 of statuses) {
       if (s3.reviewStatus === "soon" && (s3.speedLabel === "solid" || s3.speedLabel === "automatic")) {
         recs.push({ groupId: s3.groupId, type: "review" });
-      }
-    }
-    for (const s3 of statuses) {
-      if (s3.speedLabel === "starting" || s3.speedLabel === "hesitant" || s3.speedLabel === "learning") {
+      } else if (s3.speedLabel === "starting" || s3.speedLabel === "hesitant" || s3.speedLabel === "learning") {
         recs.push({ groupId: s3.groupId, type: "practice" });
       }
     }
@@ -6448,9 +6428,10 @@ body.native-sim #app {
   function getAllGroupIds(instrument) {
     return getGroups(instrument).map((g4) => g4.id);
   }
-  function getQuestion(instrument, itemId2) {
+  function getQuestion(instrument, itemId2, ctx) {
     const fb = getHelpers(instrument);
-    return fb.parseFretboardItem(itemId2);
+    const base = fb.parseFretboardItem(itemId2);
+    return { ...base, useFlats: ctx?.useFlats ?? false };
   }
   function formatLabel(instrument, enabledGroups) {
     const groups = getGroups(instrument);
@@ -6485,14 +6466,21 @@ body.native-sim #app {
       beforeAfter: MODE_BEFORE_AFTER[instrument.id],
       itemNoun: "positions",
       allItems: allItems2,
-      getQuestion: (itemId2) => getQuestion(instrument, itemId2),
+      getQuestion: (itemId2, ctx) => getQuestion(instrument, itemId2, ctx),
       getPromptText: () => "Name this note",
       quizInstruction: "What note is this?",
       answer: {
         getExpectedValue: (q4) => q4.currentNote,
-        comparison: "note-enharmonic"
+        comparison: "note-enharmonic",
+        getDisplayAnswer: (q4) => {
+          const note = NOTES.find((n2) => n2.name === q4.currentNote);
+          return displayNote(
+            pickAccidentalName(note?.displayName ?? q4.currentNote, q4.useFlats)
+          );
+        }
       },
       validateInput: (_q, input) => isValidNoteInput(input),
+      getUseFlats: (q4) => q4.useFlats,
       buttons: { kind: "note", columns: 6 },
       scope: {
         kind: "groups",
@@ -8121,9 +8109,8 @@ body.native-sim #app {
     if (result.levelRecs.length === 0) {
       return { modeId, type: "automatic", urgency: 0, cueLabel: "", detail: "" };
     }
-    const firstType = result.levelRecs[0].type;
-    if (firstType === "review") {
-      const reviewIds = result.levelRecs.filter((r3) => r3.type === "review").map((r3) => r3.groupId);
+    const reviewIds = result.levelRecs.filter((r3) => r3.type === "review").map((r3) => r3.groupId);
+    if (reviewIds.length > 0) {
       const detail = singleGroup ? "Review" : `Review ${groupLabelText(reviewIds, labelMap)}`;
       return {
         modeId,
@@ -8133,6 +8120,7 @@ body.native-sim #app {
         detail
       };
     }
+    const firstType = result.levelRecs[0].type;
     if (firstType === "practice" || firstType === "automate") {
       const practiceIds = result.levelRecs.filter((r3) => r3.type === "practice" || r3.type === "automate").map((r3) => r3.groupId);
       const detail = singleGroup ? "Practice" : `Practice ${groupLabelText(practiceIds, labelMap)}`;
@@ -9253,15 +9241,15 @@ body.native-sim #app {
   function SkillCardHeader({ modeId, trackLabel, progress }) {
     const name = MODE_NAMES[modeId] || modeId;
     const desc = MODE_DESCRIPTIONS[modeId] || "";
-    return /* @__PURE__ */ u2("div", { class: "skill-card-header", children: [
+    return /* @__PURE__ */ u2(Bar, { gap: "group", class: "skill-card-header", children: [
       /* @__PURE__ */ u2(SkillIcon, { modeId }),
-      /* @__PURE__ */ u2("div", { class: "skill-card-content", children: [
-        /* @__PURE__ */ u2("div", { class: "skill-card-title-block", children: [
+      /* @__PURE__ */ u2(Stack, { gap: "group", class: "skill-card-content", children: [
+        /* @__PURE__ */ u2(Stack, { gap: "micro", class: "skill-card-title-block", children: [
           /* @__PURE__ */ u2(Text, { role: "heading-card", as: "span", children: name }),
           trackLabel && /* @__PURE__ */ u2(TrackPill, { label: trackLabel }),
           !trackLabel && desc && /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "span", children: desc })
         ] }),
-        progress && progress.segments.length > 0 && /* @__PURE__ */ u2("div", { class: "skill-card-progress", children: /* @__PURE__ */ u2(GroupProgressBar, { segments: progress.segments }) })
+        progress && progress.segments.length > 0 && /* @__PURE__ */ u2(GroupProgressBar, { segments: progress.segments })
       ] })
     ] });
   }
@@ -9348,10 +9336,10 @@ body.native-sim #app {
               children: "\u2605"
             }
           ),
-          /* @__PURE__ */ u2("div", { class: "skill-card-header", children: [
+          /* @__PURE__ */ u2(Bar, { gap: "group", class: "skill-card-header", children: [
             /* @__PURE__ */ u2(SkillIcon, { modeId }),
-            /* @__PURE__ */ u2("div", { class: "skill-card-content", children: [
-              /* @__PURE__ */ u2("div", { class: "skill-card-title-block", children: [
+            /* @__PURE__ */ u2(Stack, { gap: "group", class: "skill-card-content", children: [
+              /* @__PURE__ */ u2(Stack, { gap: "micro", class: "skill-card-title-block", children: [
                 /* @__PURE__ */ u2(Text, { role: "heading-card", as: "span", children: name }),
                 /* @__PURE__ */ u2(TrackPill, { label: trackLabel })
               ] }),
@@ -9359,12 +9347,12 @@ body.native-sim #app {
                 /* @__PURE__ */ u2("strong", { children: rec.cueLabel }),
                 rec.detail !== rec.cueLabel && (rec.detail.startsWith(rec.cueLabel) ? ` ${rec.detail.slice(rec.cueLabel.length).trimStart()}` : ` \u2014 ${rec.detail}`)
               ] }),
-              progress && (progress.segments.length > 0 || progress.activeGroupCount > 0) && /* @__PURE__ */ u2("div", { class: "skill-card-progress", children: /* @__PURE__ */ u2(
+              progress && (progress.segments.length > 0 || progress.activeGroupCount > 0) && /* @__PURE__ */ u2(
                 GroupProgressBar,
                 {
                   segments: progress.segments.length > 0 ? progress.segments : notStartedSegments(progress.activeGroupCount)
                 }
-              ) })
+              )
             ] })
           ] })
         ] })
@@ -12341,6 +12329,7 @@ Build: ${version}
       roundTimerExpired: false,
       roundResponseTimes: [],
       roundDurationMs: 0,
+      roundUseFlats: false,
       // Progress tracking
       masteredCount: 0,
       totalEnabledCount: 0,
@@ -12359,7 +12348,7 @@ Build: ${version}
       answersEnabled: false
     };
   }
-  function engineStart(state) {
+  function engineStart(state, rng = Math.random) {
     return {
       ...state,
       phase: "active",
@@ -12371,7 +12360,8 @@ Build: ${version}
       roundAnswered: 0,
       roundCorrect: 0,
       roundTimerExpired: false,
-      roundResponseTimes: []
+      roundResponseTimes: [],
+      roundUseFlats: rng() < 0.5
     };
   }
   function engineNextQuestion(state, nextItemId, nowMs) {
@@ -12426,7 +12416,7 @@ Build: ${version}
       hintText: ""
     };
   }
-  function engineContinueRound(state) {
+  function engineContinueRound(state, rng = Math.random) {
     return {
       ...state,
       phase: "active",
@@ -12434,7 +12424,8 @@ Build: ${version}
       roundAnswered: 0,
       roundCorrect: 0,
       roundTimerExpired: false,
-      roundResponseTimes: []
+      roundResponseTimes: [],
+      roundUseFlats: rng() < 0.5
     };
   }
   function engineStop(_state) {
@@ -13207,8 +13198,14 @@ Build: ${version}
   function useGenericDerivedState(def, engine, learner, groupScopeResult, currentQRef, seqInput, multiTapInput, isSequential, container, onMount, presentationPhase, deactivateCleanup) {
     const currentQ = T2(() => {
       const id = engine.state.currentItemId;
-      return !id || engine.state.phase === "idle" ? null : def.getQuestion(id);
-    }, [engine.state.currentItemId, engine.state.phase, def]);
+      if (!id || engine.state.phase === "idle") return null;
+      return def.getQuestion(id, { useFlats: engine.state.roundUseFlats });
+    }, [
+      engine.state.currentItemId,
+      engine.state.phase,
+      engine.state.roundUseFlats,
+      def
+    ]);
     currentQRef.current = currentQ;
     if (isSequential) seqInput.resetOnItemChange(engine.state.currentItemId);
     if (def.multiTap) multiTapInput.resetOnItemChange(engine.state.currentItemId);
