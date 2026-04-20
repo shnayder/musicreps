@@ -1791,13 +1791,23 @@ button {
    10. ANSWER BUTTONS
    ========================================================================== */
 
-/* Info line rendered above the answer grid (e.g., Interval Math surfacing
-   the correct double-accidental spelling after an enharmonic tap).
-   Color comes from the body-secondary text role. */
-.above-buttons-text {
-  text-align: center;
-  margin: 0 auto var(--gap-related);
+/* Feedback text shown above the answer grid after the user answers.
+   Shows ✓ answer (correct) or ✗ input  ✓ answer (wrong).
+   Typography and spacing match SequentialSlots for visual consistency. */
+.answer-feedback-text {
+  display: flex;
+  justify-content: center;
+  gap: var(--gap-group);
+  margin: var(--pad-component) auto;
   max-width: var(--size-answer-grid);
+  font-size: var(--type-quiz-response-size);
+  font-weight: var(--type-quiz-response-weight);
+}
+.answer-feedback-text .correct {
+  color: var(--color-success-text);
+}
+.answer-feedback-text .incorrect {
+  color: var(--color-error-text);
 }
 
 /* --- Unified answer grid (default 4 columns) --- */

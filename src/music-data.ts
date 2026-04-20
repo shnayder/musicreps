@@ -812,8 +812,14 @@ export function loadNotationPreference(): void {
 export function displayNote(name: string) {
   if (!name) return name;
   const letter = name[0].toUpperCase();
+  // \uD834\uDD2A = 𝄪 (double sharp), \uD834\uDD2B = 𝄫 (double flat)
   // \u266F = ♯ (sharp), \u266D = ♭ (flat)
-  const acc = name.slice(1).replace(/#/g, '\u266F').replace(/b/g, '\u266D');
+  // Replace doubles first so ## and bb are caught before individual replacements.
+  const acc = name.slice(1)
+    .replace(/##/g, '\uD834\uDD2A')
+    .replace(/bb/g, '\uD834\uDD2B')
+    .replace(/#/g, '\u266F')
+    .replace(/b/g, '\u266D');
   if (!_useSolfege) {
     return name[0] + acc;
   }

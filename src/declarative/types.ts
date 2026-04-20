@@ -136,10 +136,6 @@ export type AnswerSpec<Q> = {
   /** Normalize raw user input before comparison and button matching.
    *  E.g., "4" → "IV" for numeral input, "vii" → "vii°". */
   normalizeInput?: (input: string) => string;
-  /** Optional text rendered above the response buttons. Used by modes that
-   *  need to surface information the buttons can't show (e.g., Interval Math
-   *  revealing a double-accidental spelling after an enharmonic tap). */
-  getAboveButtonsText?: (q: Q, answered: boolean) => string | null;
 };
 
 export type BidirectionalAnswerSpec<Q> = {

@@ -1230,6 +1230,11 @@ describe('displayNote', () => {
       assert.equal(displayNote('Bb'), 'B\u266D');
       assert.equal(displayNote('C#'), 'C\u266F');
       assert.equal(displayNote('Eb'), 'E\u266D');
+      // Double accidentals use dedicated unicode symbols
+      assert.equal(displayNote('F##'), 'F\uD834\uDD2A');
+      assert.equal(displayNote('C##'), 'C\uD834\uDD2A');
+      assert.equal(displayNote('Ebb'), 'E\uD834\uDD2B');
+      assert.equal(displayNote('Dbb'), 'D\uD834\uDD2B');
     } finally {
       setUseSolfege(original);
     }
