@@ -1819,6 +1819,25 @@ button {
    10. ANSWER BUTTONS
    ========================================================================== */
 
+/* Feedback text shown above the answer grid after the user answers.
+   Shows ✓ answer (correct) or ✗ input  ✓ answer (wrong).
+   Typography and spacing match SequentialSlots for visual consistency. */
+.answer-feedback-text {
+  display: flex;
+  justify-content: center;
+  gap: var(--gap-group);
+  margin: var(--pad-component) auto;
+  max-width: var(--size-answer-grid);
+  font-size: var(--type-quiz-response-size);
+  font-weight: var(--type-quiz-response-weight);
+}
+.answer-feedback-text .correct {
+  color: var(--color-success-text);
+}
+.answer-feedback-text .incorrect {
+  color: var(--color-error-text);
+}
+
 /* --- Unified answer grid (default 4 columns) --- */
 .answer-grid {
   display: grid;
@@ -2870,7 +2889,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1469"></div>
+  <div class="home-screen" id="home-screen" data-version="#1489"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -3778,6 +3797,20 @@ body.native-sim #app {
       } catch {
         _fallback.delete(key);
       }
+    },
+    keys() {
+      try {
+        const ls = getLocalStorage();
+        if (!ls) return [..._fallback.keys()];
+        const out = [];
+        for (let i3 = 0; i3 < ls.length; i3++) {
+          const k3 = ls.key(i3);
+          if (k3 !== null) out.push(k3);
+        }
+        return out;
+      } catch {
+        return [..._fallback.keys()];
+      }
     }
   };
   var _preferences = null;
@@ -3796,6 +3829,9 @@ body.native-sim #app {
         cache.delete(key);
         prefs.remove({ key }).catch(() => {
         });
+      },
+      keys() {
+        return [...cache.keys()];
       }
     };
   }
@@ -3803,7 +3839,8 @@ body.native-sim #app {
   var storage = {
     getItem: (key) => _storage.getItem(key),
     setItem: (key, value) => _storage.setItem(key, value),
-    removeItem: (key) => _storage.removeItem(key)
+    removeItem: (key) => _storage.removeItem(key),
+    keys: () => _storage.keys()
   };
   function isNative() {
     return !!(typeof window !== "undefined" && // deno-lint-ignore no-explicit-any
@@ -3936,6 +3973,7 @@ body.native-sim #app {
   );
   function isValidNoteInput(input) {
     if (VALID_NOTE_INPUTS.has(input.toLowerCase())) return true;
+    if (/^[A-Ga-g](##|bb)$/.test(input)) return true;
     if (_useSolfege) {
       const letter = resolveSolfegeToLetter(input);
       if (letter && VALID_NOTE_INPUTS.has(letter.toLowerCase())) return true;
@@ -4021,6 +4059,45 @@ body.native-sim #app {
   function spelledNoteSemitone(name) {
     const { letter, accidental } = parseSpelledNote(name);
     return ((NATURAL_SEMITONES[letter] + accidental) % 12 + 12) % 12;
+  }
+  function spelledNoteToCanonical(name) {
+    return NOTES[spelledNoteSemitone(name)].name;
+  }
+  var INTERVAL_LETTER_OFFSETS = {
+    m2: 1,
+    M2: 1,
+    m3: 2,
+    M3: 2,
+    P4: 3,
+    TT: 3,
+    P5: 4,
+    m6: 5,
+    M6: 5,
+    m7: 6,
+    M7: 6,
+    P8: 7
+  };
+  function addInterval(rootName, intervalAbbrev, direction) {
+    const root = parseSpelledNote(rootName);
+    const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
+    const rootSemitone = spelledNoteSemitone(rootName);
+    const letterOffset = INTERVAL_LETTER_OFFSETS[intervalAbbrev];
+    const interval = INTERVALS.find((i3) => i3.abbrev === intervalAbbrev);
+    const semitones = interval.num;
+    let targetLetterIdx;
+    let targetSemitone;
+    if (direction === "+") {
+      targetLetterIdx = (rootLetterIdx + letterOffset) % 7;
+      targetSemitone = (rootSemitone + semitones) % 12;
+    } else {
+      targetLetterIdx = (rootLetterIdx - letterOffset + 7) % 7;
+      targetSemitone = ((rootSemitone - semitones) % 12 + 12) % 12;
+    }
+    const targetLetter = LETTER_NAMES[targetLetterIdx];
+    const naturalSemitone = NATURAL_SEMITONES[targetLetter];
+    let acc = (targetSemitone - naturalSemitone + 12) % 12;
+    if (acc > 6) acc -= 12;
+    return spelledNoteName(targetLetter, acc);
   }
   function getScaleDegreeNote(keyRoot, degree) {
     const root = parseSpelledNote(keyRoot);
@@ -4371,7 +4448,7 @@ body.native-sim #app {
   function displayNote(name) {
     if (!name) return name;
     const letter = name[0].toUpperCase();
-    const acc = name.slice(1).replace(/#/g, "\u266F").replace(/b/g, "\u266D");
+    const acc = name.slice(1).replace(/##/g, "\u{1D12A}").replace(/bb/g, "\u{1D12B}").replace(/#/g, "\u266F").replace(/b/g, "\u266D");
     if (!_useSolfege) {
       return name[0] + acc;
     }
@@ -5144,15 +5221,13 @@ body.native-sim #app {
   ];
 
   // src/adaptive.ts
-  var N_ACTIVE = 5;
-  var N_ACTIVE_EXPANDED = 7;
-  var M_REVIEW = 10;
-  var ACTIVE_BUCKET_BIAS = 0.7;
-  function effectiveActiveCap(reviewSize) {
-    if (reviewSize === 0) return N_ACTIVE_EXPANDED;
-    if (reviewSize <= 3) return N_ACTIVE + 1;
-    return N_ACTIVE;
-  }
+  var TOTAL_SLOTS = 25;
+  var INITIAL_COST = 3;
+  var MAX_INITIAL = 5;
+  var INITIAL_LEARNING_MULTIPLIER = 3;
+  var SPEEDUP_MULTIPLIER = 1;
+  var REVIEW_MULTIPLIER = 1.5;
+  var FAST_FRESH_MULTIPLIER = 0.3;
   var DEFAULT_CONFIG = {
     minTime: 1e3,
     unseenBoost: 3,
@@ -5162,8 +5237,6 @@ body.native-sim #app {
     // Forgetting model
     initialStability: 4,
     // hours — half-life after first correct answer
-    maxStability: 336,
-    // hours (14 days) — stability ceiling
     stabilityGrowthMax: 0.9,
     // max additive growth factor (at freshness=0)
     stabilityDecayOnWrong: 0.3,
@@ -5208,7 +5281,7 @@ body.native-sim #app {
     if (elapsedHours !== null && elapsedHours > 0 && responseTimeMs < cfg.selfCorrectionThreshold) {
       newStability = Math.max(newStability, elapsedHours * 1.5);
     }
-    return Math.min(newStability, cfg.maxStability);
+    return newStability;
   }
   function computeStabilityAfterWrong(oldStability, cfg) {
     if (oldStability == null) return cfg.initialStability;
@@ -5230,34 +5303,63 @@ body.native-sim #app {
     }
     return speedWeight;
   }
-  function needsActiveLearning(speedScore) {
-    return speedScore == null || speedScore < 0.9;
+  function needsInitialLearning(speedScore) {
+    return speedScore == null || speedScore < 0.7;
+  }
+  function needsSpeedup(speedScore) {
+    return speedScore != null && speedScore >= 0.7 && speedScore < 0.9;
   }
   function needsReview(speedScore, freshness, freshnessThreshold = DEFAULT_CONFIG.freshnessThreshold) {
     if (speedScore == null || speedScore < 0.9) return false;
     return (freshness ?? 1) < freshnessThreshold;
   }
+  function computeBucketCaps(initialCount, speedupAvail, reviewAvail) {
+    const initialCap = Math.min(initialCount, MAX_INITIAL);
+    const remaining = TOTAL_SLOTS - initialCap * INITIAL_COST;
+    let speedupCap = Math.floor(remaining / 2);
+    let reviewCap = remaining - speedupCap;
+    if (speedupAvail < speedupCap) {
+      reviewCap += speedupCap - speedupAvail;
+      speedupCap = speedupAvail;
+    }
+    if (reviewAvail < reviewCap) {
+      speedupCap = Math.min(speedupAvail, remaining - reviewAvail);
+      reviewCap = reviewAvail;
+    }
+    return { initialCap, speedupCap, reviewCap };
+  }
   function computeBuckets(orderedItems, getSpeed, getFreshness, excludeId, freshnessThreshold = DEFAULT_CONFIG.freshnessThreshold) {
-    const active = [];
-    const review = [];
+    const initialCandidates = [];
+    const speedupCandidates = [];
+    const reviewCandidates = [];
     const fastFresh = [];
     for (const id of orderedItems) {
       if (id === excludeId) continue;
       const speed = getSpeed(id);
-      if (needsActiveLearning(speed)) {
-        if (active.length < N_ACTIVE_EXPANDED) active.push(id);
-        continue;
+      if (needsInitialLearning(speed)) {
+        initialCandidates.push(id);
+      } else if (needsSpeedup(speed)) {
+        speedupCandidates.push(id);
+      } else {
+        const fresh = getFreshness(id);
+        if (needsReview(speed, fresh, freshnessThreshold)) {
+          reviewCandidates.push(id);
+        } else {
+          fastFresh.push(id);
+        }
       }
-      const fresh = getFreshness(id);
-      if (needsReview(speed, fresh, freshnessThreshold)) {
-        if (review.length < M_REVIEW) review.push(id);
-        continue;
-      }
-      fastFresh.push(id);
     }
-    const cap = effectiveActiveCap(review.length);
-    if (active.length > cap) active.length = cap;
-    return { active, review, fastFresh };
+    const caps = computeBucketCaps(
+      initialCandidates.length,
+      speedupCandidates.length,
+      reviewCandidates.length
+    );
+    return {
+      initialLearning: initialCandidates.slice(0, caps.initialCap),
+      speedup: speedupCandidates.slice(0, caps.speedupCap),
+      review: reviewCandidates.slice(0, caps.reviewCap),
+      fastFresh
+    };
   }
   function selectWeighted(items, weights, rand) {
     const totalWeight = weights.reduce((sum, w3) => sum + w3, 0);
@@ -5442,19 +5544,21 @@ body.native-sim #app {
       nowMs
     );
   }
-  function pickFromBuckets(buckets, getWeight, coin, rand) {
-    const preferActive = coin < ACTIVE_BUCKET_BIAS;
-    const order = preferActive ? [buckets.active, buckets.review, buckets.fastFresh] : [buckets.review, buckets.active, buckets.fastFresh];
-    let chosen = null;
-    for (const bucket of order) {
-      if (bucket.length > 0) {
-        chosen = bucket;
-        break;
+  function pickFromPool(buckets, getWeight, rand) {
+    const pool = [];
+    const weights = [];
+    const addBucket = (items, multiplier) => {
+      for (const id of items) {
+        pool.push(id);
+        weights.push(multiplier * getWeight(id));
       }
-    }
-    if (chosen == null) return null;
-    const weights = chosen.map((id) => getWeight(id));
-    return selectWeighted(chosen, weights, rand);
+    };
+    addBucket(buckets.initialLearning, INITIAL_LEARNING_MULTIPLIER);
+    addBucket(buckets.speedup, SPEEDUP_MULTIPLIER);
+    addBucket(buckets.review, REVIEW_MULTIPLIER);
+    addBucket(buckets.fastFresh, FAST_FRESH_MULTIPLIER);
+    if (pool.length === 0) return null;
+    return selectWeighted(pool, weights, rand);
   }
   function createAdaptiveSelector(storage2, cfg = DEFAULT_CONFIG, randomFn = Math.random, responseCountFn = null) {
     const getResponseCount = (itemId2) => responseCountFn ? responseCountFn(itemId2) : 1;
@@ -5485,7 +5589,7 @@ body.native-sim #app {
         lastSelected,
         cfg.freshnessThreshold
       );
-      const picked = pickFromBuckets(buckets, getWeight, randomFn(), randomFn());
+      const picked = pickFromPool(buckets, getWeight, randomFn());
       const selected = picked ?? lastSelected ?? orderedItems[0];
       storage2.setLastSelected(selected);
       return selected;
@@ -5811,6 +5915,62 @@ body.native-sim #app {
     return /* @__PURE__ */ u2("span", { class: cls, children });
   }
 
+  // src/export-data.ts
+  function buildExport(opts) {
+    const src = opts.source ?? storage;
+    const now = opts.now ?? /* @__PURE__ */ new Date();
+    const keys = [...src.keys()].sort();
+    const data = {};
+    for (const key of keys) {
+      const raw = src.getItem(key);
+      if (raw === null) continue;
+      data[key] = parseValue(raw);
+    }
+    return {
+      schemaVersion: 1,
+      exportedAt: now.toISOString(),
+      appVersion: opts.appVersion,
+      backend: opts.backend,
+      keyCount: Object.keys(data).length,
+      data
+    };
+  }
+  function parseValue(raw) {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return raw;
+    }
+  }
+  function exportFilename(appVersion, now) {
+    const stamp = formatTimestamp(now);
+    const safe = sanitizeVersion(appVersion);
+    const suffix = safe ? `${safe}-` : "";
+    return `musicreps-export-${suffix}${stamp}.json`;
+  }
+  function sanitizeVersion(v3) {
+    return v3.replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+  function formatTimestamp(d4) {
+    const pad = (n2) => String(n2).padStart(2, "0");
+    return `${d4.getFullYear()}${pad(d4.getMonth() + 1)}${pad(d4.getDate())}-${pad(d4.getHours())}${pad(d4.getMinutes())}${pad(d4.getSeconds())}`;
+  }
+  function detectBackend() {
+    return isNative() ? "native" : "web";
+  }
+  function downloadExport(payload, filename) {
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a3 = document.createElement("a");
+    a3.href = url;
+    a3.download = filename;
+    document.body.appendChild(a3);
+    a3.click();
+    a3.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 6e4);
+  }
+
   // src/recommendations.ts
   var FRESHNESS_THRESHOLD = 0.5;
   function computeReviewTiming(avgStability, avgFreshness) {
@@ -5897,7 +6057,7 @@ body.native-sim #app {
   function computeLevelRecs(statuses) {
     const recs = [];
     for (const s3 of statuses) {
-      if (s3.reviewStatus === "soon" && (s3.speedLabel === "solid" || s3.speedLabel === "automatic")) {
+      if (s3.reviewStatus === "soon" && s3.reviewInHours === 0 && (s3.speedLabel === "solid" || s3.speedLabel === "automatic")) {
         recs.push({ groupId: s3.groupId, type: "review" });
       } else if (s3.speedLabel === "starting" || s3.speedLabel === "hesitant" || s3.speedLabel === "learning") {
         recs.push({ groupId: s3.groupId, type: "practice" });
@@ -5912,7 +6072,9 @@ body.native-sim #app {
   }
   function checkExpansionGate(statuses) {
     if (statuses.length === 0) return false;
-    return statuses.every((s3) => s3.speed >= 0.7 && s3.reviewStatus !== "soon");
+    return statuses.every(
+      (s3) => s3.speed >= 0.7 && !(s3.reviewStatus === "soon" && s3.reviewInHours === 0)
+    );
   }
   function shouldThrottleExpansion(statuses) {
     const learnedCount = statuses.filter((s3) => s3.speedLabel === "solid").length;
@@ -6945,19 +7107,24 @@ body.native-sim #app {
     const abbrev = parsed.value;
     const note = NOTES.find((n2) => n2.name === noteName);
     const interval = MATH_INTERVALS.find((i3) => i3.abbrev === abbrev);
-    const answer = op === "+" ? noteAdd(note.num, interval.num) : noteSub(note.num, interval.num);
-    const useFlats = op === "-";
-    const promptNoteName = displayNote(
-      pickAccidentalName(note.displayName, useFlats)
-    );
+    const rootSpelled = note.name;
+    const answerSpelled = addInterval(rootSpelled, abbrev, op);
+    const useFlats = deriveUseFlats(answerSpelled, op);
+    const promptNoteName = displayNote(rootSpelled);
     return {
       note,
       op,
       interval,
-      answer,
+      answerSpelled,
       useFlats,
       promptText: promptNoteName + " " + op + " " + interval.abbrev
     };
+  }
+  function deriveUseFlats(answerSpelled, op) {
+    const { accidental } = parseSpelledNote(answerSpelled);
+    if (accidental < 0) return true;
+    if (accidental > 0) return false;
+    return op === "-";
   }
   var GRID_COL_LABELS2 = MATH_INTERVALS.map((i3) => i3.abbrev);
   function getGridItemId2(noteName, colIdx) {
@@ -6979,9 +7146,14 @@ body.native-sim #app {
     getPromptText: (q4) => q4.promptText,
     quizInstruction: "What note?",
     answer: {
-      getExpectedValue: (q4) => q4.answer.name,
+      getExpectedValue: (q4) => q4.answerSpelled,
       comparison: "note-enharmonic",
-      getDisplayAnswer: (q4) => displayNote(pickAccidentalName(q4.answer.displayName, q4.useFlats))
+      getDisplayAnswer: (q4) => {
+        const display = displayNote(q4.answerSpelled);
+        const { accidental } = parseSpelledNote(q4.answerSpelled);
+        if (Math.abs(accidental) < 2) return display;
+        return display + " (= " + displayNote(spelledNoteToCanonical(q4.answerSpelled)) + ")";
+      }
     },
     validateInput: (_q, input) => isValidNoteInput(input),
     getUseFlats: (q4) => q4.useFlats,
@@ -8059,6 +8231,8 @@ body.native-sim #app {
     return {
       modeId: def.id,
       namespace: def.namespace,
+      motorTaskType: def.motorTaskType,
+      getResponseCount: def.getExpectedResponseCount,
       groups: scope.kind === "groups" ? scope.groups.map((g4) => ({
         id: g4.id,
         label: g4.label,
@@ -8079,7 +8253,12 @@ body.native-sim #app {
   }
   function computeSkillRecommendation(entry, storage2, motorBaseline, skippedGroups, config) {
     const cfg = motorBaseline !== null ? deriveScaledConfig(motorBaseline) : void 0;
-    const selector = createAdaptiveSelector(storage2, cfg);
+    const selector = createAdaptiveSelector(
+      storage2,
+      cfg,
+      Math.random,
+      entry.getResponseCount ?? null
+    );
     const allGroupIds = entry.groups.filter((g4) => !skippedGroups.has(g4.id)).map((g4) => g4.id);
     if (allGroupIds.length === 0) return notStarted(entry.modeId);
     const groupById = new Map(entry.groups.map((g4) => [g4.id, g4]));
@@ -8201,7 +8380,12 @@ body.native-sim #app {
   }
   function computeProgressForMode(entry, storage2, motorBaseline, skippedGroups) {
     const cfg = motorBaseline !== null ? deriveScaledConfig(motorBaseline) : void 0;
-    const selector = createAdaptiveSelector(storage2, cfg);
+    const selector = createAdaptiveSelector(
+      storage2,
+      cfg,
+      Math.random,
+      entry.getResponseCount ?? null
+    );
     const input = entry.groups.length === 1 ? { kind: "items", itemIds: entry.allItemIds() } : {
       kind: "groups",
       groups: entry.groups.map((g4) => ({
@@ -8219,34 +8403,38 @@ body.native-sim #app {
       activeGroupCount
     };
   }
-  function computeAllProgress(createStorage = createStorageAdapter, motorBaseline = null, getSkipped = loadSkippedGroups) {
+  function computeAllProgress(createStorage = createStorageAdapter, getBaseline = readMotorBaseline, getSkipped = loadSkippedGroups) {
+    const resolveBaseline = typeof getBaseline === "function" ? getBaseline : () => getBaseline;
     const result = /* @__PURE__ */ new Map();
     for (const entry of MODE_PROGRESS_MANIFEST) {
       const skipped = getSkipped(entry.namespace);
+      const baseline = resolveBaseline(entry.motorTaskType ?? "note-button");
       result.set(
         entry.modeId,
         computeProgressForMode(
           entry,
           createStorage(entry.namespace),
-          motorBaseline,
+          baseline,
           skipped
         )
       );
     }
     return result;
   }
-  function computeAllRecommendations(starred, createStorage = createStorageAdapter, motorBaseline = null, getSkipped = loadSkippedGroups, definitionOrder) {
+  function computeAllRecommendations(starred, createStorage = createStorageAdapter, getBaseline = readMotorBaseline, getSkipped = loadSkippedGroups, definitionOrder) {
     if (starred.size === 0) return [];
+    const resolveBaseline = typeof getBaseline === "function" ? getBaseline : () => getBaseline;
     const config = {};
     const perSkill = [];
     for (const entry of MODE_PROGRESS_MANIFEST) {
       if (!starred.has(entry.modeId)) continue;
       const skipped = getSkipped(entry.namespace);
+      const baseline = resolveBaseline(entry.motorTaskType ?? "note-button");
       perSkill.push(
         computeSkillRecommendation(
           entry,
           createStorage(entry.namespace),
-          motorBaseline,
+          baseline,
           skipped,
           config
         )
@@ -8255,9 +8443,9 @@ body.native-sim #app {
     const order = definitionOrder ?? MODE_PROGRESS_MANIFEST.map((e3) => e3.modeId);
     return rankSkillRecommendations(perSkill, order);
   }
-  function readMotorBaseline() {
+  function readMotorBaseline(taskType = "note-button") {
     try {
-      const raw = storage.getItem("motorBaseline_note-button");
+      const raw = storage.getItem("motorBaseline_" + taskType);
       if (raw) {
         const n2 = Number(raw);
         if (!isNaN(n2) && n2 > 0) return n2;
@@ -8290,15 +8478,14 @@ body.native-sim #app {
     }, []);
     const starredKey = T2(() => [...starred].sort().join(","), [starred]);
     return T2(() => {
-      const baseline = readMotorBaseline();
       const progress = computeAllProgress(
         createStorageAdapter,
-        baseline
+        readMotorBaseline
       );
       const recommendations = computeAllRecommendations(
         starred,
         createStorageAdapter,
-        baseline
+        readMotorBaseline
       );
       return { progress, recommendations };
     }, [refreshKey, starredKey]);
@@ -9528,9 +9715,15 @@ Build: ${version}
       onOpenDev && /* @__PURE__ */ u2(Section, { heading: "Developer", children: /* @__PURE__ */ u2("div", { class: "settings-link-list", children: /* @__PURE__ */ u2("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" }) }) })
     ] });
   }
-  function DevPage({ onClose }) {
+  function DevPage({ version, onClose }) {
     const [data] = d2(getDevPanelData);
-    return /* @__PURE__ */ u2(Stack, { gap: "component", class: "settings-page", children: [
+    const handleExport = q2(() => {
+      const backend = detectBackend();
+      const now = /* @__PURE__ */ new Date();
+      const payload = buildExport({ appVersion: version, backend, now });
+      downloadExport(payload, exportFilename(version, now));
+    }, [version]);
+    return /* @__PURE__ */ u2(ScreenLayout, { children: /* @__PURE__ */ u2(LayoutMain, { children: /* @__PURE__ */ u2(Stack, { gap: "component", class: "settings-page", children: [
       /* @__PURE__ */ u2("div", { class: "settings-page-header", children: [
         /* @__PURE__ */ u2(CloseButton, { ariaLabel: "Close", onClick: onClose }),
         /* @__PURE__ */ u2(Text, { role: "heading-page", as: "h1", class: "page-heading", children: "Dev" })
@@ -9556,8 +9749,9 @@ Build: ${version}
           headers: ["Date", "Reps"],
           rows: data.recentDays.map((d4) => [d4.date, String(d4.count)])
         }
-      ) })
-    ] });
+      ) }),
+      /* @__PURE__ */ u2(DevSection, { title: "Export", children: /* @__PURE__ */ u2("div", { class: "settings-link-list", children: /* @__PURE__ */ u2("button", { type: "button", class: "text-link", onClick: handleExport, children: "Export data" }) }) })
+    ] }) }) });
   }
   function DevSection({ title, children }) {
     return /* @__PURE__ */ u2(Section, { heading: title, children });
@@ -9801,7 +9995,7 @@ Build: ${version}
       onOpenDev: showDevLink ? () => setShowDev(true) : void 0
     });
     if (showDev) {
-      return /* @__PURE__ */ u2(DevPage, { onClose: () => setShowDev(false) });
+      return /* @__PURE__ */ u2(DevPage, { version, onClose: () => setShowDev(false) });
     }
     return /* @__PURE__ */ u2(ScreenLayout, { class: "home-screen-layout", children: [
       /* @__PURE__ */ u2(LayoutHeader, { children: /* @__PURE__ */ u2(
@@ -11562,7 +11756,9 @@ Build: ${version}
     }
   }
   function toButtonValue(strategy, value) {
-    if (strategy === "note-enharmonic") return resolveNoteInput(value) ?? value;
+    if (strategy === "note-enharmonic") {
+      return resolveNoteInput(value) ?? spelledNoteToCanonical(value);
+    }
     return value;
   }
   function defaultDisplayAnswer(strategy, expected) {
@@ -11879,6 +12075,13 @@ Build: ${version}
     lastAnswerRef,
     instruction
   }) {
+    const showFeedbackText = engine.state.answered && engine.state.feedbackCorrect !== null && !ctrl.renderPrompt;
+    const isCorrect = engine.state.feedbackCorrect === true;
+    const displayAnswer = engine.state.feedbackDisplayAnswer ?? "";
+    const userInputDisplay = lastAnswerRef.current ? toButtonValue(
+      lastAnswerRef.current.comparison,
+      lastAnswerRef.current.normalizedInput
+    ) : engine.state.feedbackUserInput ?? "";
     return /* @__PURE__ */ u2(
       QuizStage,
       {
@@ -11887,6 +12090,19 @@ Build: ${version}
           ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText })
         ] }),
         response: /* @__PURE__ */ u2(k, { children: [
+          showFeedbackText ? /* @__PURE__ */ u2("div", { class: "answer-feedback-text", children: isCorrect ? /* @__PURE__ */ u2("span", { class: "correct", children: [
+            "\u2713 ",
+            displayNote(displayAnswer)
+          ] }) : /* @__PURE__ */ u2(k, { children: [
+            /* @__PURE__ */ u2("span", { class: "incorrect", children: [
+              "\u2717 ",
+              displayNote(userInputDisplay)
+            ] }),
+            /* @__PURE__ */ u2("span", { class: "correct", children: [
+              "\u2713 ",
+              displayNote(displayAnswer)
+            ] })
+          ] }) }) : !ctrl.renderPrompt && /* @__PURE__ */ u2("div", { class: "answer-feedback-text", style: "visibility:hidden", children: "\xA0" }),
           /* @__PURE__ */ u2(
             ResponseButtons,
             {
@@ -12172,7 +12388,7 @@ Build: ${version}
       const colors = progressBarColors(learner.selector, itemIds);
       const ls = groupScopeResult.recommendation.levelStatuses?.find((s3) => s3.groupId === id);
       const sl = ls ? SPEED_LEVELS.find((l3) => l3.key === ls.speedLabel) ?? null : null;
-      const pill = ls?.reviewInHours != null ? ls.reviewStatus === "soon" ? "Review soon" : `Review in ${formatReviewDuration(ls.reviewInHours)}` : void 0;
+      const pill = ls?.reviewInHours != null ? ls.reviewStatus === "soon" && ls.reviewInHours === 0 ? "Review soon" : `Review in ${formatReviewDuration(ls.reviewInHours)}` : void 0;
       const skipReason = groupScopeResult.skippedGroups.get(id);
       const status = skipReason === "mastered" ? "known" : skipReason === "deferred" ? "skipped" : "normal";
       const label = g4 ? resolveGroupLabel(
@@ -12385,7 +12601,7 @@ Build: ${version}
       ...state,
       answered: true,
       answersEnabled: false,
-      feedbackText: isCorrect ? "Correct!" : "Incorrect \u2014 " + correctAnswer,
+      feedbackText: isCorrect ? "Correct \u2014 " + correctAnswer : "Incorrect \u2014 " + correctAnswer,
       feedbackClass: isCorrect ? "feedback correct" : "feedback incorrect",
       feedbackCorrect: isCorrect,
       feedbackDisplayAnswer: correctAnswer,
