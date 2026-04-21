@@ -2865,7 +2865,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="25e3af three-bucket-selection"></div>
+  <div class="home-screen" id="home-screen" data-version="bec65b three-bucket-selection"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -11989,7 +11989,7 @@ Build: ${version}
       const colors = progressBarColors(learner.selector, itemIds);
       const ls = groupScopeResult.recommendation.levelStatuses?.find((s3) => s3.groupId === id);
       const sl = ls ? SPEED_LEVELS.find((l3) => l3.key === ls.speedLabel) ?? null : null;
-      const pill = ls?.reviewInHours != null ? ls.reviewStatus === "soon" ? "Review soon" : `Review in ${formatReviewDuration(ls.reviewInHours)}` : void 0;
+      const pill = ls?.reviewInHours != null ? ls.reviewStatus === "soon" && ls.reviewInHours === 0 ? "Review soon" : `Review in ${formatReviewDuration(ls.reviewInHours)}` : void 0;
       const skipReason = groupScopeResult.skippedGroups.get(id);
       const status = skipReason === "mastered" ? "known" : skipReason === "deferred" ? "skipped" : "normal";
       const label = g4 ? resolveGroupLabel(
