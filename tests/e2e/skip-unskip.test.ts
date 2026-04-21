@@ -17,7 +17,7 @@ import {
   generateLocalStorageData,
 } from '../../src/fixtures/recommendation-scenarios.ts';
 import { GUITAR } from '../../src/music-data.ts';
-import { getItemIdsForGroup as guitarGetItemIds } from '../../src/modes/fretboard/logic.ts';
+import { getItemIdsForLevel as guitarGetItemIds } from '../../src/skills/fretboard/logic.ts';
 import { startServer } from './helpers/server.ts';
 
 // ---------------------------------------------------------------------------

@@ -53,11 +53,11 @@ export function singleLevelSuggestion(
 }
 
 // ---------------------------------------------------------------------------
-// GroupPracticeContent — practice config for multi-level modes
+// LevelPracticeContent — practice config for multi-level modes
 // ---------------------------------------------------------------------------
 
-/** Build practice content for multi-level modes (groups). */
-export function GroupPracticeContent<Q>(
+/** Build practice content for multi-level modes (levels). */
+export function LevelPracticeContent<Q>(
   { def, levelScopeResult }: {
     def: SkillDefinition<Q>;
     levelScopeResult: ReturnType<typeof useLevelScope>;
@@ -272,7 +272,7 @@ export function IdlePracticeView<Q>(
         : undefined}
       practiceContent={hasGroups
         ? (
-          <GroupPracticeContent
+          <LevelPracticeContent
             def={def}
             levelScopeResult={levelScopeResult}
           />

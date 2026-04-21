@@ -76,7 +76,7 @@ function fbState(
     kind: 'multi-group',
     localStorageData: {
       ...perLevelScenario('fretboard', levels),
-      fretboard_enabledLevels: JSON.stringify(enabledLevelIds),
+      fretboard_enabledGroups: JSON.stringify(enabledLevelIds),
     },
   };
 }
