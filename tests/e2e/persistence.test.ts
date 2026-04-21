@@ -17,7 +17,7 @@ import {
   startQuiz,
 } from './helpers/page-helpers.ts';
 import {
-  buildEnabledGroups,
+  buildEnabledLevels,
   buildMotorBaseline,
 } from './helpers/fixture-builders.ts';
 
@@ -50,13 +50,13 @@ describe('scope persistence across reload (E2E)', () => {
       // and practice mode set to 'custom' so toggles are visible.
       await seedLocalStorage(page, baseUrl, {
         ...buildMotorBaseline(250),
-        ...buildEnabledGroups('semitoneMath_enabledGroups', [1, 2, 3, 4, 5]),
+        ...buildEnabledLevels('semitoneMath_enabledGroups', [1, 2, 3, 4, 5]),
         semitoneMath_enabledGroups_practiceMode: 'custom',
       });
       await navigateToMode(page, 'semitoneMath');
 
       // Verify group 0's toggle is inactive (not in enabled list)
-      const toggles = page.locator('#mode-semitoneMath .level-toggle-btn');
+      const toggles = page.locator('#skill-semitoneMath .level-toggle-btn');
       const firstToggle = toggles.first();
       await firstToggle.waitFor({ state: 'visible', timeout: 3000 });
       const firstClass = await firstToggle.getAttribute('class') ?? '';
@@ -72,7 +72,7 @@ describe('scope persistence across reload (E2E)', () => {
 
       // Verify group 0 is still inactive (custom mode persists too)
       const reloadToggles = page.locator(
-        '#mode-semitoneMath .level-toggle-btn',
+        '#skill-semitoneMath .level-toggle-btn',
       );
       await reloadToggles.first().waitFor({ state: 'visible', timeout: 3000 });
       const firstClassAfter =
@@ -99,7 +99,7 @@ describe('learner data persistence (E2E)', () => {
       // Answer 3 questions by clicking buttons
       for (let i = 0; i < 3; i++) {
         const btn = page.locator(
-          '#mode-noteSemitones .answer-btn:not([style*="visibility: hidden"]):not(.answer-group-hidden .answer-btn)',
+          '#skill-noteSemitones .answer-btn:not([style*="visibility: hidden"]):not(.answer-group-hidden .answer-btn)',
         ).first();
         const visible = await btn.isVisible().catch(() => false);
         if (visible) {
@@ -164,13 +164,13 @@ describe('motor baseline persistence (E2E)', () => {
 
       // Should go directly to active phase (not calibration)
       const isActive = await page
-        .locator('#mode-noteSemitones.phase-active')
+        .locator('#skill-noteSemitones.phase-active')
         .isVisible();
       assert.ok(isActive, 'should be in active phase (no calibration)');
 
       // Should NOT be in calibration phase
       const isCalibration = await page
-        .locator('#mode-noteSemitones.phase-calibration')
+        .locator('#skill-noteSemitones.phase-calibration')
         .count();
       assert.equal(isCalibration, 0, 'should not be in calibration phase');
 
@@ -234,7 +234,7 @@ describe('corrupt localStorage recovery (E2E)', () => {
       await navigateToMode(page, 'semitoneMath');
 
       // Should show the practice tab (mode loaded successfully)
-      const startBtn = page.locator('#mode-semitoneMath .start-btn');
+      const startBtn = page.locator('#skill-semitoneMath .start-btn');
       const visible = await startBtn.isVisible().catch(() => false);
       assert.ok(
         visible,

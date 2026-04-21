@@ -1,6 +1,6 @@
 // SpeedCheck — standalone calibration component.
 // Owns the full calibration lifecycle: intro → trial loop → results.
-// BaselineInfo (progress tab inline display) lives in mode-screen.tsx.
+// BaselineInfo (progress tab inline display) lives in skill-screen.tsx.
 
 import {
   useCallback,
@@ -23,7 +23,7 @@ import { Text } from './text.tsx';
 import { KeyboardHint } from './quiz-ui.tsx';
 import { isValidNoteInput, resolveNoteInput } from '../music-data.ts';
 import { InteractiveFretboard } from './interactive-fretboard.tsx';
-import { ScreenHeader } from './mode-screen.tsx';
+import { ScreenHeader } from './skill-screen.tsx';
 import {
   CenteredContent,
   LayoutFooter,

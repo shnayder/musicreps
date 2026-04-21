@@ -1,4 +1,4 @@
-// App initialization: registers all quiz modes and starts navigation.
+// App initialization: registers all quiz skills and starts navigation.
 // Entry point — esbuild bundles all imports into a single IIFE.
 
 declare global {
@@ -12,47 +12,47 @@ import { loadNotationPreference } from './music-data.ts';
 import { createNavigation } from './navigation.ts';
 import { createSettingsController } from './settings.ts';
 import { refreshNoteButtonLabels } from './quiz-engine.ts';
-import type { ModeHandle } from './types.ts';
+import type { SkillHandle } from './types.ts';
 import { BrandStrip } from './ui/brand-strip.tsx';
 import { cleanupLegacyKeys, HomeScreen } from './ui/home-screen.tsx';
 import { APP_CONFIG } from './app-config.ts';
-import { registerModeForEffort } from './effort.ts';
+import { registerSkillForEffort } from './effort.ts';
 import { initStorage, migrateFromLocalStorage } from './storage.ts';
 import { Preferences } from '@capacitor/preferences';
 import { reportHealthy, scheduleUpdateCheck } from './updater.ts';
 
-// Declarative mode definitions + GenericMode
-import { GenericMode } from './declarative/generic-mode.tsx';
-import type { ModeDefinition } from './declarative/types.ts';
-import { ALL_MODE_DEFINITIONS } from './mode-definitions.ts';
+// Declarative skill definitions + GenericSkill
+import { GenericSkill } from './declarative/generic-skill.tsx';
+import type { SkillDefinition } from './declarative/types.ts';
+import { ALL_SKILL_DEFINITIONS } from './skill-definitions.ts';
 
 // Enable :active pseudo-class on iOS Safari. WebKit doesn't fire :active on
 // touch unless the document has a touchstart listener.
 document.addEventListener('touchstart', () => {}, { passive: true });
 
-// --- Declarative modes — GenericMode interprets each ModeDefinition ---
+// --- Declarative skills — GenericSkill interprets each SkillDefinition ---
 // deno-lint-ignore no-explicit-any
-function registerDeclarativeMode(
+function registerDeclarativeSkill(
   nav: ReturnType<typeof createNavigation>,
-  def: ModeDefinition<any>,
+  def: SkillDefinition<any>,
 ) {
-  registerModeForEffort({
+  registerSkillForEffort({
     id: def.id,
     namespace: def.namespace,
     allItems: def.allItems,
   });
-  let handle: ModeHandle | null = null;
-  const container = document.getElementById('mode-' + def.id)!;
-  nav.registerMode(def.id, {
+  let handle: SkillHandle | null = null;
+  const container = document.getElementById('skill-' + def.id)!;
+  nav.registerSkill(def.id, {
     name: def.name,
     init() {
       container.textContent = '';
       render(
-        h(GenericMode, {
+        h(GenericSkill, {
           def,
           container,
           navigateHome: () => nav.navigateHome(),
-          onMount: (h: ModeHandle) => {
+          onMount: (h: SkillHandle) => {
             handle = h;
           },
         }),
@@ -90,9 +90,9 @@ async function boot() {
 
   const nav = createNavigation();
 
-  // Declarative modes — single source of truth in mode-definitions.ts
-  for (const def of ALL_MODE_DEFINITIONS) {
-    registerDeclarativeMode(nav, def);
+  // Declarative skills — single source of truth in skill-definitions.ts
+  for (const def of ALL_SKILL_DEFINITIONS) {
+    registerDeclarativeSkill(nav, def);
   }
 
   nav.init();
@@ -100,7 +100,7 @@ async function boot() {
   // Settings state controller — re-render on notation change
   const settings = createSettingsController({
     onNotationChange(): void {
-      document.querySelectorAll('.mode-screen.mode-active').forEach(
+      document.querySelectorAll('.skill-screen.skill-active').forEach(
         (el: Element) => {
           refreshNoteButtonLabels(el as HTMLElement);
         },
@@ -133,7 +133,7 @@ async function boot() {
   homeRoot.textContent = '';
   render(
     h(HomeScreen, {
-      onSelectMode: (modeId: string) => nav.switchTo(modeId),
+      onSelectSkill: (skillId: string) => nav.switchTo(skillId),
       settings,
       appConfig: APP_CONFIG,
       showDevLink: true,

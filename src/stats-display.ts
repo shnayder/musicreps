@@ -173,8 +173,8 @@ export function progressBarColors(
 /** A progress bar segment with color and coverage weight. */
 export type ProgressSegment = { color: string; weight: number };
 
-/** Speed-only classification for a group of items. */
-export type GroupBarSegment = {
+/** Speed-only classification for a level of items. */
+export type LevelBarSegment = {
   color: string;
   zone: 0 | 2; // 0 = seen, 2 = unseen
   speed: number; // average speed (for sort within seen zone)
@@ -182,15 +182,15 @@ export type GroupBarSegment = {
 };
 
 /**
- * Speed-only color + metadata for a group of items (one segment per group).
+ * Speed-only color + metadata for a level of items (one segment per level).
  * Averages speed across seen items:
  * - Seen (any items have speed data): speed-only color at full saturation
  * - Unseen (no seen items): neutral grey
  */
-export function progressBarGroupSegment(
+export function progressBarLevelSegment(
   selector: ProgressSelector,
   itemIds: string[],
-): GroupBarSegment {
+): LevelBarSegment {
   let speedSum = 0, speedCount = 0;
   for (const id of itemIds) {
     const sp = selector.getSpeedScore(id);
@@ -208,28 +208,28 @@ export function progressBarGroupSegment(
 }
 
 /** Convenience wrapper returning just the color string. */
-export function progressBarGroupColor(
+export function progressBarLevelColor(
   selector: ProgressSelector,
   itemIds: string[],
 ): string {
-  return progressBarGroupSegment(selector, itemIds).color;
+  return progressBarLevelSegment(selector, itemIds).color;
 }
 
 // --- Unified progress colors (shared by home + skill screens) ---
 
-/** Input for computeProgressColors: either per-item or per-group. */
+/** Input for computeProgressColors: either per-item or per-level. */
 export type ProgressColorInput =
   | { kind: 'items'; itemIds: string[] }
   | {
-    kind: 'groups';
-    groups: Array<{ id: string; itemIds: string[] }>;
-    skippedGroups?: ReadonlySet<string> | ReadonlyMap<string, unknown>;
+    kind: 'levels';
+    levels: Array<{ id: string; itemIds: string[] }>;
+    skippedLevels?: ReadonlySet<string> | ReadonlyMap<string, unknown>;
   };
 
 /**
  * Compute sorted progress bar segments. Shared by home and skill screens.
- * - Groups: filters out skipped groups, one segment per active group, sorted.
- *   Weight = fraction of items seen in that group.
+ * - Groups: filters out skipped levels, one segment per active group, sorted.
+ *   Weight = fraction of items seen in that level.
  * - Items: per-item sorted colors via progressBarColors (weight always 1).
  * Returns [] for "not started" (all unseen or all skipped).
  */
@@ -247,13 +247,13 @@ export function computeProgressColors(
     ) return [];
     return colors.map((c) => ({ color: c, weight: 1 }));
   }
-  const skipped = input.skippedGroups;
+  const skipped = input.skippedLevels;
   const active = skipped
-    ? input.groups.filter((g) => !skipped.has(g.id))
-    : input.groups;
+    ? input.levels.filter((g) => !skipped.has(g.id))
+    : input.levels;
   if (active.length === 0) return [];
   const segments = active.map((g) =>
-    progressBarGroupSegment(selector, g.itemIds)
+    progressBarLevelSegment(selector, g.itemIds)
   );
   if (segments.every((s) => s.zone === 2)) return [];
   segments.sort((a, b) => {
@@ -283,7 +283,7 @@ export function formatReviewDuration(hours: number): string {
 }
 
 /**
- * Compute a review-timing pill label for a group of items.
+ * Compute a review-timing pill label for a level of items.
  * Returns null when stability or freshness data is missing.
  */
 export function computeReviewPill(

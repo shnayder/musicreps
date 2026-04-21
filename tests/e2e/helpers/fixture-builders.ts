@@ -36,7 +36,7 @@ export function buildMotorBaseline(
 /**
  * Build enabled-groups localStorage entries for a group-based mode.
  */
-export function buildEnabledGroups(
+export function buildEnabledLevels(
   storageKey: string,
   groups: (string | number)[],
 ): Record<string, string> {

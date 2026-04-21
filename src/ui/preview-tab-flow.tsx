@@ -15,13 +15,13 @@ import {
   RoundCompleteActions,
   RoundCompleteInfo,
   Tabs,
-} from './mode-screen.tsx';
+} from './skill-screen.tsx';
 import { SkillHeader } from './practice-config.tsx';
 import { Text } from './text.tsx';
 import { SkillCard } from './home-screen.tsx';
 import {
   FretboardPreview,
-  PreviewModeScreen,
+  PreviewSkillScreen,
   Section,
 } from './preview-shared.tsx';
 
@@ -39,10 +39,10 @@ function FlowIdleSection(
     <>
       <Section title='Home — Skill Card' tabId={tabId}>
         <SkillCard
-          modeId='semitoneMath'
+          skillId='semitoneMath'
           isStarred={false}
           onToggleStar={() => {}}
-          onSelectMode={() => {}}
+          onSelectSkill={() => {}}
           progress={{
             segments: [
               { color: 'hsl(125, 48%, 33%)', weight: 1 },
@@ -51,14 +51,14 @@ function FlowIdleSection(
               { color: 'hsl(40, 60%, 58%)', weight: 0.1 },
               { color: 'hsl(30, 4%, 85%)', weight: 0 },
             ],
-            activeGroupCount: 5,
+            activeLevelCount: 5,
           }}
         />
       </Section>
 
       <Section title='Idle — Practice + Recommendation' tabId={tabId}>
         <SkillHeader
-          modeId='semitoneMath'
+          skillId='semitoneMath'
           title='Semitone Math'
           totalReps={42}
           onBack={() => {}}
@@ -94,7 +94,7 @@ function FlowQuizStates({ tabId }: { tabId: string }) {
   return (
     <>
       <Section title='Active Quiz — Awaiting Answer' tabId={tabId}>
-        <PreviewModeScreen phase='active'>
+        <PreviewSkillScreen phase='active'>
           <QuizSession
             timeLeft='0:42'
             timerPct={70}
@@ -102,11 +102,11 @@ function FlowQuizStates({ tabId }: { tabId: string }) {
             isWarning={false}
           />
           <QuizArea prompt='C + 5' controls={<NoteButtons />} />
-        </PreviewModeScreen>
+        </PreviewSkillScreen>
       </Section>
 
       <Section title='Active Quiz — Correct' tabId={tabId}>
-        <PreviewModeScreen phase='active'>
+        <PreviewSkillScreen phase='active'>
           <QuizSession
             timeLeft='0:38'
             timerPct={63}
@@ -133,11 +133,11 @@ function FlowQuizStates({ tabId }: { tabId: string }) {
               </>
             }
           />
-        </PreviewModeScreen>
+        </PreviewSkillScreen>
       </Section>
 
       <Section title='Active Quiz — Wrong' tabId={tabId}>
-        <PreviewModeScreen phase='active'>
+        <PreviewSkillScreen phase='active'>
           <QuizSession
             timeLeft='0:31'
             timerPct={52}
@@ -165,11 +165,11 @@ function FlowQuizStates({ tabId }: { tabId: string }) {
               </>
             }
           />
-        </PreviewModeScreen>
+        </PreviewSkillScreen>
       </Section>
 
       <Section title='Active Quiz — Timer Warning' tabId={tabId}>
-        <PreviewModeScreen phase='active'>
+        <PreviewSkillScreen phase='active'>
           <QuizSession
             timeLeft='0:08'
             timerPct={13}
@@ -177,7 +177,7 @@ function FlowQuizStates({ tabId }: { tabId: string }) {
             isWarning
           />
           <QuizArea prompt='G - 2' controls={<NoteButtons />} />
-        </PreviewModeScreen>
+        </PreviewSkillScreen>
       </Section>
     </>
   );
@@ -189,7 +189,7 @@ function FlowResultsSection(
   return (
     <>
       <Section title='Round Complete' tabId={tabId}>
-        <PreviewModeScreen phase='round-complete'>
+        <PreviewSkillScreen phase='round-complete'>
           <QuizArea controls={<RoundCompleteActions />}>
             <RoundCompleteInfo
               heading={goodRound.heading}
@@ -209,7 +209,7 @@ function FlowResultsSection(
               ]}
             />
           </QuizArea>
-        </PreviewModeScreen>
+        </PreviewSkillScreen>
       </Section>
 
       <Section title='Progress Heatmap' tabId={tabId}>

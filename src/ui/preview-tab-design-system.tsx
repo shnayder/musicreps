@@ -4,7 +4,7 @@
 import { useState } from 'preact/hooks';
 import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
-import { CloseButton, Tabs } from './mode-screen.tsx';
+import { CloseButton, Tabs } from './skill-screen.tsx';
 import {
   SegmentedControl,
   SettingsPanel,
@@ -39,11 +39,11 @@ function SkillCardHeaderSection({ tabId }: { tabId: string }) {
       <h2>Skill Card Header</h2>
       <PreviewGrid>
         <Section title='SkillCardHeader — no pill' tabId={tabId}>
-          <SkillCardHeader modeId='semitoneMath' />
+          <SkillCardHeader skillId='semitoneMath' />
         </Section>
         <Section title='SkillCardHeader — with pill' tabId={tabId}>
           <SkillCardHeader
-            modeId='semitoneMath'
+            skillId='semitoneMath'
             trackLabel='Core'
           />
         </Section>

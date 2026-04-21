@@ -40,19 +40,22 @@ const noteSemiStates = [
   NOTE_SEMI_AUTOMATIC,
 ];
 import { GUITAR } from '../src/music-data.ts';
-import { MODE_NAMES } from '../src/mode-catalog.ts';
-import { getGroups, getItemIdsForGroup } from '../src/modes/fretboard/logic.ts';
+import { SKILL_NAMES } from '../src/skill-catalog.ts';
+import {
+  getItemIdsForLevel,
+  getLevels,
+} from '../src/skills/fretboard/logic.ts';
 import {
   ALL_GROUP_IDS as SEMI_MATH_GROUP_IDS,
-  getItemIdsForGroup as semiMathGetGroup,
-} from '../src/modes/semitone-math/logic.ts';
+  getItemIdsForLevel as semiMathGetGroup,
+} from '../src/skills/semitone-math/logic.ts';
 import {
   ALL_GROUP_IDS as KEY_SIG_GROUP_IDS,
-  getItemIdsForGroup as keySigGetGroup,
-} from '../src/modes/key-signatures/logic.ts';
+  getItemIdsForLevel as keySigGetGroup,
+} from '../src/skills/key-signatures/logic.ts';
 import {
   ALL_ITEMS as NOTE_SEMI_ITEMS,
-} from '../src/modes/note-semitones/logic.ts';
+} from '../src/skills/note-semitones/logic.ts';
 
 // ---------------------------------------------------------------------------
 // Mode IDs & titles
@@ -77,8 +80,8 @@ export const MODE_IDS = [
 // All modes use QuizEngine — seed motor baselines so calibration is skipped.
 export const ENGINE_MODES = MODE_IDS;
 
-// Display names — re-exported from centralized MODE_NAMES
-export const MODE_TITLES: Record<string, string> = MODE_NAMES;
+// Display names — re-exported from centralized SKILL_NAMES
+export const MODE_TITLES: Record<string, string> = SKILL_NAMES;
 
 const BIDIRECTIONAL_MODES = new Set([
   'noteSemitones',
@@ -94,11 +97,11 @@ const BIDIRECTIONAL_MODES = new Set([
 
 export type ScreenshotEntry = {
   name: string;
-  modeId: string;
+  skillId: string;
   fixture?: FixtureDetail;
   localStorageData?: Record<string, string>;
   clickTab?: 'progress';
-  /** Extra click selectors (scoped to #mode-{modeId}) applied after tab
+  /** Extra click selectors (scoped to #skill-{skillId}) applied after tab
    *  switching. Used e.g. to open a modal before capture. */
   clickSelectors?: string[];
 };
@@ -109,17 +112,17 @@ export type ScreenshotEntry = {
 
 export function buildManifest(): ScreenshotEntry[] {
   const entries: ScreenshotEntry[] = [];
-  const guitarGroups = getGroups(GUITAR);
+  const guitarGroups = getLevels(GUITAR);
   const fbGroupIds = guitarGroups.map((g) => g.id);
-  const gIds = fbGroupIds.map((id) => getItemIdsForGroup(GUITAR, id));
+  const gIds = fbGroupIds.map((id) => getItemIdsForLevel(GUITAR, id));
 
   // Home screen (before any mode is selected)
-  entries.push({ name: 'home', modeId: 'home' });
+  entries.push({ name: 'home', skillId: 'home' });
 
   // Home screen with starred skills (Active tab — default when starred)
   entries.push({
     name: 'home-starred',
-    modeId: 'home',
+    skillId: 'home',
     localStorageData: {
       starredSkills: JSON.stringify(['fretboard', 'keySignatures']),
     },
@@ -128,7 +131,7 @@ export function buildManifest(): ScreenshotEntry[] {
   // Home screen: Active tab with nothing starred
   entries.push({
     name: 'home-active-empty',
-    modeId: 'home',
+    skillId: 'home',
     localStorageData: { homeTab: 'active' },
   });
 
@@ -137,7 +140,7 @@ export function buildManifest(): ScreenshotEntry[] {
   // keySignatures: mastered g0 (learn-next), intervalMath: not started
   entries.push({
     name: 'home-recs-mixed',
-    modeId: 'home',
+    skillId: 'home',
     localStorageData: {
       starredSkills: JSON.stringify([
         'fretboard',
@@ -184,7 +187,7 @@ export function buildManifest(): ScreenshotEntry[] {
   // Home screen: all done — all starred skills fully automatic
   entries.push({
     name: 'home-recs-all-done',
-    modeId: 'home',
+    skillId: 'home',
     localStorageData: {
       starredSkills: JSON.stringify(['noteSemitones', 'keySignatures']),
       // noteSemitones: all items automatic (single-level, use perGroupScenario)
@@ -214,7 +217,7 @@ export function buildManifest(): ScreenshotEntry[] {
   // Home screen: cold start — all starred but none started
   entries.push({
     name: 'home-recs-cold-start',
-    modeId: 'home',
+    skillId: 'home',
     localStorageData: {
       starredSkills: JSON.stringify([
         'semitoneMath',
@@ -228,24 +231,24 @@ export function buildManifest(): ScreenshotEntry[] {
   for (const state of noteSemiStates) {
     entries.push({
       name: `design-${state.name}`,
-      modeId: 'noteSemitones',
+      skillId: 'noteSemitones',
       localStorageData: state.localStorageData,
     });
   }
 
   // All modes: idle + quiz (+ reverse quiz for bidirectional modes)
-  for (const modeId of MODE_IDS) {
-    entries.push({ name: `${modeId}-idle`, modeId });
+  for (const skillId of MODE_IDS) {
+    entries.push({ name: `${skillId}-idle`, skillId });
     entries.push({
-      name: `${modeId}-quiz`,
-      modeId,
-      fixture: quizActive(defaultItems[modeId]),
+      name: `${skillId}-quiz`,
+      skillId,
+      fixture: quizActive(defaultItems[skillId]),
     });
-    if (BIDIRECTIONAL_MODES.has(modeId)) {
+    if (BIDIRECTIONAL_MODES.has(skillId)) {
       entries.push({
-        name: `${modeId}-quiz-rev`,
-        modeId,
-        fixture: quizActive(defaultItems[`${modeId}_rev`]),
+        name: `${skillId}-quiz-rev`,
+        skillId,
+        fixture: quizActive(defaultItems[`${skillId}_rev`]),
       });
     }
   }
@@ -256,17 +259,17 @@ export function buildManifest(): ScreenshotEntry[] {
   entries.push(
     {
       name: 'speedCheck-intro',
-      modeId: 'semitoneMath',
+      skillId: 'semitoneMath',
       fixture: speedCheckIntro(),
     },
     {
       name: 'speedCheck-testing',
-      modeId: 'semitoneMath',
+      skillId: 'semitoneMath',
       fixture: speedCheckTesting(),
     },
     {
       name: 'speedCheck-results',
-      modeId: 'semitoneMath',
+      skillId: 'semitoneMath',
       fixture: speedCheckResults(),
     },
   );
@@ -274,12 +277,12 @@ export function buildManifest(): ScreenshotEntry[] {
   // Design moments: correct, wrong, round-complete (semitoneMath)
   entries.push({
     name: 'design-correct-feedback',
-    modeId: 'semitoneMath',
+    skillId: 'semitoneMath',
     fixture: quizCorrectFeedback(defaultItems.semitoneMath),
   });
   entries.push({
     name: 'design-wrong-feedback',
-    modeId: 'semitoneMath',
+    skillId: 'semitoneMath',
     fixture: quizWrongFeedback(defaultItems.semitoneMath),
   });
 
@@ -289,7 +292,7 @@ export function buildManifest(): ScreenshotEntry[] {
   // getDisplayAnswer produces 'F𝄪 (= G)' for the feedback text.
   entries.push({
     name: 'design-intervalMath-double-sharp-correct',
-    modeId: 'intervalMath',
+    skillId: 'intervalMath',
     fixture: quizCorrectFeedback('G#-m2', {
       correctAnswer: 'G',
       userInput: 'G',
@@ -297,7 +300,7 @@ export function buildManifest(): ScreenshotEntry[] {
   });
   entries.push({
     name: 'design-intervalMath-double-sharp-wrong',
-    modeId: 'intervalMath',
+    skillId: 'intervalMath',
     fixture: quizWrongFeedback('G#-m2', {
       correctAnswer: 'G',
       userInput: 'D#',
@@ -305,29 +308,29 @@ export function buildManifest(): ScreenshotEntry[] {
   });
   entries.push({
     name: 'design-round-complete',
-    modeId: 'semitoneMath',
+    skillId: 'semitoneMath',
     fixture: quizRoundComplete(),
   });
 
   // Timer edge states: end-of-round walkthrough (semitoneMath)
   entries.push({
     name: 'design-feedback-timer-low',
-    modeId: 'semitoneMath',
+    skillId: 'semitoneMath',
     fixture: quizFeedbackTimerLow(defaultItems.semitoneMath),
   });
   entries.push({
     name: 'design-feedback-timer-expired',
-    modeId: 'semitoneMath',
+    skillId: 'semitoneMath',
     fixture: quizFeedbackTimerExpired(defaultItems.semitoneMath),
   });
   entries.push({
     name: 'design-last-question-awaiting',
-    modeId: 'semitoneMath',
+    skillId: 'semitoneMath',
     fixture: quizLastQuestionAwaiting(defaultItems.semitoneMath),
   });
   entries.push({
     name: 'design-last-question-answered',
-    modeId: 'semitoneMath',
+    skillId: 'semitoneMath',
     fixture: quizLastQuestionAnswered(defaultItems.semitoneMath),
   });
 
@@ -335,14 +338,14 @@ export function buildManifest(): ScreenshotEntry[] {
   // Item '5-8' = high E string, fret 8 = C natural.
   entries.push({
     name: 'design-fretboard-correct',
-    modeId: 'fretboard',
+    skillId: 'fretboard',
     fixture: quizCorrectFeedback(defaultItems.fretboard, {
       correctAnswer: 'C',
     }),
   });
   entries.push({
     name: 'design-fretboard-wrong',
-    modeId: 'fretboard',
+    skillId: 'fretboard',
     fixture: quizWrongFeedback(defaultItems.fretboard),
   });
 
@@ -361,7 +364,7 @@ export function buildManifest(): ScreenshotEntry[] {
   for (const [label, scenarioFn] of scenarios) {
     entries.push({
       name: `design-progress-${label}`,
-      modeId: 'semitoneMath',
+      skillId: 'semitoneMath',
       localStorageData: scenarioFn('semitoneMath', mathIds),
       clickTab: 'progress',
     });
@@ -372,7 +375,7 @@ export function buildManifest(): ScreenshotEntry[] {
   for (const [label, scenarioFn] of scenarios) {
     entries.push({
       name: `design-fretboard-progress-${label}`,
-      modeId: 'fretboard',
+      skillId: 'fretboard',
       localStorageData: scenarioFn('fretboard', fbIds),
       clickTab: 'progress',
     });
@@ -447,30 +450,30 @@ export function buildManifest(): ScreenshotEntry[] {
     ],
   ];
 
-  for (const [label, groups, enabledGroupIds] of fbGroupScenarios) {
+  for (const [label, groups, enabledLevelIds] of fbGroupScenarios) {
     const data = {
       ...perGroupScenario('fretboard', groups),
-      fretboard_enabledGroups: JSON.stringify(enabledGroupIds),
+      fretboard_enabledLevels: JSON.stringify(enabledLevelIds),
     };
     // Practice tab — suggested mode (default)
     entries.push({
       name: `design-fretboard-practice-${label}`,
-      modeId: 'fretboard',
+      skillId: 'fretboard',
       localStorageData: data,
     });
     // Practice tab — custom mode
     entries.push({
       name: `design-fretboard-custom-${label}`,
-      modeId: 'fretboard',
+      skillId: 'fretboard',
       localStorageData: {
         ...data,
-        fretboard_enabledGroups_practiceMode: 'custom',
+        fretboard_enabledLevels_practiceMode: 'custom',
       },
     });
     // Progress tab
     entries.push({
       name: `design-fretboard-progress-${label}`,
-      modeId: 'fretboard',
+      skillId: 'fretboard',
       localStorageData: data,
       clickTab: 'progress',
     });
@@ -484,7 +487,7 @@ export function buildManifest(): ScreenshotEntry[] {
   const natural = accBtn(2); // ♮
   entries.push({
     name: 'design-chordSpelling-correct',
-    modeId: 'chordSpelling',
+    skillId: 'chordSpelling',
     fixture: quizActive('C:major'),
     clickSelectors: [
       natBtn(1),
@@ -498,7 +501,7 @@ export function buildManifest(): ScreenshotEntry[] {
   });
   entries.push({
     name: 'design-chordSpelling-wrong',
-    modeId: 'chordSpelling',
+    skillId: 'chordSpelling',
     fixture: quizActive('C:major'),
     clickSelectors: [
       natBtn(1),
@@ -515,14 +518,14 @@ export function buildManifest(): ScreenshotEntry[] {
   // / Play Store screenshot manifest (scripts/marketing-manifest.ts).
   entries.push({
     name: 'marketing-scaleDegrees-D-4',
-    modeId: 'scaleDegrees',
+    skillId: 'scaleDegrees',
     fixture: quizActive('D:4:fwd'),
   });
   // Chord spelling: show intermediate state with D and F# already entered.
   // clickSelectors tap the note buttons after the active fixture is applied.
   entries.push({
     name: 'marketing-chordSpelling-D7',
-    modeId: 'chordSpelling',
+    skillId: 'chordSpelling',
     fixture: quizActive('D:dom7'),
     // Chord spelling uses SplitNoteButtons (natural + accidental rows).
     // Primary row: C D E F G A B. Secondary: ♭ ♮ ♯.
@@ -539,7 +542,7 @@ export function buildManifest(): ScreenshotEntry[] {
   // Voicing [0,1,2,2,0,'x']: string 0 fret 0, s1 f1, s2 f2, s3 f2, s4 f0.
   entries.push({
     name: 'marketing-guitarChordShapes-Am-correct',
-    modeId: 'guitarChordShapes',
+    skillId: 'guitarChordShapes',
     fixture: quizActive('A:minor'),
     clickSelectors: [
       '.fb-tap[data-string="0"][data-fret="0"]',
@@ -557,11 +560,11 @@ export function buildManifest(): ScreenshotEntry[] {
   const fbWorking = fbGroupScenarios.find(([l]) => l === 'fb-working')!;
   const fbWorkingLocalStorage = {
     ...perGroupScenario('fretboard', fbWorking[1]),
-    fretboard_enabledGroups: JSON.stringify(fbWorking[2]),
+    fretboard_enabledLevels: JSON.stringify(fbWorking[2]),
   };
   entries.push({
     name: 'marketing-fretboard-practice-modal',
-    modeId: 'fretboard',
+    skillId: 'fretboard',
     localStorageData: fbWorkingLocalStorage,
     clickSelectors: ['.progress-bar-tappable'],
   });
@@ -570,7 +573,7 @@ export function buildManifest(): ScreenshotEntry[] {
   // progress bars are populated, then inject the round-complete engine state.
   entries.push({
     name: 'marketing-fretboard-round-complete',
-    modeId: 'fretboard',
+    skillId: 'fretboard',
     localStorageData: fbWorkingLocalStorage,
     fixture: quizRoundComplete('good'),
   });

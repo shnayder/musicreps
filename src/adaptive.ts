@@ -7,8 +7,8 @@
 import type {
   AdaptiveConfig,
   AdaptiveSelector,
-  GroupRecommendation,
   ItemStats,
+  LevelStats,
   StorageAdapter,
 } from './types.ts';
 import { storage } from './storage.ts';
@@ -489,15 +489,15 @@ export function computeLevelPercentile(
 }
 
 /**
- * Classify items per group by speed score. Preserves input order.
+ * Classify items per level by speed score. Preserves input order.
  * Automatic: speed ≥ 0.9, Working: seen but speed < 0.9, Unseen: no data.
  */
-export function computeGroupRecommendations(
+export function computeLevelStats(
   getSpeedScore: (id: string) => number | null,
-  groupIds: string[],
+  levelIds: string[],
   getItemIds: (id: string) => string[],
-): GroupRecommendation[] {
-  const results = groupIds.map((id) => {
+): LevelStats[] {
+  const results = levelIds.map((id) => {
     const items = getItemIds(id);
     let workingCount = 0;
     let unseenCount = 0;
@@ -513,7 +513,7 @@ export function computeGroupRecommendations(
       }
     }
     return {
-      groupId: id,
+      levelId: id,
       workingCount,
       unseenCount,
       automaticCount,
@@ -725,10 +725,10 @@ export function createAdaptiveSelector(
         itemIds,
         percentile,
       ),
-    getGroupRecommendations: (groupIds, getItemIds) =>
-      computeGroupRecommendations(
+    getLevelStats: (levelIds, getItemIds) =>
+      computeLevelStats(
         getSpeedScore,
-        groupIds,
+        levelIds,
         getItemIds,
       ),
     checkAllAutomatic: (items) => checkAllItemsAutomatic(getSpeedScore, items),

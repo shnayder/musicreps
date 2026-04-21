@@ -17,12 +17,12 @@ import {
   startQuiz,
 } from './helpers/page-helpers.ts';
 import {
-  buildEnabledGroups,
+  buildEnabledLevels,
   buildMotorBaseline,
 } from './helpers/fixture-builders.ts';
 
 const MODE_ID = 'chordSpelling';
-const MODE = `#mode-${MODE_ID}`;
+const MODE = `#skill-${MODE_ID}`;
 
 let browser: Browser;
 let server: ChildProcess;
@@ -53,7 +53,7 @@ describe('chord spelling — batch text input (E2E)', () => {
     await seedLocalStorage(page, baseUrl, {
       ...buildMotorBaseline(250),
       // Enable only major/minor triads (group 0) for predictable questions
-      ...buildEnabledGroups('chordSpelling_enabledGroups', [0]),
+      ...buildEnabledLevels('chordSpelling_enabledGroups', [0]),
     });
     await navigateToMode(page, MODE_ID);
   });
@@ -134,7 +134,7 @@ describe('chord spelling — button input (E2E)', () => {
     page = await createTestPage(browser, baseUrl);
     await seedLocalStorage(page, baseUrl, {
       ...buildMotorBaseline(250),
-      ...buildEnabledGroups('chordSpelling_enabledGroups', [0]),
+      ...buildEnabledLevels('chordSpelling_enabledGroups', [0]),
     });
     await navigateToMode(page, MODE_ID);
   });

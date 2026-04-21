@@ -1,4 +1,4 @@
-// Tests for effort tracking: computeModeEffort, parseDailyReps,
+// Tests for effort tracking: computeSkillEffort, parseDailyReps,
 // incrementDailyReps, computeGlobalEffort.
 
 import { describe, it } from 'node:test';
@@ -6,14 +6,14 @@ import assert from 'node:assert/strict';
 import { createMemoryStorage } from './adaptive.ts';
 import {
   computeGlobalEffort,
-  computeModeEffort,
+  computeSkillEffort,
   type DailyRepsStore,
   getGlobalEffort,
-  getModeEffort,
+  getSkillEffort,
   incrementDailyReps,
-  type ModeInfo,
   parseDailyReps,
-  registerModeForEffort,
+  registerSkillForEffort,
+  type SkillInfo,
   toLocalDateString,
 } from './effort.ts';
 
@@ -21,11 +21,11 @@ import {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeModeInfo(
+function makeSkillInfo(
   id: string,
   items: string[],
   namespace?: string,
-): ModeInfo {
+): SkillInfo {
   return { id, namespace: namespace ?? id, allItems: items };
 }
 
@@ -40,14 +40,14 @@ function memoryDailyStore(initial?: string | null): DailyRepsStore {
 }
 
 // ---------------------------------------------------------------------------
-// computeModeEffort
+// computeSkillEffort
 // ---------------------------------------------------------------------------
 
-describe('computeModeEffort', () => {
+describe('computeSkillEffort', () => {
   it('returns zeros for empty storage', () => {
     const storage = createMemoryStorage();
-    const mode = makeModeInfo('test', ['a', 'b', 'c']);
-    const result = computeModeEffort(mode, storage);
+    const mode = makeSkillInfo('test', ['a', 'b', 'c']);
+    const result = computeSkillEffort(mode, storage);
     assert.equal(result.totalReps, 0);
     assert.equal(result.itemsStarted, 0);
     assert.equal(result.totalItems, 3);
@@ -71,8 +71,8 @@ describe('computeModeEffort', () => {
       lastSeen: Date.now(),
       lastCorrectAt: Date.now(),
     });
-    const mode = makeModeInfo('test', ['a', 'b', 'c']);
-    const result = computeModeEffort(mode, storage);
+    const mode = makeSkillInfo('test', ['a', 'b', 'c']);
+    const result = computeSkillEffort(mode, storage);
     assert.equal(result.totalReps, 15);
     assert.equal(result.itemsStarted, 2);
     assert.equal(result.totalItems, 3);
@@ -88,8 +88,8 @@ describe('computeModeEffort', () => {
       lastSeen: 0,
       lastCorrectAt: null,
     });
-    const mode = makeModeInfo('test', ['a']);
-    const result = computeModeEffort(mode, storage);
+    const mode = makeSkillInfo('test', ['a']);
+    const result = computeSkillEffort(mode, storage);
     assert.equal(result.totalReps, 0);
     assert.equal(result.itemsStarted, 0);
   });
@@ -217,7 +217,7 @@ describe('computeGlobalEffort', () => {
   });
 
   it('uses max of daily and mode totals', () => {
-    const modeEfforts = [
+    const skillEfforts = [
       {
         id: 'a',
         namespace: 'a',
@@ -227,7 +227,7 @@ describe('computeGlobalEffort', () => {
       },
     ];
     const daily = { '2024-01-15': 50 };
-    const result = computeGlobalEffort(modeEfforts, daily);
+    const result = computeGlobalEffort(skillEfforts, daily);
     assert.equal(result.totalReps, 100); // mode total > daily total
     assert.equal(result.daysActive, 1);
   });
@@ -245,12 +245,12 @@ describe('computeGlobalEffort', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Convenience wrappers (getGlobalEffort, getModeEffort)
+// Convenience wrappers (getGlobalEffort, getSkillEffort)
 // ---------------------------------------------------------------------------
 
-describe('getModeEffort', () => {
+describe('getSkillEffort', () => {
   it('returns null for unknown mode', () => {
-    assert.equal(getModeEffort('nonexistent-mode-id'), null);
+    assert.equal(getSkillEffort('nonexistent-skill-id'), null);
   });
 });
 
@@ -258,7 +258,7 @@ describe('getGlobalEffort', () => {
   it('returns a GlobalEffort with totalReps and daysActive', () => {
     // Register a mode so the function exercises the registry path.
     // Uses real localStorage-backed storage, which is empty in test.
-    registerModeForEffort({
+    registerSkillForEffort({
       id: '__test_effort__',
       namespace: '__test_effort__',
       allItems: ['x'],

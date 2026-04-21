@@ -20,14 +20,14 @@ import { StatsGrid } from './stats.tsx';
 import { CountdownBar, FeedbackDisplay, TextPrompt } from './quiz-ui.tsx';
 import { SkillIcon } from './icons.tsx';
 import {
-  ModeScreen,
   QuizArea,
   QuizSession,
   RoundCompleteActions,
   RoundCompleteInfo,
+  SkillScreen,
   StartButton,
   Tabs,
-} from './mode-screen.tsx';
+} from './skill-screen.tsx';
 import { SegmentedControl, SettingToggle } from './segmented-control.tsx';
 import {
   CenteredContent,
@@ -98,7 +98,7 @@ describe('NoteButtons', () => {
 
 describe('NoteButtons keyboard feedback', () => {
   it('highlights wrong + reveal buttons when userInput is normalized from keyboard', () => {
-    // Simulates what GenericMode does: resolveNoteInput("cs") → "C#"
+    // Simulates what GenericSkill does: resolveNoteInput("cs") → "C#"
     const html = render(
       <NoteButtons
         feedback={{ correct: false, userInput: 'C#', displayAnswer: 'D' }}
@@ -113,7 +113,7 @@ describe('NoteButtons keyboard feedback', () => {
   });
 
   it('reveals correct button when displayAnswer is canonical note name (diatonic chords)', () => {
-    // Diatonic chords "V in Bb = F major". GenericMode normalizes
+    // Diatonic chords "V in Bb = F major". GenericSkill normalizes
     // "F major" → "F" (canonical) before passing to NoteButtons.
     const html = render(
       <NoteButtons
@@ -130,7 +130,7 @@ describe('NoteButtons keyboard feedback', () => {
 
   it('reveals correct button via enharmonic normalization', () => {
     // Note-semitones: correct answer was "E♭" (random flat choice).
-    // GenericMode normalizes to canonical "D#".
+    // GenericSkill normalizes to canonical "D#".
     const html = render(
       <NoteButtons
         feedback={{ correct: false, userInput: 'D', displayAnswer: 'D#' }}
@@ -395,36 +395,36 @@ describe('CountdownBar', () => {
 // Structural components
 // ---------------------------------------------------------------------------
 
-describe('ModeScreen', () => {
+describe('SkillScreen', () => {
   it('renders with phase class and id', () => {
     const html = render(
-      <ModeScreen id='test' phase='idle'>
+      <SkillScreen id='test' phase='idle'>
         <div>content</div>
-      </ModeScreen>,
+      </SkillScreen>,
     );
-    assert.ok(html.includes('mode-screen phase-idle'));
+    assert.ok(html.includes('skill-screen phase-idle'));
     assert.ok(html.includes('id="mode-test"'));
   });
 
   it('changes phase class', () => {
     const html = render(
-      <ModeScreen id='test' phase='active'>
+      <SkillScreen id='test' phase='active'>
         <div />
-      </ModeScreen>,
+      </SkillScreen>,
     );
-    assert.ok(html.includes('mode-screen phase-active'));
+    assert.ok(html.includes('skill-screen phase-active'));
   });
 });
 
 describe('SkillIcon', () => {
   it('renders icon for known mode', () => {
-    const html = render(<SkillIcon modeId='fretboard' />);
+    const html = render(<SkillIcon skillId='fretboard' />);
     assert.ok(html.includes('skill-icon'));
     assert.ok(html.includes('<svg'));
   });
 
   it('renders nothing for unknown mode', () => {
-    const html = render(<SkillIcon modeId='nonexistent' />);
+    const html = render(<SkillIcon skillId='nonexistent' />);
     assert.equal(html, '');
   });
 });
@@ -588,7 +588,7 @@ describe('RoundCompleteInfo', () => {
     assert.ok(html.includes('progress-bar-plain'));
     assert.ok(html.includes('E strings'));
     assert.ok(html.includes('A string'));
-    assert.ok(html.includes('group-progress-bar'));
+    assert.ok(html.includes('level-progress-bar'));
     assert.ok(html.includes('round-complete-heading'));
     assert.ok(html.includes('Great job!'));
     assert.ok(html.includes('round-complete-count'));

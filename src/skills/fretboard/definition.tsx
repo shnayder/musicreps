@@ -1,0 +1,291 @@
+// Fretboard mode — declarative definition factory.
+// Creates a SkillDefinition for guitar or ukulele, with a useController hook
+// that manages SVG prompt rendering, heatmap stats, and keyboard narrowing.
+
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'preact/hooks';
+import type { Instrument } from '../../types.ts';
+import {
+  displayNote,
+  isValidNoteInput,
+  NOTES,
+  pickAccidentalName,
+} from '../../music-data.ts';
+import {
+  SKILL_ABOUT_DESCRIPTIONS,
+  SKILL_BEFORE_AFTER,
+  SKILL_DESCRIPTIONS,
+} from '../../skill-catalog.ts';
+import {
+  createAdaptiveKeyHandler,
+  noteNarrowingSet,
+} from '../../quiz-engine.ts';
+import { getStatsCellColor } from '../../stats-display.ts';
+import { fretboardSVG } from '../../fretboard.ts';
+import type {
+  SkillController,
+  SkillDefinition,
+} from '../../declarative/types.ts';
+
+import {
+  formatLabel,
+  getAllItems,
+  getAllLevelIds,
+  getItemIdsForLevel,
+  getLevels,
+  getQuestion,
+  type Question,
+} from './logic.ts';
+
+// ---------------------------------------------------------------------------
+// SVG helpers (imperative DOM manipulation)
+// ---------------------------------------------------------------------------
+
+const FB_QUIZ_HL = 'hsl(50, 100%, 50%)';
+
+function setCircleFill(
+  root: HTMLElement,
+  string: number,
+  fret: number,
+  color: string,
+): void {
+  const circle = root.querySelector(
+    'circle.fb-pos[data-string="' + string + '"][data-fret="' + fret + '"]',
+  ) as SVGElement | null;
+  if (circle) circle.style.fill = color;
+}
+
+function clearAll(root: HTMLElement): void {
+  root.querySelectorAll<SVGElement>('.fb-pos').forEach((c) => {
+    c.style.fill = '';
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Factory
+// ---------------------------------------------------------------------------
+
+export function createFretboardDef(
+  instrument: Instrument,
+): SkillDefinition<Question> {
+  const levels = getLevels(instrument);
+  const allItems = getAllItems(instrument);
+  const allLevelIds = getAllLevelIds(instrument);
+
+  return {
+    id: instrument.id,
+    name: instrument.name,
+    namespace: instrument.storageNamespace,
+    description: SKILL_DESCRIPTIONS[instrument.id],
+    aboutDescription: SKILL_ABOUT_DESCRIPTIONS[instrument.id],
+    beforeAfter: SKILL_BEFORE_AFTER[instrument.id],
+    itemNoun: 'positions',
+
+    allItems,
+
+    getQuestion: (itemId, ctx) => getQuestion(instrument, itemId, ctx),
+    getPromptText: () => 'Name this note',
+    quizInstruction: 'What note is this?',
+    answer: {
+      getExpectedValue: (q) => q.currentNote,
+      comparison: 'note-enharmonic',
+      getDisplayAnswer: (q) => {
+        const note = NOTES.find((n) => n.name === q.currentNote);
+        return displayNote(
+          pickAccidentalName(note?.displayName ?? q.currentNote, q.useFlats),
+        );
+      },
+    },
+    validateInput: (_q, input) => isValidNoteInput(input),
+    getUseFlats: (q) => q.useFlats,
+
+    buttons: { kind: 'note', columns: 6 },
+
+    scope: {
+      kind: 'levels',
+      levels,
+      getItemIdsForLevel: (id) => getItemIdsForLevel(instrument, id),
+      allLevelIds,
+      // Legacy storage key — uses old "enabledLevels" naming.
+      storageKey: instrument.storageNamespace + '_enabledLevels',
+      scopeLabel: 'Groups',
+      defaultEnabled: [allLevelIds[0]],
+      formatLabel: (enabled) => formatLabel(instrument, enabled),
+    },
+
+    stats: { kind: 'none' },
+
+    useController: (enabledLevels) =>
+      useFretboardController(instrument, levels, enabledLevels),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Fretboard prompt renderer (highlighted position SVG)
+// ---------------------------------------------------------------------------
+
+function FretboardPrompt({
+  q,
+  svgHTML,
+  fbRef,
+}: {
+  q: Question;
+  svgHTML: string;
+  fbRef: { current: HTMLDivElement | null };
+}) {
+  useEffect(() => {
+    const el = fbRef.current;
+    if (!el) return;
+    clearAll(el);
+    setCircleFill(el, q.currentString, q.currentFret, FB_QUIZ_HL);
+  }, [q.currentString, q.currentFret, svgHTML]);
+  return (
+    <div
+      ref={fbRef}
+      // deno-lint-ignore react-no-danger
+      dangerouslySetInnerHTML={{ __html: svgHTML }}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Fretboard stats renderer (heatmap SVG)
+// ---------------------------------------------------------------------------
+
+function renderFretboardStats(
+  selector: Parameters<
+    NonNullable<SkillController<Question>['renderStats']>
+  >[0],
+  instrument: Instrument,
+  svgHTML: string,
+  progressFbRef: { current: HTMLDivElement | null },
+) {
+  return (
+    <div
+      ref={(el: HTMLDivElement | null) => {
+        progressFbRef.current = el;
+        if (!el) return;
+        for (let s = 0; s < instrument.stringCount; s++) {
+          for (let f = 0; f < instrument.fretCount; f++) {
+            const itemId = s + '-' + f;
+            const color = getStatsCellColor(selector, itemId);
+            setCircleFill(el, s, f, color);
+          }
+        }
+      }}
+      // deno-lint-ignore react-no-danger
+      dangerouslySetInnerHTML={{ __html: svgHTML }}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Controller hook — SVG prompt, heatmap stats, keyboard narrowing
+// ---------------------------------------------------------------------------
+
+function useFretboardController(
+  instrument: Instrument,
+  levels: ReturnType<typeof getLevels>,
+  enabledLevels: ReadonlySet<string>,
+): SkillController<Question> {
+  // --- SVG refs ---
+  const quizFbRef = useRef<HTMLDivElement>(null);
+  const progressFbRef = useRef<HTMLDivElement>(null);
+
+  // --- Generate SVG HTML once ---
+  const svgHTML = useMemo(
+    () =>
+      fretboardSVG({
+        stringCount: instrument.stringCount,
+        fretCount: instrument.fretCount,
+        fretMarkers: instrument.fretMarkers,
+      }),
+    [instrument],
+  );
+
+  // --- Check if any enabled group includes accidentals ---
+  const hasAccidentals = useMemo(() => {
+    for (const id of enabledLevels) {
+      const g = levels.find((g) => g.id === id);
+      if (g?.noteFilter === 'sharps-flats') return true;
+    }
+    return false;
+  }, [enabledLevels, levels]);
+
+  // --- Keyboard handler + pending state for narrowing ---
+  const engineSubmitRef = useRef<(input: string) => void>(() => {});
+  const hasAccidentalsRef = useRef(hasAccidentals);
+  hasAccidentalsRef.current = hasAccidentals;
+  const [pendingNote, setPendingNote] = useState<string | null>(null);
+
+  const noteHandler = useMemo(
+    () =>
+      createAdaptiveKeyHandler(
+        (note: string) => engineSubmitRef.current(note),
+        () => hasAccidentalsRef.current,
+        setPendingNote,
+      ),
+    [],
+  );
+
+  // --- Narrowing set ---
+  const narrowing = useMemo(
+    () => noteNarrowingSet(pendingNote),
+    [pendingNote],
+  );
+
+  // --- Prompt: SVG fretboard with highlighted position ---
+  const renderPrompt = useCallback(
+    (q: Question) => (
+      <FretboardPrompt q={q} svgHTML={svgHTML} fbRef={quizFbRef} />
+    ),
+    [svgHTML],
+  );
+
+  // --- Stats: SVG fretboard with heatmap colors ---
+  const renderStats = useCallback(
+    (
+      selector: Parameters<
+        NonNullable<SkillController<Question>['renderStats']>
+      >[0],
+    ) => renderFretboardStats(selector, instrument, svgHTML, progressFbRef),
+    [svgHTML, instrument],
+  );
+
+  return {
+    renderPrompt,
+    renderStats,
+
+    onAnswer: (itemId, result) => {
+      if (quizFbRef.current) {
+        const q = getQuestion(instrument, itemId);
+        const color = result.correct
+          ? 'var(--color-success)'
+          : 'var(--color-error)';
+        setCircleFill(quizFbRef.current, q.currentString, q.currentFret, color);
+      }
+    },
+
+    onStart: () => noteHandler.reset(),
+    onStop: () => {
+      noteHandler.reset();
+      if (quizFbRef.current) clearAll(quizFbRef.current);
+    },
+
+    handleKey: (e, _ctx) => {
+      engineSubmitRef.current = _ctx.submitAnswer;
+      return noteHandler.handleKey(e);
+    },
+
+    deactivateCleanup: () => noteHandler.reset(),
+
+    narrowing,
+    hideAccidentals: !hasAccidentals,
+    buttonColumns: hasAccidentals ? undefined : 4,
+  };
+}

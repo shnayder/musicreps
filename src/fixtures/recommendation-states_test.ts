@@ -9,10 +9,10 @@ import {
 } from './recommendation-states.ts';
 import { createAdaptiveSelector, createMemoryStorage } from '../adaptive.ts';
 import { computeRecommendations } from '../recommendations.ts';
-import { buildRecommendationLines } from '../mode-ui-state.ts';
-import { getGroups, getItemIdsForGroup } from '../modes/fretboard/logic.ts';
+import { buildRecommendationLines } from '../skill-ui-state.ts';
+import { getItemIdsForLevel, getLevels } from '../skills/fretboard/logic.ts';
 import { GUITAR } from '../music-data.ts';
-import { ALL_ITEMS as NOTE_SEMI_ITEMS } from '../modes/note-semitones/logic.ts';
+import { ALL_ITEMS as NOTE_SEMI_ITEMS } from '../skills/note-semitones/logic.ts';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -37,18 +37,18 @@ function getMultiGroupVerbs(state: RecommendationState): string[] {
   const selector = createAdaptiveSelector(storage);
 
   if (state.namespace === 'fretboard') {
-    const groups = getGroups(GUITAR);
-    const groupIds = groups.map((g) => g.id);
-    const getIds = (id: string) => getItemIdsForGroup(GUITAR, id);
-    const idOrder = new Map(groupIds.map((id, i) => [id, i]));
+    const groups = getLevels(GUITAR);
+    const levelIds = groups.map((g) => g.id);
+    const getIds = (id: string) => getItemIdsForLevel(GUITAR, id);
+    const idOrder = new Map(levelIds.map((id, i) => [id, i]));
     const result = computeRecommendations(
       selector,
-      groupIds,
+      levelIds,
       getIds,
       {},
       {
         sortUnstarted: (a, b) =>
-          (idOrder.get(a.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0),
+          (idOrder.get(a.levelId) ?? 0) - (idOrder.get(b.levelId) ?? 0),
       },
     );
     const lines = buildRecommendationLines(

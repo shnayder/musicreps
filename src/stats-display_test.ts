@@ -9,7 +9,7 @@ import {
   getStatsCellColorMerged,
   heatmapNeedsLightText,
   progressBarColors,
-  progressBarGroupSegment,
+  progressBarLevelSegment,
 } from './stats-display.ts';
 
 // Heatmap palette (matches fallback values in stats-display.ts)
@@ -388,12 +388,12 @@ describe('computeReviewPill', () => {
 });
 
 // ---------------------------------------------------------------------------
-// progressBarGroupSegment (weight = fraction of seen items)
+// progressBarLevelSegment (weight = fraction of seen items)
 // ---------------------------------------------------------------------------
 
-describe('progressBarGroupSegment', () => {
+describe('progressBarLevelSegment', () => {
   it('returns weight 0 when no items are seen', () => {
-    const seg = progressBarGroupSegment(
+    const seg = progressBarLevelSegment(
       { getSpeedScore: () => null },
       ['a', 'b', 'c'],
     );
@@ -403,7 +403,7 @@ describe('progressBarGroupSegment', () => {
   });
 
   it('returns weight 1 when all items are seen', () => {
-    const seg = progressBarGroupSegment(
+    const seg = progressBarLevelSegment(
       { getSpeedScore: () => 0.7 },
       ['a', 'b', 'c'],
     );
@@ -417,7 +417,7 @@ describe('progressBarGroupSegment', () => {
         return id === 'a' ? 0.5 : null;
       },
     };
-    const seg = progressBarGroupSegment(selector, [
+    const seg = progressBarLevelSegment(selector, [
       'a',
       'b',
       'c',
@@ -498,8 +498,8 @@ describe('computeProgressColors', () => {
   it('returns [] for groups mode when all unseen', () => {
     const selector = { getSpeedScore: () => null };
     const segs = computeProgressColors(selector, {
-      kind: 'groups',
-      groups: [
+      kind: 'levels',
+      levels: [
         { id: 'g0', itemIds: ['a', 'b'] },
         { id: 'g1', itemIds: ['c', 'd'] },
       ],
@@ -517,12 +517,12 @@ describe('computeProgressColors', () => {
     };
     const skipped = new Set(['g1']);
     const segs = computeProgressColors(selector, {
-      kind: 'groups',
-      groups: [
+      kind: 'levels',
+      levels: [
         { id: 'g0', itemIds: ['a', 'b'] },
         { id: 'g1', itemIds: ['c', 'd'] },
       ],
-      skippedGroups: skipped,
+      skippedLevels: skipped,
     });
     // Only group 0 remains (speed ~0.5)
     assert.equal(segs.length, 1);
@@ -531,9 +531,9 @@ describe('computeProgressColors', () => {
   it('returns [] when all groups are skipped', () => {
     const selector = { getSpeedScore: () => 0.5 };
     const segs = computeProgressColors(selector, {
-      kind: 'groups',
-      groups: [{ id: 'g0', itemIds: ['a'] }],
-      skippedGroups: new Set(['g0']),
+      kind: 'levels',
+      levels: [{ id: 'g0', itemIds: ['a'] }],
+      skippedLevels: new Set(['g0']),
     });
     assert.deepEqual(segs, []);
   });
@@ -547,8 +547,8 @@ describe('computeProgressColors', () => {
       },
     };
     const segs = computeProgressColors(selector, {
-      kind: 'groups',
-      groups: [
+      kind: 'levels',
+      levels: [
         { id: 'g0', itemIds: ['a', 'b'] }, // avg speed 0.3, 2/2 seen
         { id: 'g1', itemIds: ['c', 'd'] }, // all unseen
         { id: 'g2', itemIds: ['e', 'f'] }, // avg speed 0.9, 2/2 seen
@@ -567,16 +567,16 @@ describe('computeProgressColors', () => {
     assert.equal(segs[2].weight, 0);
   });
 
-  it('works with Map as skippedGroups (skill screen compat)', () => {
+  it('works with Map as skippedLevels (skill screen compat)', () => {
     const selector = { getSpeedScore: () => 0.5 };
     const skipped = new Map([['g0', 'mastered']]);
     const segs = computeProgressColors(selector, {
-      kind: 'groups',
-      groups: [
+      kind: 'levels',
+      levels: [
         { id: 'g0', itemIds: ['a'] },
         { id: 'g1', itemIds: ['b'] },
       ],
-      skippedGroups: skipped,
+      skippedLevels: skipped,
     });
     assert.equal(segs.length, 1);
   });
@@ -589,8 +589,8 @@ describe('computeProgressColors', () => {
       },
     };
     const segs = computeProgressColors(selector, {
-      kind: 'groups',
-      groups: [{ id: 'g0', itemIds: ['a', 'b', 'c', 'd'] }],
+      kind: 'levels',
+      levels: [{ id: 'g0', itemIds: ['a', 'b', 'c', 'd'] }],
     });
     assert.equal(segs.length, 1);
     assert.equal(segs[0].weight, 0.25); // 1/4

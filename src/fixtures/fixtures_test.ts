@@ -20,16 +20,16 @@ import {
 } from './quiz-page.ts';
 
 // Mode-specific getQuestion / parseItem functions
-import { getQuestion as getNSQuestion } from '../modes/note-semitones/logic.ts';
-import { getQuestion as getISQuestion } from '../modes/interval-semitones/logic.ts';
-import { getQuestion as getSMQuestion } from '../modes/semitone-math/logic.ts';
-import { getQuestion as getIMQuestion } from '../modes/interval-math/logic.ts';
-import { getQuestion as getKSQuestion } from '../modes/key-signatures/logic.ts';
-import { getQuestion as getSDQuestion } from '../modes/scale-degrees/logic.ts';
-import { getQuestion as getDCQuestion } from '../modes/diatonic-chords/logic.ts';
-import { parseItem as parseCSItem } from '../modes/chord-spelling/logic.ts';
-import { parseItem as parseChordShapesItem } from '../modes/chord-shapes/logic.ts';
-import { getPositionsForNote } from '../modes/speed-tap/logic.ts';
+import { getQuestion as getNSQuestion } from '../skills/note-semitones/logic.ts';
+import { getQuestion as getISQuestion } from '../skills/interval-semitones/logic.ts';
+import { getQuestion as getSMQuestion } from '../skills/semitone-math/logic.ts';
+import { getQuestion as getIMQuestion } from '../skills/interval-math/logic.ts';
+import { getQuestion as getKSQuestion } from '../skills/key-signatures/logic.ts';
+import { getQuestion as getSDQuestion } from '../skills/scale-degrees/logic.ts';
+import { getQuestion as getDCQuestion } from '../skills/diatonic-chords/logic.ts';
+import { parseItem as parseCSItem } from '../skills/chord-spelling/logic.ts';
+import { parseItem as parseChordShapesItem } from '../skills/chord-shapes/logic.ts';
+import { getPositionsForNote } from '../skills/speed-tap/logic.ts';
 import { createFretboardHelpers } from '../quiz-fretboard-state.ts';
 import {
   GUITAR,
@@ -80,19 +80,19 @@ const modeQuestionFns: Record<string, (itemId: string) => unknown> = {
 describe('fixture item ID validity', () => {
   for (const [key, itemId] of Object.entries(defaultItems)) {
     // Strip _rev suffix to get the base mode ID
-    const modeId = key.replace(/_rev$/, '');
+    const skillId = key.replace(/_rev$/, '');
     it(`${key}: getQuestion("${itemId}") returns a valid question`, () => {
-      const fn = modeQuestionFns[modeId];
-      assert.ok(fn, `No getQuestion function for mode ${modeId}`);
+      const fn = modeQuestionFns[skillId];
+      assert.ok(fn, `No getQuestion function for mode ${skillId}`);
       const q = fn(itemId);
       assert.ok(
         q,
-        `getQuestion returned null/undefined for ${modeId}:${itemId}`,
+        `getQuestion returned null/undefined for ${skillId}:${itemId}`,
       );
       assert.equal(typeof q, 'object');
 
       // Mode-specific shape checks
-      if (modeId === 'fretboard' || modeId === 'ukulele') {
+      if (skillId === 'fretboard' || skillId === 'ukulele') {
         const fb = q as {
           currentString: number;
           currentFret: number;
@@ -101,10 +101,10 @@ describe('fixture item ID validity', () => {
         assert.equal(typeof fb.currentString, 'number');
         assert.equal(typeof fb.currentFret, 'number');
         assert.equal(typeof fb.currentNote, 'string');
-      } else if (modeId === 'speedTap') {
+      } else if (skillId === 'speedTap') {
         const st = q as { positions: { string: number; fret: number }[] };
         assert.ok(st.positions.length > 0, 'Speed tap should have positions');
-      } else if (modeId === 'chordSpelling') {
+      } else if (skillId === 'chordSpelling') {
         const cs = q as {
           rootName: string;
           chordType: { symbol: string };
@@ -278,10 +278,10 @@ describe('fixture manifest completeness', () => {
   ];
 
   it('defaultItems covers every mode', () => {
-    for (const modeId of ALL_MODE_IDS) {
+    for (const skillId of ALL_MODE_IDS) {
       assert.ok(
-        modeId in defaultItems,
-        `defaultItems missing mode: ${modeId}`,
+        skillId in defaultItems,
+        `defaultItems missing mode: ${skillId}`,
       );
     }
   });

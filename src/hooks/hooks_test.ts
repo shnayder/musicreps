@@ -172,9 +172,9 @@ describe('Hook type contracts', () => {
 
   it('ScopeActions type is valid', () => {
     const _actions: ScopeActions = {
-      toggleGroup: () => {},
-      skipGroup: () => {},
-      unskipGroup: () => {},
+      toggleLevel: () => {},
+      skipLevel: () => {},
+      unskipLevel: () => {},
       setNoteFilter: () => {},
       setScope: () => {},
     };

@@ -92,8 +92,8 @@ export interface StorageAdapter {
   preload?(itemIds: string[]): void;
 }
 
-export type GroupRecommendation = {
-  groupId: string;
+export type LevelStats = {
+  levelId: string;
   workingCount: number;
   unseenCount: number;
   automaticCount: number;
@@ -117,10 +117,10 @@ export interface AdaptiveSelector {
     percentile?: number,
     nowMs?: number,
   ): { level: number; seen: number };
-  getGroupRecommendations(
-    groupIds: string[],
+  getLevelStats(
+    levelIds: string[],
     getItemIds: (id: string) => string[],
-  ): GroupRecommendation[];
+  ): LevelStats[];
   checkAllAutomatic(items: string[]): boolean;
   checkNeedsReview(items: string[]): boolean;
   updateConfig(newCfg: Partial<AdaptiveConfig>): void;
@@ -163,13 +163,13 @@ export interface DeadlineTracker {
 // ---------------------------------------------------------------------------
 
 export type LevelRecommendation = {
-  groupId: string;
+  levelId: string;
   type: 'review' | 'practice' | 'expand' | 'automate';
 };
 
 /** Per-level status included in RecommendationResult for UI consumption. */
 export type LevelStatusSummary = {
-  groupId: string;
+  levelId: string;
   speedLabel:
     | 'automatic'
     | 'solid'
@@ -275,15 +275,15 @@ export type NoteKeyHandler = {
 };
 
 // ---------------------------------------------------------------------------
-// Scope and mode configuration
+// Scope and skill configuration
 // ---------------------------------------------------------------------------
 
 export type NoteFilter = 'natural' | 'sharps-flats' | 'all' | 'none';
 
-export type GroupDef = {
+export type LevelDef = {
   id: string;
   label: string;
-  /** Item IDs belonging to this group. Precomputed at mode creation. */
+  /** Item IDs belonging to this level. Precomputed at skill creation. */
   itemIds: string[];
 };
 
@@ -291,16 +291,16 @@ export type GroupDef = {
 export type ScopeSpec =
   | { kind: 'none' }
   | {
-    kind: 'groups';
-    groups: GroupDef[];
+    kind: 'levels';
+    levels: LevelDef[];
     defaultEnabled: string[];
     storageKey: string;
-    /** Label for the toggle group heading (defaults to "Groups" in HTML). */
+    /** Label for the toggle level heading (defaults to "Levels" in HTML). */
     label?: string;
-    /** Sort function for recommending which unstarted group to expand next. */
+    /** Sort function for recommending which unstarted level to expand next. */
     sortUnstarted?: (
-      a: GroupRecommendation,
-      b: GroupRecommendation,
+      a: LevelStats,
+      b: LevelStats,
     ) => number;
   }
   | {
@@ -308,16 +308,16 @@ export type ScopeSpec =
     storageKey: string;
   };
 
-/** Why a group was skipped: user claims mastery vs. deferred for later. */
-export type GroupStatus = 'mastered' | 'deferred';
+/** Why a level was skipped: user claims mastery vs. deferred for later. */
+export type LevelStatus = 'mastered' | 'deferred';
 
 /** Runtime state: what the user has currently selected. */
 export type ScopeState =
   | { kind: 'none' }
   | {
-    kind: 'groups';
-    enabledGroups: ReadonlySet<string>;
-    skippedGroups: ReadonlyMap<string, GroupStatus>;
+    kind: 'levels';
+    enabledLevels: ReadonlySet<string>;
+    skippedLevels: ReadonlyMap<string, LevelStatus>;
   }
   | { kind: 'note-filter'; noteFilter: NoteFilter };
 
@@ -333,10 +333,10 @@ export type StatsTableRow = {
   rev2ItemId?: string;
 };
 
-// --- Mode lifecycle ---
+// --- Skill lifecycle ---
 
-/** Navigation handle for activating/deactivating a quiz mode. */
-export type ModeHandle = {
+/** Navigation handle for activating/deactivating a quiz skill. */
+export type SkillHandle = {
   activate(): void;
   deactivate(): void;
 };

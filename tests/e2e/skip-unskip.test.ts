@@ -46,7 +46,7 @@ after(async () => {
 // ---------------------------------------------------------------------------
 
 async function setupMode(
-  modeId: string,
+  skillId: string,
   storageData: Record<string, string>,
   enabledGroupsKey: string,
   enabledGroups: (string | number)[],
@@ -75,8 +75,8 @@ async function setupMode(
   // Reload and navigate to mode
   await page.goto(baseUrl);
   await page.waitForLoadState('networkidle');
-  await page.click(`[data-mode="${modeId}"]`);
-  await page.waitForSelector(`#mode-${modeId}.mode-active`);
+  await page.click(`[data-skill="${skillId}"]`);
+  await page.waitForSelector(`#skill-${skillId}.skill-active`);
 
   return page;
 }
@@ -188,7 +188,7 @@ describe('skip/unskip — semitone math (E2E)', () => {
     await page?.context().close();
   });
 
-  const MODE = '#mode-semitoneMath';
+  const MODE = '#skill-semitoneMath';
 
   it('skip/unskip cycle preserves recommendations', async () => {
     // Read the recommendation to find which group to target
@@ -294,7 +294,7 @@ describe('skip/unskip — guitar fretboard synthetic (E2E)', () => {
     await page?.context().close();
   });
 
-  const MODE = '#mode-fretboard';
+  const MODE = '#skill-fretboard';
 
   it('skip/unskip cycle preserves recommendations', async () => {
     const recText = await page.textContent(
@@ -363,7 +363,7 @@ describe('skip/unskip — guitar fretboard real data (E2E)', () => {
     await page?.context().close();
   });
 
-  const MODE = '#mode-fretboard';
+  const MODE = '#skill-fretboard';
 
   it('skip/unskip cycle preserves recommendations', async () => {
     const recText = await page.textContent(`${MODE} .suggestion-lines`);

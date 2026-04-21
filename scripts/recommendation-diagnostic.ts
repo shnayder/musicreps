@@ -40,7 +40,7 @@ import {
   ALL_ITEMS,
   DISTANCE_GROUPS,
   getItemIdsForGroup,
-} from '../src/modes/semitone-math/logic.ts';
+} from '../src/skills/semitone-math/logic.ts';
 import {
   generateLocalStorageData,
   type GroupSpec,

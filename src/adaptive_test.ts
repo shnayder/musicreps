@@ -1223,7 +1223,7 @@ describe('createAdaptiveSelector', () => {
     assert.equal(result.seen, 10);
   });
 
-  it('getGroupRecommendations preserves input order', () => {
+  it('getLevelStats preserves input order', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
@@ -1234,31 +1234,31 @@ describe('createAdaptiveSelector', () => {
     // Group '1': no items answered (all unseen)
     // (no recordResponse calls)
 
-    const recs = selector.getGroupRecommendations(
+    const recs = selector.getLevelStats(
       ['0', '1'],
       (id) => [`${id}-0`, `${id}-1`],
     );
 
     assert.equal(recs.length, 2);
     // Preserves input order: '0' first, '1' second.
-    assert.equal(recs[0].groupId, '0');
+    assert.equal(recs[0].levelId, '0');
     assert.equal(recs[0].unseenCount, 0);
     assert.equal(recs[0].workingCount, 0);
     assert.equal(recs[0].automaticCount, 2); // fast + just answered = automatic
-    assert.equal(recs[1].groupId, '1');
+    assert.equal(recs[1].levelId, '1');
     assert.equal(recs[1].unseenCount, 2);
     assert.equal(recs[1].workingCount, 0);
     assert.equal(recs[1].automaticCount, 0);
   });
 
-  it('getGroupRecommendations separates unseen from working items', () => {
+  it('getLevelStats separates unseen from working items', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
     // Group '0': item 0-0 answered fast and recently → automatic, item 0-1 unseen
     selector.recordResponse('0-0', 1200);
 
-    const recs = selector.getGroupRecommendations(
+    const recs = selector.getLevelStats(
       ['0'],
       (id) => [`${id}-0`, `${id}-1`],
     );
@@ -1268,7 +1268,7 @@ describe('createAdaptiveSelector', () => {
     assert.equal(recs[0].workingCount, 0);
   });
 
-  it('getGroupRecommendations counts working items (seen but not automatic)', () => {
+  it('getLevelStats counts working items (seen but not automatic)', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
@@ -1283,7 +1283,7 @@ describe('createAdaptiveSelector', () => {
       lastCorrectAt: Date.now() - 100 * 3600000,
     });
 
-    const recs = selector.getGroupRecommendations(
+    const recs = selector.getLevelStats(
       ['0'],
       (id) => [`${id}-0`, `${id}-1`],
     );
@@ -1293,14 +1293,14 @@ describe('createAdaptiveSelector', () => {
     assert.equal(recs[0].automaticCount, 0);
   });
 
-  it('getGroupRecommendations classifies slow-but-recent items as working', () => {
+  it('getLevelStats classifies slow-but-recent items as working', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
     // Slow answer (3500ms) just now → speedScore ≈ 0.38 < 0.9 → working, not automatic
     selector.recordResponse('0-0', 3500);
 
-    const recs = selector.getGroupRecommendations(
+    const recs = selector.getLevelStats(
       ['0'],
       (id) => [`${id}-0`],
     );
@@ -1309,18 +1309,18 @@ describe('createAdaptiveSelector', () => {
     assert.equal(recs[0].automaticCount, 0);
   });
 
-  it('getGroupRecommendations preserves input order regardless of work counts', () => {
+  it('getLevelStats preserves input order regardless of work counts', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
     // Three groups with identical work counts, non-alphabetical input order.
     // Output preserves input order — no sorting applied.
-    const recs = selector.getGroupRecommendations(
+    const recs = selector.getLevelStats(
       ['g5', 'g2', 'g8'],
       (id) => [`${id}-0`],
     );
-    assert.equal(recs[0].groupId, 'g5');
-    assert.equal(recs[1].groupId, 'g2');
-    assert.equal(recs[2].groupId, 'g8');
+    assert.equal(recs[0].levelId, 'g5');
+    assert.equal(recs[1].levelId, 'g2');
+    assert.equal(recs[2].levelId, 'g8');
   });
 
   it('updateConfig changes config used by selector', () => {

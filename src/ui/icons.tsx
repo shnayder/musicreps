@@ -148,8 +148,8 @@ const MODE_ICONS: Record<string, () => preact.JSX.Element> = {
   ukuleleChordShapes: Guitar,
 };
 
-export function SkillIcon({ modeId }: { modeId: string }) {
-  const Icon = MODE_ICONS[modeId];
+export function SkillIcon({ skillId }: { skillId: string }) {
+  const Icon = MODE_ICONS[skillId];
   if (!Icon) return null;
   return <Icon />;
 }
