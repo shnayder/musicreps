@@ -8,6 +8,7 @@
 
 import type { ChordType } from '../../types.ts';
 import type { SequentialEvalResult } from '../../declarative/types.ts';
+import { shuffleByItemHash } from '../../skill-utils.ts';
 import {
   CHORD_ROOTS,
   CHORD_TYPES,
@@ -98,7 +99,7 @@ const CHORD_ROOT_CYCLE: string[] = [
 /**
  * Get all item IDs belonging to a chord type group.
  * Item ID format: "root:typeName" (e.g. "C:major", "F#:dim").
- * Order: chord type outer, circle-of-fifths roots inner.
+ * Built chord type outer, circle-of-fifths roots inner; hash-shuffled.
  */
 export function getItemIdsForLevel(levelId: string): string[] {
   const group = SPELLING_LEVELS.find((g) => g.id === levelId);
@@ -109,16 +110,19 @@ export function getItemIdsForLevel(levelId: string): string[] {
       items.push(root + ':' + type.name);
     }
   }
-  return items;
+  return shuffleByItemHash(items);
 }
 
 /** All item IDs: 12 roots × all chord types. */
-export const ALL_ITEMS: string[] = [];
-for (const type of CHORD_TYPES) {
-  for (const root of CHORD_ROOT_CYCLE) {
-    ALL_ITEMS.push(root + ':' + type.name);
+export const ALL_ITEMS: string[] = (() => {
+  const items: string[] = [];
+  for (const type of CHORD_TYPES) {
+    for (const root of CHORD_ROOT_CYCLE) {
+      items.push(root + ':' + type.name);
+    }
   }
-}
+  return shuffleByItemHash(items);
+})();
 
 export const ALL_LEVEL_IDS: string[] = SPELLING_LEVELS.map((g) => g.id);
 

@@ -4,6 +4,7 @@
 // 168 items: 12 keys × 7 degrees × 2 directions.
 
 import type { DiatonicChord } from '../../types.ts';
+import { shuffleByItemHash } from '../../skill-utils.ts';
 import {
   DIATONIC_CHORDS,
   getScaleDegreeNote,
@@ -47,8 +48,8 @@ export function getItemIdsForLevel(levelId: string): string[] {
   const group = CHORD_LEVELS.find((g) => g.id === levelId);
   if (!group) return [];
   const items: string[] = [];
-  // Outer: numeral ascending within group; direction (fwd first);
-  // inner: MAJOR_KEYS (already circle-of-fifths order).
+  // Build: numeral ascending, then direction (fwd first), then MAJOR_KEYS.
+  // Final order is hash-shuffled for variety.
   const sortedDegrees = [...group.degrees].sort((a, b) => a - b);
   for (const d of sortedDegrees) {
     for (const dir of ['fwd', 'rev']) {
@@ -57,18 +58,21 @@ export function getItemIdsForLevel(levelId: string): string[] {
       }
     }
   }
-  return items;
+  return shuffleByItemHash(items);
 }
 
 /** All 168 item IDs: 12 keys × 7 degrees × 2 directions. */
-export const ALL_ITEMS: string[] = [];
-for (let d = 1; d <= 7; d++) {
-  for (const dir of ['fwd', 'rev']) {
-    for (const key of MAJOR_KEYS) {
-      ALL_ITEMS.push(key.root + ':' + d + ':' + dir);
+export const ALL_ITEMS: string[] = (() => {
+  const items: string[] = [];
+  for (let d = 1; d <= 7; d++) {
+    for (const dir of ['fwd', 'rev']) {
+      for (const key of MAJOR_KEYS) {
+        items.push(key.root + ':' + d + ':' + dir);
+      }
     }
   }
-}
+  return shuffleByItemHash(items);
+})();
 
 export const ALL_LEVEL_IDS: string[] = CHORD_LEVELS.map((g) => g.id);
 

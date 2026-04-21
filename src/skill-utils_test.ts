@@ -8,6 +8,7 @@ import {
   mathGridId,
   parseBidirectionalId,
   parseMathId,
+  shuffleByItemHash,
 } from './skill-utils.ts';
 
 // ---------------------------------------------------------------------------
@@ -200,6 +201,54 @@ describe('buildBidirectionalStatsRows', () => {
 
   it('returns empty for empty input', () => {
     assert.deepStrictEqual(buildBidirectionalStatsRows([], 'X'), []);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// shuffleByItemHash
+// ---------------------------------------------------------------------------
+
+describe('shuffleByItemHash', () => {
+  it('is deterministic — same input always gives same output', () => {
+    const items = ['C+1', 'D-3', 'G#+m2', 'F-P5', 'A+7', 'Bb-11'];
+    const a = shuffleByItemHash(items);
+    const b = shuffleByItemHash(items);
+    assert.deepStrictEqual(a, b);
+  });
+
+  it('preserves set membership and length', () => {
+    const items = ['C+1', 'D-3', 'G#+m2', 'F-P5', 'A+7', 'Bb-11'];
+    const shuffled = shuffleByItemHash(items);
+    assert.equal(shuffled.length, items.length);
+    for (const item of items) {
+      assert.ok(shuffled.includes(item), `missing ${item}`);
+    }
+  });
+
+  it('does not modify the original array', () => {
+    const items = ['C+1', 'D-3', 'G#+m2'];
+    const copy = [...items];
+    shuffleByItemHash(items);
+    assert.deepStrictEqual(items, copy);
+  });
+
+  it('actually reorders non-trivial lists', () => {
+    // With enough items, hash ordering should differ from original
+    const items = buildMathIds(['C', 'G', 'D', 'A', 'E', 'B'], [1, 2, 3]);
+    const shuffled = shuffleByItemHash(items);
+    assert.notDeepStrictEqual(shuffled, items);
+  });
+
+  it('is stable when items are added — existing relative order preserved', () => {
+    const original = ['C+1', 'D-3', 'G#+m2', 'F-P5', 'A+7'];
+    const withExtra = [...original, 'Bb-11'];
+    const shuffledOriginal = shuffleByItemHash(original);
+    const shuffledWithExtra = shuffleByItemHash(withExtra);
+    // Filter the extended result to only original items
+    const filteredBack = shuffledWithExtra.filter((id) =>
+      original.includes(id)
+    );
+    assert.deepStrictEqual(filteredBack, shuffledOriginal);
   });
 });
 
