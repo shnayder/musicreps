@@ -2889,7 +2889,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1483"></div>
+  <div class="home-screen" id="home-screen" data-version="#1489"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -5221,15 +5221,13 @@ body.native-sim #app {
   ];
 
   // src/adaptive.ts
-  var N_ACTIVE = 5;
-  var N_ACTIVE_EXPANDED = 7;
-  var M_REVIEW = 10;
-  var ACTIVE_BUCKET_BIAS = 0.7;
-  function effectiveActiveCap(reviewSize) {
-    if (reviewSize === 0) return N_ACTIVE_EXPANDED;
-    if (reviewSize <= 3) return N_ACTIVE + 1;
-    return N_ACTIVE;
-  }
+  var TOTAL_SLOTS = 25;
+  var INITIAL_COST = 3;
+  var MAX_INITIAL = 5;
+  var INITIAL_LEARNING_MULTIPLIER = 3;
+  var SPEEDUP_MULTIPLIER = 1;
+  var REVIEW_MULTIPLIER = 1.5;
+  var FAST_FRESH_MULTIPLIER = 0.3;
   var DEFAULT_CONFIG = {
     minTime: 1e3,
     unseenBoost: 3,
@@ -5239,8 +5237,6 @@ body.native-sim #app {
     // Forgetting model
     initialStability: 4,
     // hours — half-life after first correct answer
-    maxStability: 336,
-    // hours (14 days) — stability ceiling
     stabilityGrowthMax: 0.9,
     // max additive growth factor (at freshness=0)
     stabilityDecayOnWrong: 0.3,
@@ -5285,7 +5281,7 @@ body.native-sim #app {
     if (elapsedHours !== null && elapsedHours > 0 && responseTimeMs < cfg.selfCorrectionThreshold) {
       newStability = Math.max(newStability, elapsedHours * 1.5);
     }
-    return Math.min(newStability, cfg.maxStability);
+    return newStability;
   }
   function computeStabilityAfterWrong(oldStability, cfg) {
     if (oldStability == null) return cfg.initialStability;
@@ -5307,34 +5303,63 @@ body.native-sim #app {
     }
     return speedWeight;
   }
-  function needsActiveLearning(speedScore) {
-    return speedScore == null || speedScore < 0.9;
+  function needsInitialLearning(speedScore) {
+    return speedScore == null || speedScore < 0.7;
+  }
+  function needsSpeedup(speedScore) {
+    return speedScore != null && speedScore >= 0.7 && speedScore < 0.9;
   }
   function needsReview(speedScore, freshness, freshnessThreshold = DEFAULT_CONFIG.freshnessThreshold) {
     if (speedScore == null || speedScore < 0.9) return false;
     return (freshness ?? 1) < freshnessThreshold;
   }
+  function computeBucketCaps(initialCount, speedupAvail, reviewAvail) {
+    const initialCap = Math.min(initialCount, MAX_INITIAL);
+    const remaining = TOTAL_SLOTS - initialCap * INITIAL_COST;
+    let speedupCap = Math.floor(remaining / 2);
+    let reviewCap = remaining - speedupCap;
+    if (speedupAvail < speedupCap) {
+      reviewCap += speedupCap - speedupAvail;
+      speedupCap = speedupAvail;
+    }
+    if (reviewAvail < reviewCap) {
+      speedupCap = Math.min(speedupAvail, remaining - reviewAvail);
+      reviewCap = reviewAvail;
+    }
+    return { initialCap, speedupCap, reviewCap };
+  }
   function computeBuckets(orderedItems, getSpeed, getFreshness, excludeId, freshnessThreshold = DEFAULT_CONFIG.freshnessThreshold) {
-    const active = [];
-    const review = [];
+    const initialCandidates = [];
+    const speedupCandidates = [];
+    const reviewCandidates = [];
     const fastFresh = [];
     for (const id of orderedItems) {
       if (id === excludeId) continue;
       const speed = getSpeed(id);
-      if (needsActiveLearning(speed)) {
-        if (active.length < N_ACTIVE_EXPANDED) active.push(id);
-        continue;
+      if (needsInitialLearning(speed)) {
+        initialCandidates.push(id);
+      } else if (needsSpeedup(speed)) {
+        speedupCandidates.push(id);
+      } else {
+        const fresh = getFreshness(id);
+        if (needsReview(speed, fresh, freshnessThreshold)) {
+          reviewCandidates.push(id);
+        } else {
+          fastFresh.push(id);
+        }
       }
-      const fresh = getFreshness(id);
-      if (needsReview(speed, fresh, freshnessThreshold)) {
-        if (review.length < M_REVIEW) review.push(id);
-        continue;
-      }
-      fastFresh.push(id);
     }
-    const cap = effectiveActiveCap(review.length);
-    if (active.length > cap) active.length = cap;
-    return { active, review, fastFresh };
+    const caps = computeBucketCaps(
+      initialCandidates.length,
+      speedupCandidates.length,
+      reviewCandidates.length
+    );
+    return {
+      initialLearning: initialCandidates.slice(0, caps.initialCap),
+      speedup: speedupCandidates.slice(0, caps.speedupCap),
+      review: reviewCandidates.slice(0, caps.reviewCap),
+      fastFresh
+    };
   }
   function selectWeighted(items, weights, rand) {
     const totalWeight = weights.reduce((sum, w3) => sum + w3, 0);
@@ -5519,19 +5544,21 @@ body.native-sim #app {
       nowMs
     );
   }
-  function pickFromBuckets(buckets, getWeight, coin, rand) {
-    const preferActive = coin < ACTIVE_BUCKET_BIAS;
-    const order = preferActive ? [buckets.active, buckets.review, buckets.fastFresh] : [buckets.review, buckets.active, buckets.fastFresh];
-    let chosen = null;
-    for (const bucket of order) {
-      if (bucket.length > 0) {
-        chosen = bucket;
-        break;
+  function pickFromPool(buckets, getWeight, rand) {
+    const pool = [];
+    const weights = [];
+    const addBucket = (items, multiplier) => {
+      for (const id of items) {
+        pool.push(id);
+        weights.push(multiplier * getWeight(id));
       }
-    }
-    if (chosen == null) return null;
-    const weights = chosen.map((id) => getWeight(id));
-    return selectWeighted(chosen, weights, rand);
+    };
+    addBucket(buckets.initialLearning, INITIAL_LEARNING_MULTIPLIER);
+    addBucket(buckets.speedup, SPEEDUP_MULTIPLIER);
+    addBucket(buckets.review, REVIEW_MULTIPLIER);
+    addBucket(buckets.fastFresh, FAST_FRESH_MULTIPLIER);
+    if (pool.length === 0) return null;
+    return selectWeighted(pool, weights, rand);
   }
   function createAdaptiveSelector(storage2, cfg = DEFAULT_CONFIG, randomFn = Math.random, responseCountFn = null) {
     const getResponseCount = (itemId2) => responseCountFn ? responseCountFn(itemId2) : 1;
@@ -5562,7 +5589,7 @@ body.native-sim #app {
         lastSelected,
         cfg.freshnessThreshold
       );
-      const picked = pickFromBuckets(buckets, getWeight, randomFn(), randomFn());
+      const picked = pickFromPool(buckets, getWeight, randomFn());
       const selected = picked ?? lastSelected ?? orderedItems[0];
       storage2.setLastSelected(selected);
       return selected;
@@ -6030,7 +6057,7 @@ body.native-sim #app {
   function computeLevelRecs(statuses) {
     const recs = [];
     for (const s3 of statuses) {
-      if (s3.reviewStatus === "soon" && (s3.speedLabel === "solid" || s3.speedLabel === "automatic")) {
+      if (s3.reviewStatus === "soon" && s3.reviewInHours === 0 && (s3.speedLabel === "solid" || s3.speedLabel === "automatic")) {
         recs.push({ groupId: s3.groupId, type: "review" });
       } else if (s3.speedLabel === "starting" || s3.speedLabel === "hesitant" || s3.speedLabel === "learning") {
         recs.push({ groupId: s3.groupId, type: "practice" });
@@ -6045,7 +6072,9 @@ body.native-sim #app {
   }
   function checkExpansionGate(statuses) {
     if (statuses.length === 0) return false;
-    return statuses.every((s3) => s3.speed >= 0.7 && s3.reviewStatus !== "soon");
+    return statuses.every(
+      (s3) => s3.speed >= 0.7 && !(s3.reviewStatus === "soon" && s3.reviewInHours === 0)
+    );
   }
   function shouldThrottleExpansion(statuses) {
     const learnedCount = statuses.filter((s3) => s3.speedLabel === "solid").length;
@@ -12359,7 +12388,7 @@ Build: ${version}
       const colors = progressBarColors(learner.selector, itemIds);
       const ls = groupScopeResult.recommendation.levelStatuses?.find((s3) => s3.groupId === id);
       const sl = ls ? SPEED_LEVELS.find((l3) => l3.key === ls.speedLabel) ?? null : null;
-      const pill = ls?.reviewInHours != null ? ls.reviewStatus === "soon" ? "Review soon" : `Review in ${formatReviewDuration(ls.reviewInHours)}` : void 0;
+      const pill = ls?.reviewInHours != null ? ls.reviewStatus === "soon" && ls.reviewInHours === 0 ? "Review soon" : `Review in ${formatReviewDuration(ls.reviewInHours)}` : void 0;
       const skipReason = groupScopeResult.skippedGroups.get(id);
       const status = skipReason === "mastered" ? "known" : skipReason === "deferred" ? "skipped" : "normal";
       const label = g4 ? resolveGroupLabel(
