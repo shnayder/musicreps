@@ -1,16 +1,15 @@
 // Pure logic for Interval Math mode.
 // No DOM, no hooks — just data in, data out.
-// Unidirectional: "C + m3 = ?" → answer is a note name.
-// Nearly identical to Semitone Math but with interval abbreviations.
+// Unidirectional: "C + m3 = ?" → answer is a spelled note name.
+// Answers respect interval-number spelling (D + m2 = Eb, G# - m2 = F##).
 
 import type { Interval, Note } from '../../types.ts';
 import {
+  addInterval,
   displayNote,
   INTERVALS,
-  noteAdd,
   NOTES,
-  noteSub,
-  pickAccidentalName,
+  parseSpelledNote,
   ROOT_CYCLE,
 } from '../../music-data.ts';
 import { buildMathIds, parseMathId } from '../../mode-utils.ts';
@@ -99,7 +98,8 @@ export type Question = {
   note: Note;
   op: string;
   interval: Interval;
-  answer: Note;
+  /** Letter-correct spelled answer, e.g. 'Eb', 'F##', 'Cb'. */
+  answerSpelled: string;
   useFlats: boolean;
   promptText: string;
 };
@@ -107,8 +107,8 @@ export type Question = {
 /**
  * Parse an item ID and generate a question for the quiz engine.
  *
- * @example getQuestion("C+m3") → { note: C, op: "+", interval: m3, answer: D#, ... }
- * @example getQuestion("G-P5") → { note: G, op: "-", interval: P5, answer: C, ... }
+ * @example getQuestion("D+m2") → { note: D, op: "+", interval: m2, answerSpelled: "Eb", ... }
+ * @example getQuestion("G#-m2") → { note: G#, op: "-", interval: m2, answerSpelled: "F##", ... }
  */
 export function getQuestion(itemId: string): Question {
   const parsed = parseMathId(itemId);
@@ -117,21 +117,28 @@ export function getQuestion(itemId: string): Question {
   const abbrev = parsed.value;
   const note = NOTES.find((n) => n.name === noteName)!;
   const interval = MATH_INTERVALS.find((i) => i.abbrev === abbrev)!;
-  const answer = op === '+'
-    ? noteAdd(note.num, interval.num)
-    : noteSub(note.num, interval.num);
-  const useFlats = op === '-';
-  const promptNoteName = displayNote(
-    pickAccidentalName(note.displayName, useFlats),
-  );
+  // Display the root as spelled in the item ID (sharps for accidentals). This
+  // means G# − m2 shows as "G# − m2" with answer F##, not "Ab − m2 = G".
+  const rootSpelled = note.name;
+  const answerSpelled = addInterval(rootSpelled, abbrev, op as '+' | '-');
+  const useFlats = deriveUseFlats(answerSpelled, op);
+  const promptNoteName = displayNote(rootSpelled);
   return {
     note,
     op,
     interval,
-    answer,
+    answerSpelled,
     useFlats,
     promptText: promptNoteName + ' ' + op + ' ' + interval.abbrev,
   };
+}
+
+/** Pick accidental style for answer buttons from the spelled answer. */
+function deriveUseFlats(answerSpelled: string, op: string): boolean {
+  const { accidental } = parseSpelledNote(answerSpelled);
+  if (accidental < 0) return true;
+  if (accidental > 0) return false;
+  return op === '-';
 }
 
 // ---------------------------------------------------------------------------

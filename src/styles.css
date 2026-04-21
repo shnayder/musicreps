@@ -1791,6 +1791,25 @@ button {
    10. ANSWER BUTTONS
    ========================================================================== */
 
+/* Feedback text shown above the answer grid after the user answers.
+   Shows ✓ answer (correct) or ✗ input  ✓ answer (wrong).
+   Typography and spacing match SequentialSlots for visual consistency. */
+.answer-feedback-text {
+  display: flex;
+  justify-content: center;
+  gap: var(--gap-group);
+  margin: var(--pad-component) auto;
+  max-width: var(--size-answer-grid);
+  font-size: var(--type-quiz-response-size);
+  font-weight: var(--type-quiz-response-weight);
+}
+.answer-feedback-text .correct {
+  color: var(--color-success-text);
+}
+.answer-feedback-text .incorrect {
+  color: var(--color-error-text);
+}
+
 /* --- Unified answer grid (default 4 columns) --- */
 .answer-grid {
   display: grid;

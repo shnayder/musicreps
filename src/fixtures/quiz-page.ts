@@ -111,11 +111,16 @@ export function quizCorrectFeedback(
 // Quiz active: wrong feedback
 // ---------------------------------------------------------------------------
 
-export function quizWrongFeedback(itemId: string): FixtureDetail {
+export function quizWrongFeedback(
+  itemId: string,
+  opts: { correctAnswer?: string; userInput?: string } = {},
+): FixtureDetail {
+  const correctAnswer = opts.correctAnswer ?? feedbackWrong.displayAnswer;
   return {
     engineState: buildActiveState(itemId, {
       correct: false,
-      correctAnswer: feedbackWrong.displayAnswer,
+      correctAnswer,
+      userInput: opts.userInput ?? 'F',
       masteredCount: sessionLateRound.automatic,
       totalEnabledCount: sessionLateRound.total,
       questionCount: 22,

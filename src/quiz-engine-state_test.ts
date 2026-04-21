@@ -125,7 +125,7 @@ describe('engineNextQuestion', () => {
   it('clears all feedback fields', () => {
     const withFeedback = {
       ...engineStart(initialEngineState()),
-      feedbackText: 'Correct!',
+      feedbackText: 'Correct \u2014 C',
       feedbackClass: 'feedback correct',
       hintText: 'Tap anywhere',
     };
@@ -155,7 +155,7 @@ describe('engineSubmitAnswer', () => {
 
   it('sets correct feedback for correct answer', () => {
     const s = engineSubmitAnswer(active, true, 'C');
-    assert.equal(s.feedbackText, 'Correct!');
+    assert.equal(s.feedbackText, 'Correct \u2014 C');
     assert.equal(s.feedbackClass, 'feedback correct');
   });
 

@@ -7,6 +7,7 @@ import {
   INTERVALS,
   resolveNoteInput,
   spelledNoteMatchesSemitone,
+  spelledNoteToCanonical,
 } from '../music-data.ts';
 
 import type {
@@ -56,7 +57,12 @@ export function toButtonValue(
   strategy: ComparisonStrategy,
   value: string,
 ): string {
-  if (strategy === 'note-enharmonic') return resolveNoteInput(value) ?? value;
+  if (strategy === 'note-enharmonic') {
+    // resolveNoteInput only knows single accidentals; fall back to
+    // spelledNoteToCanonical so doubles like "F##" highlight their
+    // enharmonic-natural button ("G").
+    return resolveNoteInput(value) ?? spelledNoteToCanonical(value);
+  }
   return value;
 }
 

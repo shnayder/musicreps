@@ -54,6 +54,7 @@ import type {
   SequentialEntryResult,
 } from './types.ts';
 import type { MultiTapInputHandle } from './use-multi-tap-input.ts';
+import { displayNote } from '../music-data.ts';
 import { toButtonValue } from './answer-utils.ts';
 
 // ---------------------------------------------------------------------------
@@ -396,6 +397,20 @@ export function StandardQuizArea<Q>(
     instruction?: string;
   },
 ) {
+  // Visible feedback text above buttons (non-fretboard single-answer modes).
+  // Fretboard modes have ctrl.renderPrompt and show feedback on the fretboard.
+  const showFeedbackText = engine.state.answered &&
+    engine.state.feedbackCorrect !== null && !ctrl.renderPrompt;
+  const isCorrect = engine.state.feedbackCorrect === true;
+  const displayAnswer = engine.state.feedbackDisplayAnswer ?? '';
+  // User input display: resolve from lastAnswerRef (same as button highlighting)
+  const userInputDisplay = lastAnswerRef.current
+    ? toButtonValue(
+      lastAnswerRef.current.comparison,
+      lastAnswerRef.current.normalizedInput,
+    )
+    : (engine.state.feedbackUserInput ?? '');
+
   return (
     <QuizStage
       prompt={
@@ -416,6 +431,32 @@ export function StandardQuizArea<Q>(
       }
       response={
         <>
+          {showFeedbackText
+            ? (
+              <div class='answer-feedback-text'>
+                {isCorrect
+                  ? (
+                    <span class='correct'>
+                      ✓ {displayNote(displayAnswer)}
+                    </span>
+                  )
+                  : (
+                    <>
+                      <span class='incorrect'>
+                        ✗ {displayNote(userInputDisplay)}
+                      </span>
+                      <span class='correct'>
+                        ✓ {displayNote(displayAnswer)}
+                      </span>
+                    </>
+                  )}
+              </div>
+            )
+            : !ctrl.renderPrompt && (
+              <div class='answer-feedback-text' style='visibility:hidden'>
+                &nbsp;
+              </div>
+            )}
           <ResponseButtons
             buttonsDef={activeButtons}
             onAnswer={handleSubmit}

@@ -282,6 +282,27 @@ export function buildManifest(): ScreenshotEntry[] {
     modeId: 'semitoneMath',
     fixture: quizWrongFeedback(defaultItems.semitoneMath),
   });
+
+  // Interval Math: double-accidental answers (G# - m2 = F##)
+  // The correct answer is F## but the button grid only has G (enharmonic).
+  // Fixture correctAnswer='G' for button highlighting; in live mode,
+  // getDisplayAnswer produces 'F𝄪 (= G)' for the feedback text.
+  entries.push({
+    name: 'design-intervalMath-double-sharp-correct',
+    modeId: 'intervalMath',
+    fixture: quizCorrectFeedback('G#-m2', {
+      correctAnswer: 'G',
+      userInput: 'G',
+    }),
+  });
+  entries.push({
+    name: 'design-intervalMath-double-sharp-wrong',
+    modeId: 'intervalMath',
+    fixture: quizWrongFeedback('G#-m2', {
+      correctAnswer: 'G',
+      userInput: 'D#',
+    }),
+  });
   entries.push({
     name: 'design-round-complete',
     modeId: 'semitoneMath',
@@ -454,6 +475,41 @@ export function buildManifest(): ScreenshotEntry[] {
       clickTab: 'progress',
     });
   }
+
+  // Chord spelling feedback: correct (C major = C E G) and wrong (C F G)
+  const natBtn = (n: number) =>
+    `.answer-grid-stack > .answer-grid:first-child > button:nth-child(${n})`;
+  const accBtn = (n: number) =>
+    `.answer-grid-stack > .answer-grid:last-child > button:nth-child(${n})`;
+  const natural = accBtn(2); // ♮
+  entries.push({
+    name: 'design-chordSpelling-correct',
+    modeId: 'chordSpelling',
+    fixture: quizActive('C:major'),
+    clickSelectors: [
+      natBtn(1),
+      natural, // C
+      natBtn(3),
+      natural, // E
+      natBtn(5),
+      natural, // G
+      '.next-btn', // Check
+    ],
+  });
+  entries.push({
+    name: 'design-chordSpelling-wrong',
+    modeId: 'chordSpelling',
+    fixture: quizActive('C:major'),
+    clickSelectors: [
+      natBtn(1),
+      natural, // C
+      natBtn(4),
+      natural, // F (wrong)
+      natBtn(5),
+      natural, // G
+      '.next-btn', // Check
+    ],
+  });
 
   // Marketing story — targeted items + modal captures used by the App Store
   // / Play Store screenshot manifest (scripts/marketing-manifest.ts).

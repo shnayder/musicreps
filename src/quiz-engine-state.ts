@@ -107,7 +107,9 @@ export function engineSubmitAnswer(
     ...state,
     answered: true,
     answersEnabled: false,
-    feedbackText: isCorrect ? 'Correct!' : 'Incorrect \u2014 ' + correctAnswer,
+    feedbackText: isCorrect
+      ? 'Correct \u2014 ' + correctAnswer
+      : 'Incorrect \u2014 ' + correctAnswer,
     feedbackClass: isCorrect ? 'feedback correct' : 'feedback incorrect',
     feedbackCorrect: isCorrect,
     feedbackDisplayAnswer: correctAnswer,
