@@ -2889,7 +2889,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="946d4f shuffle-item-ordering"></div>
+  <div class="home-screen" id="home-screen" data-version="6d861b shuffle-item-ordering"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -6933,7 +6933,11 @@ body.native-sim #app {
     return h3 >>> 0;
   }
   function shuffleByItemHash(items) {
-    return [...items].sort((a3, b2) => hashString(a3) - hashString(b2));
+    return [...items].sort((a3, b2) => {
+      const d4 = hashString(a3) - hashString(b2);
+      if (d4 !== 0) return d4;
+      return a3 < b2 ? -1 : a3 > b2 ? 1 : 0;
+    });
   }
 
   // src/modes/semitone-math/logic.ts
