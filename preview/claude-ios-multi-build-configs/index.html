@@ -2889,7 +2889,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="9b1f4d ios-multi-build-configs"></div>
+  <div class="home-screen" id="home-screen" data-version="14616e ios-multi-build-configs"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -10175,13 +10175,13 @@ Build: ${version}
       console.log("[OTA] plugin not available, skipping");
       return;
     }
-    const state = await plugin.getState();
-    const releaseBase = state.releaseBase || "";
-    if (!releaseBase) {
-      console.log("[OTA] no release base configured, skipping (dev build)");
-      return;
-    }
     try {
+      const state = await plugin.getState();
+      const releaseBase = state.releaseBase === void 0 ? "https://shnayder.github.io/musicreps/release" : state.releaseBase;
+      if (!releaseBase) {
+        console.log("[OTA] no release base configured, skipping (dev build)");
+        return;
+      }
       const deps = productionDeps(plugin, fs, releaseBase);
       const result = await checkForUpdateCore(deps);
       const messages = {
