@@ -12,7 +12,9 @@
 
 import AppKit
 import CoreImage
+import CoreText
 import Foundation
+import ImageIO
 
 let assetsDir = "ios/App/App/Assets.xcassets"
 let sourceIcon = "\(assetsDir)/AppIcon.appiconset/AppIcon-512@2x.png"

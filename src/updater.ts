@@ -208,14 +208,19 @@ async function checkForUpdate(): Promise<void> {
     return;
   }
 
-  const state = await plugin.getState();
-  const releaseBase: string = state.releaseBase || '';
-  if (!releaseBase) {
-    console.log('[OTA] no release base configured, skipping (dev build)');
-    return;
-  }
-
   try {
+    const state = await plugin.getState();
+    // Backwards compat: older native builds don't have releaseBase in their
+    // plist. Treat undefined (missing) as the legacy production default;
+    // treat explicit empty string (dev xcconfig) as "OTA disabled".
+    const releaseBase: string = state.releaseBase === undefined
+      ? 'https://shnayder.github.io/musicreps/release'
+      : state.releaseBase;
+    if (!releaseBase) {
+      console.log('[OTA] no release base configured, skipping (dev build)');
+      return;
+    }
+
     const deps = productionDeps(plugin, fs, releaseBase);
     const result = await checkForUpdateCore(deps);
     const messages: Record<string, string> = {
