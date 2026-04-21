@@ -2889,7 +2889,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="ee7f81 grand-rename-mode-skill-group-level"></div>
+  <div class="home-screen" id="home-screen" data-version="5f5eaa grand-rename-mode-skill-group-level"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -6920,6 +6920,26 @@ body.native-sim #app {
       value: match[3]
     };
   }
+  function hashString(s3) {
+    let h3 = 2166136261;
+    for (let i3 = 0; i3 < s3.length; i3++) {
+      h3 ^= s3.charCodeAt(i3);
+      h3 = Math.imul(h3, 16777619);
+    }
+    h3 ^= h3 >>> 16;
+    h3 = Math.imul(h3, 2246822507);
+    h3 ^= h3 >>> 13;
+    h3 = Math.imul(h3, 3266489909);
+    h3 ^= h3 >>> 16;
+    return h3 >>> 0;
+  }
+  function shuffleByItemHash(items) {
+    return [...items].sort((a3, b2) => {
+      const d4 = hashString(a3) - hashString(b2);
+      if (d4 !== 0) return d4;
+      return a3 < b2 ? -1 : a3 > b2 ? 1 : 0;
+    });
+  }
 
   // src/skills/semitone-math/logic.ts
   var DISTANCE_LEVELS = [
@@ -6965,12 +6985,12 @@ body.native-sim #app {
         }
       }
     }
-    return items;
+    return shuffleByItemHash(items);
   }
-  var ALL_ITEMS3 = buildMathIds(
+  var ALL_ITEMS3 = shuffleByItemHash(buildMathIds(
     ROOT_CYCLE,
     Array.from({ length: 11 }, (_3, i3) => i3 + 1)
-  );
+  ));
   var ALL_LEVEL_IDS = DISTANCE_LEVELS.map((g4) => g4.id);
   function getQuestion4(itemId2) {
     const parsed = parseMathId(itemId2);
@@ -7095,12 +7115,12 @@ body.native-sim #app {
         }
       }
     }
-    return items;
+    return shuffleByItemHash(items);
   }
-  var ALL_ITEMS4 = buildMathIds(
+  var ALL_ITEMS4 = shuffleByItemHash(buildMathIds(
     ROOT_CYCLE,
     MATH_INTERVALS.map((i3) => i3.abbrev)
-  );
+  ));
   var ALL_LEVEL_IDS2 = DISTANCE_LEVELS2.map((g4) => g4.id);
   function getQuestion5(itemId2) {
     const parsed = parseMathId(itemId2);
@@ -7233,19 +7253,19 @@ body.native-sim #app {
   function getItemIdsForLevel4(levelId) {
     const group = ALL_KEY_LEVELS.find((g4) => g4.id === levelId);
     if (!group) return [];
-    return [
+    return shuffleByItemHash([
       ...group.keys.map((r3) => r3 + ":fwd"),
       ...group.keys.map((r3) => r3 + ":rev")
-    ];
+    ]);
   }
   var ALL_ITEMS5 = (() => {
     const majorRoots = MAJOR_KEYS.map((k3) => k3.root);
     const minorRoots = MINOR_ROOTS.map((r3) => r3 + "m");
     const allRoots = [...majorRoots, ...minorRoots];
-    return [
+    return shuffleByItemHash([
       ...allRoots.map((r3) => r3 + ":fwd"),
       ...allRoots.map((r3) => r3 + ":rev")
-    ];
+    ]);
   })();
   var ALL_LEVEL_IDS3 = ALL_KEY_LEVELS.map((g4) => g4.id);
   function getQuestion6(itemId2) {
@@ -7377,16 +7397,19 @@ body.native-sim #app {
         }
       }
     }
-    return items;
+    return shuffleByItemHash(items);
   }
-  var ALL_ITEMS6 = [];
-  for (const d4 of ACTIVE_DEGREES) {
-    for (const dir of ["fwd", "rev"]) {
-      for (const key of MAJOR_KEYS) {
-        ALL_ITEMS6.push(key.root + ":" + d4 + ":" + dir);
+  var ALL_ITEMS6 = (() => {
+    const items = [];
+    for (const d4 of ACTIVE_DEGREES) {
+      for (const dir of ["fwd", "rev"]) {
+        for (const key of MAJOR_KEYS) {
+          items.push(key.root + ":" + d4 + ":" + dir);
+        }
       }
     }
-  }
+    return shuffleByItemHash(items);
+  })();
   var ALL_LEVEL_IDS4 = DEGREE_LEVELS.map((g4) => g4.id);
   var GRID_NOTES = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
@@ -7496,16 +7519,19 @@ body.native-sim #app {
         }
       }
     }
-    return items;
+    return shuffleByItemHash(items);
   }
-  var ALL_ITEMS7 = [];
-  for (let d4 = 1; d4 <= 7; d4++) {
-    for (const dir of ["fwd", "rev"]) {
-      for (const key of MAJOR_KEYS) {
-        ALL_ITEMS7.push(key.root + ":" + d4 + ":" + dir);
+  var ALL_ITEMS7 = (() => {
+    const items = [];
+    for (let d4 = 1; d4 <= 7; d4++) {
+      for (const dir of ["fwd", "rev"]) {
+        for (const key of MAJOR_KEYS) {
+          items.push(key.root + ":" + d4 + ":" + dir);
+        }
       }
     }
-  }
+    return shuffleByItemHash(items);
+  })();
   var ALL_LEVEL_IDS5 = CHORD_LEVELS.map((g4) => g4.id);
   var GRID_NOTES2 = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
@@ -7647,14 +7673,17 @@ body.native-sim #app {
         items.push(root + ":" + type.name);
       }
     }
-    return items;
+    return shuffleByItemHash(items);
   }
-  var ALL_ITEMS8 = [];
-  for (const type of CHORD_TYPES) {
-    for (const root of CHORD_ROOT_CYCLE) {
-      ALL_ITEMS8.push(root + ":" + type.name);
+  var ALL_ITEMS8 = (() => {
+    const items = [];
+    for (const type of CHORD_TYPES) {
+      for (const root of CHORD_ROOT_CYCLE) {
+        items.push(root + ":" + type.name);
+      }
     }
-  }
+    return shuffleByItemHash(items);
+  })();
   var ALL_LEVEL_IDS6 = SPELLING_LEVELS.map((g4) => g4.id);
   var GRID_NOTES3 = CHORD_ROOTS.map((r3) => ({
     name: r3,
