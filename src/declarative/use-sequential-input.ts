@@ -4,7 +4,7 @@
 
 import { useCallback, useRef, useState } from 'preact/hooks';
 import { displayNote } from '../music-data.ts';
-import type { ModeDefinition, SequentialEntryResult } from './types.ts';
+import type { SequentialEntryResult, SkillDefinition } from './types.ts';
 
 export type SequentialInputHandle<Q> = {
   seqEntries: { display: string }[];
@@ -18,7 +18,7 @@ export type SequentialInputHandle<Q> = {
 };
 
 export function useSequentialInput<Q>(
-  def: ModeDefinition<Q>,
+  def: SkillDefinition<Q>,
   currentQRef: { current: Q | null },
   submitRef: { current: (input: string) => void },
 ): SequentialInputHandle<Q> {

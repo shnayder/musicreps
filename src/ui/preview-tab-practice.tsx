@@ -5,17 +5,17 @@ import { useState } from 'preact/hooks';
 import type { StatsSelector } from './stats.tsx';
 import { ActionButton } from './action-button.tsx';
 import {
-  type ModeTab,
   QuizArea,
   QuizSession,
   RoundCompleteActions,
   RoundCompleteInfo,
+  type SkillTab,
   TabBar,
   type TabDef,
   TabIcon,
   Tabs,
   useTabsPrefix,
-} from './mode-screen.tsx';
+} from './skill-screen.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
 import { FeedbackDisplay } from './quiz-ui.tsx';
 import { NoteButtons } from './buttons.tsx';
@@ -30,7 +30,7 @@ import {
 } from './practice-config.tsx';
 import { type GroupSel, PreviewGrid, Section } from './preview-shared.tsx';
 import { Text } from './text.tsx';
-import { MODE_ABOUT_DESCRIPTIONS } from '../mode-catalog.ts';
+import { SKILL_ABOUT_DESCRIPTIONS } from '../skill-catalog.ts';
 import {
   LayoutFooter,
   LayoutHeader,
@@ -103,7 +103,7 @@ function Phase1Components(
       tabId: string;
     },
 ) {
-  const [navTab, setNavTab] = useState<ModeTab>('practice');
+  const [navTab, setNavTab] = useState<SkillTab>('practice');
 
   return (
     <>
@@ -114,7 +114,7 @@ function Phase1Components(
           <Tabs
             tabs={[
               {
-                id: 'practice' as ModeTab,
+                id: 'practice' as SkillTab,
                 label: (
                   <span class='tab-icon-label'>
                     <RepeatMark size={24} />
@@ -128,7 +128,7 @@ function Phase1Components(
                 ),
               },
               {
-                id: 'progress' as ModeTab,
+                id: 'progress' as SkillTab,
                 label: <TabIcon icon='progress' text='Progress' />,
                 content: (
                   <div style='padding:var(--pad-component)'>
@@ -137,14 +137,14 @@ function Phase1Components(
                 ),
               },
               {
-                id: 'about' as ModeTab,
+                id: 'about' as SkillTab,
                 label: <TabIcon icon='about' text='Info' />,
                 content: <PreviewAboutTab />,
               },
             ]}
             activeTab={navTab}
             onTabSwitch={setNavTab}
-            class='mode-nav'
+            class='skill-nav'
           />
         </Section>
       </PreviewGrid>
@@ -152,7 +152,7 @@ function Phase1Components(
       <PreviewGrid>
         <Section title='SkillHeader — with progress + reps' tabId={tabId}>
           <SkillHeader
-            modeId='fretboard'
+            skillId='fretboard'
             title='Guitar Fretboard'
             totalReps={3473}
             onBack={() => {}}
@@ -160,7 +160,7 @@ function Phase1Components(
         </Section>
         <Section title='SkillHeader — empty (new skill)' tabId={tabId}>
           <SkillHeader
-            modeId='noteSemitones'
+            skillId='noteSemitones'
             title='Note ↔ Semitones'
             totalReps={0}
             onBack={() => {}}
@@ -184,7 +184,7 @@ function Phase1Components(
         <Section title='LevelToggles — custom mode' tabId={tabId}>
           <LevelToggles
             labels={MOCK_LEVEL_LABELS}
-            groupIds={MOCK_LEVEL_IDS}
+            levelIds={MOCK_LEVEL_IDS}
             active={customActive}
             onToggle={toggleCustom}
           />
@@ -202,7 +202,7 @@ function Phase1Components(
             customContent={
               <LevelToggles
                 labels={MOCK_LEVEL_LABELS}
-                groupIds={MOCK_LEVEL_IDS}
+                levelIds={MOCK_LEVEL_IDS}
                 active={customActive}
                 onToggle={toggleCustom}
               />
@@ -217,7 +217,7 @@ function Phase1Components(
             customContent={
               <LevelToggles
                 labels={MOCK_LEVEL_LABELS}
-                groupIds={MOCK_LEVEL_IDS}
+                levelIds={MOCK_LEVEL_IDS}
                 active={customActive}
                 onToggle={toggleCustom}
               />
@@ -285,11 +285,11 @@ function Phase2MultiLevel(
     <PreviewGrid>
       <Section title='Suggested mode — multi-level' tabId={tabId}>
         <div
-          class='mode-screen phase-idle'
+          class='skill-screen phase-idle'
           style='display:flex;flex-direction:column;position:relative'
         >
           <SkillHeader
-            modeId='fretboard'
+            skillId='fretboard'
             title='Guitar Fretboard'
             onBack={() => {}}
           />
@@ -312,11 +312,11 @@ function Phase2MultiLevel(
 
       <Section title='Custom mode — multi-level' tabId={tabId}>
         <div
-          class='mode-screen phase-idle'
+          class='skill-screen phase-idle'
           style='display:flex;flex-direction:column;position:relative'
         >
           <SkillHeader
-            modeId='fretboard'
+            skillId='fretboard'
             title='Guitar Fretboard'
             onBack={() => {}}
           />
@@ -327,7 +327,7 @@ function Phase2MultiLevel(
             customContent={
               <LevelToggles
                 labels={MOCK_LEVEL_LABELS}
-                groupIds={MOCK_LEVEL_IDS}
+                levelIds={MOCK_LEVEL_IDS}
                 active={customActive}
                 onToggle={toggleCustom}
               />
@@ -352,11 +352,11 @@ function Phase2SingleAndProgress({ tabId }: { tabId: string }) {
     <PreviewGrid>
       <Section title='Single-level skill' tabId={tabId}>
         <div
-          class='mode-screen phase-idle'
+          class='skill-screen phase-idle'
           style='display:flex;flex-direction:column;position:relative'
         >
           <SkillHeader
-            modeId='noteSemitones'
+            skillId='noteSemitones'
             title='Note ↔ Semitones'
             onBack={() => {}}
           />
@@ -425,7 +425,7 @@ function PreviewAboutTab() {
   return (
     <div class='about-tab'>
       <Text role='body' as='p' class='about-description'>
-        {MODE_ABOUT_DESCRIPTIONS.keySignatures}
+        {SKILL_ABOUT_DESCRIPTIONS.keySignatures}
       </Text>
     </div>
   );
@@ -433,7 +433,7 @@ function PreviewAboutTab() {
 
 function ModeNavFooter() {
   const prefix = useTabsPrefix();
-  const tabs: TabDef<ModeTab>[] = [
+  const tabs: TabDef<SkillTab>[] = [
     {
       id: 'practice',
       label: (
@@ -461,7 +461,7 @@ function ModeNavFooter() {
       activeTab='practice'
       onTabSwitch={() => {}}
       prefix={prefix}
-      class='mode-nav'
+      class='skill-nav'
     />
   );
 }
@@ -477,7 +477,7 @@ function ScreenLayoutIdleExamples(
         <ScreenLayout class='preview-screen-layout'>
           <LayoutHeader>
             <SkillHeader
-              modeId='fretboard'
+              skillId='fretboard'
               title='Guitar Fretboard'
             />
           </LayoutHeader>
@@ -506,7 +506,7 @@ function ScreenLayoutIdleExamples(
         <ScreenLayout class='preview-screen-layout'>
           <LayoutHeader>
             <SkillHeader
-              modeId='fretboard'
+              skillId='fretboard'
               title='Guitar Fretboard'
             />
           </LayoutHeader>
@@ -518,7 +518,7 @@ function ScreenLayoutIdleExamples(
               customContent={
                 <LevelToggles
                   labels={MOCK_LEVEL_LABELS}
-                  groupIds={MOCK_LEVEL_IDS}
+                  levelIds={MOCK_LEVEL_IDS}
                   active={customActive}
                   onToggle={toggleCustom}
                 />
@@ -540,7 +540,7 @@ function ScreenLayoutIdleExamples(
         <ScreenLayout class='preview-screen-layout'>
           <LayoutHeader>
             <SkillHeader
-              modeId='noteSemitones'
+              skillId='noteSemitones'
               title='Note ↔ Semitones'
             />
           </LayoutHeader>

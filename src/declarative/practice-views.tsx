@@ -5,7 +5,7 @@
 import type { AdaptiveSelector, SuggestionLine } from '../types.ts';
 
 import type { useLearnerModel } from '../hooks/use-learner-model.ts';
-import type { useGroupScope } from '../hooks/use-group-scope.ts';
+import type { useLevelScope } from '../hooks/use-level-scope.ts';
 import type { useQuizEngine } from '../hooks/use-quiz-engine.ts';
 import type { usePracticeSummary } from '../hooks/use-practice-summary.ts';
 
@@ -23,11 +23,11 @@ import {
 import { StatsGrid, StatsLegend, StatsTable } from '../ui/stats.tsx';
 import { SPEED_LEVELS } from '../speed-levels.ts';
 import { Card, Section, Stack } from '../ui/layout.tsx';
-import { PracticeTab } from '../ui/mode-screen.tsx';
+import { PracticeTab } from '../ui/skill-screen.tsx';
 import { Text } from '../ui/text.tsx';
 import { RepeatMark } from '../ui/repeat-mark.tsx';
 
-import type { ModeController, ModeDefinition } from './types.ts';
+import type { SkillController, SkillDefinition } from './types.ts';
 import { resolveGroupLabel } from './answer-utils.ts';
 
 // ---------------------------------------------------------------------------
@@ -53,40 +53,40 @@ export function singleLevelSuggestion(
 }
 
 // ---------------------------------------------------------------------------
-// GroupPracticeContent — practice config for multi-level modes
+// LevelPracticeContent — practice config for multi-level modes
 // ---------------------------------------------------------------------------
 
-/** Build practice content for multi-level modes (groups). */
-export function GroupPracticeContent<Q>(
-  { def, groupScopeResult }: {
-    def: ModeDefinition<Q>;
-    groupScopeResult: ReturnType<typeof useGroupScope>;
+/** Build practice content for multi-level modes (levels). */
+export function LevelPracticeContent<Q>(
+  { def, levelScopeResult }: {
+    def: SkillDefinition<Q>;
+    levelScopeResult: ReturnType<typeof useLevelScope>;
   },
 ) {
-  const groupScope = def.scope.kind === 'groups' ? def.scope : null;
-  if (!groupScope) return null;
+  const levelScope = def.scope.kind === 'levels' ? def.scope : null;
+  if (!levelScope) return null;
 
-  const groupLabels = groupScope.allGroupIds.map((id) => {
-    const g = groupScope.groups.find((g) => g.id === id);
+  const levelLabels = levelScope.allLevelIds.map((id) => {
+    const g = levelScope.levels.find((g) => g.id === id);
     return g ? resolveGroupLabel(g.label) : id;
   });
 
   return (
     <>
       <PracticeConfig
-        mode={groupScopeResult.practiceMode}
-        onModeChange={groupScopeResult.setPracticeMode}
+        mode={levelScopeResult.practiceMode}
+        onModeChange={levelScopeResult.setPracticeMode}
         suggestedContent={
-          <SuggestionLines lines={groupScopeResult.suggestionLines} />
+          <SuggestionLines lines={levelScopeResult.suggestionLines} />
         }
         customContent={
           <LevelToggles
-            labels={groupLabels}
-            groupIds={groupScope.allGroupIds}
-            active={groupScopeResult.practiceMode === 'custom'
-              ? groupScopeResult.enabledGroups
-              : groupScopeResult.suggestedScope}
-            onToggle={groupScopeResult.scopeActions.toggleGroup}
+            labels={levelLabels}
+            levelIds={levelScope.allLevelIds}
+            active={levelScopeResult.practiceMode === 'custom'
+              ? levelScopeResult.enabledLevels
+              : levelScopeResult.suggestedScope}
+            onToggle={levelScopeResult.scopeActions.toggleLevel}
           />
         }
       />
@@ -100,23 +100,23 @@ export function GroupPracticeContent<Q>(
 
 /** Build level progress cards for the progress tab. */
 export function LevelProgressCards<Q>(
-  { def, learner, groupScopeResult }: {
-    def: ModeDefinition<Q>;
+  { def, learner, levelScopeResult }: {
+    def: SkillDefinition<Q>;
     learner: ReturnType<typeof useLearnerModel>;
-    groupScopeResult: ReturnType<typeof useGroupScope>;
+    levelScopeResult: ReturnType<typeof useLevelScope>;
   },
 ) {
-  const groupScope = def.scope.kind === 'groups' ? def.scope : null;
-  if (!groupScope) return null;
+  const levelScope = def.scope.kind === 'levels' ? def.scope : null;
+  if (!levelScope) return null;
   return (
     <Stack gap='related' class='level-progress-cards'>
-      {groupScope.allGroupIds.map((id) => {
-        const g = groupScope.groups.find((g) => g.id === id);
-        const itemIds = groupScope.getItemIdsForGroup(id);
+      {levelScope.allLevelIds.map((id) => {
+        const g = levelScope.levels.find((g) => g.id === id);
+        const itemIds = levelScope.getItemIdsForLevel(id);
         const colors = progressBarColors(learner.selector, itemIds);
         // Read speed + review timing from recommendation result (single source).
-        const ls = groupScopeResult.recommendation.levelStatuses
-          ?.find((s) => s.groupId === id);
+        const ls = levelScopeResult.recommendation.levelStatuses
+          ?.find((s) => s.levelId === id);
         const sl = ls
           ? SPEED_LEVELS.find((l) => l.key === ls.speedLabel) ?? null
           : null;
@@ -125,7 +125,7 @@ export function LevelProgressCards<Q>(
             ? 'Review soon'
             : `Review in ${formatReviewDuration(ls.reviewInHours)}`)
           : undefined;
-        const skipReason = groupScopeResult.skippedGroups.get(id);
+        const skipReason = levelScopeResult.skippedLevels.get(id);
         const status = skipReason === 'mastered'
           ? 'known' as const
           : skipReason === 'deferred'
@@ -148,12 +148,12 @@ export function LevelProgressCards<Q>(
             baseline={learner.motorBaseline}
             onToggleKnown={() =>
               skipReason === 'mastered'
-                ? groupScopeResult.scopeActions.unskipGroup(id)
-                : groupScopeResult.scopeActions.skipGroup(id, 'mastered')}
+                ? levelScopeResult.scopeActions.unskipLevel(id)
+                : levelScopeResult.scopeActions.skipLevel(id, 'mastered')}
             onToggleSkip={() =>
               skipReason === 'deferred'
-                ? groupScopeResult.scopeActions.unskipGroup(id)
-                : groupScopeResult.scopeActions.skipGroup(id, 'deferred')}
+                ? levelScopeResult.scopeActions.unskipLevel(id)
+                : levelScopeResult.scopeActions.skipLevel(id, 'deferred')}
           />
         );
       })}
@@ -234,26 +234,26 @@ export function IdlePracticeView<Q>(
     engine,
     learner,
     ctrl,
-    groupScopeResult,
+    levelScopeResult,
     ps,
     progressSegments,
     onCalibrate,
   }: {
-    def: ModeDefinition<Q>;
+    def: SkillDefinition<Q>;
     engine: ReturnType<typeof useQuizEngine>;
     learner: ReturnType<typeof useLearnerModel>;
-    ctrl: ModeController<Q>;
-    groupScopeResult: ReturnType<typeof useGroupScope> | null;
+    ctrl: SkillController<Q>;
+    levelScopeResult: ReturnType<typeof useLevelScope> | null;
     ps: ReturnType<typeof usePracticeSummary>;
     progressSegments: ProgressSegment[];
     onCalibrate?: () => void;
   },
 ) {
-  const hasGroups = def.scope.kind === 'groups' && groupScopeResult;
+  const hasGroups = def.scope.kind === 'levels' && levelScopeResult;
   const hasStats = def.stats.kind !== 'none' || !!ctrl.renderStats;
   const customItemCount = hasGroups &&
-      groupScopeResult.practiceMode === 'custom'
-    ? groupScopeResult.enabledItems.length
+      levelScopeResult.practiceMode === 'custom'
+    ? levelScopeResult.enabledItems.length
     : null;
 
   return (
@@ -263,7 +263,7 @@ export function IdlePracticeView<Q>(
       progressKind={hasGroups ? 'multi-level' : 'single-level'}
       progressBaseline={learner.motorBaseline}
       description={def.description}
-      scopeValid={!groupScopeResult || groupScopeResult.enabledGroups.size > 0}
+      scopeValid={!levelScopeResult || levelScopeResult.enabledLevels.size > 0}
       validationMessage='Select at least one level'
       startLabel={customItemCount != null
         ? `Practice (${customItemCount} ${
@@ -272,9 +272,9 @@ export function IdlePracticeView<Q>(
         : undefined}
       practiceContent={hasGroups
         ? (
-          <GroupPracticeContent
+          <LevelPracticeContent
             def={def}
-            groupScopeResult={groupScopeResult}
+            levelScopeResult={levelScopeResult}
           />
         )
         : (
@@ -321,7 +321,7 @@ export function IdlePracticeView<Q>(
             <LevelProgressCards
               def={def}
               learner={learner}
-              groupScopeResult={groupScopeResult}
+              levelScopeResult={levelScopeResult}
             />
           </Section>
         )

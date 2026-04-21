@@ -20,7 +20,7 @@ import {
 import { buildMotorBaseline } from './helpers/fixture-builders.ts';
 
 const MODE_ID = 'noteSemitones';
-const MODE = `#mode-${MODE_ID}`;
+const MODE = `#skill-${MODE_ID}`;
 
 let browser: Browser;
 let server: ChildProcess;

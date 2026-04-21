@@ -28,8 +28,8 @@ export {
   justStarting,
   masteredFresh,
   masteredStale,
-  perGroupScenario,
+  perLevelScenario,
   returnedAfterBreak,
   semitoneMathItemIds,
 } from './heatmap-scenarios.ts';
-export type { GroupItemProfile } from './heatmap-scenarios.ts';
+export type { LevelItemProfile } from './heatmap-scenarios.ts';

@@ -37,7 +37,7 @@ import {
   QuizSession,
   RoundCompleteActions,
   RoundCompleteInfo,
-} from '../ui/mode-screen.tsx';
+} from '../ui/skill-screen.tsx';
 import {
   FeedbackDisplay,
   KeyboardHint,
@@ -49,9 +49,9 @@ import { Text } from '../ui/text.tsx';
 import type {
   ButtonsDef,
   ComparisonStrategy,
-  ModeController,
-  ModeDefinition,
   SequentialEntryResult,
+  SkillController,
+  SkillDefinition,
 } from './types.ts';
 import type { MultiTapInputHandle } from './use-multi-tap-input.ts';
 import { displayNote } from '../music-data.ts';
@@ -256,9 +256,9 @@ export function SequentialQuizArea<Q>(
     instruction,
     splitFlushRef,
   }: {
-    def: ModeDefinition<Q>;
+    def: SkillDefinition<Q>;
     engine: ReturnType<typeof useQuizEngine>;
-    ctrl: ModeController<Q>;
+    ctrl: SkillController<Q>;
     currentQ: Q | null;
     activeButtons: ButtonsDef;
     seq: {
@@ -334,7 +334,7 @@ export function MultiTapQuizArea(
   },
 ) {
   // Multi-tap modes render prompt text + interactive fretboard.
-  // The fretboard is rendered by GenericMode (not the controller) using
+  // The fretboard is rendered by GenericSkill (not the controller) using
   // shared multi-tap state from useMultiTapInput.
   return (
     <QuizStage
@@ -380,7 +380,7 @@ export function StandardQuizArea<Q>(
     instruction,
   }: {
     engine: ReturnType<typeof useQuizEngine>;
-    ctrl: ModeController<Q>;
+    ctrl: SkillController<Q>;
     currentQ: Q | null;
     activeButtons: ButtonsDef;
     handleSubmit: (input: string) => boolean;
@@ -504,9 +504,9 @@ export function StandardQuizArea<Q>(
 // ---------------------------------------------------------------------------
 
 export type QuizActiveViewProps<Q> = {
-  def: ModeDefinition<Q>;
+  def: SkillDefinition<Q>;
   engine: ReturnType<typeof useQuizEngine>;
-  ctrl: ModeController<Q>;
+  ctrl: SkillController<Q>;
   currentQ: Q | null;
   round: ReturnType<typeof useRoundSummary>;
   levelBars: LevelProgressEntry[];

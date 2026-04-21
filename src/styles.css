@@ -525,8 +525,8 @@ body {
    z-index: -1 paints above layout-main's background (thanks to isolation:
    isolate creating a stacking context) but below all normal-flow children.
    No z-index needed on any child elements. */
-.mode-screen.phase-idle .layout-main::before,
-.mode-screen.phase-round-complete .layout-main::before {
+.skill-screen.phase-idle .layout-main::before,
+.skill-screen.phase-round-complete .layout-main::before {
   content: '';
   position: absolute;
   left: 50%;
@@ -558,9 +558,9 @@ body {
      indicator / app switcher gesture area. */
   padding-bottom: max(var(--gap-group), env(safe-area-inset-bottom, 0));
 }
-/* mode-nav owns its own bottom safe-area clearance and must stay flush
+/* skill-nav owns its own bottom safe-area clearance and must stay flush
    to the screen edge, so don't double up. */
-.layout-footer:has(> .mode-nav) {
+.layout-footer:has(> .skill-nav) {
   padding-bottom: 0;
 }
 
@@ -843,9 +843,9 @@ body.native-app .brand-strip {
   white-space: nowrap;
   color: inherit;
 }
-/* mode-nav is inside LayoutFooter — no position: fixed needed.
-   mode-nav owns the bottom safe-area clearance (body does not). */
-.mode-nav {
+/* skill-nav is inside LayoutFooter — no position: fixed needed.
+   skill-nav owns the bottom safe-area clearance (body does not). */
+.skill-nav {
   display: flex;
   background: var(--color-chrome);
   border-top: 1px solid var(--color-border-lighter);
@@ -853,25 +853,25 @@ body.native-app .brand-strip {
   padding: var(--gap-related) var(--size-content-inset);
   padding-bottom: max(var(--gap-related), env(safe-area-inset-bottom, 0));
 }
-.mode-nav .tab-btn {
+.skill-nav .tab-btn {
   padding: var(--gap-related) var(--gap-group);
 }
-.mode-nav .tab-btn.active::after {
+.skill-nav .tab-btn.active::after {
   /* No underline — the icon color is enough for bottom nav */
   display: none;
 }
 /* Note: bottom nav padding is now handled by ScreenLayout / LayoutFooter.
    No ad-hoc padding-bottom needed on tab panels. */
 @media (min-width: 768px) {
-  .mode-nav {
+  .skill-nav {
     border-top: none;
     border-bottom: 2px solid var(--color-border-lighter);
     padding-bottom: 0;
   }
-  .mode-nav .tab-btn {
+  .skill-nav .tab-btn {
     padding: var(--gap-group) var(--pad-region);
   }
-  .mode-nav .tab-btn.active::after {
+  .skill-nav .tab-btn.active::after {
     display: block;
   }
   .tab-icon-label {
@@ -880,10 +880,10 @@ body.native-app .brand-strip {
   }
 }
 
-.home-modes {
+.home-skills {
   flex: 1;
 }
-.home-mode-btn {
+.home-skill-btn {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -898,13 +898,13 @@ body.native-app .brand-strip {
   cursor: pointer;
   position: relative;
 }
-.home-mode-btn::after {
+.home-skill-btn::after {
   content: none;
 }
-.home-mode-btn:hover {
+.home-skill-btn:hover {
   background: var(--color-surface);
 }
-.home-mode-btn:active {
+.home-skill-btn:active {
   background: var(--color-surface-pressed);
 }
 /* --- Track accordion sections --- */
@@ -1043,7 +1043,7 @@ body.native-app .brand-strip {
   border-radius: var(--radius-md);
   text-align: center;
 }
-/* --- Skill cards (extends home-mode-btn) --- */
+/* --- Skill cards (extends home-skill-btn) --- */
 .skill-card {
   position: relative;
 }
@@ -1228,13 +1228,13 @@ body.native-app .brand-strip {
 }
 
 /* --- Mode screens --- */
-.mode-screen {
+.skill-screen {
   display: none;
   padding-top: 0;
   flex: 1;
   min-height: 0;
 }
-.mode-screen.mode-active {
+.skill-screen.skill-active {
   display: flex;
   flex-direction: column;
 }
@@ -1352,7 +1352,7 @@ body.native-app .brand-strip {
 .screen-header-title .skill-icon {
   color: var(--type-heading-page-color);
 }
-.screen-header-title .mode-title {
+.screen-header-title .skill-title {
   flex: none;
 }
 /* Spacer keeps the centered title balanced when close or right slot is absent.
@@ -1578,14 +1578,14 @@ body.native-app .brand-strip {
   flex: 1;
   min-height: 0;
 }
-.group-progress-bar {
+.level-progress-bar {
   display: flex;
   height: 8px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   background: var(--heatmap-none);
 }
-.group-progress-bar.skipped {
+.level-progress-bar.skipped {
   opacity: var(--opacity-subtle);
 }
 .group-bar-slice {
@@ -1738,11 +1738,11 @@ button {
 }
 
 /* --- Quiz-active visual focus --- */
-/* .mode-screen prefix gives 0-2-0 specificity to override
-   .mode-screen.mode-active { display: block } (also 0-2-0, but earlier). */
-.mode-screen.phase-active,
-.mode-screen.phase-round-complete,
-.mode-screen.phase-calibration {
+/* .skill-screen prefix gives 0-2-0 specificity to override
+   .skill-screen.skill-active { display: block } (also 0-2-0, but earlier). */
+.skill-screen.phase-active,
+.skill-screen.phase-round-complete,
+.skill-screen.phase-calibration {
   background: var(--color-card);
   display: flex;
   flex-direction: column;
@@ -2634,7 +2634,7 @@ button {
   outline: none;
 }
 /* Specific overrides for elements that need different focus styling */
-.home-mode-btn:focus-visible {
+.home-skill-btn:focus-visible {
   outline-offset: -2px;
 }
 

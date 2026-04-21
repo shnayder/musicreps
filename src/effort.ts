@@ -1,4 +1,4 @@
-// Effort tracking: reads per-mode and global effort stats.
+// Effort tracking: reads per-skill and global effort stats.
 // All data derives from existing adaptive_* keys (sampleCount per item)
 // plus a new effort_daily counter incremented on each response.
 //
@@ -13,20 +13,20 @@ import { storage } from './storage.ts';
 // Mode registry — namespace + allItems for each mode
 // ---------------------------------------------------------------------------
 
-export type ModeInfo = {
+export type SkillInfo = {
   id: string;
   namespace: string;
   allItems: string[];
 };
 
 // Populated at init time by app.ts
-const modes: ModeInfo[] = [];
+const modes: SkillInfo[] = [];
 
-export function registerModeForEffort(info: ModeInfo): void {
+export function registerSkillForEffort(info: SkillInfo): void {
   modes.push(info);
 }
 
-export function getRegisteredModes(): readonly ModeInfo[] {
+export function getRegisteredSkills(): readonly SkillInfo[] {
   return modes;
 }
 
@@ -34,7 +34,7 @@ export function getRegisteredModes(): readonly ModeInfo[] {
 // Per-mode effort stats (reads from a StorageAdapter)
 // ---------------------------------------------------------------------------
 
-export type ModeEffort = {
+export type SkillEffort = {
   id: string;
   namespace: string;
   totalReps: number;
@@ -43,10 +43,10 @@ export type ModeEffort = {
 };
 
 /** Pure: compute effort for a mode from its StorageAdapter. */
-export function computeModeEffort(
-  mode: ModeInfo,
+export function computeSkillEffort(
+  mode: SkillInfo,
   storage: StorageAdapter,
-): ModeEffort {
+): SkillEffort {
   let totalReps = 0;
   let itemsStarted = 0;
   for (const itemId of mode.allItems) {
@@ -148,7 +148,7 @@ export function incrementDailyReps(
 }
 
 // ---------------------------------------------------------------------------
-// Global aggregations (derived from daily + per-mode)
+// Global aggregations (derived from daily + per-skill)
 // ---------------------------------------------------------------------------
 
 export type GlobalEffort = {
@@ -157,34 +157,34 @@ export type GlobalEffort = {
   dailyReps: DailyReps;
 };
 
-/** Pure: compute global effort from mode efforts and daily reps. */
+/** Pure: compute global effort from skill efforts and daily reps. */
 export function computeGlobalEffort(
-  modeEfforts: ModeEffort[],
+  skillEfforts: SkillEffort[],
   dailyReps: DailyReps,
 ): GlobalEffort {
   const dates = Object.keys(dailyReps).filter((d) => dailyReps[d] > 0);
   const totalFromDaily = dates.reduce((sum, d) => sum + dailyReps[d], 0);
-  const totalFromModes = modeEfforts.reduce((s, m) => s + m.totalReps, 0);
+  const totalFromSkills = skillEfforts.reduce((s, m) => s + m.totalReps, 0);
 
   return {
-    totalReps: Math.max(totalFromDaily, totalFromModes),
+    totalReps: Math.max(totalFromDaily, totalFromSkills),
     daysActive: dates.length,
     dailyReps,
   };
 }
 
-/** Convenience: compute global effort from registered modes + daily reps. */
+/** Convenience: compute global effort from registered skills + daily reps. */
 export function getGlobalEffort(): GlobalEffort {
-  const modes = getRegisteredModes();
-  const modeEfforts = modes.map((m) =>
-    computeModeEffort(m, createStorageAdapter(m.namespace))
+  const modes = getRegisteredSkills();
+  const skillEfforts = modes.map((m) =>
+    computeSkillEffort(m, createStorageAdapter(m.namespace))
   );
-  return computeGlobalEffort(modeEfforts, getDailyReps());
+  return computeGlobalEffort(skillEfforts, getDailyReps());
 }
 
-/** Convenience: compute effort for a registered mode by ID. */
-export function getModeEffort(modeId: string): ModeEffort | null {
-  const mode = getRegisteredModes().find((m) => m.id === modeId);
+/** Convenience: compute effort for a registered skill by ID. */
+export function getSkillEffort(modeId: string): SkillEffort | null {
+  const mode = getRegisteredSkills().find((m) => m.id === modeId);
   if (!mode) return null;
-  return computeModeEffort(mode, createStorageAdapter(mode.namespace));
+  return computeSkillEffort(mode, createStorageAdapter(mode.namespace));
 }

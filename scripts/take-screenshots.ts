@@ -67,7 +67,7 @@ function generateIndexHTML(
   const progressEntries: ScreenshotEntry[] = [];
 
   for (const entry of manifest) {
-    if (entry.modeId === 'home') {
+    if (entry.skillId === 'home') {
       homeEntries.push(entry);
     } else if (entry.clickTab === 'progress') {
       progressEntries.push(entry);
@@ -76,15 +76,15 @@ function generateIndexHTML(
     } else if (entry.name.startsWith('speedCheck-')) {
       speedCheckEntries.push(entry);
     } else {
-      const group = modeGroups.get(entry.modeId) ?? [];
+      const group = modeGroups.get(entry.skillId) ?? [];
       group.push(entry);
-      modeGroups.set(entry.modeId, group);
+      modeGroups.set(entry.skillId, group);
     }
   }
 
   // Label: strip mode prefix for mode shots, strip "design-" for design moments
   function modeLabel(entry: ScreenshotEntry): string {
-    const prefix = `${entry.modeId}-`;
+    const prefix = `${entry.skillId}-`;
     if (entry.name.startsWith(prefix)) return entry.name.slice(prefix.length);
     // Speed Check entries use 'speedCheck-' prefix under speedTap mode
     if (entry.name.startsWith('speedCheck-')) {
@@ -110,10 +110,10 @@ function generateIndexHTML(
   }
 
   // Mode sections in manifest order (preserves MODE_IDS order)
-  for (const modeId of MODE_IDS) {
-    const entries = modeGroups.get(modeId);
+  for (const skillId of MODE_IDS) {
+    const entries = modeGroups.get(skillId);
     if (!entries) continue;
-    const title = MODE_TITLES[modeId] ?? modeId;
+    const title = MODE_TITLES[skillId] ?? skillId;
     const shots = entries.map((e) => shotHTML(e.name, modeLabel(e))).join('\n');
     sections += `<h2>${title}</h2>\n<div class="shots">\n${shots}\n</div>\n`;
   }
@@ -222,13 +222,13 @@ async function main() {
       // Helper: navigate to a mode via page reload + real UI click.
       // Page reload guarantees clean state — no stale mode-active classes,
       // no leftover fixture state, no navigation system desync.
-      // modeId 'home' skips the click — the home screen is visible on load.
-      async function navigateToMode(modeId: string) {
+      // skillId 'home' skips the click — the home screen is visible on load.
+      async function navigateToMode(skillId: string) {
         await page.goto(`${BASE_URL}/?fixtures&native`);
         await page.waitForLoadState('networkidle');
-        if (modeId === 'home') return;
-        await page.click(`[data-mode="${modeId}"]`);
-        await page.waitForSelector(`#mode-${modeId}.mode-active`);
+        if (skillId === 'home') return;
+        await page.click(`[data-skill="${skillId}"]`);
+        await page.waitForSelector(`#skill-${skillId}.skill-active`);
       }
 
       // Helper: capture screenshot
@@ -245,8 +245,8 @@ async function main() {
       }
 
       // Helper: dispatch fixture and wait for application
-      async function applyFixture(modeId: string, fixture: FixtureDetail) {
-        const container = `#mode-${modeId}`;
+      async function applyFixture(skillId: string, fixture: FixtureDetail) {
+        const container = `#skill-${skillId}`;
 
         // Clear previous fixture-applied marker
         await page.evaluate((sel) => {
@@ -282,7 +282,7 @@ async function main() {
       let previousHadLocalStorage = false;
 
       for (const entry of manifest) {
-        const needsReload = entry.modeId !== currentMode ||
+        const needsReload = entry.skillId !== currentMode ||
           previousHadFixture || previousHadLocalStorage ||
           !!entry.localStorageData;
 
@@ -296,20 +296,20 @@ async function main() {
         }
 
         if (needsReload) {
-          if (entry.modeId !== currentMode) {
-            console.log(`Mode: ${entry.modeId}`);
+          if (entry.skillId !== currentMode) {
+            console.log(`Mode: ${entry.skillId}`);
           }
-          await navigateToMode(entry.modeId);
-          currentMode = entry.modeId;
+          await navigateToMode(entry.skillId);
+          currentMode = entry.skillId;
         }
 
         if (entry.fixture) {
-          await applyFixture(entry.modeId, entry.fixture);
+          await applyFixture(entry.skillId, entry.fixture);
         }
 
         // Switch to progress tab after navigation
         if (entry.clickTab) {
-          const sel = `#mode-${entry.modeId} [data-tab="${entry.clickTab}"]`;
+          const sel = `#skill-${entry.skillId} [data-tab="${entry.clickTab}"]`;
           await page.click(sel);
           await page.waitForTimeout(200);
         }
@@ -318,7 +318,7 @@ async function main() {
         // and tab switch. Scoped to the current mode container.
         if (entry.clickSelectors) {
           for (const selector of entry.clickSelectors) {
-            const scoped = `#mode-${entry.modeId} ${selector}`;
+            const scoped = `#skill-${entry.skillId} ${selector}`;
             await page.click(scoped);
             await page.waitForTimeout(200);
           }

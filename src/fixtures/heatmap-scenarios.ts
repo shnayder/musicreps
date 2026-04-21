@@ -212,24 +212,24 @@ export function returnedAfterBreak(
 // Per-group state profiles for scenarios where different groups are in
 // different learning stages (e.g. first groups mastered, later ones starting).
 
-export type GroupItemProfile = {
+export type LevelItemProfile = {
   itemIds: string[];
   state: 'unseen' | 'working' | 'mixed' | 'automatic' | 'stale';
   /** Fraction of items seen (default 1.0). */
   seenFraction?: number;
 };
 
-export function perGroupScenario(
+export function perLevelScenario(
   namespace: string,
-  groups: GroupItemProfile[],
+  levels: LevelItemProfile[],
 ): Record<string, string> {
   const now = Date.now();
   const result: Record<string, string> = {};
 
-  for (const group of groups) {
-    if (group.state === 'unseen') continue;
-    const { itemIds, state } = group;
-    const fraction = group.seenFraction ?? 1.0;
+  for (const level of levels) {
+    if (level.state === 'unseen') continue;
+    const { itemIds, state } = level;
+    const fraction = level.seenFraction ?? 1.0;
     const seenCount = Math.max(1, Math.floor(itemIds.length * fraction));
 
     for (let i = 0; i < seenCount; i++) {

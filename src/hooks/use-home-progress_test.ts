@@ -4,12 +4,12 @@ import { describe, it } from 'node:test';
 import * as assert from 'node:assert/strict';
 import {
   computeAllProgress,
-  computeProgressForMode,
+  computeProgressForSkill,
 } from './use-home-progress.ts';
 import {
-  getModeProgress,
-  MODE_PROGRESS_MANIFEST,
-} from '../mode-progress-manifest.ts';
+  getSkillProgress,
+  SKILL_PROGRESS_MANIFEST,
+} from '../skill-progress-manifest.ts';
 import { createMemoryStorage } from '../adaptive.ts';
 import type { MotorTaskType, StorageAdapter } from '../types.ts';
 
@@ -65,27 +65,27 @@ function seedSlow(
 describe('computeAllProgress', () => {
   it('returns a map with an entry for every mode', () => {
     const result = computeAllProgress(emptyStorageFactory());
-    assert.equal(result.size, MODE_PROGRESS_MANIFEST.length);
-    for (const entry of MODE_PROGRESS_MANIFEST) {
-      assert.ok(result.has(entry.modeId), `missing ${entry.modeId}`);
+    assert.equal(result.size, SKILL_PROGRESS_MANIFEST.length);
+    for (const entry of SKILL_PROGRESS_MANIFEST) {
+      assert.ok(result.has(entry.skillId), `missing ${entry.skillId}`);
     }
   });
 
   it('unstarted modes have empty segments', () => {
     const result = computeAllProgress(emptyStorageFactory());
-    for (const entry of MODE_PROGRESS_MANIFEST) {
-      const progress = result.get(entry.modeId)!;
+    for (const entry of SKILL_PROGRESS_MANIFEST) {
+      const progress = result.get(entry.skillId)!;
       assert.equal(
         progress.segments.length,
         0,
-        `${entry.modeId} should be empty when unstarted`,
+        `${entry.skillId} should be empty when unstarted`,
       );
     }
   });
 
   it('accepts motorBaseline parameter', () => {
     const result = computeAllProgress(emptyStorageFactory(), 950);
-    assert.equal(result.size, MODE_PROGRESS_MANIFEST.length);
+    assert.equal(result.size, SKILL_PROGRESS_MANIFEST.length);
   });
 
   it('filters skipped groups via getSkipped', () => {
@@ -101,56 +101,56 @@ describe('computeAllProgress', () => {
 });
 
 // ---------------------------------------------------------------------------
-// computeProgressForMode
+// computeProgressForSkill
 // ---------------------------------------------------------------------------
 
-describe('computeProgressForMode', () => {
+describe('computeProgressForSkill', () => {
   it('single-group mode returns empty when no items seen', () => {
-    const entry = getModeProgress('noteSemitones')!;
+    const entry = getSkillProgress('noteSemitones')!;
     const storage = createMemoryStorage();
-    const result = computeProgressForMode(entry, storage, null);
+    const result = computeProgressForSkill(entry, storage, null);
     assert.equal(result.segments.length, 0);
-    assert.equal(result.activeGroupCount, 1);
+    assert.equal(result.activeLevelCount, 1);
   });
 
   it('single-group mode with data has per-item color segments', () => {
-    const entry = getModeProgress('noteSemitones')!;
+    const entry = getSkillProgress('noteSemitones')!;
     const storage = createMemoryStorage();
     const ids = entry.allItemIds();
     seedAutomatic(storage, ids.slice(0, 3), Date.now());
-    const result = computeProgressForMode(entry, storage, null);
+    const result = computeProgressForSkill(entry, storage, null);
     assert.equal(result.segments.length, ids.length);
   });
 
   it('single-group mode skipped yields empty', () => {
-    const entry = getModeProgress('noteSemitones')!;
+    const entry = getSkillProgress('noteSemitones')!;
     const storage = createMemoryStorage();
     const skipped = new Set(['all']);
-    const result = computeProgressForMode(entry, storage, null, skipped);
+    const result = computeProgressForSkill(entry, storage, null, skipped);
     assert.equal(result.segments.length, 0);
-    assert.equal(result.activeGroupCount, 0);
+    assert.equal(result.activeLevelCount, 0);
   });
 
   it('group mode returns empty when no items seen', () => {
-    const entry = getModeProgress('semitoneMath')!;
+    const entry = getSkillProgress('semitoneMath')!;
     const storage = createMemoryStorage();
-    const result = computeProgressForMode(entry, storage, null);
+    const result = computeProgressForSkill(entry, storage, null);
     assert.equal(result.segments.length, 0);
-    assert.equal(result.activeGroupCount, entry.groups.length);
+    assert.equal(result.activeLevelCount, entry.levels.length);
   });
 
   it('sorts segments descending by speed', () => {
-    const entry = getModeProgress('keySignatures')!;
+    const entry = getSkillProgress('keySignatures')!;
     const storage = createMemoryStorage();
     const now = Date.now();
 
     // Seed group 0 (major 0–3) as automatic, group 1 (major 4+) as slow.
-    const g0Items = entry.groups![0].getItemIds();
-    const g1Items = entry.groups![1].getItemIds();
+    const g0Items = entry.levels![0].getItemIds();
+    const g1Items = entry.levels![1].getItemIds();
     seedAutomatic(storage, g0Items, now);
     seedSlow(storage, g1Items, now);
 
-    const result = computeProgressForMode(entry, storage, null);
+    const result = computeProgressForSkill(entry, storage, null);
 
     // 4 segments total. Group 0 (automatic) should sort first.
     assert.equal(result.segments.length, 4);
@@ -159,21 +159,21 @@ describe('computeProgressForMode', () => {
   });
 
   it('filters out skipped groups', () => {
-    const entry = getModeProgress('keySignatures')!; // 4 groups
+    const entry = getSkillProgress('keySignatures')!; // 4 groups
     const storage = createMemoryStorage();
     const now = Date.now();
     // Seed all groups so they're not unseen
-    for (const g of entry.groups) {
+    for (const g of entry.levels) {
       seedAutomatic(storage, g.getItemIds(), now);
     }
     const skipped = new Set(['major-hard', 'minor-hard']);
-    const result = computeProgressForMode(entry, storage, null, skipped);
+    const result = computeProgressForSkill(entry, storage, null, skipped);
     assert.equal(result.segments.length, 2); // 4 - 2 skipped
-    assert.equal(result.activeGroupCount, 2);
+    assert.equal(result.activeLevelCount, 2);
   });
 
   it('returns empty when all groups skipped', () => {
-    const entry = getModeProgress('keySignatures')!; // 4 groups
+    const entry = getSkillProgress('keySignatures')!; // 4 groups
     const storage = createMemoryStorage();
     const skipped = new Set([
       'major-easy',
@@ -181,19 +181,19 @@ describe('computeProgressForMode', () => {
       'minor-easy',
       'minor-hard',
     ]);
-    const result = computeProgressForMode(entry, storage, null, skipped);
+    const result = computeProgressForSkill(entry, storage, null, skipped);
     assert.equal(result.segments.length, 0);
-    assert.equal(result.activeGroupCount, 0);
+    assert.equal(result.activeLevelCount, 0);
   });
 
   it('uses motorBaseline for scaling', () => {
-    const entry = getModeProgress('noteSemitones')!;
+    const entry = getSkillProgress('noteSemitones')!;
     const storage = createMemoryStorage();
     const itemIds = entry.allItemIds();
     seedAutomatic(storage, itemIds, Date.now());
 
-    const withBaseline = computeProgressForMode(entry, storage, 500);
-    const withoutBaseline = computeProgressForMode(entry, storage, null);
+    const withBaseline = computeProgressForSkill(entry, storage, 500);
+    const withoutBaseline = computeProgressForSkill(entry, storage, null);
     // Both should compute without error
     assert.ok(withBaseline.segments.length > 0);
     assert.ok(withoutBaseline.segments.length > 0);
@@ -226,7 +226,7 @@ describe('computeAllProgress baseline resolution', () => {
       seen.includes('note-button'),
       `expected note-button lookup, got: ${seen.join(', ')}`,
     );
-    assert.equal(seen.length, MODE_PROGRESS_MANIFEST.length);
+    assert.equal(seen.length, SKILL_PROGRESS_MANIFEST.length);
   });
 });
 
@@ -234,15 +234,15 @@ describe('computeAllProgress baseline resolution', () => {
 // Response count affects speed/colors for multi-response modes
 // ---------------------------------------------------------------------------
 
-describe('computeProgressForMode response count', () => {
+describe('computeProgressForSkill response count', () => {
   it('multi-response mode uses getResponseCount for speed scaling', () => {
     // guitarChordShapes has fretboard-tap baseline and multi-response items.
     // Seed the first group's items with the same EWMA, then verify the
     // resulting speed score matches when scaled by response count.
-    const entry = getModeProgress('guitarChordShapes')!;
+    const entry = getSkillProgress('guitarChordShapes')!;
     const storage = createMemoryStorage();
     const now = Date.now();
-    const itemIds = entry.groups[0].getItemIds();
+    const itemIds = entry.levels[0].getItemIds();
     for (const id of itemIds) {
       storage.saveStats(id, {
         recentTimes: [2000, 2100, 2200],
@@ -261,12 +261,12 @@ describe('computeProgressForMode response count', () => {
     // The color at the same EWMA differs depending on whether the mode's
     // getResponseCount is applied — this is what previously caused the
     // home-vs-skill mismatch.
-    const scaled = computeProgressForMode(entry, storage, null);
+    const scaled = computeProgressForSkill(entry, storage, null);
     assert.ok(scaled.segments.length > 0);
 
     // Clone the entry without getResponseCount to simulate the pre-fix path.
     const unscaledEntry = { ...entry, getResponseCount: undefined };
-    const unscaled = computeProgressForMode(unscaledEntry, storage, null);
+    const unscaled = computeProgressForSkill(unscaledEntry, storage, null);
 
     // First segment is the same group (only group 0 seeded), but colors
     // should differ because one applied response-count scaling.
@@ -288,7 +288,7 @@ describe('computeAllProgress performance', () => {
     const storageMap = new Map<string, StorageAdapter>();
 
     // Pre-seed storage for every mode with realistic data
-    for (const entry of MODE_PROGRESS_MANIFEST) {
+    for (const entry of SKILL_PROGRESS_MANIFEST) {
       const storage = createMemoryStorage();
       const allItems = entry.allItemIds();
 
@@ -331,7 +331,7 @@ describe('computeAllProgress performance', () => {
     const result = computeAllProgress(factory, 950, noSkips);
     const elapsed = performance.now() - start;
 
-    assert.equal(result.size, MODE_PROGRESS_MANIFEST.length);
+    assert.equal(result.size, SKILL_PROGRESS_MANIFEST.length);
     assert.ok(
       elapsed < 200,
       `Progress computation took ${elapsed.toFixed(1)}ms (budget: 200ms)`,
