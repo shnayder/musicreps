@@ -220,9 +220,9 @@ export function computeLevelRecs(
 ): LevelRecommendation[] {
   const recs: LevelRecommendation[] = [];
 
-  // Priority 1: review — Solid+ levels where freshness is actually below
-  // threshold. reviewInHours === 0 means avgFreshness < FRESHNESS_THRESHOLD.
-  // Levels with reviewInHours > 0 aren't due yet — they still get a UI pill
+  // Priority 1: review — Solid+ levels where freshness is at or below
+  // threshold. reviewInHours === 0 means avgFreshness <= FRESHNESS_THRESHOLD.
+  // Levels with reviewInHours > 0 aren't due yet — they get a UI pill
   // ("Review in Xh") but no active recommendation to review now.
   for (const s of statuses) {
     if (

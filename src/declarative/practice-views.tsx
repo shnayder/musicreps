@@ -119,7 +119,7 @@ export function LevelProgressCards<Q>(
           ? SPEED_LEVELS.find((l) => l.key === ls.speedLabel) ?? null
           : null;
         const pill = ls?.reviewInHours != null
-          ? (ls.reviewStatus === 'soon'
+          ? (ls.reviewStatus === 'soon' && ls.reviewInHours === 0
             ? 'Review soon'
             : `Review in ${formatReviewDuration(ls.reviewInHours)}`)
           : undefined;
