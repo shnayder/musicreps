@@ -5,6 +5,7 @@
 import type { Instrument } from '../../types.ts';
 import { NATURAL_NOTES, noteMatchesInput, NOTES } from '../../music-data.ts';
 import { createFretboardHelpers } from '../../quiz-fretboard-state.ts';
+import type { QuestionContext } from '../../declarative/types.ts';
 
 // ---------------------------------------------------------------------------
 // Group definition types
@@ -30,42 +31,42 @@ const FRET_GROUPS: FretboardGroup[] = [
   {
     id: 'frets-0-3-natural',
     label: () => fretLabel(0, 3),
-    longLabel: () => fretLabel(0, 3) + ', naturals',
+    longLabel: () => fretLabel(0, 3) + ' naturals',
     frets: [0, 3],
     noteFilter: 'natural',
   },
   {
     id: 'frets-0-3-sharps',
-    label: () => fretLabel(0, 3) + ' \u266F/\u266D',
-    longLabel: () => fretLabel(0, 3) + ' \u266F/\u266D',
+    label: () => fretLabel(0, 3) + '\u00A0\u266F/\u266D',
+    longLabel: () => fretLabel(0, 3) + '\u00A0\u266F/\u266D',
     frets: [0, 3],
     noteFilter: 'sharps-flats',
   },
   {
     id: 'frets-4-8-natural',
     label: () => fretLabel(4, 8),
-    longLabel: () => fretLabel(4, 8) + ', naturals',
+    longLabel: () => fretLabel(4, 8) + ' naturals',
     frets: [4, 8],
     noteFilter: 'natural',
   },
   {
     id: 'frets-4-8-sharps',
-    label: () => fretLabel(4, 8) + ' \u266F/\u266D',
-    longLabel: () => fretLabel(4, 8) + ' \u266F/\u266D',
+    label: () => fretLabel(4, 8) + '\u00A0\u266F/\u266D',
+    longLabel: () => fretLabel(4, 8) + '\u00A0\u266F/\u266D',
     frets: [4, 8],
     noteFilter: 'sharps-flats',
   },
   {
     id: 'frets-9-12-natural',
     label: () => fretLabel(9, 12),
-    longLabel: () => fretLabel(9, 12) + ', naturals',
+    longLabel: () => fretLabel(9, 12) + ' naturals',
     frets: [9, 12],
     noteFilter: 'natural',
   },
   {
     id: 'frets-9-12-sharps',
-    label: () => fretLabel(9, 12) + ' \u266F/\u266D',
-    longLabel: () => fretLabel(9, 12) + ' \u266F/\u266D',
+    label: () => fretLabel(9, 12) + '\u00A0\u266F/\u266D',
+    longLabel: () => fretLabel(9, 12) + '\u00A0\u266F/\u266D',
     frets: [9, 12],
     noteFilter: 'sharps-flats',
   },
@@ -142,14 +143,18 @@ export type Question = {
   currentString: number;
   currentFret: number;
   currentNote: string;
+  /** Per-round spelling preference for accidentals (flats when true). */
+  useFlats: boolean;
 };
 
 export function getQuestion(
   instrument: Instrument,
   itemId: string,
+  ctx?: QuestionContext,
 ): Question {
   const fb = getHelpers(instrument);
-  return fb.parseFretboardItem(itemId);
+  const base = fb.parseFretboardItem(itemId);
+  return { ...base, useFlats: ctx?.useFlats ?? false };
 }
 
 // ---------------------------------------------------------------------------

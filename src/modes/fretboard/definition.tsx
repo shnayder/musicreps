@@ -10,7 +10,12 @@ import {
   useState,
 } from 'preact/hooks';
 import type { Instrument } from '../../types.ts';
-import { isValidNoteInput } from '../../music-data.ts';
+import {
+  displayNote,
+  isValidNoteInput,
+  NOTES,
+  pickAccidentalName,
+} from '../../music-data.ts';
 import {
   MODE_ABOUT_DESCRIPTIONS,
   MODE_BEFORE_AFTER,
@@ -83,14 +88,21 @@ export function createFretboardDef(
 
     allItems,
 
-    getQuestion: (itemId) => getQuestion(instrument, itemId),
+    getQuestion: (itemId, ctx) => getQuestion(instrument, itemId, ctx),
     getPromptText: () => 'Name this note',
     quizInstruction: 'What note is this?',
     answer: {
       getExpectedValue: (q) => q.currentNote,
       comparison: 'note-enharmonic',
+      getDisplayAnswer: (q) => {
+        const note = NOTES.find((n) => n.name === q.currentNote);
+        return displayNote(
+          pickAccidentalName(note?.displayName ?? q.currentNote, q.useFlats),
+        );
+      },
     },
     validateInput: (_q, input) => isValidNoteInput(input),
+    getUseFlats: (q) => q.useFlats,
 
     buttons: { kind: 'note', columns: 6 },
 

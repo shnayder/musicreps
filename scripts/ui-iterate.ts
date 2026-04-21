@@ -199,6 +199,15 @@ async function captureStates(
         await page.waitForTimeout(200);
       }
 
+      // Extra clicks (e.g. enter notes, open modal) scoped to mode container
+      if (entry.clickSelectors) {
+        for (const selector of entry.clickSelectors) {
+          const scoped = `#mode-${entry.modeId} ${selector}`;
+          await page.click(scoped);
+          await page.waitForTimeout(200);
+        }
+      }
+
       const filePath = path.join(outDir, `${entry.name}.png`);
       await page.screenshot({ path: filePath, type: 'png' });
       console.log(`  ${entry.name}.png`);

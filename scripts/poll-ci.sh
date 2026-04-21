@@ -8,7 +8,14 @@
 
 set -euo pipefail
 
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
+# Use the remote tracking branch name if available (worktrees may push
+# the local branch under a different remote name).
+_REMOTE_REF=$(git rev-parse --abbrev-ref '@{upstream}' 2>/dev/null || true)
+if [ -n "$_REMOTE_REF" ]; then
+  BRANCH="${_REMOTE_REF#*/}"  # strip remote prefix (e.g. origin/)
+else
+  BRANCH=$(git rev-parse --abbrev-ref HEAD)
+fi
 PR_NUMBER=""
 MAX_ATTEMPTS=20
 INTERVAL=30

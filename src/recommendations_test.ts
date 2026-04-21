@@ -67,16 +67,11 @@ function mockSelector(
       groupIds: string[],
       _getItemIds: (id: string) => string[],
     ) {
-      const results = groupIds.map((id) => {
+      return groupIds.map((id) => {
         const d = dataByIndex[id] ??
           { workingCount: 0, unseenCount: 0, automaticCount: 0, totalCount: 0 };
         return { groupId: id, ...d };
       });
-      results.sort((a, b) =>
-        (b.workingCount + b.unseenCount) - (a.workingCount + a.unseenCount) ||
-        a.groupId.localeCompare(b.groupId)
-      );
-      return results;
     },
     getLevelSpeed(
       itemIds: string[],
@@ -375,7 +370,7 @@ describe('computeLevelRecs', () => {
     assert.equal(recs[0].type, 'review');
   });
 
-  it('review comes before practice', () => {
+  it('review and practice interleaved by level order, automate after', () => {
     const solidNoData: LevelStatus = {
       groupId: '2',
       speed: 0.75,
@@ -389,8 +384,26 @@ describe('computeLevelRecs', () => {
       solidNoData, // automate (Solid, no stability data)
     ]);
     assert.equal(recs[0].type, 'review');
+    assert.equal(recs[0].groupId, '0');
     assert.equal(recs[1].type, 'practice');
+    assert.equal(recs[1].groupId, '1');
     assert.equal(recs[2].type, 'automate');
+    assert.equal(recs[2].groupId, '2');
+  });
+
+  it('practice before review when earlier level needs practice', () => {
+    // Bug #83: L1 learning should come before L3 review.
+    const recs = computeLevelRecs([
+      status('0', 'learning'), // practice (L1)
+      status('1', 'learning'), // practice (L2)
+      status('2', 'solid', true), // review (L3)
+    ]);
+    assert.equal(recs[0].type, 'practice');
+    assert.equal(recs[0].groupId, '0');
+    assert.equal(recs[1].type, 'practice');
+    assert.equal(recs[1].groupId, '1');
+    assert.equal(recs[2].type, 'review');
+    assert.equal(recs[2].groupId, '2');
   });
 });
 

@@ -22,6 +22,7 @@ export function initialEngineState(): EngineState {
     roundTimerExpired: false,
     roundResponseTimes: [],
     roundDurationMs: 0,
+    roundUseFlats: false,
 
     // Progress tracking
     masteredCount: 0,
@@ -49,8 +50,12 @@ export function initialEngineState(): EngineState {
 /**
  * Transition: start the quiz (first round).
  * Caller should invoke mode.onStart() separately, then call engineNextQuestion.
+ * `rng` is injectable for deterministic tests; defaults to Math.random.
  */
-export function engineStart(state: EngineState): EngineState {
+export function engineStart(
+  state: EngineState,
+  rng: () => number = Math.random,
+): EngineState {
   return {
     ...state,
     phase: 'active',
@@ -63,6 +68,7 @@ export function engineStart(state: EngineState): EngineState {
     roundCorrect: 0,
     roundTimerExpired: false,
     roundResponseTimes: [],
+    roundUseFlats: rng() < 0.5,
   };
 }
 
@@ -101,7 +107,9 @@ export function engineSubmitAnswer(
     ...state,
     answered: true,
     answersEnabled: false,
-    feedbackText: isCorrect ? 'Correct!' : 'Incorrect \u2014 ' + correctAnswer,
+    feedbackText: isCorrect
+      ? 'Correct \u2014 ' + correctAnswer
+      : 'Incorrect \u2014 ' + correctAnswer,
     feedbackClass: isCorrect ? 'feedback correct' : 'feedback incorrect',
     feedbackCorrect: isCorrect,
     feedbackDisplayAnswer: correctAnswer,
@@ -146,8 +154,12 @@ export function engineRoundComplete(state: EngineState): EngineState {
 /**
  * Transition: continue to the next round.
  * Resets round counters but preserves session totals and quiz state.
+ * `rng` is injectable for deterministic tests; defaults to Math.random.
  */
-export function engineContinueRound(state: EngineState): EngineState {
+export function engineContinueRound(
+  state: EngineState,
+  rng: () => number = Math.random,
+): EngineState {
   return {
     ...state,
     phase: 'active',
@@ -156,6 +168,7 @@ export function engineContinueRound(state: EngineState): EngineState {
     roundCorrect: 0,
     roundTimerExpired: false,
     roundResponseTimes: [],
+    roundUseFlats: rng() < 0.5,
   };
 }
 
@@ -176,15 +189,16 @@ export function engineUpdateIdleMessage(
   needsReview: boolean,
 ): EngineState {
   if (state.phase !== 'idle') return state;
+  // Review takes priority: stale items need attention even if all are fast.
+  if (needsReview) {
+    return { ...state, masteryText: 'Time to review?', showMastery: true };
+  }
   if (allMastered) {
     return {
       ...state,
       masteryText: 'Looks like you\u2019ve got this!',
       showMastery: true,
     };
-  }
-  if (needsReview) {
-    return { ...state, masteryText: 'Time to review?', showMastery: true };
   }
   return { ...state, masteryText: '', showMastery: false };
 }

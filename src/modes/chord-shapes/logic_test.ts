@@ -14,7 +14,13 @@ import {
   QUALITY_GROUPS,
   voicingSummary,
 } from './logic.ts';
-import { GUITAR_VOICINGS, UKULELE_VOICINGS } from './voicings.ts';
+import {
+  type ChordQuality,
+  type ChordVoicing,
+  GUITAR_VOICINGS,
+  UKULELE_VOICINGS,
+} from './voicings.ts';
+import { CHORD_TYPES, GUITAR, UKULELE } from '../../music-data.ts';
 
 // ---------------------------------------------------------------------------
 // Position helpers
@@ -110,6 +116,16 @@ describe('parseItem', () => {
     assert.deepEqual(q.mutedStrings, []);
   });
 
+  it('parses guitar A:m7', () => {
+    const q = parseItem('guitar', 'A:m7');
+    assert.equal(q.displayName, 'Am7');
+  });
+
+  it('parses guitar D:sus4', () => {
+    const q = parseItem('guitar', 'D:sus4');
+    assert.equal(q.displayName, 'Dsus4');
+  });
+
   it('throws for unknown voicing', () => {
     assert.throws(() => parseItem('guitar', 'Z:major'));
   });
@@ -197,6 +213,20 @@ describe('chordDisplayName', () => {
     )!;
     assert.equal(chordDisplayName(v), 'E7');
   });
+
+  it('m7 chord shows root + m7', () => {
+    const v = GUITAR_VOICINGS.find((v) =>
+      v.root === 'A' && v.quality === 'm7'
+    )!;
+    assert.equal(chordDisplayName(v), 'Am7');
+  });
+
+  it('sus4 chord shows root + sus4', () => {
+    const v = GUITAR_VOICINGS.find((v) =>
+      v.root === 'D' && v.quality === 'sus4'
+    )!;
+    assert.equal(chordDisplayName(v), 'Dsus4');
+  });
 });
 
 describe('voicingSummary', () => {
@@ -217,28 +247,149 @@ describe('voicingSummary', () => {
 
 describe('voicing data integrity', () => {
   it('no two voicings within guitar share identical fingerings', () => {
-    const seen = new Set<string>();
+    const seen = new Map<string, string>();
     for (const v of GUITAR_VOICINGS) {
       const key = JSON.stringify(v.strings);
+      const label = `${v.root}${v.symbol}`;
       assert.ok(
         !seen.has(key),
-        `Duplicate guitar fingering: ${v.root}${v.symbol}`,
+        `Duplicate guitar fingering: ${label} matches ${seen.get(key)}`,
       );
-      seen.add(key);
+      seen.set(key, label);
     }
   });
 
   it('no two voicings within ukulele share identical fingerings', () => {
-    const seen = new Set<string>();
+    const seen = new Map<string, string>();
     for (const v of UKULELE_VOICINGS) {
       const key = JSON.stringify(v.strings);
+      const label = `${v.root}${v.symbol}`;
       assert.ok(
         !seen.has(key),
-        `Duplicate ukulele fingering: ${v.root}${v.symbol}`,
+        `Duplicate ukulele fingering: ${label} matches ${seen.get(key)}`,
       );
-      seen.add(key);
+      seen.set(key, label);
     }
   });
+});
+
+// ---------------------------------------------------------------------------
+// Harmonic correctness — every played fret maps to a pitch class that
+// belongs to the chord's theoretical spelling (and every chord tone
+// appears at least once).
+// ---------------------------------------------------------------------------
+
+// Map our internal ChordQuality → the `name` used in CHORD_TYPES (music-data).
+const QUALITY_TO_CHORD_TYPE_NAME: Record<ChordQuality, string> = {
+  major: 'major',
+  minor: 'minor',
+  dom7: 'dom7',
+  m7: 'min7',
+  sus2: 'sus2',
+  sus4: 'sus4',
+};
+
+function pitchClassOfNoteName(name: string): number {
+  // e.g., "C" → 0, "C#" → 1, "Db" → 1, "Bb" → 10
+  const letter = name[0];
+  const naturals: Record<string, number> = {
+    C: 0,
+    D: 2,
+    E: 4,
+    F: 5,
+    G: 7,
+    A: 9,
+    B: 11,
+  };
+  let pc = naturals[letter];
+  for (const ch of name.slice(1)) {
+    if (ch === '#') pc += 1;
+    else if (ch === 'b') pc -= 1;
+  }
+  return ((pc % 12) + 12) % 12;
+}
+
+function chordTypeFor(v: ChordVoicing) {
+  const typeName = QUALITY_TO_CHORD_TYPE_NAME[v.quality];
+  const chordType = CHORD_TYPES.find((t) => t.name === typeName);
+  assert.ok(chordType, `Unknown chord type for quality ${v.quality}`);
+  return chordType;
+}
+
+function expectedPitchClasses(v: ChordVoicing): Set<number> {
+  const chordType = chordTypeFor(v);
+  const rootPc = pitchClassOfNoteName(v.root);
+  return new Set(chordType.intervals.map((iv) => (rootPc + iv) % 12));
+}
+
+/**
+ * Chord tones that must appear in a playable voicing. The perfect 5th
+ * (interval 7) is the one tone conventionally allowed to be omitted
+ * in guitar/ukulele voicings — it's the least identity-defining of
+ * the triad tones. Our test requires the root, the 3rd (or sus
+ * substitute), and the 7th (for 7th chords) to all be present.
+ */
+function requiredPitchClasses(v: ChordVoicing): Set<number> {
+  const chordType = chordTypeFor(v);
+  const rootPc = pitchClassOfNoteName(v.root);
+  return new Set(
+    chordType.intervals
+      .filter((iv) => iv !== 7)
+      .map((iv) => (rootPc + iv) % 12),
+  );
+}
+
+function playedPitchClasses(
+  instrument: 'guitar' | 'ukulele',
+  v: ChordVoicing,
+): Set<number> {
+  const offsets = instrument === 'guitar'
+    ? GUITAR.stringOffsets
+    : UKULELE.stringOffsets;
+  const pcs = new Set<number>();
+  for (let s = 0; s < v.strings.length; s++) {
+    const fret = v.strings[s];
+    if (fret === 'x') continue;
+    pcs.add((offsets[s] + fret) % 12);
+  }
+  return pcs;
+}
+
+describe('harmonic correctness', () => {
+  for (
+    const [instrument, voicings] of [
+      ['guitar', GUITAR_VOICINGS] as const,
+      ['ukulele', UKULELE_VOICINGS] as const,
+    ]
+  ) {
+    for (const v of voicings) {
+      const label = `${v.root}${v.symbol || '(maj)'} on ${instrument}`;
+      it(`${label} — played notes match chord spelling`, () => {
+        const expected = expectedPitchClasses(v);
+        const required = requiredPitchClasses(v);
+        const played = playedPitchClasses(instrument, v);
+
+        // Every played note must be a chord tone (catches typos).
+        for (const pc of played) {
+          assert.ok(
+            expected.has(pc),
+            `${label}: played pitch class ${pc} not in expected ` +
+              `${[...expected].sort((a, b) => a - b).join(',')}`,
+          );
+        }
+
+        // Root, 3rd (or sus substitute), and 7th must all appear.
+        // The 5th is allowed to be omitted (standard voicing practice).
+        for (const pc of required) {
+          assert.ok(
+            played.has(pc),
+            `${label}: missing required chord tone ${pc} (played: ` +
+              `${[...played].sort((a, b) => a - b).join(',')})`,
+          );
+        }
+      });
+    }
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -246,35 +397,78 @@ describe('voicing data integrity', () => {
 // ---------------------------------------------------------------------------
 
 describe('groups', () => {
-  it('has 3 quality groups', () => {
-    assert.equal(QUALITY_GROUPS.length, 3);
+  it('has 5 quality groups (major, minor, dom7, m7, sus)', () => {
+    assert.equal(QUALITY_GROUPS.length, 5);
+    const ids = QUALITY_GROUPS.map((g) => g.id);
+    assert.deepEqual(ids, ['major', 'minor', 'dom7', 'm7', 'sus']);
   });
 
   it('guitar group items cover all voicings', () => {
     const all = new Set(allItems('guitar'));
-    const grouped = new Set([
-      ...getItemIdsForGroup('guitar', 'major'),
-      ...getItemIdsForGroup('guitar', 'minor'),
-      ...getItemIdsForGroup('guitar', 'dom7'),
-    ]);
+    const grouped = new Set<string>();
+    for (const g of QUALITY_GROUPS) {
+      for (const id of getItemIdsForGroup('guitar', g.id)) grouped.add(id);
+    }
     assert.deepEqual(grouped, all);
   });
 
   it('ukulele group items cover all voicings', () => {
     const all = new Set(allItems('ukulele'));
-    const grouped = new Set([
-      ...getItemIdsForGroup('ukulele', 'major'),
-      ...getItemIdsForGroup('ukulele', 'minor'),
-      ...getItemIdsForGroup('ukulele', 'dom7'),
-    ]);
+    const grouped = new Set<string>();
+    for (const g of QUALITY_GROUPS) {
+      for (const id of getItemIdsForGroup('ukulele', g.id)) grouped.add(id);
+    }
     assert.deepEqual(grouped, all);
+  });
+
+  it('every voicing belongs to exactly one group', () => {
+    for (
+      const [instrument, voicings] of [
+        ['guitar', GUITAR_VOICINGS] as const,
+        ['ukulele', UKULELE_VOICINGS] as const,
+      ]
+    ) {
+      for (const v of voicings) {
+        const id = itemId(v);
+        let hits = 0;
+        for (const g of QUALITY_GROUPS) {
+          if (getItemIdsForGroup(instrument, g.id).includes(id)) hits++;
+        }
+        assert.equal(
+          hits,
+          1,
+          `${id} on ${instrument} should belong to exactly one group (got ${hits})`,
+        );
+      }
+    }
+  });
+
+  it('sus group bundles both sus2 and sus4 on guitar', () => {
+    const susItems = getItemIdsForGroup('guitar', 'sus');
+    assert.ok(susItems.includes('D:sus2'));
+    assert.ok(susItems.includes('D:sus4'));
+    assert.ok(susItems.includes('E:sus4'));
+  });
+
+  it('m7 group contains the open m7 voicings on guitar', () => {
+    const m7Items = getItemIdsForGroup('guitar', 'm7');
+    for (const id of ['A:m7', 'E:m7', 'D:m7', 'B:m7']) {
+      assert.ok(m7Items.includes(id), `expected ${id} in m7 group`);
+    }
+  });
+
+  it('m7 group contains the barre m7 voicings on guitar', () => {
+    const m7Items = getItemIdsForGroup('guitar', 'm7');
+    for (const id of ['F:m7', 'G:m7', 'C:m7']) {
+      assert.ok(m7Items.includes(id), `expected ${id} in m7 group`);
+    }
   });
 });
 
 describe('formatGroupLabel', () => {
   it('all groups → "all chords"', () => {
     assert.equal(
-      formatGroupLabel(new Set(['major', 'minor', 'dom7'])),
+      formatGroupLabel(new Set(['major', 'minor', 'dom7', 'm7', 'sus'])),
       'all chords',
     );
   });
@@ -283,9 +477,19 @@ describe('formatGroupLabel', () => {
     assert.equal(formatGroupLabel(new Set(['major'])), 'major');
     assert.equal(formatGroupLabel(new Set(['minor'])), 'minor');
     assert.equal(formatGroupLabel(new Set(['dom7'])), '7th');
+    assert.equal(formatGroupLabel(new Set(['m7'])), 'm7');
+    assert.equal(formatGroupLabel(new Set(['sus'])), 'sus');
   });
 
   it('two groups joined with &', () => {
     assert.equal(formatGroupLabel(new Set(['major', 'dom7'])), 'major & 7th');
+    assert.equal(formatGroupLabel(new Set(['m7', 'sus'])), 'm7 & sus');
+  });
+
+  it('preserves group order regardless of set insertion order', () => {
+    assert.equal(
+      formatGroupLabel(new Set(['sus', 'major', 'm7'])),
+      'major & m7 & sus',
+    );
   });
 });

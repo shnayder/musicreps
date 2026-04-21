@@ -4,7 +4,8 @@
 import {
   displayNote,
   isValidNoteInput,
-  pickAccidentalName,
+  parseSpelledNote,
+  spelledNoteToCanonical,
 } from '../../music-data.ts';
 import {
   MODE_ABOUT_DESCRIPTIONS,
@@ -37,10 +38,15 @@ export const INTERVAL_MATH_DEF: ModeDefinition<Question> = {
   getPromptText: (q) => q.promptText,
   quizInstruction: 'What note?',
   answer: {
-    getExpectedValue: (q) => q.answer.name,
+    getExpectedValue: (q) => q.answerSpelled,
     comparison: 'note-enharmonic',
-    getDisplayAnswer: (q) =>
-      displayNote(pickAccidentalName(q.answer.displayName, q.useFlats)),
+    getDisplayAnswer: (q) => {
+      const display = displayNote(q.answerSpelled);
+      const { accidental } = parseSpelledNote(q.answerSpelled);
+      if (Math.abs(accidental) < 2) return display;
+      return display + ' (= ' +
+        displayNote(spelledNoteToCanonical(q.answerSpelled)) + ')';
+    },
   },
   validateInput: (_q, input) => isValidNoteInput(input),
   getUseFlats: (q) => q.useFlats,

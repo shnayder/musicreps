@@ -146,6 +146,26 @@ describe('getQuestion', () => {
     assert.equal(q.currentFret, 0);
     assert.equal(q.currentNote, 'C');
   });
+
+  it('defaults useFlats to false when no ctx is provided', () => {
+    const q = getQuestion(GUITAR, '5-1');
+    assert.equal(q.useFlats, false);
+  });
+
+  it('propagates ctx.useFlats into the question', () => {
+    const qFlat = getQuestion(GUITAR, '5-1', { useFlats: true });
+    assert.equal(qFlat.useFlats, true);
+    const qSharp = getQuestion(GUITAR, '5-1', { useFlats: false });
+    assert.equal(qSharp.useFlats, false);
+  });
+
+  it('position + note are unaffected by useFlats (ids stay positional)', () => {
+    const qFlat = getQuestion(GUITAR, '5-1', { useFlats: true });
+    const qSharp = getQuestion(GUITAR, '5-1', { useFlats: false });
+    assert.equal(qFlat.currentString, qSharp.currentString);
+    assert.equal(qFlat.currentFret, qSharp.currentFret);
+    assert.equal(qFlat.currentNote, qSharp.currentNote);
+  });
 });
 
 describe('getQuestion expected values', () => {

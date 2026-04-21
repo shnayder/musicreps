@@ -1223,7 +1223,7 @@ describe('createAdaptiveSelector', () => {
     assert.equal(result.seen, 10);
   });
 
-  it('getGroupRecommendations ranks groups by work (working + unseen)', () => {
+  it('getGroupRecommendations preserves input order', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
@@ -1240,15 +1240,15 @@ describe('createAdaptiveSelector', () => {
     );
 
     assert.equal(recs.length, 2);
-    // Group '1' should be first (more unseen items = more work)
-    assert.equal(recs[0].groupId, '1');
-    assert.equal(recs[0].unseenCount, 2);
+    // Preserves input order: '0' first, '1' second.
+    assert.equal(recs[0].groupId, '0');
+    assert.equal(recs[0].unseenCount, 0);
     assert.equal(recs[0].workingCount, 0);
-    assert.equal(recs[0].automaticCount, 0);
-    assert.equal(recs[1].groupId, '0');
-    assert.equal(recs[1].unseenCount, 0);
+    assert.equal(recs[0].automaticCount, 2); // fast + just answered = automatic
+    assert.equal(recs[1].groupId, '1');
+    assert.equal(recs[1].unseenCount, 2);
     assert.equal(recs[1].workingCount, 0);
-    assert.equal(recs[1].automaticCount, 2); // fast + just answered = automatic
+    assert.equal(recs[1].automaticCount, 0);
   });
 
   it('getGroupRecommendations separates unseen from working items', () => {
@@ -1309,19 +1309,17 @@ describe('createAdaptiveSelector', () => {
     assert.equal(recs[0].automaticCount, 0);
   });
 
-  it('getGroupRecommendations breaks ties deterministically by groupId order', () => {
+  it('getGroupRecommendations preserves input order regardless of work counts', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
-    // Three groups with identical work counts (all unseen, 1 item each).
-    // Without tie-breaking, order could be arbitrary. With tie-breaking,
-    // equal-work groups sort by groupId lexicographically.
+    // Three groups with identical work counts, non-alphabetical input order.
+    // Output preserves input order — no sorting applied.
     const recs = selector.getGroupRecommendations(
       ['g5', 'g2', 'g8'],
       (id) => [`${id}-0`],
     );
-    // All have work=1 (1 unseen). Tie-break → sorted by groupId: g2, g5, g8.
-    assert.equal(recs[0].groupId, 'g2');
-    assert.equal(recs[1].groupId, 'g5');
+    assert.equal(recs[0].groupId, 'g5');
+    assert.equal(recs[1].groupId, 'g2');
     assert.equal(recs[2].groupId, 'g8');
   });
 

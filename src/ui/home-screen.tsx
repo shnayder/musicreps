@@ -11,6 +11,12 @@ import { SkillIcon } from './icons.tsx';
 import { Pill } from './pill.tsx';
 import type { SettingsController } from '../types.ts';
 import { storage } from '../storage.ts';
+import {
+  buildExport,
+  detectBackend,
+  downloadExport,
+  exportFilename,
+} from '../export-data.ts';
 import type { AppConfig } from '../app-config.ts';
 import {
   type ModeProgress,
@@ -115,22 +121,30 @@ export function TrackPill(
 // ---------------------------------------------------------------------------
 
 export function SkillCardHeader(
-  { modeId, trackLabel }: {
+  { modeId, trackLabel, progress }: {
     modeId: string;
     trackLabel?: string;
+    progress?: ModeProgress;
   },
 ) {
   const name = MODE_NAMES[modeId] || modeId;
   const desc = MODE_DESCRIPTIONS[modeId] || '';
   return (
-    <span class='skill-card-header'>
+    <Bar gap='group' class='skill-card-header'>
       <SkillIcon modeId={modeId} />
-      <span class='skill-card-header-text'>
-        {trackLabel && <TrackPill label={trackLabel} />}
-        <Text role='heading-section' as='span'>{name}</Text>
-        <Text role='body-secondary' as='span'>{desc}</Text>
-      </span>
-    </span>
+      <Stack gap='group' class='skill-card-content'>
+        <Stack gap='micro' class='skill-card-title-block'>
+          <Text role='heading-card' as='span'>{name}</Text>
+          {trackLabel && <TrackPill label={trackLabel} />}
+          {!trackLabel && desc && (
+            <Text role='body-secondary' as='span'>{desc}</Text>
+          )}
+        </Stack>
+        {progress && progress.segments.length > 0 && (
+          <GroupProgressBar segments={progress.segments} />
+        )}
+      </Stack>
+    </Bar>
   );
 }
 
@@ -189,12 +203,7 @@ export function SkillCard(
       >
         {isStarred ? '\u2605' : '\u2606'}
       </button>
-      <SkillCardHeader modeId={modeId} />
-      {progress && progress.segments.length > 0 && (
-        <div class='skill-card-progress'>
-          <GroupProgressBar segments={progress.segments} />
-        </div>
-      )}
+      <SkillCardHeader modeId={modeId} progress={progress} />
     </div>
   );
 }
@@ -257,11 +266,13 @@ function ActiveSkillCard(
         >
           {'\u2605'}
         </button>
-        <span class='skill-card-header'>
+        <Bar gap='group' class='skill-card-header'>
           <SkillIcon modeId={modeId} />
-          <span class='skill-card-header-text'>
-            <Text role='heading-section' as='span'>{name}</Text>
-            <TrackPill label={trackLabel} />
+          <Stack gap='group' class='skill-card-content'>
+            <Stack gap='micro' class='skill-card-title-block'>
+              <Text role='heading-card' as='span'>{name}</Text>
+              <TrackPill label={trackLabel} />
+            </Stack>
             {hasRec && (
               <span class='skill-rec-hint'>
                 <strong>{rec!.cueLabel}</strong>
@@ -271,20 +282,18 @@ function ActiveSkillCard(
                     : ` \u2014 ${rec!.detail}`)}
               </span>
             )}
-          </span>
-        </span>
-        {progress &&
-          (progress.segments.length > 0 ||
-            progress.activeGroupCount > 0) &&
-          (
-            <div class='skill-card-progress'>
-              <GroupProgressBar
-                segments={progress.segments.length > 0
-                  ? progress.segments
-                  : notStartedSegments(progress.activeGroupCount)}
-              />
-            </div>
-          )}
+            {progress &&
+              (progress.segments.length > 0 ||
+                progress.activeGroupCount > 0) &&
+              (
+                <GroupProgressBar
+                  segments={progress.segments.length > 0
+                    ? progress.segments
+                    : notStartedSegments(progress.activeGroupCount)}
+                />
+              )}
+          </Stack>
+        </Bar>
       </div>
     </div>
   );
@@ -553,40 +562,62 @@ export function SettingsPanel(
 // DevPage — dev stats page (same conditional-render pattern as SettingsPage)
 // ---------------------------------------------------------------------------
 
-function DevPage({ onClose }: { onClose: () => void }) {
+function DevPage(
+  { version, onClose }: { version: string; onClose: () => void },
+) {
   const [data] = useState<DevPanelData>(getDevPanelData);
+
+  const handleExport = useCallback(() => {
+    const backend = detectBackend();
+    const now = new Date();
+    const payload = buildExport({ appVersion: version, backend, now });
+    downloadExport(payload, exportFilename(version, now));
+  }, [version]);
+
   return (
-    <Stack gap='component' class='settings-page'>
-      <div class='settings-page-header'>
-        <CloseButton ariaLabel='Close' onClick={onClose} />
-        <Text role='heading-page' as='h1' class='page-heading'>Dev</Text>
-      </div>
+    <ScreenLayout>
+      <LayoutMain>
+        <Stack gap='component' class='settings-page'>
+          <div class='settings-page-header'>
+            <CloseButton ariaLabel='Close' onClick={onClose} />
+            <Text role='heading-page' as='h1' class='page-heading'>Dev</Text>
+          </div>
 
-      <DevSection title='Global'>
-        <DevStatRow label='Total reps' value={data.totalReps} />
-        <DevStatRow label='Days active' value={data.daysActive} />
-      </DevSection>
+          <DevSection title='Global'>
+            <DevStatRow label='Total reps' value={data.totalReps} />
+            <DevStatRow label='Days active' value={data.daysActive} />
+          </DevSection>
 
-      <DevSection title='Per Mode'>
-        <DevTable
-          headers={['Mode', 'Reps', 'Items']}
-          rows={data.modeEfforts.map((m) => [
-            MODE_NAMES[m.id] || m.id,
-            String(m.totalReps),
-            `${m.itemsStarted}/${m.totalItems}`,
-          ])}
-        />
-      </DevSection>
+          <DevSection title='Per Mode'>
+            <DevTable
+              headers={['Mode', 'Reps', 'Items']}
+              rows={data.modeEfforts.map((m) => [
+                MODE_NAMES[m.id] || m.id,
+                String(m.totalReps),
+                `${m.itemsStarted}/${m.totalItems}`,
+              ])}
+            />
+          </DevSection>
 
-      {data.recentDays.length > 0 && (
-        <DevSection title='Recent Days'>
-          <DevTable
-            headers={['Date', 'Reps']}
-            rows={data.recentDays.map((d) => [d.date, String(d.count)])}
-          />
-        </DevSection>
-      )}
-    </Stack>
+          {data.recentDays.length > 0 && (
+            <DevSection title='Recent Days'>
+              <DevTable
+                headers={['Date', 'Reps']}
+                rows={data.recentDays.map((d) => [d.date, String(d.count)])}
+              />
+            </DevSection>
+          )}
+
+          <DevSection title='Export'>
+            <div class='settings-link-list'>
+              <button type='button' class='text-link' onClick={handleExport}>
+                Export data
+              </button>
+            </div>
+          </DevSection>
+        </Stack>
+      </LayoutMain>
+    </ScreenLayout>
   );
 }
 
@@ -956,7 +987,7 @@ export function HomeScreen(
   });
 
   if (showDev) {
-    return <DevPage onClose={() => setShowDev(false)} />;
+    return <DevPage version={version} onClose={() => setShowDev(false)} />;
   }
 
   return (

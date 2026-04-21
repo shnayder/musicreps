@@ -2,6 +2,7 @@
 // Adding a mode to mode-definitions.ts automatically includes it here.
 
 import type { ScopeDef } from './declarative/types.ts';
+import type { MotorTaskType } from './types.ts';
 import { ALL_MODE_DEFINITIONS } from './mode-definitions.ts';
 
 // ---------------------------------------------------------------------------
@@ -11,6 +12,10 @@ import { ALL_MODE_DEFINITIONS } from './mode-definitions.ts';
 export type ModeProgressEntry = {
   modeId: string;
   namespace: string;
+  /** Motor task type for this mode's baseline calibration (default 'note-button'). */
+  motorTaskType?: MotorTaskType;
+  /** Expected sub-response count per item (for multi-response modes). */
+  getResponseCount?: (itemId: string) => number;
   groups: Array<{
     id: string;
     label: string | (() => string);
@@ -25,14 +30,22 @@ export type ModeProgressEntry = {
 // ---------------------------------------------------------------------------
 
 /** Build a manifest entry from any ModeDefinition. */
-// deno-lint-ignore no-explicit-any
 function entryFromDef(
-  def: { id: string; namespace: string; allItems: string[]; scope: ScopeDef },
+  def: {
+    id: string;
+    namespace: string;
+    allItems: string[];
+    scope: ScopeDef;
+    motorTaskType?: MotorTaskType;
+    getExpectedResponseCount?: (itemId: string) => number;
+  },
 ): ModeProgressEntry {
   const scope = def.scope;
   return {
     modeId: def.id,
     namespace: def.namespace,
+    motorTaskType: def.motorTaskType,
+    getResponseCount: def.getExpectedResponseCount,
     groups: scope.kind === 'groups'
       ? scope.groups.map((g) => ({
         id: g.id,

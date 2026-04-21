@@ -7,8 +7,8 @@
 //   1. Classify groups into started (has any seen items) vs unstarted.
 //   2. If nothing started, recommend the first unstarted group (fresh start).
 //   3. For each started level, compute speed/freshness status (P10).
-//   4. Build per-level recommendations in priority order:
-//      review (stale) → practice (slow) → automate (learned, not automatic).
+//   4. Build per-level recommendations:
+//      review + practice in level order, then automate.
 //   5. Check expansion gate: all started levels ≥ Solid (P10 speed ≥ 0.7)
 //      and none need review (P10 freshness ≥ 0.5). If open and not throttled,
 //      insert an expand rec after review + practice, before automate.
@@ -214,29 +214,28 @@ export function classifyLevelStatus(
 /**
  * Build per-level recommendations in priority order.
  * Does NOT include expand recs — those are added by the gate check.
+ *
+ * Statuses are expected in level order (from the mode definition).
+ * Review and practice are a single tier — both emitted in level order.
+ * Automate recs follow as a separate lower-priority tier.
  */
 export function computeLevelRecs(
   statuses: LevelStatus[],
 ): LevelRecommendation[] {
   const recs: LevelRecommendation[] = [];
 
-  // Priority 1: review — Solid+ levels where freshness is at or below
-  // threshold. reviewInHours === 0 means avgFreshness <= FRESHNESS_THRESHOLD.
-  // Levels with reviewInHours > 0 aren't due yet — they get a UI pill
-  // ("Review in Xh") but no active recommendation to review now.
+  // Tier 1: review + practice, in level order.
+  // Each status gets at most one rec: review if solid+ and actually stale
+  // (reviewInHours === 0, meaning avgFreshness <= FRESHNESS_THRESHOLD),
+  // practice if below solid. Levels with reviewInHours > 0 aren't due
+  // yet — they get a UI pill ("Review in Xh") but no active rec.
   for (const s of statuses) {
     if (
       s.reviewStatus === 'soon' && s.reviewInHours === 0 &&
       (s.speedLabel === 'solid' || s.speedLabel === 'automatic')
     ) {
       recs.push({ groupId: s.groupId, type: 'review' });
-    }
-  }
-
-  // Priority 2: practice — any level not yet Solid.
-  // Slow levels always need practice regardless of freshness.
-  for (const s of statuses) {
-    if (
+    } else if (
       s.speedLabel === 'starting' || s.speedLabel === 'hesitant' ||
       s.speedLabel === 'learning'
     ) {
@@ -244,7 +243,7 @@ export function computeLevelRecs(
     }
   }
 
-  // Priority 3: automate — Solid levels with no stability data yet.
+  // Tier 2: automate — Solid levels with no stability data yet.
   // Solid + 'scheduled' = practiced enough, no rec needed.
   // Solid + 'soon' = gets review (above), no automate.
   for (const s of statuses) {

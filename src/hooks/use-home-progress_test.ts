@@ -11,7 +11,7 @@ import {
   MODE_PROGRESS_MANIFEST,
 } from '../mode-progress-manifest.ts';
 import { createMemoryStorage } from '../adaptive.ts';
-import type { StorageAdapter } from '../types.ts';
+import type { MotorTaskType, StorageAdapter } from '../types.ts';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -197,6 +197,84 @@ describe('computeProgressForMode', () => {
     // Both should compute without error
     assert.ok(withBaseline.segments.length > 0);
     assert.ok(withoutBaseline.segments.length > 0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BaselineReader is called per entry's motorTaskType
+// ---------------------------------------------------------------------------
+
+describe('computeAllProgress baseline resolution', () => {
+  it("calls BaselineReader with each mode's motorTaskType", () => {
+    const seen: MotorTaskType[] = [];
+    const reader = (taskType: MotorTaskType) => {
+      seen.push(taskType);
+      return null;
+    };
+    computeAllProgress(emptyStorageFactory(), reader);
+    // Modes with non-default task types must be looked up correctly.
+    assert.ok(
+      seen.includes('fretboard-tap'),
+      `expected fretboard-tap lookup, got: ${seen.join(', ')}`,
+    );
+    assert.ok(
+      seen.includes('chord-sequence'),
+      `expected chord-sequence lookup, got: ${seen.join(', ')}`,
+    );
+    // Default 'note-button' is also looked up for modes without an override.
+    assert.ok(
+      seen.includes('note-button'),
+      `expected note-button lookup, got: ${seen.join(', ')}`,
+    );
+    assert.equal(seen.length, MODE_PROGRESS_MANIFEST.length);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Response count affects speed/colors for multi-response modes
+// ---------------------------------------------------------------------------
+
+describe('computeProgressForMode response count', () => {
+  it('multi-response mode uses getResponseCount for speed scaling', () => {
+    // guitarChordShapes has fretboard-tap baseline and multi-response items.
+    // Seed the first group's items with the same EWMA, then verify the
+    // resulting speed score matches when scaled by response count.
+    const entry = getModeProgress('guitarChordShapes')!;
+    const storage = createMemoryStorage();
+    const now = Date.now();
+    const itemIds = entry.groups[0].getItemIds();
+    for (const id of itemIds) {
+      storage.saveStats(id, {
+        recentTimes: [2000, 2100, 2200],
+        ewma: 2100,
+        sampleCount: 10,
+        lastSeen: now - 3600_000,
+        stability: 24,
+        lastCorrectAt: now - 3600_000,
+      });
+    }
+
+    // Confirm the manifest propagates a >1 response count for these items.
+    const rc = entry.getResponseCount!(itemIds[0]);
+    assert.ok(rc > 1, `expected multi-response item, got rc=${rc}`);
+
+    // The color at the same EWMA differs depending on whether the mode's
+    // getResponseCount is applied — this is what previously caused the
+    // home-vs-skill mismatch.
+    const scaled = computeProgressForMode(entry, storage, null);
+    assert.ok(scaled.segments.length > 0);
+
+    // Clone the entry without getResponseCount to simulate the pre-fix path.
+    const unscaledEntry = { ...entry, getResponseCount: undefined };
+    const unscaled = computeProgressForMode(unscaledEntry, storage, null);
+
+    // First segment is the same group (only group 0 seeded), but colors
+    // should differ because one applied response-count scaling.
+    assert.notEqual(
+      scaled.segments[0].color,
+      unscaled.segments[0].color,
+      'response count scaling should change the computed color',
+    );
   });
 });
 

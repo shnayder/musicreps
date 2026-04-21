@@ -11,6 +11,7 @@ export interface KVStorage {
   getItem(key: string): string | null;
   setItem(key: string, value: string): void;
   removeItem(key: string): void;
+  keys(): string[];
 }
 
 // ---------------------------------------------------------------------------
@@ -59,6 +60,20 @@ const webStorage: KVStorage = {
       _fallback.delete(key);
     }
   },
+  keys(): string[] {
+    try {
+      const ls = getLocalStorage();
+      if (!ls) return [..._fallback.keys()];
+      const out: string[] = [];
+      for (let i = 0; i < ls.length; i++) {
+        const k = ls.key(i);
+        if (k !== null) out.push(k);
+      }
+      return out;
+    } catch {
+      return [..._fallback.keys()];
+    }
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -93,6 +108,9 @@ function createNativeStorage(
       cache.delete(key);
       prefs.remove({ key }).catch(() => {});
     },
+    keys(): string[] {
+      return [...cache.keys()];
+    },
   };
 }
 
@@ -107,6 +125,7 @@ export const storage: KVStorage = {
   getItem: (key) => _storage.getItem(key),
   setItem: (key, value) => _storage.setItem(key, value),
   removeItem: (key) => _storage.removeItem(key),
+  keys: () => _storage.keys(),
 };
 
 // ---------------------------------------------------------------------------
@@ -114,7 +133,7 @@ export const storage: KVStorage = {
 // ---------------------------------------------------------------------------
 
 /** Is this a Capacitor native app? */
-function isNative(): boolean {
+export function isNative(): boolean {
   return !!(
     typeof window !== 'undefined' &&
     // deno-lint-ignore no-explicit-any

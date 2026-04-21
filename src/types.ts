@@ -235,6 +235,9 @@ export type EngineState = {
   roundTimerExpired: boolean;
   roundResponseTimes: number[];
   roundDurationMs: number;
+  /** Randomized per round: when true, modes that honor this flag display
+   *  accidentals using flat spellings (e.g., Bb) instead of sharps (A#). */
+  roundUseFlats: boolean;
 
   masteredCount: number;
   totalEnabledCount: number;

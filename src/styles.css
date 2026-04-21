@@ -39,7 +39,7 @@
   --for-hsl-previews-in-vscode2: hsl(32, 95%, 44%); /* secondary: #D97706 */
 
   /* Anchor hues — the main knobs for color exploration */
-  --hue-neutral: 45; /* warm cream (was 240 cool blue-gray) */
+  --hue-neutral: 67; /* was 45 warm cream, trying 67; originally 240 cool blue-gray */
   --hue-brand: 147; /* forest green (was 123) */
   --hue-success: 147; /* correct-answer feedback (split from brand) */
   --hue-error: 4;
@@ -71,6 +71,8 @@
   /* Brand scale — forest green, anchored on #2D4C3B */
   --brand-100: hsl(var(--hue-brand), 25%, 92%);
   --brand-200: hsl(var(--hue-brand), 35%, 85%);
+  --brand-400: hsl(var(--hue-brand), 30%, 55%);
+  --brand-500: hsl(var(--hue-brand), 30%, 40%);
   --brand-600: #2d4c3b;
   --brand-800: hsl(var(--hue-brand), 30%, 16%);
 
@@ -105,7 +107,7 @@
      ================================================================ */
 
   /* Brand */
-  --color-brand: var(--brand-600);
+  --color-brand: var(--brand-500);
   --color-brand-dark: var(--brand-800);
   --color-brand-bg: var(--brand-200);
   /* Success (correct answers — can diverge from brand) */
@@ -138,13 +140,14 @@
   --color-highlight: var(--notice-600);
   /* UI accents — unified with brand (one accent, not five) */
   --color-accent: var(--brand-600);
-  --color-accent-muted: hsl(var(--hue-brand), 30%, 55%);
+  --color-accent-muted: var(--brand-400);
   --color-toggle-active: var(--color-brand);
   /* Tertiary accent (warm sienna) */
   --color-tertiary: #a0522d;
   /* Text */
   --color-text: var(--neutral-800);
-  --color-text-muted: var(--neutral-650);
+  /* --color-text-medium: var(--neutral-700); */
+  --color-text-muted: var(--neutral-700);
   --color-text-light: var(--neutral-550);
   /* Surfaces & backgrounds */
   --color-canvas: var(--neutral-50);
@@ -158,7 +161,7 @@
   --color-surface-pressed: var(--neutral-350);
   --color-surface-accent: var(--neutral-250);
   /* Chrome (segmented controls, toolbar fills, nav bars) */
-  --color-chrome: var(--neutral-75);
+  --color-chrome: var(--neutral-150);
   /* Borders */
   --color-border: var(--neutral-550);
   --color-border-light: var(--neutral-400);
@@ -304,22 +307,28 @@
   --type-display-brand-family: var(--font-display);
 
   /* -- Heading: structural hierarchy -- */
-  --type-heading-page-size: var(--text-lg);
+  --type-heading-page-size: var(--text-md);
   --type-heading-page-weight: var(--font-medium);
   --type-heading-page-leading: var(--leading-tight);
-  --type-heading-page-color: var(--color-text-muted);
+  --type-heading-page-color: var(--color-text);
   --type-heading-page-family: var(--font-display);
 
-  --type-heading-section-size: var(--text-lg);
+  --type-heading-section-size: var(--text-md);
   --type-heading-section-weight: var(--font-medium);
   --type-heading-section-leading: var(--leading-tight);
-  --type-heading-section-color: var(--color-tertiary);
+  --type-heading-section-color: var(--color-text);
   --type-heading-section-family: var(--font-display);
+
+  --type-heading-card-size: var(--text-lg);
+  --type-heading-card-weight: var(--font-medium);
+  --type-heading-card-leading: var(--leading-tight);
+  --type-heading-card-color: var(--color-text);
+  --type-heading-card-family: var(--font-display);
 
   --type-heading-subsection-size: var(--text-base);
   --type-heading-subsection-weight: var(--font-semibold);
   --type-heading-subsection-leading: var(--leading-tight);
-  --type-heading-subsection-color: var(--color-text-muted);
+  --type-heading-subsection-color: var(--color-text);
   --type-heading-subsection-family: var(--font-display);
 
   /* -- Body: readable content -- */
@@ -454,7 +463,7 @@ h1, h2, h3, p {
 }
 html {
   font-size: 106.25%; /* 17px base — aligns with Apple HIG body size */
-  background: var(--color-canvas);
+  background: var(--color-chrome);
   overscroll-behavior: none;
 }
 body {
@@ -469,7 +478,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   color: var(--color-text);
-  background: var(--color-canvas);
+  background: var(--color-chrome);
   border-left: 1px solid var(--color-border-lighter);
   border-right: 1px solid var(--color-border-lighter);
   overscroll-behavior: none;
@@ -508,6 +517,7 @@ body {
   isolation: isolate; /* stacking context so watermark z-index:-1 works */
   flex: 1;
   min-height: 0;
+  background: var(--color-canvas);
   padding-left: max(var(--size-content-inset), env(safe-area-inset-left, 0));
   padding-right: max(var(--size-content-inset), env(safe-area-inset-right, 0));
 }
@@ -1019,8 +1029,6 @@ body.native-app .brand-strip {
   font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
   color: var(--color-text);
-  margin-top: var(--gap-group);
-  margin-bottom: var(--gap-related);
 }
 .skill-rec-hint > strong {
   color: var(--color-notice-text);
@@ -1039,22 +1047,11 @@ body.native-app .brand-strip {
 .skill-card {
   position: relative;
 }
-.skill-card-header {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
-}
-.skill-card-header-text {
-  display: flex;
-  flex-direction: column;
+.skill-card-content {
   min-width: 0;
 }
-.skill-card-header-text > .pill {
+.skill-card-title-block > .pill {
   align-self: flex-start;
-  margin-bottom: 1px;
-}
-.active-skill-card .skill-card-header-text > .pill {
-  margin-bottom: 0;
   margin-top: 2px;
 }
 .skill-icon {
@@ -1064,9 +1061,6 @@ body.native-app .brand-strip {
 /* Left border swaps to notice color when card has a recommendation. */
 .skill-card.has-rec {
   border-left-color: var(--color-notice);
-}
-.skill-card-progress {
-  margin-top: var(--gap-related);
 }
 /* --- Text link (reusable) --- */
 .text-link {
@@ -1110,16 +1104,16 @@ body.native-app .brand-strip {
      invisible. */
   font-size: var(--size-close-btn);
   cursor: pointer;
-  padding: 0 var(--gap-related);
+  padding: 0;
   min-width: var(--size-touch-target);
   min-height: var(--size-touch-target);
-  margin-block: calc(
+  margin: calc(
     (
       var(--type-heading-page-size) * var(--type-heading-page-leading)
         - var(--size-touch-target)
     )
       / 2
-  );
+  ) 0;
   color: var(--color-text-light);
   display: flex;
   align-items: center;
@@ -1635,6 +1629,9 @@ body.native-app .brand-strip {
   transition: fill var(--duration-base);
   pointer-events: all;
 }
+.fb-pos.fb-target {
+  fill: var(--color-tap-selected);
+}
 .fb-tap {
   fill: transparent;
   stroke: none;
@@ -1793,6 +1790,25 @@ button {
 /* ==========================================================================
    10. ANSWER BUTTONS
    ========================================================================== */
+
+/* Feedback text shown above the answer grid after the user answers.
+   Shows ✓ answer (correct) or ✗ input  ✓ answer (wrong).
+   Typography and spacing match SequentialSlots for visual consistency. */
+.answer-feedback-text {
+  display: flex;
+  justify-content: center;
+  gap: var(--gap-group);
+  margin: var(--pad-component) auto;
+  max-width: var(--size-answer-grid);
+  font-size: var(--type-quiz-response-size);
+  font-weight: var(--type-quiz-response-weight);
+}
+.answer-feedback-text .correct {
+  color: var(--color-success-text);
+}
+.answer-feedback-text .incorrect {
+  color: var(--color-error-text);
+}
 
 /* --- Unified answer grid (default 4 columns) --- */
 .answer-grid {
@@ -2012,6 +2028,13 @@ button {
   font-weight: var(--type-heading-section-weight);
   line-height: var(--type-heading-section-leading);
   color: var(--type-heading-section-color);
+}
+.text-heading-card {
+  font-family: var(--type-heading-card-family);
+  font-size: var(--type-heading-card-size);
+  font-weight: var(--type-heading-card-weight);
+  line-height: var(--type-heading-card-leading);
+  color: var(--type-heading-card-color);
 }
 .text-heading-subsection {
   font-family: var(--type-heading-subsection-family);
@@ -2802,7 +2825,8 @@ body.native-sim #app {
   }
 
   .next-btn,
-  .start-btn {
+  .start-btn,
+  .feedback-notice {
     margin: var(--gap-group) auto var(--gap-group);
   }
 
