@@ -67,7 +67,7 @@
   --for-hsl-previews-in-vscode2: hsl(32, 95%, 44%); /* secondary: #D97706 */
 
   /* Anchor hues — the main knobs for color exploration */
-  --hue-neutral: 45; /* warm cream (was 240 cool blue-gray) */
+  --hue-neutral: 67; /* was 45 warm cream, trying 67; originally 240 cool blue-gray */
   --hue-brand: 147; /* forest green (was 123) */
   --hue-success: 147; /* correct-answer feedback (split from brand) */
   --hue-error: 4;
@@ -99,6 +99,8 @@
   /* Brand scale — forest green, anchored on #2D4C3B */
   --brand-100: hsl(var(--hue-brand), 25%, 92%);
   --brand-200: hsl(var(--hue-brand), 35%, 85%);
+  --brand-400: hsl(var(--hue-brand), 30%, 55%);
+  --brand-500: hsl(var(--hue-brand), 30%, 40%);
   --brand-600: #2d4c3b;
   --brand-800: hsl(var(--hue-brand), 30%, 16%);
 
@@ -133,7 +135,7 @@
      ================================================================ */
 
   /* Brand */
-  --color-brand: var(--brand-600);
+  --color-brand: var(--brand-500);
   --color-brand-dark: var(--brand-800);
   --color-brand-bg: var(--brand-200);
   /* Success (correct answers — can diverge from brand) */
@@ -166,13 +168,14 @@
   --color-highlight: var(--notice-600);
   /* UI accents — unified with brand (one accent, not five) */
   --color-accent: var(--brand-600);
-  --color-accent-muted: hsl(var(--hue-brand), 30%, 55%);
+  --color-accent-muted: var(--brand-400);
   --color-toggle-active: var(--color-brand);
   /* Tertiary accent (warm sienna) */
   --color-tertiary: #a0522d;
   /* Text */
   --color-text: var(--neutral-800);
-  --color-text-muted: var(--neutral-650);
+  /* --color-text-medium: var(--neutral-700); */
+  --color-text-muted: var(--neutral-700);
   --color-text-light: var(--neutral-550);
   /* Surfaces & backgrounds */
   --color-canvas: var(--neutral-50);
@@ -186,7 +189,7 @@
   --color-surface-pressed: var(--neutral-350);
   --color-surface-accent: var(--neutral-250);
   /* Chrome (segmented controls, toolbar fills, nav bars) */
-  --color-chrome: var(--neutral-75);
+  --color-chrome: var(--neutral-150);
   /* Borders */
   --color-border: var(--neutral-550);
   --color-border-light: var(--neutral-400);
@@ -332,22 +335,28 @@
   --type-display-brand-family: var(--font-display);
 
   /* -- Heading: structural hierarchy -- */
-  --type-heading-page-size: var(--text-lg);
+  --type-heading-page-size: var(--text-md);
   --type-heading-page-weight: var(--font-medium);
   --type-heading-page-leading: var(--leading-tight);
-  --type-heading-page-color: var(--color-text-muted);
+  --type-heading-page-color: var(--color-text);
   --type-heading-page-family: var(--font-display);
 
-  --type-heading-section-size: var(--text-lg);
+  --type-heading-section-size: var(--text-md);
   --type-heading-section-weight: var(--font-medium);
   --type-heading-section-leading: var(--leading-tight);
-  --type-heading-section-color: var(--color-tertiary);
+  --type-heading-section-color: var(--color-text);
   --type-heading-section-family: var(--font-display);
+
+  --type-heading-card-size: var(--text-lg);
+  --type-heading-card-weight: var(--font-medium);
+  --type-heading-card-leading: var(--leading-tight);
+  --type-heading-card-color: var(--color-text);
+  --type-heading-card-family: var(--font-display);
 
   --type-heading-subsection-size: var(--text-base);
   --type-heading-subsection-weight: var(--font-semibold);
   --type-heading-subsection-leading: var(--leading-tight);
-  --type-heading-subsection-color: var(--color-text-muted);
+  --type-heading-subsection-color: var(--color-text);
   --type-heading-subsection-family: var(--font-display);
 
   /* -- Body: readable content -- */
@@ -482,7 +491,7 @@ h1, h2, h3, p {
 }
 html {
   font-size: 106.25%; /* 17px base — aligns with Apple HIG body size */
-  background: var(--color-canvas);
+  background: var(--color-chrome);
   overscroll-behavior: none;
 }
 body {
@@ -497,7 +506,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   color: var(--color-text);
-  background: var(--color-canvas);
+  background: var(--color-chrome);
   border-left: 1px solid var(--color-border-lighter);
   border-right: 1px solid var(--color-border-lighter);
   overscroll-behavior: none;
@@ -536,6 +545,7 @@ body {
   isolation: isolate; /* stacking context so watermark z-index:-1 works */
   flex: 1;
   min-height: 0;
+  background: var(--color-canvas);
   padding-left: max(var(--size-content-inset), env(safe-area-inset-left, 0));
   padding-right: max(var(--size-content-inset), env(safe-area-inset-right, 0));
 }
@@ -1047,8 +1057,6 @@ body.native-app .brand-strip {
   font-weight: var(--type-body-secondary-weight);
   line-height: var(--type-body-secondary-leading);
   color: var(--color-text);
-  margin-top: var(--gap-group);
-  margin-bottom: var(--gap-related);
 }
 .skill-rec-hint > strong {
   color: var(--color-notice-text);
@@ -1067,22 +1075,11 @@ body.native-app .brand-strip {
 .skill-card {
   position: relative;
 }
-.skill-card-header {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-group);
-}
-.skill-card-header-text {
-  display: flex;
-  flex-direction: column;
+.skill-card-content {
   min-width: 0;
 }
-.skill-card-header-text > .pill {
+.skill-card-title-block > .pill {
   align-self: flex-start;
-  margin-bottom: 1px;
-}
-.active-skill-card .skill-card-header-text > .pill {
-  margin-bottom: 0;
   margin-top: 2px;
 }
 .skill-icon {
@@ -1092,9 +1089,6 @@ body.native-app .brand-strip {
 /* Left border swaps to notice color when card has a recommendation. */
 .skill-card.has-rec {
   border-left-color: var(--color-notice);
-}
-.skill-card-progress {
-  margin-top: var(--gap-related);
 }
 /* --- Text link (reusable) --- */
 .text-link {
@@ -1138,16 +1132,16 @@ body.native-app .brand-strip {
      invisible. */
   font-size: var(--size-close-btn);
   cursor: pointer;
-  padding: 0 var(--gap-related);
+  padding: 0;
   min-width: var(--size-touch-target);
   min-height: var(--size-touch-target);
-  margin-block: calc(
+  margin: calc(
     (
       var(--type-heading-page-size) * var(--type-heading-page-leading)
         - var(--size-touch-target)
     )
       / 2
-  );
+  ) 0;
   color: var(--color-text-light);
   display: flex;
   align-items: center;
@@ -1663,6 +1657,9 @@ body.native-app .brand-strip {
   transition: fill var(--duration-base);
   pointer-events: all;
 }
+.fb-pos.fb-target {
+  fill: var(--color-tap-selected);
+}
 .fb-tap {
   fill: transparent;
   stroke: none;
@@ -1821,6 +1818,25 @@ button {
 /* ==========================================================================
    10. ANSWER BUTTONS
    ========================================================================== */
+
+/* Feedback text shown above the answer grid after the user answers.
+   Shows ✓ answer (correct) or ✗ input  ✓ answer (wrong).
+   Typography and spacing match SequentialSlots for visual consistency. */
+.answer-feedback-text {
+  display: flex;
+  justify-content: center;
+  gap: var(--gap-group);
+  margin: var(--pad-component) auto;
+  max-width: var(--size-answer-grid);
+  font-size: var(--type-quiz-response-size);
+  font-weight: var(--type-quiz-response-weight);
+}
+.answer-feedback-text .correct {
+  color: var(--color-success-text);
+}
+.answer-feedback-text .incorrect {
+  color: var(--color-error-text);
+}
 
 /* --- Unified answer grid (default 4 columns) --- */
 .answer-grid {
@@ -2040,6 +2056,13 @@ button {
   font-weight: var(--type-heading-section-weight);
   line-height: var(--type-heading-section-leading);
   color: var(--type-heading-section-color);
+}
+.text-heading-card {
+  font-family: var(--type-heading-card-family);
+  font-size: var(--type-heading-card-size);
+  font-weight: var(--type-heading-card-weight);
+  line-height: var(--type-heading-card-leading);
+  color: var(--type-heading-card-color);
 }
 .text-heading-subsection {
   font-family: var(--type-heading-subsection-family);
@@ -2830,7 +2853,8 @@ body.native-sim #app {
   }
 
   .next-btn,
-  .start-btn {
+  .start-btn,
+  .feedback-notice {
     margin: var(--gap-group) auto var(--gap-group);
   }
 
@@ -2865,7 +2889,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="2bdce3 three-bucket-selection"></div>
+  <div class="home-screen" id="home-screen" data-version="9223d8 three-bucket-selection"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -3773,6 +3797,20 @@ body.native-sim #app {
       } catch {
         _fallback.delete(key);
       }
+    },
+    keys() {
+      try {
+        const ls = getLocalStorage();
+        if (!ls) return [..._fallback.keys()];
+        const out = [];
+        for (let i3 = 0; i3 < ls.length; i3++) {
+          const k3 = ls.key(i3);
+          if (k3 !== null) out.push(k3);
+        }
+        return out;
+      } catch {
+        return [..._fallback.keys()];
+      }
     }
   };
   var _preferences = null;
@@ -3791,6 +3829,9 @@ body.native-sim #app {
         cache.delete(key);
         prefs.remove({ key }).catch(() => {
         });
+      },
+      keys() {
+        return [...cache.keys()];
       }
     };
   }
@@ -3798,7 +3839,8 @@ body.native-sim #app {
   var storage = {
     getItem: (key) => _storage.getItem(key),
     setItem: (key, value) => _storage.setItem(key, value),
-    removeItem: (key) => _storage.removeItem(key)
+    removeItem: (key) => _storage.removeItem(key),
+    keys: () => _storage.keys()
   };
   function isNative() {
     return !!(typeof window !== "undefined" && // deno-lint-ignore no-explicit-any
@@ -3931,6 +3973,7 @@ body.native-sim #app {
   );
   function isValidNoteInput(input) {
     if (VALID_NOTE_INPUTS.has(input.toLowerCase())) return true;
+    if (/^[A-Ga-g](##|bb)$/.test(input)) return true;
     if (_useSolfege) {
       const letter = resolveSolfegeToLetter(input);
       if (letter && VALID_NOTE_INPUTS.has(letter.toLowerCase())) return true;
@@ -4016,6 +4059,45 @@ body.native-sim #app {
   function spelledNoteSemitone(name) {
     const { letter, accidental } = parseSpelledNote(name);
     return ((NATURAL_SEMITONES[letter] + accidental) % 12 + 12) % 12;
+  }
+  function spelledNoteToCanonical(name) {
+    return NOTES[spelledNoteSemitone(name)].name;
+  }
+  var INTERVAL_LETTER_OFFSETS = {
+    m2: 1,
+    M2: 1,
+    m3: 2,
+    M3: 2,
+    P4: 3,
+    TT: 3,
+    P5: 4,
+    m6: 5,
+    M6: 5,
+    m7: 6,
+    M7: 6,
+    P8: 7
+  };
+  function addInterval(rootName, intervalAbbrev, direction) {
+    const root = parseSpelledNote(rootName);
+    const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
+    const rootSemitone = spelledNoteSemitone(rootName);
+    const letterOffset = INTERVAL_LETTER_OFFSETS[intervalAbbrev];
+    const interval = INTERVALS.find((i3) => i3.abbrev === intervalAbbrev);
+    const semitones = interval.num;
+    let targetLetterIdx;
+    let targetSemitone;
+    if (direction === "+") {
+      targetLetterIdx = (rootLetterIdx + letterOffset) % 7;
+      targetSemitone = (rootSemitone + semitones) % 12;
+    } else {
+      targetLetterIdx = (rootLetterIdx - letterOffset + 7) % 7;
+      targetSemitone = ((rootSemitone - semitones) % 12 + 12) % 12;
+    }
+    const targetLetter = LETTER_NAMES[targetLetterIdx];
+    const naturalSemitone = NATURAL_SEMITONES[targetLetter];
+    let acc = (targetSemitone - naturalSemitone + 12) % 12;
+    if (acc > 6) acc -= 12;
+    return spelledNoteName(targetLetter, acc);
   }
   function getScaleDegreeNote(keyRoot, degree) {
     const root = parseSpelledNote(keyRoot);
@@ -4366,7 +4448,7 @@ body.native-sim #app {
   function displayNote(name) {
     if (!name) return name;
     const letter = name[0].toUpperCase();
-    const acc = name.slice(1).replace(/#/g, "\u266F").replace(/b/g, "\u266D");
+    const acc = name.slice(1).replace(/##/g, "\u{1D12A}").replace(/bb/g, "\u{1D12B}").replace(/#/g, "\u266F").replace(/b/g, "\u266D");
     if (!_useSolfege) {
       return name[0] + acc;
     }
@@ -4732,6 +4814,18 @@ body.native-sim #app {
       note = pool[Math.floor(rand() * pool.length)];
     } while (note === prevNote && pool.length > 1);
     return note;
+  }
+  var CALIBRATION_MAX_FRET = 6;
+  function pickCalibrationFretPosition(prevKey, stringCount, rng) {
+    const rand = rng || Math.random;
+    const fretRange = CALIBRATION_MAX_FRET + 1;
+    let key;
+    do {
+      const s3 = Math.floor(rand() * stringCount);
+      const f4 = Math.floor(rand() * fretRange);
+      key = s3 + "-" + f4;
+    } while (key === prevKey && stringCount * fretRange > 1);
+    return key;
   }
 
   // node_modules/.deno/preact@10.28.4/node_modules/preact/jsx-runtime/dist/jsxRuntime.module.js
@@ -5400,11 +5494,6 @@ body.native-sim #app {
         totalCount: items.length
       };
     });
-    results.sort((a3, b2) => {
-      const workDiff = b2.workingCount + b2.unseenCount - (a3.workingCount + a3.unseenCount);
-      if (workDiff !== 0) return workDiff;
-      return a3.groupId.localeCompare(b2.groupId);
-    });
     return results;
   }
   function checkAllItemsAutomatic(getSpeedScore, items) {
@@ -5826,6 +5915,62 @@ body.native-sim #app {
     return /* @__PURE__ */ u2("span", { class: cls, children });
   }
 
+  // src/export-data.ts
+  function buildExport(opts) {
+    const src = opts.source ?? storage;
+    const now = opts.now ?? /* @__PURE__ */ new Date();
+    const keys = [...src.keys()].sort();
+    const data = {};
+    for (const key of keys) {
+      const raw = src.getItem(key);
+      if (raw === null) continue;
+      data[key] = parseValue(raw);
+    }
+    return {
+      schemaVersion: 1,
+      exportedAt: now.toISOString(),
+      appVersion: opts.appVersion,
+      backend: opts.backend,
+      keyCount: Object.keys(data).length,
+      data
+    };
+  }
+  function parseValue(raw) {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return raw;
+    }
+  }
+  function exportFilename(appVersion, now) {
+    const stamp = formatTimestamp(now);
+    const safe = sanitizeVersion(appVersion);
+    const suffix = safe ? `${safe}-` : "";
+    return `musicreps-export-${suffix}${stamp}.json`;
+  }
+  function sanitizeVersion(v3) {
+    return v3.replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  }
+  function formatTimestamp(d4) {
+    const pad = (n2) => String(n2).padStart(2, "0");
+    return `${d4.getFullYear()}${pad(d4.getMonth() + 1)}${pad(d4.getDate())}-${pad(d4.getHours())}${pad(d4.getMinutes())}${pad(d4.getSeconds())}`;
+  }
+  function detectBackend() {
+    return isNative() ? "native" : "web";
+  }
+  function downloadExport(payload, filename) {
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a3 = document.createElement("a");
+    a3.href = url;
+    a3.download = filename;
+    document.body.appendChild(a3);
+    a3.click();
+    a3.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 6e4);
+  }
+
   // src/recommendations.ts
   var FRESHNESS_THRESHOLD = 0.5;
   function computeReviewTiming(avgStability, avgFreshness) {
@@ -5914,10 +6059,7 @@ body.native-sim #app {
     for (const s3 of statuses) {
       if (s3.reviewStatus === "soon" && s3.reviewInHours === 0 && (s3.speedLabel === "solid" || s3.speedLabel === "automatic")) {
         recs.push({ groupId: s3.groupId, type: "review" });
-      }
-    }
-    for (const s3 of statuses) {
-      if (s3.speedLabel === "starting" || s3.speedLabel === "hesitant" || s3.speedLabel === "learning") {
+      } else if (s3.speedLabel === "starting" || s3.speedLabel === "hesitant" || s3.speedLabel === "learning") {
         recs.push({ groupId: s3.groupId, type: "practice" });
       }
     }
@@ -6366,42 +6508,42 @@ body.native-sim #app {
     {
       id: "frets-0-3-natural",
       label: () => fretLabel(0, 3),
-      longLabel: () => fretLabel(0, 3) + ", naturals",
+      longLabel: () => fretLabel(0, 3) + " naturals",
       frets: [0, 3],
       noteFilter: "natural"
     },
     {
       id: "frets-0-3-sharps",
-      label: () => fretLabel(0, 3) + " \u266F/\u266D",
-      longLabel: () => fretLabel(0, 3) + " \u266F/\u266D",
+      label: () => fretLabel(0, 3) + "\xA0\u266F/\u266D",
+      longLabel: () => fretLabel(0, 3) + "\xA0\u266F/\u266D",
       frets: [0, 3],
       noteFilter: "sharps-flats"
     },
     {
       id: "frets-4-8-natural",
       label: () => fretLabel(4, 8),
-      longLabel: () => fretLabel(4, 8) + ", naturals",
+      longLabel: () => fretLabel(4, 8) + " naturals",
       frets: [4, 8],
       noteFilter: "natural"
     },
     {
       id: "frets-4-8-sharps",
-      label: () => fretLabel(4, 8) + " \u266F/\u266D",
-      longLabel: () => fretLabel(4, 8) + " \u266F/\u266D",
+      label: () => fretLabel(4, 8) + "\xA0\u266F/\u266D",
+      longLabel: () => fretLabel(4, 8) + "\xA0\u266F/\u266D",
       frets: [4, 8],
       noteFilter: "sharps-flats"
     },
     {
       id: "frets-9-12-natural",
       label: () => fretLabel(9, 12),
-      longLabel: () => fretLabel(9, 12) + ", naturals",
+      longLabel: () => fretLabel(9, 12) + " naturals",
       frets: [9, 12],
       noteFilter: "natural"
     },
     {
       id: "frets-9-12-sharps",
-      label: () => fretLabel(9, 12) + " \u266F/\u266D",
-      longLabel: () => fretLabel(9, 12) + " \u266F/\u266D",
+      label: () => fretLabel(9, 12) + "\xA0\u266F/\u266D",
+      longLabel: () => fretLabel(9, 12) + "\xA0\u266F/\u266D",
       frets: [9, 12],
       noteFilter: "sharps-flats"
     }
@@ -6448,9 +6590,10 @@ body.native-sim #app {
   function getAllGroupIds(instrument) {
     return getGroups(instrument).map((g4) => g4.id);
   }
-  function getQuestion(instrument, itemId2) {
+  function getQuestion(instrument, itemId2, ctx) {
     const fb = getHelpers(instrument);
-    return fb.parseFretboardItem(itemId2);
+    const base = fb.parseFretboardItem(itemId2);
+    return { ...base, useFlats: ctx?.useFlats ?? false };
   }
   function formatLabel(instrument, enabledGroups) {
     const groups = getGroups(instrument);
@@ -6485,14 +6628,21 @@ body.native-sim #app {
       beforeAfter: MODE_BEFORE_AFTER[instrument.id],
       itemNoun: "positions",
       allItems: allItems2,
-      getQuestion: (itemId2) => getQuestion(instrument, itemId2),
+      getQuestion: (itemId2, ctx) => getQuestion(instrument, itemId2, ctx),
       getPromptText: () => "Name this note",
       quizInstruction: "What note is this?",
       answer: {
         getExpectedValue: (q4) => q4.currentNote,
-        comparison: "note-enharmonic"
+        comparison: "note-enharmonic",
+        getDisplayAnswer: (q4) => {
+          const note = NOTES.find((n2) => n2.name === q4.currentNote);
+          return displayNote(
+            pickAccidentalName(note?.displayName ?? q4.currentNote, q4.useFlats)
+          );
+        }
       },
       validateInput: (_q, input) => isValidNoteInput(input),
+      getUseFlats: (q4) => q4.useFlats,
       buttons: { kind: "note", columns: 6 },
       scope: {
         kind: "groups",
@@ -6957,19 +7107,24 @@ body.native-sim #app {
     const abbrev = parsed.value;
     const note = NOTES.find((n2) => n2.name === noteName);
     const interval = MATH_INTERVALS.find((i3) => i3.abbrev === abbrev);
-    const answer = op === "+" ? noteAdd(note.num, interval.num) : noteSub(note.num, interval.num);
-    const useFlats = op === "-";
-    const promptNoteName = displayNote(
-      pickAccidentalName(note.displayName, useFlats)
-    );
+    const rootSpelled = note.name;
+    const answerSpelled = addInterval(rootSpelled, abbrev, op);
+    const useFlats = deriveUseFlats(answerSpelled, op);
+    const promptNoteName = displayNote(rootSpelled);
     return {
       note,
       op,
       interval,
-      answer,
+      answerSpelled,
       useFlats,
       promptText: promptNoteName + " " + op + " " + interval.abbrev
     };
+  }
+  function deriveUseFlats(answerSpelled, op) {
+    const { accidental } = parseSpelledNote(answerSpelled);
+    if (accidental < 0) return true;
+    if (accidental > 0) return false;
+    return op === "-";
   }
   var GRID_COL_LABELS2 = MATH_INTERVALS.map((i3) => i3.abbrev);
   function getGridItemId2(noteName, colIdx) {
@@ -6991,9 +7146,14 @@ body.native-sim #app {
     getPromptText: (q4) => q4.promptText,
     quizInstruction: "What note?",
     answer: {
-      getExpectedValue: (q4) => q4.answer.name,
+      getExpectedValue: (q4) => q4.answerSpelled,
       comparison: "note-enharmonic",
-      getDisplayAnswer: (q4) => displayNote(pickAccidentalName(q4.answer.displayName, q4.useFlats))
+      getDisplayAnswer: (q4) => {
+        const display = displayNote(q4.answerSpelled);
+        const { accidental } = parseSpelledNote(q4.answerSpelled);
+        if (Math.abs(accidental) < 2) return display;
+        return display + " (= " + displayNote(spelledNoteToCanonical(q4.answerSpelled)) + ")";
+      }
     },
     validateInput: (_q, input) => isValidNoteInput(input),
     getUseFlats: (q4) => q4.useFlats,
@@ -7719,13 +7879,44 @@ body.native-sim #app {
     { root: "A", quality: "minor", symbol: "m", strings: [0, 1, 2, 2, 0, "x"] },
     { root: "E", quality: "minor", symbol: "m", strings: [0, 0, 0, 2, 2, 0] },
     { root: "D", quality: "minor", symbol: "m", strings: [1, 3, 2, 0, "x", "x"] },
+    // Bm — A-shape barre at fret 2 (x24432)
+    { root: "B", quality: "minor", symbol: "m", strings: [2, 3, 4, 4, 2, "x"] },
     // --- Dominant 7th ---
     { root: "A", quality: "dom7", symbol: "7", strings: [0, 2, 0, 2, 0, "x"] },
     { root: "B", quality: "dom7", symbol: "7", strings: [2, 0, 2, 1, 2, "x"] },
     { root: "C", quality: "dom7", symbol: "7", strings: [0, 1, 3, 2, 3, "x"] },
     { root: "D", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0, "x", "x"] },
     { root: "E", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0, 2, 0] },
-    { root: "G", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0, 2, 3] }
+    { root: "G", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0, 2, 3] },
+    // F7 — full barre at fret 1 (131211)
+    { root: "F", quality: "dom7", symbol: "7", strings: [1, 1, 2, 1, 3, 1] },
+    // --- Minor 7th ---
+    // Open-position m7 shapes
+    { root: "A", quality: "m7", symbol: "m7", strings: [0, 1, 0, 2, 0, "x"] },
+    { root: "E", quality: "m7", symbol: "m7", strings: [0, 0, 0, 0, 2, 0] },
+    { root: "D", quality: "m7", symbol: "m7", strings: [1, 1, 2, 0, "x", "x"] },
+    { root: "B", quality: "m7", symbol: "m7", strings: [2, 0, 2, 0, 2, "x"] },
+    // Barre m7 shapes
+    { root: "F", quality: "m7", symbol: "m7", strings: [1, 1, 1, 1, 3, 1] },
+    { root: "G", quality: "m7", symbol: "m7", strings: [3, 3, 3, 3, 5, 3] },
+    { root: "C", quality: "m7", symbol: "m7", strings: [3, 4, 3, 5, 3, "x"] },
+    // --- Suspended 2nd ---
+    {
+      root: "D",
+      quality: "sus2",
+      symbol: "sus2",
+      strings: [0, 3, 2, 0, "x", "x"]
+    },
+    { root: "A", quality: "sus2", symbol: "sus2", strings: [0, 0, 2, 2, 0, "x"] },
+    // --- Suspended 4th ---
+    {
+      root: "D",
+      quality: "sus4",
+      symbol: "sus4",
+      strings: [3, 3, 2, 0, "x", "x"]
+    },
+    { root: "A", quality: "sus4", symbol: "sus4", strings: [0, 3, 2, 2, 0, "x"] },
+    { root: "E", quality: "sus4", symbol: "sus4", strings: [0, 0, 2, 2, 2, 0] }
   ];
   var UKULELE_VOICINGS = [
     // --- Major ---                          // Chart (G C E A)
@@ -7741,6 +7932,10 @@ body.native-sim #app {
     // 2220
     { root: "Bb", quality: "major", symbol: "", strings: [1, 1, 2, 3] },
     // 3211
+    { root: "E", quality: "major", symbol: "", strings: [2, 4, 4, 4] },
+    // 4442
+    { root: "B", quality: "major", symbol: "", strings: [2, 2, 3, 4] },
+    // 4322
     // --- Minor ---
     { root: "A", quality: "minor", symbol: "m", strings: [0, 0, 0, 2] },
     // 2000
@@ -7750,9 +7945,37 @@ body.native-sim #app {
     // 0432
     // --- Dominant 7th ---
     { root: "C", quality: "dom7", symbol: "7", strings: [1, 0, 0, 0] },
+    // 0001
     { root: "G", quality: "dom7", symbol: "7", strings: [2, 1, 2, 0] },
+    // 0212
     { root: "A", quality: "dom7", symbol: "7", strings: [0, 0, 1, 0] },
-    { root: "D", quality: "dom7", symbol: "7", strings: [3, 2, 2, 2] }
+    // 0100
+    { root: "D", quality: "dom7", symbol: "7", strings: [3, 2, 2, 2] },
+    // 2223
+    { root: "E", quality: "dom7", symbol: "7", strings: [2, 0, 2, 1] },
+    // 1202
+    { root: "B", quality: "dom7", symbol: "7", strings: [2, 2, 3, 2] },
+    // 2322
+    { root: "F", quality: "dom7", symbol: "7", strings: [3, 1, 3, 2] },
+    // 2313
+    // --- Minor 7th ---
+    { root: "A", quality: "m7", symbol: "m7", strings: [0, 0, 0, 0] },
+    // 0000
+    { root: "D", quality: "m7", symbol: "m7", strings: [3, 1, 2, 2] },
+    // 2213
+    { root: "E", quality: "m7", symbol: "m7", strings: [2, 0, 2, 0] },
+    // 0202
+    { root: "B", quality: "m7", symbol: "m7", strings: [2, 2, 2, 2] },
+    // 2222
+    { root: "C", quality: "m7", symbol: "m7", strings: [3, 3, 3, 3] },
+    // 3333
+    { root: "G", quality: "m7", symbol: "m7", strings: [1, 1, 2, 0] },
+    // 0211
+    // --- Suspended 4th ---
+    { root: "D", quality: "sus4", symbol: "sus4", strings: [0, 3, 2, 0] },
+    // 0230
+    { root: "A", quality: "sus4", symbol: "sus4", strings: [0, 0, 2, 2] }
+    // 2200
   ];
   function getVoicings(instrument) {
     return instrument === "guitar" ? GUITAR_VOICINGS : UKULELE_VOICINGS;
@@ -7829,28 +8052,62 @@ body.native-sim #app {
     };
   }
   var QUALITY_GROUPS = [
-    { id: "major", label: "Major", longLabel: "Major chords" },
-    { id: "minor", label: "Minor", longLabel: "Minor chords" },
-    { id: "dom7", label: "7th", longLabel: "Dominant 7th chords" }
+    {
+      id: "major",
+      label: "Major",
+      longLabel: "Major chords",
+      shortLabel: "major",
+      qualities: ["major"]
+    },
+    {
+      id: "minor",
+      label: "Minor",
+      longLabel: "Minor chords",
+      shortLabel: "minor",
+      qualities: ["minor"]
+    },
+    {
+      id: "dom7",
+      label: "7th",
+      longLabel: "Dominant 7th chords",
+      shortLabel: "7th",
+      qualities: ["dom7"]
+    },
+    {
+      id: "m7",
+      label: "m7",
+      longLabel: "Minor 7th chords",
+      shortLabel: "m7",
+      qualities: ["m7"]
+    },
+    {
+      id: "sus",
+      label: "sus",
+      longLabel: "Suspended chords",
+      shortLabel: "sus",
+      qualities: ["sus2", "sus4"]
+    }
   ];
   var ALL_GROUP_IDS8 = QUALITY_GROUPS.map((g4) => g4.id);
   var CHORD_SHAPE_ROOT_ORDER = Object.fromEntries(
     ["C", "G", "D", "A", "E", "B", "F#", "Db", "Ab", "Eb", "Bb", "F"].map((r3, i3) => [r3, i3])
   );
   function getItemIdsForGroup9(instrument, groupId) {
-    const voicings = getVoicings(instrument).filter((v3) => v3.quality === groupId);
-    voicings.sort(
-      (a3, b2) => (CHORD_SHAPE_ROOT_ORDER[a3.root] ?? 99) - (CHORD_SHAPE_ROOT_ORDER[b2.root] ?? 99)
+    const group = QUALITY_GROUPS.find((g4) => g4.id === groupId);
+    const qualities = group?.qualities ?? [];
+    const voicings = getVoicings(instrument).filter(
+      (v3) => qualities.includes(v3.quality)
     );
+    voicings.sort((a3, b2) => {
+      const rootDiff = (CHORD_SHAPE_ROOT_ORDER[a3.root] ?? 99) - (CHORD_SHAPE_ROOT_ORDER[b2.root] ?? 99);
+      if (rootDiff !== 0) return rootDiff;
+      return a3.quality.localeCompare(b2.quality);
+    });
     return voicings.map(itemId);
   }
   function formatGroupLabel2(enabledGroups) {
-    if (enabledGroups.size === 3) return "all chords";
-    const labels = [];
-    if (enabledGroups.has("major")) labels.push("major");
-    if (enabledGroups.has("minor")) labels.push("minor");
-    if (enabledGroups.has("dom7")) labels.push("7th");
-    return labels.join(" & ");
+    if (enabledGroups.size === ALL_GROUP_IDS8.length) return "all chords";
+    return QUALITY_GROUPS.filter((g4) => enabledGroups.has(g4.id)).map((g4) => g4.shortLabel).join(" & ");
   }
 
   // src/modes/chord-shapes/definition.tsx
@@ -7974,6 +8231,8 @@ body.native-sim #app {
     return {
       modeId: def.id,
       namespace: def.namespace,
+      motorTaskType: def.motorTaskType,
+      getResponseCount: def.getExpectedResponseCount,
       groups: scope.kind === "groups" ? scope.groups.map((g4) => ({
         id: g4.id,
         label: g4.label,
@@ -7994,7 +8253,12 @@ body.native-sim #app {
   }
   function computeSkillRecommendation(entry, storage2, motorBaseline, skippedGroups, config) {
     const cfg = motorBaseline !== null ? deriveScaledConfig(motorBaseline) : void 0;
-    const selector = createAdaptiveSelector(storage2, cfg);
+    const selector = createAdaptiveSelector(
+      storage2,
+      cfg,
+      Math.random,
+      entry.getResponseCount ?? null
+    );
     const allGroupIds = entry.groups.filter((g4) => !skippedGroups.has(g4.id)).map((g4) => g4.id);
     if (allGroupIds.length === 0) return notStarted(entry.modeId);
     const groupById = new Map(entry.groups.map((g4) => [g4.id, g4]));
@@ -8024,9 +8288,8 @@ body.native-sim #app {
     if (result.levelRecs.length === 0) {
       return { modeId, type: "automatic", urgency: 0, cueLabel: "", detail: "" };
     }
-    const firstType = result.levelRecs[0].type;
-    if (firstType === "review") {
-      const reviewIds = result.levelRecs.filter((r3) => r3.type === "review").map((r3) => r3.groupId);
+    const reviewIds = result.levelRecs.filter((r3) => r3.type === "review").map((r3) => r3.groupId);
+    if (reviewIds.length > 0) {
       const detail = singleGroup ? "Review" : `Review ${groupLabelText(reviewIds, labelMap)}`;
       return {
         modeId,
@@ -8036,6 +8299,7 @@ body.native-sim #app {
         detail
       };
     }
+    const firstType = result.levelRecs[0].type;
     if (firstType === "practice" || firstType === "automate") {
       const practiceIds = result.levelRecs.filter((r3) => r3.type === "practice" || r3.type === "automate").map((r3) => r3.groupId);
       const detail = singleGroup ? "Practice" : `Practice ${groupLabelText(practiceIds, labelMap)}`;
@@ -8116,7 +8380,12 @@ body.native-sim #app {
   }
   function computeProgressForMode(entry, storage2, motorBaseline, skippedGroups) {
     const cfg = motorBaseline !== null ? deriveScaledConfig(motorBaseline) : void 0;
-    const selector = createAdaptiveSelector(storage2, cfg);
+    const selector = createAdaptiveSelector(
+      storage2,
+      cfg,
+      Math.random,
+      entry.getResponseCount ?? null
+    );
     const input = entry.groups.length === 1 ? { kind: "items", itemIds: entry.allItemIds() } : {
       kind: "groups",
       groups: entry.groups.map((g4) => ({
@@ -8134,34 +8403,38 @@ body.native-sim #app {
       activeGroupCount
     };
   }
-  function computeAllProgress(createStorage = createStorageAdapter, motorBaseline = null, getSkipped = loadSkippedGroups) {
+  function computeAllProgress(createStorage = createStorageAdapter, getBaseline = readMotorBaseline, getSkipped = loadSkippedGroups) {
+    const resolveBaseline = typeof getBaseline === "function" ? getBaseline : () => getBaseline;
     const result = /* @__PURE__ */ new Map();
     for (const entry of MODE_PROGRESS_MANIFEST) {
       const skipped = getSkipped(entry.namespace);
+      const baseline = resolveBaseline(entry.motorTaskType ?? "note-button");
       result.set(
         entry.modeId,
         computeProgressForMode(
           entry,
           createStorage(entry.namespace),
-          motorBaseline,
+          baseline,
           skipped
         )
       );
     }
     return result;
   }
-  function computeAllRecommendations(starred, createStorage = createStorageAdapter, motorBaseline = null, getSkipped = loadSkippedGroups, definitionOrder) {
+  function computeAllRecommendations(starred, createStorage = createStorageAdapter, getBaseline = readMotorBaseline, getSkipped = loadSkippedGroups, definitionOrder) {
     if (starred.size === 0) return [];
+    const resolveBaseline = typeof getBaseline === "function" ? getBaseline : () => getBaseline;
     const config = {};
     const perSkill = [];
     for (const entry of MODE_PROGRESS_MANIFEST) {
       if (!starred.has(entry.modeId)) continue;
       const skipped = getSkipped(entry.namespace);
+      const baseline = resolveBaseline(entry.motorTaskType ?? "note-button");
       perSkill.push(
         computeSkillRecommendation(
           entry,
           createStorage(entry.namespace),
-          motorBaseline,
+          baseline,
           skipped,
           config
         )
@@ -8170,9 +8443,9 @@ body.native-sim #app {
     const order = definitionOrder ?? MODE_PROGRESS_MANIFEST.map((e3) => e3.modeId);
     return rankSkillRecommendations(perSkill, order);
   }
-  function readMotorBaseline() {
+  function readMotorBaseline(taskType = "note-button") {
     try {
-      const raw = storage.getItem("motorBaseline_note-button");
+      const raw = storage.getItem("motorBaseline_" + taskType);
       if (raw) {
         const n2 = Number(raw);
         if (!isNaN(n2) && n2 > 0) return n2;
@@ -8205,15 +8478,14 @@ body.native-sim #app {
     }, []);
     const starredKey = T2(() => [...starred].sort().join(","), [starred]);
     return T2(() => {
-      const baseline = readMotorBaseline();
       const progress = computeAllProgress(
         createStorageAdapter,
-        baseline
+        readMotorBaseline
       );
       const recommendations = computeAllRecommendations(
         starred,
         createStorageAdapter,
-        baseline
+        readMotorBaseline
       );
       return { progress, recommendations };
     }, [refreshKey, starredKey]);
@@ -8881,13 +9153,17 @@ body.native-sim #app {
       /* @__PURE__ */ u2("span", { class: "tab-icon-text", children: text })
     ] });
   }
-  function BaselineInfo({ baseline, onRun }) {
+  function baselineMetricLabel(motorTaskType) {
+    if (motorTaskType === "fretboard-tap") return "Response time for fret tap";
+    return "Response time for note input";
+  }
+  function BaselineInfo({ baseline, onRun, motorTaskType }) {
     const value = baseline ? (baseline / 1e3).toFixed(1) + "s" : "1s";
     const tag = baseline ? null : /* @__PURE__ */ u2(Text, { role: "supporting", class: "baseline-default-tag", children: "(default)" });
     const btnLabel = baseline ? "Redo speed check" : "Run speed check";
     return /* @__PURE__ */ u2("div", { class: "baseline-info", children: [
       /* @__PURE__ */ u2("div", { class: "baseline-metric", children: [
-        /* @__PURE__ */ u2(Text, { role: "label", children: "Response time for note input" }),
+        /* @__PURE__ */ u2(Text, { role: "label", children: baselineMetricLabel(motorTaskType) }),
         /* @__PURE__ */ u2(Text, { role: "metric-primary", children: [
           value,
           tag && /* @__PURE__ */ u2(k, { children: [
@@ -8915,6 +9191,7 @@ body.native-sim #app {
     statsHeading,
     onCalibrate,
     baseline,
+    motorTaskType,
     activeTab,
     onTabSwitch,
     scopeValid,
@@ -8943,7 +9220,7 @@ body.native-sim #app {
           /* @__PURE__ */ u2("span", { class: "tab-icon-text", children: "Practice" })
         ] }),
         content: /* @__PURE__ */ u2(Stack, { gap: "region", children: [
-          hasSummary && /* @__PURE__ */ u2(Section, { heading: "Summary", children: [
+          hasSummary && /* @__PURE__ */ u2(Section, { heading: "Summary", gap: "group", children: [
             description && /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "p", children: description }),
             hasProgressBar && /* @__PURE__ */ u2(
               ProgressBarLabeled,
@@ -8962,7 +9239,7 @@ body.native-sim #app {
         id: "progress",
         label: /* @__PURE__ */ u2(TabIcon, { icon: "progress", text: "Progress" }),
         content: /* @__PURE__ */ u2(Stack, { gap: "region", children: [
-          hasProgressBar && /* @__PURE__ */ u2(Section, { heading: "Overall", children: /* @__PURE__ */ u2(
+          hasProgressBar && /* @__PURE__ */ u2(Section, { heading: "Overall", gap: "group", children: /* @__PURE__ */ u2(
             ProgressBarLabeled,
             {
               label: "Progress",
@@ -8974,7 +9251,14 @@ body.native-sim #app {
           progressExtra,
           statsHeading && /* @__PURE__ */ u2(Section, { heading: statsHeading, gap: "group", children: /* @__PURE__ */ u2("div", { class: "stats-container", children: statsContent }) }),
           !statsHeading && /* @__PURE__ */ u2("div", { class: "stats-container", children: statsContent }),
-          onCalibrate && /* @__PURE__ */ u2(Section, { heading: "Speed check", gap: "group", children: /* @__PURE__ */ u2(BaselineInfo, { baseline: baseline ?? null, onRun: onCalibrate }) })
+          onCalibrate && /* @__PURE__ */ u2(Section, { heading: "Speed check", gap: "group", children: /* @__PURE__ */ u2(
+            BaselineInfo,
+            {
+              baseline: baseline ?? null,
+              onRun: onCalibrate,
+              motorTaskType
+            }
+          ) })
         ] })
       }
     ];
@@ -9141,15 +9425,18 @@ body.native-sim #app {
   function TrackPill({ label }) {
     return /* @__PURE__ */ u2(Pill, { variant: "track", children: label });
   }
-  function SkillCardHeader({ modeId, trackLabel }) {
+  function SkillCardHeader({ modeId, trackLabel, progress }) {
     const name = MODE_NAMES[modeId] || modeId;
     const desc = MODE_DESCRIPTIONS[modeId] || "";
-    return /* @__PURE__ */ u2("span", { class: "skill-card-header", children: [
+    return /* @__PURE__ */ u2(Bar, { gap: "group", class: "skill-card-header", children: [
       /* @__PURE__ */ u2(SkillIcon, { modeId }),
-      /* @__PURE__ */ u2("span", { class: "skill-card-header-text", children: [
-        trackLabel && /* @__PURE__ */ u2(TrackPill, { label: trackLabel }),
-        /* @__PURE__ */ u2(Text, { role: "heading-section", as: "span", children: name }),
-        /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "span", children: desc })
+      /* @__PURE__ */ u2(Stack, { gap: "group", class: "skill-card-content", children: [
+        /* @__PURE__ */ u2(Stack, { gap: "micro", class: "skill-card-title-block", children: [
+          /* @__PURE__ */ u2(Text, { role: "heading-card", as: "span", children: name }),
+          trackLabel && /* @__PURE__ */ u2(TrackPill, { label: trackLabel }),
+          !trackLabel && desc && /* @__PURE__ */ u2(Text, { role: "body-secondary", as: "span", children: desc })
+        ] }),
+        progress && progress.segments.length > 0 && /* @__PURE__ */ u2(GroupProgressBar, { segments: progress.segments })
       ] })
     ] });
   }
@@ -9188,8 +9475,7 @@ body.native-sim #app {
               children: isStarred ? "\u2605" : "\u2606"
             }
           ),
-          /* @__PURE__ */ u2(SkillCardHeader, { modeId }),
-          progress && progress.segments.length > 0 && /* @__PURE__ */ u2("div", { class: "skill-card-progress", children: /* @__PURE__ */ u2(GroupProgressBar, { segments: progress.segments }) })
+          /* @__PURE__ */ u2(SkillCardHeader, { modeId, progress })
         ]
       }
     );
@@ -9237,23 +9523,25 @@ body.native-sim #app {
               children: "\u2605"
             }
           ),
-          /* @__PURE__ */ u2("span", { class: "skill-card-header", children: [
+          /* @__PURE__ */ u2(Bar, { gap: "group", class: "skill-card-header", children: [
             /* @__PURE__ */ u2(SkillIcon, { modeId }),
-            /* @__PURE__ */ u2("span", { class: "skill-card-header-text", children: [
-              /* @__PURE__ */ u2(Text, { role: "heading-section", as: "span", children: name }),
-              /* @__PURE__ */ u2(TrackPill, { label: trackLabel }),
+            /* @__PURE__ */ u2(Stack, { gap: "group", class: "skill-card-content", children: [
+              /* @__PURE__ */ u2(Stack, { gap: "micro", class: "skill-card-title-block", children: [
+                /* @__PURE__ */ u2(Text, { role: "heading-card", as: "span", children: name }),
+                /* @__PURE__ */ u2(TrackPill, { label: trackLabel })
+              ] }),
               hasRec && /* @__PURE__ */ u2("span", { class: "skill-rec-hint", children: [
                 /* @__PURE__ */ u2("strong", { children: rec.cueLabel }),
                 rec.detail !== rec.cueLabel && (rec.detail.startsWith(rec.cueLabel) ? ` ${rec.detail.slice(rec.cueLabel.length).trimStart()}` : ` \u2014 ${rec.detail}`)
-              ] })
+              ] }),
+              progress && (progress.segments.length > 0 || progress.activeGroupCount > 0) && /* @__PURE__ */ u2(
+                GroupProgressBar,
+                {
+                  segments: progress.segments.length > 0 ? progress.segments : notStartedSegments(progress.activeGroupCount)
+                }
+              )
             ] })
-          ] }),
-          progress && (progress.segments.length > 0 || progress.activeGroupCount > 0) && /* @__PURE__ */ u2("div", { class: "skill-card-progress", children: /* @__PURE__ */ u2(
-            GroupProgressBar,
-            {
-              segments: progress.segments.length > 0 ? progress.segments : notStartedSegments(progress.activeGroupCount)
-            }
-          ) })
+          ] })
         ] })
       }
     );
@@ -9427,9 +9715,15 @@ Build: ${version}
       onOpenDev && /* @__PURE__ */ u2(Section, { heading: "Developer", children: /* @__PURE__ */ u2("div", { class: "settings-link-list", children: /* @__PURE__ */ u2("button", { type: "button", class: "text-link", onClick: onOpenDev, children: "Dev panel" }) }) })
     ] });
   }
-  function DevPage({ onClose }) {
+  function DevPage({ version, onClose }) {
     const [data] = d2(getDevPanelData);
-    return /* @__PURE__ */ u2(Stack, { gap: "component", class: "settings-page", children: [
+    const handleExport = q2(() => {
+      const backend = detectBackend();
+      const now = /* @__PURE__ */ new Date();
+      const payload = buildExport({ appVersion: version, backend, now });
+      downloadExport(payload, exportFilename(version, now));
+    }, [version]);
+    return /* @__PURE__ */ u2(ScreenLayout, { children: /* @__PURE__ */ u2(LayoutMain, { children: /* @__PURE__ */ u2(Stack, { gap: "component", class: "settings-page", children: [
       /* @__PURE__ */ u2("div", { class: "settings-page-header", children: [
         /* @__PURE__ */ u2(CloseButton, { ariaLabel: "Close", onClick: onClose }),
         /* @__PURE__ */ u2(Text, { role: "heading-page", as: "h1", class: "page-heading", children: "Dev" })
@@ -9455,8 +9749,9 @@ Build: ${version}
           headers: ["Date", "Reps"],
           rows: data.recentDays.map((d4) => [d4.date, String(d4.count)])
         }
-      ) })
-    ] });
+      ) }),
+      /* @__PURE__ */ u2(DevSection, { title: "Export", children: /* @__PURE__ */ u2("div", { class: "settings-link-list", children: /* @__PURE__ */ u2("button", { type: "button", class: "text-link", onClick: handleExport, children: "Export data" }) }) })
+    ] }) }) });
   }
   function DevSection({ title, children }) {
     return /* @__PURE__ */ u2(Section, { heading: title, children });
@@ -9700,7 +9995,7 @@ Build: ${version}
       onOpenDev: showDevLink ? () => setShowDev(true) : void 0
     });
     if (showDev) {
-      return /* @__PURE__ */ u2(DevPage, { onClose: () => setShowDev(false) });
+      return /* @__PURE__ */ u2(DevPage, { version, onClose: () => setShowDev(false) });
     }
     return /* @__PURE__ */ u2(ScreenLayout, { class: "home-screen-layout", children: [
       /* @__PURE__ */ u2(LayoutHeader, { children: /* @__PURE__ */ u2(
@@ -10500,6 +10795,7 @@ Build: ${version}
               )
             ] })
           ] }),
+          pill && /* @__PURE__ */ u2("div", { class: "level-progress-pill-row", children: /* @__PURE__ */ u2(Pill, { variant: "notice", children: pill }) }),
           statusLabel && /* @__PURE__ */ u2("span", { class: "level-progress-status", children: [
             statusColor && /* @__PURE__ */ u2(
               "span",
@@ -10510,7 +10806,6 @@ Build: ${version}
             ),
             statusLabel
           ] }),
-          pill && /* @__PURE__ */ u2("div", { class: "level-progress-pill-row", children: /* @__PURE__ */ u2(Pill, { variant: "notice", children: pill }) }),
           /* @__PURE__ */ u2(
             ProgressBarLabeled,
             {
@@ -10900,414 +11195,6 @@ Build: ${version}
     return /* @__PURE__ */ u2("div", { class: "keyboard-hint", children: text });
   }
 
-  // src/ui/speed-check.tsx
-  function noteAnswerMatches(input, expected) {
-    if (input === expected) return true;
-    const resolved = resolveNoteInput(input);
-    return resolved === expected;
-  }
-  var NOTE_BUTTON_CONFIG = {
-    taskType: "note-button",
-    introTitle: "Measuring note button entry times",
-    introText: "We\u2019ll show you the answer \u2014 enter it as fast as you can. This measures your entry speed so the app can set personalized timing targets. 10 quick trials.",
-    trialPrompt: (note) => `Press ${note}`,
-    generateAnswer: pickCalibrationNote,
-    checkAnswer: noteAnswerMatches,
-    label: "note button entry"
-  };
-  var IMPLEMENTED_TASK_TYPES = /* @__PURE__ */ new Set([
-    "note-button"
-  ]);
-  var TOTAL_TRIALS = 10;
-  var WARMUP_TRIALS = 2;
-  var PAUSE_MS = 400;
-  var WRONG_FEEDBACK_MS = 800;
-  function SpeedCheckHeader({ count, onClose }) {
-    return /* @__PURE__ */ u2(LayoutHeader, { children: /* @__PURE__ */ u2(
-      ScreenHeader,
-      {
-        title: "Speed Check",
-        onClose,
-        closeAriaLabel: "Cancel speed check",
-        right: count ? /* @__PURE__ */ u2(Text, { role: "metric-info", children: count }) : void 0
-      }
-    ) });
-  }
-  function useTrialLoop(config, onDone) {
-    const trialRef = A2({
-      active: false,
-      trialIndex: 0,
-      startTime: 0,
-      times: [],
-      prevAnswer: null,
-      targetNote: null,
-      trialTimeout: null
-    });
-    const [trialProgress, setTrialProgress] = d2("");
-    const [promptText, setPromptText] = d2("");
-    const [feedback, setFeedback] = d2(null);
-    const feedbackTimerRef = A2(null);
-    const onDoneRef = A2(onDone);
-    onDoneRef.current = onDone;
-    y2(() => {
-      return () => {
-        trialRef.current.active = false;
-        if (trialRef.current.trialTimeout) {
-          clearTimeout(trialRef.current.trialTimeout);
-        }
-        if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
-      };
-    }, []);
-    const presentNextTrial = q2(() => {
-      const state = trialRef.current;
-      if (!state.active) return;
-      const answer = config.generateAnswer(state.prevAnswer);
-      state.prevAnswer = answer;
-      state.targetNote = answer;
-      state.startTime = performance.now();
-      setTrialProgress(state.trialIndex + 1 + " / " + TOTAL_TRIALS);
-      setPromptText(config.trialPrompt(answer));
-      setFeedback(null);
-    }, [config]);
-    const handleTrialResponse = q2((input) => {
-      const state = trialRef.current;
-      if (!state.active || !state.targetNote) return;
-      if (feedbackTimerRef.current) return;
-      const buttonValue = resolveNoteInput(input) ?? input;
-      if (!config.checkAnswer(input, state.targetNote)) {
-        setFeedback({
-          correct: false,
-          userInput: buttonValue,
-          displayAnswer: state.targetNote
-        });
-        setPromptText("\u2717");
-        feedbackTimerRef.current = setTimeout(() => {
-          feedbackTimerRef.current = null;
-          presentNextTrial();
-        }, WRONG_FEEDBACK_MS);
-        return;
-      }
-      const elapsed = performance.now() - state.startTime;
-      if (state.trialIndex >= WARMUP_TRIALS) state.times.push(elapsed);
-      state.trialIndex++;
-      state.targetNote = null;
-      setPromptText("\u2713");
-      setFeedback(null);
-      if (state.trialIndex >= TOTAL_TRIALS) {
-        state.active = false;
-        onDoneRef.current(computeMedian(state.times) ?? 500);
-      } else {
-        state.trialTimeout = setTimeout(
-          () => presentNextTrial(),
-          PAUSE_MS
-        );
-      }
-    }, [presentNextTrial, config]);
-    const startTrials = q2(() => {
-      const state = trialRef.current;
-      state.active = true;
-      state.trialIndex = 0;
-      state.startTime = 0;
-      state.times = [];
-      state.prevAnswer = null;
-      state.targetNote = null;
-      const timeout = setTimeout(() => presentNextTrial(), 300);
-      return () => {
-        clearTimeout(timeout);
-        state.active = false;
-        if (state.trialTimeout) clearTimeout(state.trialTimeout);
-      };
-    }, [presentNextTrial]);
-    return {
-      trialRef,
-      trialProgress,
-      promptText,
-      feedback,
-      handleTrialResponse,
-      startTrials,
-      setTrialProgress,
-      setPromptText
-    };
-  }
-  function SpeedCheckInput({ onSubmit, wrongFlash }) {
-    const inputRef = A2(null);
-    const [shake, setShake] = d2(false);
-    const shakeTimerRef = A2(null);
-    y2(() => {
-      if (inputRef.current) inputRef.current.focus();
-    }, []);
-    y2(() => {
-      return () => {
-        if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
-      };
-    }, []);
-    const triggerShake = q2(() => {
-      setShake(true);
-      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
-      shakeTimerRef.current = setTimeout(() => {
-        setShake(false);
-        shakeTimerRef.current = null;
-      }, 400);
-    }, []);
-    const handleKeyDown = q2(
-      (e3) => {
-        if (e3.key !== "Enter") return;
-        e3.preventDefault();
-        e3.stopPropagation();
-        const value = inputRef.current?.value.trim() ?? "";
-        if (!value || !isValidNoteInput(value)) {
-          triggerShake();
-          return;
-        }
-        onSubmit(value);
-        if (inputRef.current) inputRef.current.value = "";
-      },
-      [onSubmit, triggerShake]
-    );
-    let cls = "answer-input";
-    if (wrongFlash) cls += " answer-input-wrong answer-input-shake";
-    else if (shake) cls += " answer-input-shake";
-    return /* @__PURE__ */ u2(
-      "input",
-      {
-        ref: inputRef,
-        type: "text",
-        class: cls,
-        placeholder: "Type answer, press Enter",
-        "aria-label": "Type answer, press Enter",
-        onKeyDown: handleKeyDown,
-        autoComplete: "off",
-        autoCorrect: "off",
-        spellcheck: false
-      }
-    );
-  }
-  function SpeedCheckIntro({ title, text }) {
-    return /* @__PURE__ */ u2("div", { class: "calibration-results", children: [
-      /* @__PURE__ */ u2(Text, { role: "heading-section", as: "h2", children: title }),
-      /* @__PURE__ */ u2("p", { children: text })
-    ] });
-  }
-  function SpeedCheckResults({ baseline }) {
-    return /* @__PURE__ */ u2("div", { class: "calibration-results", children: [
-      /* @__PURE__ */ u2(Text, { role: "heading-page", as: "h2", children: "Speed Check Complete" }),
-      /* @__PURE__ */ u2(SpeedThresholdTable, { baseline })
-    ] });
-  }
-  function SpeedCheck({ config, onComplete, onCancel, fixture }) {
-    const [phase, setPhase] = d2(
-      fixture?.phase ?? "intro"
-    );
-    const [baseline, setBaseline] = d2(fixture?.baseline ?? 0);
-    const trials = useTrialLoop(config, (median) => {
-      setBaseline(Math.round(median));
-      setPhase("results");
-    });
-    y2(() => {
-      if (fixture?.trialProgress) trials.setTrialProgress(fixture.trialProgress);
-      if (fixture?.promptAnswer) {
-        trials.setPromptText(config.trialPrompt(fixture.promptAnswer));
-      }
-    }, [fixture]);
-    y2(() => {
-      if (fixture) return;
-      function onKeyDown(e3) {
-        if (e3.key === "Escape") {
-          e3.preventDefault();
-          trials.trialRef.current.active = false;
-          if (trials.trialRef.current.trialTimeout) {
-            clearTimeout(trials.trialRef.current.trialTimeout);
-          }
-          onCancel();
-        }
-      }
-      document.addEventListener("keydown", onKeyDown);
-      return () => document.removeEventListener("keydown", onKeyDown);
-    }, [fixture, onCancel]);
-    y2(() => {
-      if (fixture || phase !== "running") return;
-      return trials.startTrials();
-    }, [fixture, phase, trials.startTrials]);
-    if (phase === "intro") {
-      return /* @__PURE__ */ u2(ScreenLayout, { children: [
-        /* @__PURE__ */ u2(SpeedCheckHeader, { onClose: onCancel }),
-        /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u2(CenteredContent, { children: /* @__PURE__ */ u2(
-          SpeedCheckIntro,
-          {
-            title: config.introTitle,
-            text: config.introText
-          }
-        ) }) }),
-        /* @__PURE__ */ u2(LayoutFooter, { children: /* @__PURE__ */ u2(
-          ActionButton,
-          {
-            variant: "primary",
-            class: "next-btn",
-            onClick: () => setPhase("running"),
-            children: "Start"
-          }
-        ) })
-      ] });
-    }
-    if (phase === "running") {
-      return /* @__PURE__ */ u2(ScreenLayout, { children: [
-        /* @__PURE__ */ u2(
-          SpeedCheckHeader,
-          {
-            count: trials.trialProgress,
-            onClose: onCancel
-          }
-        ),
-        /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u2(
-          QuizStage,
-          {
-            prompt: /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: trials.promptText }),
-            response: /* @__PURE__ */ u2(k, { children: [
-              /* @__PURE__ */ u2(
-                NoteButtons,
-                {
-                  onAnswer: trials.handleTrialResponse,
-                  feedback: trials.feedback
-                }
-              ),
-              /* @__PURE__ */ u2(
-                SpeedCheckInput,
-                {
-                  onSubmit: trials.handleTrialResponse,
-                  wrongFlash: trials.feedback?.correct === false
-                }
-              ),
-              /* @__PURE__ */ u2(KeyboardHint, { type: "note" })
-            ] })
-          }
-        ) })
-      ] });
-    }
-    return /* @__PURE__ */ u2(ScreenLayout, { children: [
-      /* @__PURE__ */ u2(SpeedCheckHeader, { onClose: onCancel }),
-      /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u2(CenteredContent, { children: /* @__PURE__ */ u2(SpeedCheckResults, { baseline }) }) }),
-      /* @__PURE__ */ u2(LayoutFooter, { children: /* @__PURE__ */ u2(
-        ActionButton,
-        {
-          variant: "primary",
-          class: "next-btn",
-          onClick: () => onComplete(baseline),
-          children: "Done"
-        }
-      ) })
-    ] });
-  }
-
-  // src/declarative/answer-utils.ts
-  function resolveAnswerSpec(def, q4) {
-    const spec = def.answer;
-    if ("kind" in spec && spec.kind === "bidirectional") {
-      const dir = def.getDirection(q4);
-      return dir === "fwd" ? spec.fwd : spec.rev;
-    }
-    return spec;
-  }
-  function checkCorrectness(strategy, expected, input) {
-    switch (strategy) {
-      case "exact":
-        return input === expected;
-      case "integer":
-        return parseInt(input, 10) === parseInt(expected, 10);
-      case "note-enharmonic": {
-        const resolved = resolveNoteInput(input) ?? input;
-        return spelledNoteMatchesSemitone(expected, resolved);
-      }
-      case "interval": {
-        const iv = INTERVALS.find((i3) => i3.abbrev === expected);
-        return iv ? intervalMatchesInput(iv, input) : false;
-      }
-    }
-  }
-  function toButtonValue(strategy, value) {
-    if (strategy === "note-enharmonic") return resolveNoteInput(value) ?? value;
-    return value;
-  }
-  function defaultDisplayAnswer(strategy, expected) {
-    return strategy === "note-enharmonic" ? displayNote(expected) : expected;
-  }
-  function checkGenericAnswer(def, currentQRef, lastAnswerRef, isSequential, isMultiTap, _itemId, input) {
-    if (isSequential || isMultiTap) {
-      const sep = input.indexOf(":");
-      return {
-        correct: input.startsWith("__correct__"),
-        correctAnswer: sep >= 0 ? input.slice(sep + 1) : ""
-      };
-    }
-    const q4 = currentQRef.current;
-    const spec = resolveAnswerSpec(def, q4);
-    const expected = spec.getExpectedValue(q4);
-    const normalized = spec.normalizeInput?.(input) ?? input;
-    const correct = checkCorrectness(spec.comparison, expected, normalized);
-    const display = spec.getDisplayAnswer?.(q4) ?? defaultDisplayAnswer(spec.comparison, expected);
-    lastAnswerRef.current = {
-      expected,
-      comparison: spec.comparison,
-      normalizedInput: normalized
-    };
-    return { correct, correctAnswer: display };
-  }
-  function resolveGroupLabel(label) {
-    return typeof label === "function" ? label() : label;
-  }
-  function getInputPlaceholder(def, currentQ, isSequential) {
-    if (isSequential) {
-      const seq = def.sequential;
-      if (!seq.batchPlaceholder) return void 0;
-      return typeof seq.batchPlaceholder === "string" ? seq.batchPlaceholder : currentQ ? seq.batchPlaceholder(currentQ) : void 0;
-    }
-    if (!def.inputPlaceholder) return void 0;
-    return typeof def.inputPlaceholder === "string" ? def.inputPlaceholder : currentQ ? def.inputPlaceholder(currentQ) : void 0;
-  }
-
-  // src/ui/sequential-slots.tsx
-  function SequentialSlots({ entries, evaluated, correctTones }) {
-    const anyWrong = evaluated?.some((e3) => !e3.correct) ?? false;
-    const countMismatch = !!(evaluated && correctTones && entries.length !== correctTones.length);
-    const showCorrection = (anyWrong || countMismatch) && !!correctTones;
-    const tones = correctTones ?? [];
-    const correctionCount = showCorrection ? Math.max(entries.length, tones.length) : 0;
-    const missingCount = showCorrection ? Math.max(0, tones.length - entries.length) : 0;
-    return /* @__PURE__ */ u2(Card, { variant: "well", padding: "compact", class: "seq-slots-container seq-card", children: [
-      /* @__PURE__ */ u2("div", { class: "seq-slots", children: [
-        entries.map((entry, i3) => {
-          let cls = "seq-slot";
-          let content;
-          if (evaluated && i3 < evaluated.length) {
-            content = evaluated[i3].display;
-            cls += evaluated[i3].correct ? " correct" : " wrong";
-          } else {
-            content = entry.display;
-            cls += " filled";
-          }
-          return /* @__PURE__ */ u2("span", { class: cls, children: content }, i3);
-        }),
-        Array.from(
-          { length: missingCount },
-          (_3, i3) => /* @__PURE__ */ u2("span", { class: "seq-slot", children: "\xA0" }, `m${i3}`)
-        ),
-        !evaluated && /* @__PURE__ */ u2("span", { class: "seq-slot seq-placeholder" })
-      ] }),
-      showCorrection ? /* @__PURE__ */ u2("div", { class: "seq-correct-row", children: Array.from({ length: correctionCount }, (_3, i3) => {
-        const tone = tones[i3];
-        const wasCorrect = evaluated && i3 < evaluated.length && evaluated[i3].correct;
-        return !tone || wasCorrect ? /* @__PURE__ */ u2("span", { class: "seq-correct-note", children: "\xA0" }, i3) : /* @__PURE__ */ u2("span", { class: "seq-correct-note", children: tone }, i3);
-      }) }) : /* @__PURE__ */ u2(
-        "div",
-        {
-          class: "seq-correct-row",
-          "aria-hidden": "true",
-          style: "visibility:hidden",
-          children: /* @__PURE__ */ u2("span", { class: "seq-correct-note", children: "\xA0" })
-        }
-      )
-    ] });
-  }
-
   // src/ui/interactive-fretboard.tsx
   function readCSSColor(prop, fallback) {
     try {
@@ -11401,7 +11288,9 @@ Build: ${version}
     evaluated,
     stringCount = 6,
     fretCount = 13,
-    mutedStrings
+    mutedStrings,
+    targetPosition,
+    wrongTapPosition
   }) {
     const wrapperRef = A2(null);
     const svgHTML = T2(
@@ -11451,8 +11340,22 @@ Build: ${version}
         for (const posKey of tappedPositions) {
           setCircleFill2(root, posKey, colorSel);
         }
+        if (targetPosition) setCircleFill2(root, targetPosition, colorSel);
+        if (wrongTapPosition) {
+          const colorBad = readCSSColor("--color-error", "#d32f2f");
+          const colorBadFill = readCSSColor("--color-error-bg-strong", "#f4c2c2");
+          setCircleRing(root, wrongTapPosition, colorBad, colorBadFill);
+        }
       }
-    }, [tappedPositions, evaluated, svgHTML, mutedStrings, stringCount]);
+    }, [
+      tappedPositions,
+      evaluated,
+      svgHTML,
+      mutedStrings,
+      stringCount,
+      targetPosition,
+      wrongTapPosition
+    ]);
     return /* @__PURE__ */ u2("div", { class: "interactive-fretboard", children: /* @__PURE__ */ u2(
       "div",
       {
@@ -11461,6 +11364,482 @@ Build: ${version}
         dangerouslySetInnerHTML: { __html: svgHTML }
       }
     ) });
+  }
+
+  // src/ui/speed-check.tsx
+  function noteAnswerMatches(input, expected) {
+    if (input === expected) return true;
+    const resolved = resolveNoteInput(input);
+    return resolved === expected;
+  }
+  var NOTE_BUTTON_CONFIG = {
+    taskType: "note-button",
+    introTitle: "Measuring note button entry times",
+    introText: "We\u2019ll show you the answer \u2014 enter it as fast as you can. This measures your entry speed so the app can set personalized timing targets. 10 quick trials.",
+    trialPrompt: (note) => `Press ${note}`,
+    generateAnswer: pickCalibrationNote,
+    checkAnswer: noteAnswerMatches,
+    label: "note button entry",
+    variant: "text"
+  };
+  function makeFretboardTapConfig(stringCount) {
+    return {
+      taskType: "fretboard-tap",
+      introTitle: "Measuring fret tap times",
+      introText: "We\u2019ll highlight a fret \u2014 tap it as fast as you can. This measures your fretboard tap speed so the app can set personalized timing targets. 10 quick trials.",
+      // Fretboard variant doesn't use text prompt — the dot is the prompt.
+      trialPrompt: () => "",
+      generateAnswer: (prev, rng) => pickCalibrationFretPosition(prev, stringCount, rng),
+      checkAnswer: (input, expected) => input === expected,
+      label: "fret tap",
+      variant: "fretboard",
+      stringCount
+    };
+  }
+  var IMPLEMENTED_TASK_TYPES = /* @__PURE__ */ new Set([
+    "note-button",
+    "fretboard-tap"
+  ]);
+  var TOTAL_TRIALS = 10;
+  var WARMUP_TRIALS = 2;
+  var PAUSE_MS = 400;
+  var WRONG_FEEDBACK_MS = 800;
+  function SpeedCheckHeader({ count, onClose }) {
+    return /* @__PURE__ */ u2(LayoutHeader, { children: /* @__PURE__ */ u2(
+      ScreenHeader,
+      {
+        title: "Speed Check",
+        onClose,
+        closeAriaLabel: "Cancel speed check",
+        right: count ? /* @__PURE__ */ u2(Text, { role: "metric-info", children: count }) : void 0
+      }
+    ) });
+  }
+  function useTrialLoop(config, onDone) {
+    const trialRef = A2({
+      active: false,
+      trialIndex: 0,
+      startTime: 0,
+      times: [],
+      prevAnswer: null,
+      targetNote: null,
+      trialTimeout: null
+    });
+    const [trialProgress, setTrialProgress] = d2("");
+    const [promptText, setPromptText] = d2("");
+    const [currentTarget, setCurrentTarget] = d2(null);
+    const [feedback, setFeedback] = d2(null);
+    const feedbackTimerRef = A2(null);
+    const onDoneRef = A2(onDone);
+    onDoneRef.current = onDone;
+    y2(() => {
+      return () => {
+        trialRef.current.active = false;
+        if (trialRef.current.trialTimeout) {
+          clearTimeout(trialRef.current.trialTimeout);
+        }
+        if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+      };
+    }, []);
+    const presentNextTrial = q2(() => {
+      const state = trialRef.current;
+      if (!state.active) return;
+      const answer = config.generateAnswer(state.prevAnswer);
+      state.prevAnswer = answer;
+      state.targetNote = answer;
+      state.startTime = performance.now();
+      setTrialProgress(state.trialIndex + 1 + " / " + TOTAL_TRIALS);
+      setPromptText(config.trialPrompt(answer));
+      setCurrentTarget(answer);
+      setFeedback(null);
+    }, [config]);
+    const handleTrialResponse = q2((input) => {
+      const state = trialRef.current;
+      if (!state.active || !state.targetNote) return;
+      if (feedbackTimerRef.current) return;
+      const buttonValue = resolveNoteInput(input) ?? input;
+      if (!config.checkAnswer(input, state.targetNote)) {
+        setFeedback({
+          correct: false,
+          userInput: buttonValue,
+          displayAnswer: state.targetNote
+        });
+        setPromptText("\u2717");
+        feedbackTimerRef.current = setTimeout(() => {
+          feedbackTimerRef.current = null;
+          presentNextTrial();
+        }, WRONG_FEEDBACK_MS);
+        return;
+      }
+      const elapsed = performance.now() - state.startTime;
+      if (state.trialIndex >= WARMUP_TRIALS) state.times.push(elapsed);
+      state.trialIndex++;
+      state.targetNote = null;
+      setPromptText("\u2713");
+      setCurrentTarget(null);
+      setFeedback(null);
+      if (state.trialIndex >= TOTAL_TRIALS) {
+        state.active = false;
+        onDoneRef.current(computeMedian(state.times) ?? 500);
+      } else {
+        state.trialTimeout = setTimeout(
+          () => presentNextTrial(),
+          PAUSE_MS
+        );
+      }
+    }, [presentNextTrial, config]);
+    const startTrials = q2(() => {
+      const state = trialRef.current;
+      state.active = true;
+      state.trialIndex = 0;
+      state.startTime = 0;
+      state.times = [];
+      state.prevAnswer = null;
+      state.targetNote = null;
+      const timeout = setTimeout(() => presentNextTrial(), 300);
+      return () => {
+        clearTimeout(timeout);
+        state.active = false;
+        if (state.trialTimeout) clearTimeout(state.trialTimeout);
+      };
+    }, [presentNextTrial]);
+    return {
+      trialRef,
+      trialProgress,
+      promptText,
+      currentTarget,
+      feedback,
+      handleTrialResponse,
+      startTrials,
+      setTrialProgress,
+      setPromptText,
+      setCurrentTarget
+    };
+  }
+  function SpeedCheckInput({ onSubmit, wrongFlash }) {
+    const inputRef = A2(null);
+    const [shake, setShake] = d2(false);
+    const shakeTimerRef = A2(null);
+    y2(() => {
+      if (inputRef.current) inputRef.current.focus();
+    }, []);
+    y2(() => {
+      return () => {
+        if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      };
+    }, []);
+    const triggerShake = q2(() => {
+      setShake(true);
+      if (shakeTimerRef.current !== null) clearTimeout(shakeTimerRef.current);
+      shakeTimerRef.current = setTimeout(() => {
+        setShake(false);
+        shakeTimerRef.current = null;
+      }, 400);
+    }, []);
+    const handleKeyDown = q2(
+      (e3) => {
+        if (e3.key !== "Enter") return;
+        e3.preventDefault();
+        e3.stopPropagation();
+        const value = inputRef.current?.value.trim() ?? "";
+        if (!value || !isValidNoteInput(value)) {
+          triggerShake();
+          return;
+        }
+        onSubmit(value);
+        if (inputRef.current) inputRef.current.value = "";
+      },
+      [onSubmit, triggerShake]
+    );
+    let cls = "answer-input";
+    if (wrongFlash) cls += " answer-input-wrong answer-input-shake";
+    else if (shake) cls += " answer-input-shake";
+    return /* @__PURE__ */ u2(
+      "input",
+      {
+        ref: inputRef,
+        type: "text",
+        class: cls,
+        placeholder: "Type answer, press Enter",
+        "aria-label": "Type answer, press Enter",
+        onKeyDown: handleKeyDown,
+        autoComplete: "off",
+        autoCorrect: "off",
+        spellcheck: false
+      }
+    );
+  }
+  var EMPTY_POSITION_SET = /* @__PURE__ */ new Set();
+  function FretboardSpeedCheckTarget({ stringCount, targetPosition, wrongTapPosition, onTap }) {
+    const fretCount = T2(() => CALIBRATION_MAX_FRET + 1, []);
+    return /* @__PURE__ */ u2(
+      InteractiveFretboard,
+      {
+        onTap,
+        tappedPositions: EMPTY_POSITION_SET,
+        evaluated: null,
+        stringCount,
+        fretCount,
+        targetPosition,
+        wrongTapPosition
+      }
+    );
+  }
+  function SpeedCheckIntro({ title, text }) {
+    return /* @__PURE__ */ u2("div", { class: "calibration-results", children: [
+      /* @__PURE__ */ u2(Text, { role: "heading-section", as: "h2", children: title }),
+      /* @__PURE__ */ u2("p", { children: text })
+    ] });
+  }
+  function SpeedCheckResults({ baseline }) {
+    return /* @__PURE__ */ u2("div", { class: "calibration-results", children: [
+      /* @__PURE__ */ u2(Text, { role: "heading-page", as: "h2", children: "Speed Check Complete" }),
+      /* @__PURE__ */ u2(SpeedThresholdTable, { baseline })
+    ] });
+  }
+  function SpeedCheck({ config, onComplete, onCancel, fixture }) {
+    const [phase, setPhase] = d2(
+      fixture?.phase ?? "intro"
+    );
+    const [baseline, setBaseline] = d2(fixture?.baseline ?? 0);
+    const trials = useTrialLoop(config, (median) => {
+      setBaseline(Math.round(median));
+      setPhase("results");
+    });
+    y2(() => {
+      if (fixture?.trialProgress) trials.setTrialProgress(fixture.trialProgress);
+      if (fixture?.promptAnswer) {
+        trials.setPromptText(config.trialPrompt(fixture.promptAnswer));
+        if (config.variant === "fretboard") {
+          trials.setCurrentTarget(fixture.promptAnswer);
+        }
+      }
+    }, [fixture]);
+    y2(() => {
+      if (fixture) return;
+      function onKeyDown(e3) {
+        if (e3.key === "Escape") {
+          e3.preventDefault();
+          trials.trialRef.current.active = false;
+          if (trials.trialRef.current.trialTimeout) {
+            clearTimeout(trials.trialRef.current.trialTimeout);
+          }
+          onCancel();
+        }
+      }
+      document.addEventListener("keydown", onKeyDown);
+      return () => document.removeEventListener("keydown", onKeyDown);
+    }, [fixture, onCancel]);
+    y2(() => {
+      if (fixture || phase !== "running") return;
+      return trials.startTrials();
+    }, [fixture, phase, trials.startTrials]);
+    if (phase === "intro") {
+      return /* @__PURE__ */ u2(ScreenLayout, { children: [
+        /* @__PURE__ */ u2(SpeedCheckHeader, { onClose: onCancel }),
+        /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u2(CenteredContent, { children: /* @__PURE__ */ u2(
+          SpeedCheckIntro,
+          {
+            title: config.introTitle,
+            text: config.introText
+          }
+        ) }) }),
+        /* @__PURE__ */ u2(LayoutFooter, { children: /* @__PURE__ */ u2(
+          ActionButton,
+          {
+            variant: "primary",
+            class: "next-btn",
+            onClick: () => setPhase("running"),
+            children: "Start"
+          }
+        ) })
+      ] });
+    }
+    if (phase === "running") {
+      const isFretboard = config.variant === "fretboard";
+      const promptContent = isFretboard ? trials.promptText || "\xA0" : trials.promptText;
+      const promptNode = /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptContent });
+      const wrongTap = trials.feedback?.correct === false ? trials.feedback.userInput : null;
+      return /* @__PURE__ */ u2(ScreenLayout, { children: [
+        /* @__PURE__ */ u2(
+          SpeedCheckHeader,
+          {
+            count: trials.trialProgress,
+            onClose: onCancel
+          }
+        ),
+        /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: isFretboard ? (
+          // Fretboard in the prompt slot so the existing 70/30 CSS
+          // rule (.quiz-stage:has(.quiz-stage-prompt svg.fretboard))
+          // gives the fretboard the majority of the vertical space.
+          /* @__PURE__ */ u2(
+            QuizStage,
+            {
+              prompt: /* @__PURE__ */ u2(k, { children: [
+                promptNode,
+                /* @__PURE__ */ u2(
+                  FretboardSpeedCheckTarget,
+                  {
+                    stringCount: config.stringCount,
+                    targetPosition: trials.currentTarget,
+                    wrongTapPosition: wrongTap,
+                    onTap: trials.handleTrialResponse
+                  }
+                )
+              ] }),
+              response: null
+            }
+          )
+        ) : /* @__PURE__ */ u2(
+          QuizStage,
+          {
+            prompt: promptNode,
+            response: /* @__PURE__ */ u2(k, { children: [
+              /* @__PURE__ */ u2(
+                NoteButtons,
+                {
+                  onAnswer: trials.handleTrialResponse,
+                  feedback: trials.feedback
+                }
+              ),
+              /* @__PURE__ */ u2(
+                SpeedCheckInput,
+                {
+                  onSubmit: trials.handleTrialResponse,
+                  wrongFlash: trials.feedback?.correct === false
+                }
+              ),
+              /* @__PURE__ */ u2(KeyboardHint, { type: "note" })
+            ] })
+          }
+        ) })
+      ] });
+    }
+    return /* @__PURE__ */ u2(ScreenLayout, { children: [
+      /* @__PURE__ */ u2(SpeedCheckHeader, { onClose: onCancel }),
+      /* @__PURE__ */ u2(LayoutMain, { scrollable: false, children: /* @__PURE__ */ u2(CenteredContent, { children: /* @__PURE__ */ u2(SpeedCheckResults, { baseline }) }) }),
+      /* @__PURE__ */ u2(LayoutFooter, { children: /* @__PURE__ */ u2(
+        ActionButton,
+        {
+          variant: "primary",
+          class: "next-btn",
+          onClick: () => onComplete(baseline),
+          children: "Done"
+        }
+      ) })
+    ] });
+  }
+
+  // src/declarative/answer-utils.ts
+  function resolveAnswerSpec(def, q4) {
+    const spec = def.answer;
+    if ("kind" in spec && spec.kind === "bidirectional") {
+      const dir = def.getDirection(q4);
+      return dir === "fwd" ? spec.fwd : spec.rev;
+    }
+    return spec;
+  }
+  function checkCorrectness(strategy, expected, input) {
+    switch (strategy) {
+      case "exact":
+        return input === expected;
+      case "integer":
+        return parseInt(input, 10) === parseInt(expected, 10);
+      case "note-enharmonic": {
+        const resolved = resolveNoteInput(input) ?? input;
+        return spelledNoteMatchesSemitone(expected, resolved);
+      }
+      case "interval": {
+        const iv = INTERVALS.find((i3) => i3.abbrev === expected);
+        return iv ? intervalMatchesInput(iv, input) : false;
+      }
+    }
+  }
+  function toButtonValue(strategy, value) {
+    if (strategy === "note-enharmonic") {
+      return resolveNoteInput(value) ?? spelledNoteToCanonical(value);
+    }
+    return value;
+  }
+  function defaultDisplayAnswer(strategy, expected) {
+    return strategy === "note-enharmonic" ? displayNote(expected) : expected;
+  }
+  function checkGenericAnswer(def, currentQRef, lastAnswerRef, isSequential, isMultiTap, _itemId, input) {
+    if (isSequential || isMultiTap) {
+      const sep = input.indexOf(":");
+      return {
+        correct: input.startsWith("__correct__"),
+        correctAnswer: sep >= 0 ? input.slice(sep + 1) : ""
+      };
+    }
+    const q4 = currentQRef.current;
+    const spec = resolveAnswerSpec(def, q4);
+    const expected = spec.getExpectedValue(q4);
+    const normalized = spec.normalizeInput?.(input) ?? input;
+    const correct = checkCorrectness(spec.comparison, expected, normalized);
+    const display = spec.getDisplayAnswer?.(q4) ?? defaultDisplayAnswer(spec.comparison, expected);
+    lastAnswerRef.current = {
+      expected,
+      comparison: spec.comparison,
+      normalizedInput: normalized
+    };
+    return { correct, correctAnswer: display };
+  }
+  function resolveGroupLabel(label) {
+    return typeof label === "function" ? label() : label;
+  }
+  function getInputPlaceholder(def, currentQ, isSequential) {
+    if (isSequential) {
+      const seq = def.sequential;
+      if (!seq.batchPlaceholder) return void 0;
+      return typeof seq.batchPlaceholder === "string" ? seq.batchPlaceholder : currentQ ? seq.batchPlaceholder(currentQ) : void 0;
+    }
+    if (!def.inputPlaceholder) return void 0;
+    return typeof def.inputPlaceholder === "string" ? def.inputPlaceholder : currentQ ? def.inputPlaceholder(currentQ) : void 0;
+  }
+
+  // src/ui/sequential-slots.tsx
+  function SequentialSlots({ entries, evaluated, correctTones }) {
+    const anyWrong = evaluated?.some((e3) => !e3.correct) ?? false;
+    const countMismatch = !!(evaluated && correctTones && entries.length !== correctTones.length);
+    const showCorrection = (anyWrong || countMismatch) && !!correctTones;
+    const tones = correctTones ?? [];
+    const correctionCount = showCorrection ? Math.max(entries.length, tones.length) : 0;
+    const missingCount = showCorrection ? Math.max(0, tones.length - entries.length) : 0;
+    return /* @__PURE__ */ u2(Card, { variant: "well", padding: "compact", class: "seq-slots-container seq-card", children: [
+      /* @__PURE__ */ u2("div", { class: "seq-slots", children: [
+        entries.map((entry, i3) => {
+          let cls = "seq-slot";
+          let content;
+          if (evaluated && i3 < evaluated.length) {
+            content = evaluated[i3].display;
+            cls += evaluated[i3].correct ? " correct" : " wrong";
+          } else {
+            content = entry.display;
+            cls += " filled";
+          }
+          return /* @__PURE__ */ u2("span", { class: cls, children: content }, i3);
+        }),
+        Array.from(
+          { length: missingCount },
+          (_3, i3) => /* @__PURE__ */ u2("span", { class: "seq-slot", children: "\xA0" }, `m${i3}`)
+        ),
+        !evaluated && /* @__PURE__ */ u2("span", { class: "seq-slot seq-placeholder" })
+      ] }),
+      showCorrection ? /* @__PURE__ */ u2("div", { class: "seq-correct-row", children: Array.from({ length: correctionCount }, (_3, i3) => {
+        const tone = tones[i3];
+        const wasCorrect = evaluated && i3 < evaluated.length && evaluated[i3].correct;
+        return !tone || wasCorrect ? /* @__PURE__ */ u2("span", { class: "seq-correct-note", children: "\xA0" }, i3) : /* @__PURE__ */ u2("span", { class: "seq-correct-note", children: tone }, i3);
+      }) }) : /* @__PURE__ */ u2(
+        "div",
+        {
+          class: "seq-correct-row",
+          "aria-hidden": "true",
+          style: "visibility:hidden",
+          children: /* @__PURE__ */ u2("span", { class: "seq-correct-note", children: "\xA0" })
+        }
+      )
+    ] });
   }
 
   // src/declarative/quiz-areas.tsx
@@ -11696,6 +12075,13 @@ Build: ${version}
     lastAnswerRef,
     instruction
   }) {
+    const showFeedbackText = engine.state.answered && engine.state.feedbackCorrect !== null && !ctrl.renderPrompt;
+    const isCorrect = engine.state.feedbackCorrect === true;
+    const displayAnswer = engine.state.feedbackDisplayAnswer ?? "";
+    const userInputDisplay = lastAnswerRef.current ? toButtonValue(
+      lastAnswerRef.current.comparison,
+      lastAnswerRef.current.normalizedInput
+    ) : engine.state.feedbackUserInput ?? "";
     return /* @__PURE__ */ u2(
       QuizStage,
       {
@@ -11704,6 +12090,19 @@ Build: ${version}
           ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText })
         ] }),
         response: /* @__PURE__ */ u2(k, { children: [
+          showFeedbackText ? /* @__PURE__ */ u2("div", { class: "answer-feedback-text", children: isCorrect ? /* @__PURE__ */ u2("span", { class: "correct", children: [
+            "\u2713 ",
+            displayNote(displayAnswer)
+          ] }) : /* @__PURE__ */ u2(k, { children: [
+            /* @__PURE__ */ u2("span", { class: "incorrect", children: [
+              "\u2717 ",
+              displayNote(userInputDisplay)
+            ] }),
+            /* @__PURE__ */ u2("span", { class: "correct", children: [
+              "\u2713 ",
+              displayNote(displayAnswer)
+            ] })
+          ] }) }) : !ctrl.renderPrompt && /* @__PURE__ */ u2("div", { class: "answer-feedback-text", style: "visibility:hidden", children: "\xA0" }),
           /* @__PURE__ */ u2(
             ResponseButtons,
             {
@@ -11947,11 +12346,11 @@ Build: ${version}
   function singleLevelSuggestion(selector, allItems2) {
     const anySeen = allItems2.some((id) => selector.getStats(id) !== null);
     if (!anySeen) return { verb: "Start", levels: [] };
-    if (selector.checkAllAutomatic(allItems2)) {
-      return { verb: "All items automatic! Practice something else", levels: [] };
-    }
     if (selector.checkNeedsReview(allItems2)) {
       return { verb: "Review", levels: [] };
+    }
+    if (selector.checkAllAutomatic(allItems2)) {
+      return { verb: "All items automatic! Practice something else", levels: [] };
     }
     return { verb: "Practice", levels: [] };
   }
@@ -12112,6 +12511,7 @@ Build: ${version}
           }
         ) }) : void 0,
         baseline: onCalibrate ? learner.motorBaseline : void 0,
+        motorTaskType: def.motorTaskType,
         onCalibrate,
         activeTab: ps.activeTab,
         onTabSwitch: ps.setActiveTab,
@@ -12145,6 +12545,7 @@ Build: ${version}
       roundTimerExpired: false,
       roundResponseTimes: [],
       roundDurationMs: 0,
+      roundUseFlats: false,
       // Progress tracking
       masteredCount: 0,
       totalEnabledCount: 0,
@@ -12163,7 +12564,7 @@ Build: ${version}
       answersEnabled: false
     };
   }
-  function engineStart(state) {
+  function engineStart(state, rng = Math.random) {
     return {
       ...state,
       phase: "active",
@@ -12175,7 +12576,8 @@ Build: ${version}
       roundAnswered: 0,
       roundCorrect: 0,
       roundTimerExpired: false,
-      roundResponseTimes: []
+      roundResponseTimes: [],
+      roundUseFlats: rng() < 0.5
     };
   }
   function engineNextQuestion(state, nextItemId, nowMs) {
@@ -12199,7 +12601,7 @@ Build: ${version}
       ...state,
       answered: true,
       answersEnabled: false,
-      feedbackText: isCorrect ? "Correct!" : "Incorrect \u2014 " + correctAnswer,
+      feedbackText: isCorrect ? "Correct \u2014 " + correctAnswer : "Incorrect \u2014 " + correctAnswer,
       feedbackClass: isCorrect ? "feedback correct" : "feedback incorrect",
       feedbackCorrect: isCorrect,
       feedbackDisplayAnswer: correctAnswer,
@@ -12230,7 +12632,7 @@ Build: ${version}
       hintText: ""
     };
   }
-  function engineContinueRound(state) {
+  function engineContinueRound(state, rng = Math.random) {
     return {
       ...state,
       phase: "active",
@@ -12238,7 +12640,8 @@ Build: ${version}
       roundAnswered: 0,
       roundCorrect: 0,
       roundTimerExpired: false,
-      roundResponseTimes: []
+      roundResponseTimes: [],
+      roundUseFlats: rng() < 0.5
     };
   }
   function engineStop(_state) {
@@ -12246,15 +12649,15 @@ Build: ${version}
   }
   function engineUpdateIdleMessage(state, allMastered, needsReview2) {
     if (state.phase !== "idle") return state;
+    if (needsReview2) {
+      return { ...state, masteryText: "Time to review?", showMastery: true };
+    }
     if (allMastered) {
       return {
         ...state,
         masteryText: "Looks like you\u2019ve got this!",
         showMastery: true
       };
-    }
-    if (needsReview2) {
-      return { ...state, masteryText: "Time to review?", showMastery: true };
     }
     return { ...state, masteryText: "", showMastery: false };
   }
@@ -13011,8 +13414,14 @@ Build: ${version}
   function useGenericDerivedState(def, engine, learner, groupScopeResult, currentQRef, seqInput, multiTapInput, isSequential, container, onMount, presentationPhase, deactivateCleanup) {
     const currentQ = T2(() => {
       const id = engine.state.currentItemId;
-      return !id || engine.state.phase === "idle" ? null : def.getQuestion(id);
-    }, [engine.state.currentItemId, engine.state.phase, def]);
+      if (!id || engine.state.phase === "idle") return null;
+      return def.getQuestion(id, { useFlats: engine.state.roundUseFlats });
+    }, [
+      engine.state.currentItemId,
+      engine.state.phase,
+      engine.state.roundUseFlats,
+      def
+    ]);
     currentQRef.current = currentQ;
     if (isSequential) seqInput.resetOnItemChange(engine.state.currentItemId);
     if (def.multiTap) multiTapInput.resetOnItemChange(engine.state.currentItemId);
@@ -13175,10 +13584,11 @@ Build: ${version}
       ] });
     }
     if (sc.speedCheck) {
+      const speedCheckConfig = def.motorTaskType === "fretboard-tap" ? makeFretboardTapConfig(def.multiTap?.stringCount ?? 6) : NOTE_BUTTON_CONFIG;
       return /* @__PURE__ */ u2(
         SpeedCheck,
         {
-          config: NOTE_BUTTON_CONFIG,
+          config: speedCheckConfig,
           fixture: typeof sc.speedCheck === "object" ? sc.speedCheck : void 0,
           onComplete: (baseline) => {
             learner.applyBaseline(baseline);
