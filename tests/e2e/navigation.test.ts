@@ -66,7 +66,7 @@ describe('navigation lifecycle (E2E)', () => {
 
     // Mode should be active, home hidden
     const modeActive = await page
-      .locator('#mode-noteSemitones.mode-active')
+      .locator('#skill-noteSemitones.skill-active')
       .isVisible();
     assert.ok(modeActive, 'mode should be active');
     const homeHidden = await page
@@ -75,7 +75,7 @@ describe('navigation lifecycle (E2E)', () => {
     assert.ok(homeHidden > 0, 'home screen should be hidden');
 
     // Click back/close button
-    await page.click('#mode-noteSemitones .close-btn');
+    await page.click('#skill-noteSemitones .close-btn');
     await page.waitForTimeout(300);
 
     // Home should be visible again
@@ -85,7 +85,7 @@ describe('navigation lifecycle (E2E)', () => {
 
     // Mode should no longer be active
     const modeGone = await page
-      .locator('#mode-noteSemitones.mode-active')
+      .locator('#skill-noteSemitones.skill-active')
       .count();
     assert.equal(modeGone, 0, 'mode should not be active after back');
   });
@@ -109,19 +109,19 @@ describe('navigation lifecycle (E2E)', () => {
 
     // Quiz should be active
     const active = await page
-      .locator('#mode-noteSemitones.phase-active')
+      .locator('#skill-noteSemitones.phase-active')
       .isVisible();
     assert.ok(active, 'quiz should be active');
 
     // Press Escape — should stop quiz but stay in mode
     await page.keyboard.press('Escape');
-    await page.waitForSelector('#mode-noteSemitones.phase-idle', {
+    await page.waitForSelector('#skill-noteSemitones.phase-idle', {
       timeout: 3000,
     });
 
     // Mode should still be active (not returned to home)
     const modeStillActive = await page
-      .locator('#mode-noteSemitones.mode-active')
+      .locator('#skill-noteSemitones.skill-active')
       .isVisible();
     assert.ok(
       modeStillActive,
@@ -142,14 +142,14 @@ describe('navigation lifecycle (E2E)', () => {
     await navigateToMode(page, 'semitoneMath');
 
     // Switch to custom mode so group toggles are visible
-    await page.locator('#mode-semitoneMath .segmented-btn', {
+    await page.locator('#skill-semitoneMath .segmented-btn', {
       hasText: 'Custom',
     }).click();
     await page.waitForTimeout(200);
 
     // Toggle off a group (click first active toggle)
     const firstToggle = page.locator(
-      '#mode-semitoneMath .level-toggle-btn.active',
+      '#skill-semitoneMath .level-toggle-btn.active',
     ).first();
     const toggleExists = await firstToggle.isVisible().catch(() => false);
 
@@ -175,14 +175,14 @@ describe('navigation lifecycle (E2E)', () => {
       await page.waitForTimeout(300);
 
       // Switch to custom mode again to check toggles
-      await page.locator('#mode-semitoneMath .segmented-btn', {
+      await page.locator('#skill-semitoneMath .segmented-btn', {
         hasText: 'Custom',
       }).click();
       await page.waitForTimeout(200);
 
       // The toggle we turned off should still be off
       const toggleAfter = page.locator(
-        `#mode-semitoneMath .level-toggle-btn:has-text("${toggleLabel?.trim()}")`,
+        `#skill-semitoneMath .level-toggle-btn:has-text("${toggleLabel?.trim()}")`,
       );
       const toggleAfterClass = await toggleAfter.getAttribute('class') ?? '';
       assert.ok(

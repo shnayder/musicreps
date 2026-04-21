@@ -7,7 +7,7 @@ import {
   rankSkillRecommendations,
   type SkillRecommendation,
 } from './home-recommendations.ts';
-import type { ModeProgressEntry } from './mode-progress-manifest.ts';
+import type { SkillProgressEntry } from './skill-progress-manifest.ts';
 import { createMemoryStorage } from './adaptive.ts';
 import type { StorageAdapter } from './types.ts';
 
@@ -17,25 +17,25 @@ import type { StorageAdapter } from './types.ts';
 
 /** Build a minimal mode entry with N groups of M items each. */
 function makeEntry(
-  modeId: string,
-  groupCount: number,
-  itemsPerGroup: number = 4,
-): ModeProgressEntry {
-  const groups: { id: string; label: string; getItemIds: () => string[] }[] =
+  skillId: string,
+  levelCount: number,
+  itemsPerLevel: number = 4,
+): SkillProgressEntry {
+  const levels: { id: string; label: string; getItemIds: () => string[] }[] =
     [];
-  for (let g = 0; g < groupCount; g++) {
+  for (let g = 0; g < levelCount; g++) {
     const ids: string[] = [];
-    for (let i = 0; i < itemsPerGroup; i++) {
-      ids.push(`${modeId}-g${g}-i${i}`);
+    for (let i = 0; i < itemsPerLevel; i++) {
+      ids.push(`${skillId}-g${g}-i${i}`);
     }
     const id = `g${g}`;
-    groups.push({ id, label: `Group ${g}`, getItemIds: () => ids });
+    levels.push({ id, label: `Level ${g}`, getItemIds: () => ids });
   }
   return {
-    modeId,
-    namespace: modeId,
-    groups,
-    allItemIds: () => groups.flatMap((g) => g.getItemIds()),
+    skillId,
+    namespace: skillId,
+    levels,
+    allItemIds: () => levels.flatMap((g) => g.getItemIds()),
   };
 }
 
@@ -110,7 +110,7 @@ describe('computeSkillRecommendation', () => {
     const entry = makeEntry('test', 3);
     const storage = createMemoryStorage();
     // Seed group 0 as stale (was fast, now decayed)
-    seedStale(storage, entry.groups[0].getItemIds());
+    seedStale(storage, entry.levels[0].getItemIds());
     const result = computeSkillRecommendation(
       entry,
       storage,
@@ -120,7 +120,7 @@ describe('computeSkillRecommendation', () => {
     );
     assert.equal(result.type, 'review');
     assert.equal(result.cueLabel, 'Review');
-    assert.equal(result.detail, 'Review Group 0');
+    assert.equal(result.detail, 'Review Level 0');
     assert.ok(result.urgency > 0);
   });
 
@@ -128,7 +128,7 @@ describe('computeSkillRecommendation', () => {
     const entry = makeEntry('test', 3);
     const storage = createMemoryStorage();
     // Seed group 0 as slow (working, not automatic)
-    seedSlow(storage, entry.groups[0].getItemIds());
+    seedSlow(storage, entry.levels[0].getItemIds());
     const result = computeSkillRecommendation(
       entry,
       storage,
@@ -144,7 +144,7 @@ describe('computeSkillRecommendation', () => {
     const entry = makeEntry('test', 3);
     const storage = createMemoryStorage();
     // Seed group 0 as automatic → expansion gate should open
-    seedAutomatic(storage, entry.groups[0].getItemIds());
+    seedAutomatic(storage, entry.levels[0].getItemIds());
     const result = computeSkillRecommendation(
       entry,
       storage,
@@ -154,14 +154,14 @@ describe('computeSkillRecommendation', () => {
     );
     assert.equal(result.type, 'start');
     assert.equal(result.cueLabel, 'Start');
-    assert.equal(result.detail, 'Start Group 1');
+    assert.equal(result.detail, 'Start Level 1');
   });
 
   it('solid + fresh level gets no active rec (practiced enough)', () => {
     const entry = makeEntry('test', 1, 10);
     const storage = createMemoryStorage();
     // Seed items with speed in solid range + good stability → scheduled review.
-    const ids = entry.groups[0].getItemIds();
+    const ids = entry.levels[0].getItemIds();
     const now = Date.now();
     for (let i = 0; i < ids.length; i++) {
       const ewma = i < 8 ? 800 : 1800;
@@ -189,7 +189,7 @@ describe('computeSkillRecommendation', () => {
     const entry = makeEntry('test', 2);
     const storage = createMemoryStorage();
     // Seed all groups as automatic
-    for (const g of entry.groups) {
+    for (const g of entry.levels) {
       seedAutomatic(storage, g.getItemIds());
     }
     const result = computeSkillRecommendation(
@@ -205,7 +205,7 @@ describe('computeSkillRecommendation', () => {
   it('single-group mode omits level number in detail', () => {
     const entry = makeEntry('test', 1);
     const storage = createMemoryStorage();
-    seedSlow(storage, entry.groups[0].getItemIds());
+    seedSlow(storage, entry.levels[0].getItemIds());
     const result = computeSkillRecommendation(
       entry,
       storage,
@@ -221,7 +221,7 @@ describe('computeSkillRecommendation', () => {
     const entry = makeEntry('test', 2);
     const storage = createMemoryStorage();
     // Seed group 0 as stale, skip it
-    seedStale(storage, entry.groups[0].getItemIds());
+    seedStale(storage, entry.levels[0].getItemIds());
     const skipped = new Set(['g0']);
     const result = computeSkillRecommendation(
       entry,
@@ -238,8 +238,8 @@ describe('computeSkillRecommendation', () => {
     const entry = makeEntry('test', 3);
     const storage = createMemoryStorage();
     // Group 0: stale. Group 1: slow (working).
-    seedStale(storage, entry.groups[0].getItemIds());
-    seedSlow(storage, entry.groups[1].getItemIds());
+    seedStale(storage, entry.levels[0].getItemIds());
+    seedSlow(storage, entry.levels[1].getItemIds());
     const result = computeSkillRecommendation(
       entry,
       storage,
@@ -259,7 +259,7 @@ describe('rankSkillRecommendations', () => {
   const order = ['modeA', 'modeB', 'modeC', 'modeD', 'modeE'];
 
   function rec(
-    modeId: string,
+    skillId: string,
     type: SkillRecommendation['type'],
     urgency: number = 0,
   ): SkillRecommendation {
@@ -269,7 +269,7 @@ describe('rankSkillRecommendations', () => {
       start: 'Start',
     };
     return {
-      modeId,
+      skillId,
       type,
       urgency,
       cueLabel: labels[type] ?? '',
@@ -288,9 +288,9 @@ describe('rankSkillRecommendations', () => {
     const result = rankSkillRecommendations(recs, order);
     assert.equal(result.length, 3);
     // Reviews first (higher urgency first), then practice
-    assert.equal(result[0].modeId, 'modeD'); // review, urgency 3
-    assert.equal(result[1].modeId, 'modeB'); // review, urgency 2
-    assert.equal(result[2].modeId, 'modeC'); // practice, urgency 5
+    assert.equal(result[0].skillId, 'modeD'); // review, urgency 3
+    assert.equal(result[1].skillId, 'modeB'); // review, urgency 2
+    assert.equal(result[2].skillId, 'modeC'); // practice, urgency 5
   });
 
   it('cold start: all not-started → first in definition order', () => {
@@ -301,7 +301,7 @@ describe('rankSkillRecommendations', () => {
     ];
     const result = rankSkillRecommendations(recs, order);
     assert.equal(result.length, 1);
-    assert.equal(result[0].modeId, 'modeA'); // first in definition order
+    assert.equal(result[0].skillId, 'modeA'); // first in definition order
     assert.equal(result[0].type, 'start');
     assert.equal(result[0].cueLabel, 'Ready to start');
   });
@@ -324,8 +324,8 @@ describe('rankSkillRecommendations', () => {
     ];
     const result = rankSkillRecommendations(recs, order, 2);
     assert.equal(result.length, 2);
-    assert.equal(result[0].modeId, 'modeD'); // highest urgency
-    assert.equal(result[1].modeId, 'modeC');
+    assert.equal(result[0].skillId, 'modeD'); // highest urgency
+    assert.equal(result[1].skillId, 'modeC');
   });
 
   it('excludes automatic and not-started from actionable', () => {
@@ -336,7 +336,7 @@ describe('rankSkillRecommendations', () => {
     ];
     const result = rankSkillRecommendations(recs, order);
     assert.equal(result.length, 1);
-    assert.equal(result[0].modeId, 'modeC');
+    assert.equal(result[0].skillId, 'modeC');
   });
 
   it('mixed automatic + not-started recommends first not-started', () => {
@@ -347,7 +347,7 @@ describe('rankSkillRecommendations', () => {
     ];
     const result = rankSkillRecommendations(recs, order);
     assert.equal(result.length, 1);
-    assert.equal(result[0].modeId, 'modeC');
+    assert.equal(result[0].skillId, 'modeC');
     assert.equal(result[0].type, 'start');
     assert.equal(result[0].detail, 'Ready to start');
   });
@@ -359,7 +359,7 @@ describe('rankSkillRecommendations', () => {
     ];
     const result = rankSkillRecommendations(recs, order);
     assert.equal(result.length, 2);
-    assert.equal(result[0].modeId, 'modeB'); // practice before start
-    assert.equal(result[1].modeId, 'modeA');
+    assert.equal(result[0].skillId, 'modeB'); // practice before start
+    assert.equal(result[1].skillId, 'modeA');
   });
 });

@@ -17,7 +17,7 @@
 
 import type { ItemStats, RecommendationResult } from '../types.ts';
 import type { PracticeSummaryState } from '../types.ts';
-import { getItemIdsForGroup } from '../modes/semitone-math/logic.ts';
+import { getItemIdsForLevel } from '../skills/semitone-math/logic.ts';
 
 // ---------------------------------------------------------------------------
 // Helpers (shared with heatmap-scenarios.ts)
@@ -83,7 +83,7 @@ export type RecommendationScenario = {
 
 /**
  * Convert group specs into realistic ItemStats localStorage entries.
- * Uses real getItemIdsForGroup() to map group indices to item IDs.
+ * Uses real getItemIdsForLevel() to map group indices to item IDs.
  *
  * Values are deterministic (hashIndex-based):
  * - Automatic: ewma ~1200ms, stability 48h, lastCorrectAt 2h ago → speed ≥ 0.9
@@ -94,14 +94,14 @@ export function generateLocalStorageData(
   namespace: string,
   groupStats: Record<string, GroupSpec>,
   now: number = Date.now(),
-  getItemIds?: (groupId: string) => string[],
+  getItemIds?: (levelId: string) => string[],
 ): Record<string, string> {
-  const getIds = getItemIds ?? getItemIdsForGroup;
+  const getIds = getItemIds ?? getItemIdsForLevel;
   const result: Record<string, string> = {};
 
-  for (const [groupId, spec] of Object.entries(groupStats)) {
-    const groupIdx = groupId.charCodeAt(0); // deterministic hash seed from ID
-    const itemIds = getIds(groupId);
+  for (const [levelId, spec] of Object.entries(groupStats)) {
+    const levelIdx = levelId.charCodeAt(0); // deterministic hash seed from ID
+    const itemIds = getIds(levelId);
     let itemOffset = 0;
 
     // Automatic items
@@ -110,7 +110,7 @@ export function generateLocalStorageData(
       i < spec.automaticCount && itemOffset < itemIds.length;
       i++
     ) {
-      const h = hashIndex(itemOffset + groupIdx * 100);
+      const h = hashIndex(itemOffset + levelIdx * 100);
       const ewma = 300 + h * 200; // 300-500ms (fast — at or below scaled minTime)
       const stats = makeStats({
         recentTimes: [ewma * 0.95, ewma, ewma * 1.05],
@@ -127,7 +127,7 @@ export function generateLocalStorageData(
 
     // Working items
     for (let i = 0; i < spec.workingCount && itemOffset < itemIds.length; i++) {
-      const h = hashIndex(itemOffset + groupIdx * 100);
+      const h = hashIndex(itemOffset + levelIdx * 100);
       const ewma = 2500 + h * 1000; // 2500-3500ms (slow)
       const stats = makeStats({
         recentTimes: [ewma * 0.9, ewma, ewma * 1.1],

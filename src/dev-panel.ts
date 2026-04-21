@@ -4,14 +4,14 @@
 import { createStorageAdapter } from './adaptive.ts';
 import {
   computeGlobalEffort,
-  computeModeEffort,
+  computeSkillEffort,
   getDailyReps,
-  getRegisteredModes,
-  type ModeEffort,
+  getRegisteredSkills,
+  type SkillEffort,
 } from './effort.ts';
 
 export type DevPanelData = {
-  modeEfforts: ModeEffort[];
+  modeEfforts: SkillEffort[];
   totalReps: number;
   daysActive: number;
   recentDays: Array<{ date: string; count: number }>;
@@ -19,9 +19,9 @@ export type DevPanelData = {
 
 /** Compute current dev panel data from localStorage. */
 export function getDevPanelData(): DevPanelData {
-  const modes = getRegisteredModes();
+  const modes = getRegisteredSkills();
   const modeEfforts = modes.map((m) =>
-    computeModeEffort(m, createStorageAdapter(m.namespace))
+    computeSkillEffort(m, createStorageAdapter(m.namespace))
   );
   const daily = getDailyReps();
   const global = computeGlobalEffort(modeEfforts, daily);

@@ -13,7 +13,7 @@ import {
 import type {
   AnswerSpec,
   ComparisonStrategy,
-  ModeDefinition,
+  SkillDefinition,
 } from './types.ts';
 
 // ---------------------------------------------------------------------------
@@ -21,7 +21,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 export function resolveAnswerSpec<Q>(
-  def: ModeDefinition<Q>,
+  def: SkillDefinition<Q>,
   q: Q,
 ): AnswerSpec<Q> {
   const spec = def.answer!;
@@ -74,7 +74,7 @@ export function defaultDisplayAnswer(
 }
 
 export function checkGenericAnswer<Q>(
-  def: ModeDefinition<Q>,
+  def: SkillDefinition<Q>,
   currentQRef: { current: Q | null },
   lastAnswerRef: {
     current: {
@@ -117,7 +117,7 @@ export function resolveGroupLabel(label: string | (() => string)): string {
 }
 
 export function getInputPlaceholder<Q>(
-  def: ModeDefinition<Q>,
+  def: SkillDefinition<Q>,
   currentQ: Q | null,
   isSequential: boolean,
 ): string | undefined {

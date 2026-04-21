@@ -1,10 +1,10 @@
 // useScopeState — Preact hook wrapping scope load/save/toggle from
-// mode-controller.ts. Manages enabled groups, fretboard strings, and
+// scope-controller.ts. Manages enabled levels, fretboard strings, and
 // note filter in storage.
 
 import { useCallback, useState } from 'preact/hooks';
 import type {
-  GroupStatus,
+  LevelStatus,
   NoteFilter,
   ScopeSpec,
   ScopeState,
@@ -12,25 +12,26 @@ import type {
 import { storage } from '../storage.ts';
 
 // ---------------------------------------------------------------------------
-// Load / save helpers (extracted from mode-controller.ts lines 47-120)
+// Load / save helpers (extracted from scope-controller.ts lines 47-120)
 // ---------------------------------------------------------------------------
 
 function loadScope(spec: ScopeSpec): ScopeState {
   if (spec.kind === 'none') return { kind: 'none' };
 
-  if (spec.kind === 'groups') {
+  if (spec.kind === 'levels') {
     let enabled = new Set<string>(spec.defaultEnabled);
+    // Legacy storage key — uses old "enabledGroups" naming in definitions.
     const saved = storage.getItem(spec.storageKey);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           if (parsed.length > 0 && typeof parsed[0] === 'number') {
-            // Old format: positional indices → convert using spec.groups[i].id
+            // Old format: positional indices → convert using spec.levels[i].id
             const newEnabled = new Set<string>();
             for (const idx of parsed) {
-              if (idx >= 0 && idx < spec.groups.length) {
-                newEnabled.add(spec.groups[idx].id);
+              if (idx >= 0 && idx < spec.levels.length) {
+                newEnabled.add(spec.levels[idx].id);
               }
             }
             if (newEnabled.size > 0) enabled = newEnabled;
@@ -44,16 +45,17 @@ function loadScope(spec: ScopeSpec): ScopeState {
         }
       } catch (_) { /* expected */ }
     }
-    // Validate: drop IDs not in current group list.
+    // Validate: drop IDs not in current level list.
     for (const id of enabled) {
-      if (!spec.groups.some((g) => g.id === id)) enabled.delete(id);
+      if (!spec.levels.some((g) => g.id === id)) enabled.delete(id);
     }
-    // If all saved groups were invalid, fall back to defaults.
+    // If all saved levels were invalid, fall back to defaults.
     if (enabled.size === 0) {
       for (const d of spec.defaultEnabled) enabled.add(d);
     }
-    // Load skipped groups (Map<string, GroupStatus>).
-    const skipped = new Map<string, GroupStatus>();
+    // Load skipped levels (Map<string, LevelStatus>).
+    const skipped = new Map<string, LevelStatus>();
+    // Legacy storage key — appends "_skipped" to old "enabledGroups" key.
     const savedSkipped = storage.getItem(spec.storageKey + '_skipped');
     if (savedSkipped) {
       try {
@@ -71,7 +73,7 @@ function loadScope(spec: ScopeSpec): ScopeState {
                   typeof idx === 'number' && Number.isInteger(idx) &&
                   (reason === 'mastered' || reason === 'deferred')
                 ) {
-                  const group = spec.groups[idx];
+                  const group = spec.levels[idx];
                   if (group) skipped.set(group.id, reason);
                 }
               }
@@ -90,7 +92,7 @@ function loadScope(spec: ScopeSpec): ScopeState {
             // Old format: [index, ...] — migrate with 'deferred' default
             for (const idx of parsed) {
               if (typeof idx === 'number') {
-                const group = spec.groups[idx];
+                const group = spec.levels[idx];
                 if (group) skipped.set(group.id, 'deferred');
               }
             }
@@ -98,13 +100,13 @@ function loadScope(spec: ScopeSpec): ScopeState {
         }
       } catch (_) { /* expected */ }
     }
-    // Validate: drop IDs not in current group list.
+    // Validate: drop IDs not in current level list.
     for (const id of skipped.keys()) {
-      if (!spec.groups.some((g) => g.id === id)) skipped.delete(id);
+      if (!spec.levels.some((g) => g.id === id)) skipped.delete(id);
     }
-    // Skipped groups must not be enabled.
+    // Skipped levels must not be enabled.
     for (const id of skipped.keys()) enabled.delete(id);
-    return { kind: 'groups', enabledGroups: enabled, skippedGroups: skipped };
+    return { kind: 'levels', enabledLevels: enabled, skippedLevels: skipped };
   }
 
   if (spec.kind === 'note-filter') {
@@ -123,14 +125,14 @@ function loadScope(spec: ScopeSpec): ScopeState {
 }
 
 function saveScope(spec: ScopeSpec, scope: ScopeState): void {
-  if (spec.kind === 'groups' && scope.kind === 'groups') {
+  if (spec.kind === 'levels' && scope.kind === 'levels') {
     storage.setItem(
       spec.storageKey,
-      JSON.stringify([...scope.enabledGroups]),
+      JSON.stringify([...scope.enabledLevels]),
     );
     storage.setItem(
       spec.storageKey + '_skipped',
-      JSON.stringify([...scope.skippedGroups.entries()]),
+      JSON.stringify([...scope.skippedLevels.entries()]),
     );
   } else if (spec.kind === 'note-filter' && scope.kind === 'note-filter') {
     try {
@@ -144,11 +146,11 @@ function saveScope(spec: ScopeSpec, scope: ScopeState): void {
 // ---------------------------------------------------------------------------
 
 export type ScopeActions = {
-  toggleGroup: (id: string) => void;
-  /** Skip a group with a reason. Removes it from enabled groups. */
-  skipGroup: (id: string, reason: GroupStatus) => void;
-  /** Unskip a group (removes from skipped map; does not re-enable). */
-  unskipGroup: (id: string) => void;
+  toggleLevel: (id: string) => void;
+  /** Skip a level with a reason. Removes it from enabled levels. */
+  skipLevel: (id: string, reason: LevelStatus) => void;
+  /** Unskip a level (removes from skipped map; does not re-enable). */
+  unskipLevel: (id: string) => void;
   setNoteFilter: (filter: NoteFilter) => void;
   /** Replace scope state directly (e.g., applying recommendations). */
   setScope: (scope: ScopeState) => void;
@@ -165,62 +167,62 @@ export function useScopeState(
     saveScope(spec, next);
   }, [spec]);
 
-  const toggleGroup = useCallback((id: string) => {
+  const toggleLevel = useCallback((id: string) => {
     setScopeRaw((prev) => {
-      if (prev.kind !== 'groups') return prev;
-      const next = new Set(prev.enabledGroups);
+      if (prev.kind !== 'levels') return prev;
+      const next = new Set(prev.enabledLevels);
       if (next.has(id)) {
         next.delete(id);
       } else {
         next.add(id);
       }
       const updated: ScopeState = {
-        kind: 'groups',
-        enabledGroups: next,
-        skippedGroups: prev.skippedGroups,
+        kind: 'levels',
+        enabledLevels: next,
+        skippedLevels: prev.skippedLevels,
       };
       saveScope(spec, updated);
       return updated;
     });
   }, [spec]);
 
-  const skipGroup = useCallback((id: string, reason: GroupStatus) => {
+  const skipLevel = useCallback((id: string, reason: LevelStatus) => {
     setScopeRaw((prev) => {
-      if (prev.kind !== 'groups') return prev;
-      // Prevent skipping the last non-skipped group.
-      const groupCount =
-        (spec as Extract<ScopeSpec, { kind: 'groups' }>).groups.length;
+      if (prev.kind !== 'levels') return prev;
+      // Prevent skipping the last non-skipped level.
+      const levelCount =
+        (spec as Extract<ScopeSpec, { kind: 'levels' }>).levels.length;
       if (
-        prev.skippedGroups.size + (prev.skippedGroups.has(id) ? 0 : 1) >=
-          groupCount
+        prev.skippedLevels.size + (prev.skippedLevels.has(id) ? 0 : 1) >=
+          levelCount
       ) return prev;
-      // Validate that the ID exists in the current group list.
-      const groupSpec = spec as Extract<ScopeSpec, { kind: 'groups' }>;
-      if (!groupSpec.groups.some((g) => g.id === id)) return prev;
-      const nextSkipped = new Map(prev.skippedGroups);
+      // Validate that the ID exists in the current level list.
+      const levelSpec = spec as Extract<ScopeSpec, { kind: 'levels' }>;
+      if (!levelSpec.levels.some((g) => g.id === id)) return prev;
+      const nextSkipped = new Map(prev.skippedLevels);
       nextSkipped.set(id, reason);
-      const nextEnabled = new Set(prev.enabledGroups);
+      const nextEnabled = new Set(prev.enabledLevels);
       nextEnabled.delete(id);
       const updated: ScopeState = {
-        kind: 'groups',
-        enabledGroups: nextEnabled,
-        skippedGroups: nextSkipped,
+        kind: 'levels',
+        enabledLevels: nextEnabled,
+        skippedLevels: nextSkipped,
       };
       saveScope(spec, updated);
       return updated;
     });
   }, [spec]);
 
-  const unskipGroup = useCallback((id: string) => {
+  const unskipLevel = useCallback((id: string) => {
     setScopeRaw((prev) => {
-      if (prev.kind !== 'groups') return prev;
-      if (!prev.skippedGroups.has(id)) return prev;
-      const nextSkipped = new Map(prev.skippedGroups);
+      if (prev.kind !== 'levels') return prev;
+      if (!prev.skippedLevels.has(id)) return prev;
+      const nextSkipped = new Map(prev.skippedLevels);
       nextSkipped.delete(id);
       const updated: ScopeState = {
-        kind: 'groups',
-        enabledGroups: prev.enabledGroups,
-        skippedGroups: nextSkipped,
+        kind: 'levels',
+        enabledLevels: prev.enabledLevels,
+        skippedLevels: nextSkipped,
       };
       saveScope(spec, updated);
       return updated;
@@ -239,9 +241,9 @@ export function useScopeState(
   }, [spec]);
 
   return [scope, {
-    toggleGroup,
-    skipGroup,
-    unskipGroup,
+    toggleLevel,
+    skipLevel,
+    unskipLevel,
     setNoteFilter,
     setScope,
   }];

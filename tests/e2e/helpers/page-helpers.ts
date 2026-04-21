@@ -36,27 +36,27 @@ export async function seedLocalStorage(
 /** Click a mode button on the home screen and wait for it to become active. */
 export async function navigateToMode(
   page: Page,
-  modeId: string,
+  skillId: string,
 ): Promise<void> {
-  await page.click(`[data-mode="${modeId}"]`);
-  await page.waitForSelector(`#mode-${modeId}.mode-active`);
+  await page.click(`[data-skill="${skillId}"]`);
+  await page.waitForSelector(`#skill-${skillId}.skill-active`);
 }
 
 /** Click the Start/Practice button and wait for the quiz to enter active phase. */
 export async function startQuiz(
   page: Page,
-  modeId: string,
+  skillId: string,
 ): Promise<void> {
-  await page.click(`#mode-${modeId} .start-btn`);
-  await page.waitForSelector(`#mode-${modeId}.phase-active`);
+  await page.click(`#skill-${skillId} .start-btn`);
+  await page.waitForSelector(`#skill-${skillId}.phase-active`);
 }
 
 /** Wait for feedback text to appear after an answer is submitted. */
 export async function waitForFeedback(
   page: Page,
-  modeId: string,
+  skillId: string,
 ): Promise<string> {
-  const sel = `#mode-${modeId} .feedback`;
+  const sel = `#skill-${skillId} .feedback`;
   await page.waitForSelector(sel);
   const text = await page.textContent(sel);
   return text ?? '';
@@ -65,10 +65,10 @@ export async function waitForFeedback(
 /** Press Space and wait for the next question to appear. */
 export async function advanceToNext(
   page: Page,
-  modeId: string,
+  skillId: string,
 ): Promise<void> {
   await page.keyboard.press('Space');
   // Wait for the Next button to become hidden (new question rendered)
-  const nextSel = `#mode-${modeId} .next-btn`;
+  const nextSel = `#skill-${skillId} .next-btn`;
   await page.waitForSelector(nextSel, { state: 'hidden', timeout: 5000 });
 }

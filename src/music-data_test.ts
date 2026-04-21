@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { MODE_BEFORE_AFTER } from './mode-catalog.ts';
+import { SKILL_BEFORE_AFTER } from './skill-catalog.ts';
 import {
   addInterval,
   CHORD_ROOTS,
@@ -1479,12 +1479,12 @@ describe('resolveNoteInput with solfège mode', () => {
   });
 });
 
-describe('MODE_BEFORE_AFTER respects solfège', () => {
+describe('SKILL_BEFORE_AFTER respects solfège', () => {
   it('uses letter names in letter mode', () => {
     const original = getUseSolfege();
     try {
       setUseSolfege(false);
-      const ba = MODE_BEFORE_AFTER.semitoneMath;
+      const ba = SKILL_BEFORE_AFTER.semitoneMath;
       const beforeText = ba.before().join(' ');
       assert.ok(beforeText.includes('F\u266F'));
       assert.ok(ba.after().includes('F\u266F'));
@@ -1498,7 +1498,7 @@ describe('MODE_BEFORE_AFTER respects solfège', () => {
     const original = getUseSolfege();
     try {
       setUseSolfege(true);
-      const ba = MODE_BEFORE_AFTER.semitoneMath;
+      const ba = SKILL_BEFORE_AFTER.semitoneMath;
       const beforeText = ba.before().join(' ');
       assert.ok(beforeText.includes('Fa'));
       assert.ok(ba.after().includes('Fa'));
@@ -1509,7 +1509,7 @@ describe('MODE_BEFORE_AFTER respects solfège', () => {
   });
 
   it('all modes produce non-empty strings', () => {
-    for (const [key, ba] of Object.entries(MODE_BEFORE_AFTER)) {
+    for (const [key, ba] of Object.entries(SKILL_BEFORE_AFTER)) {
       const before = ba.before();
       const after = ba.after();
       assert.ok(before.length > 0, `${key} before is empty`);

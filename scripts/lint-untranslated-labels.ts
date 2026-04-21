@@ -92,8 +92,8 @@ async function scanFile(path: string): Promise<void> {
   }
 }
 
-const modesDir = new URL('../src/modes', import.meta.url).pathname;
-await scanDir(modesDir);
+const skillsDir = new URL('../src/skills', import.meta.url).pathname;
+await scanDir(skillsDir);
 
 if (violations.length > 0) {
   console.error(

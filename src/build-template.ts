@@ -1,17 +1,19 @@
 // Build template — assembles the complete index.html with CSS, JS, and
-// minimal container divs for the Preact app. Mode IDs are derived from
-// TRACKS so adding a mode to the catalog automatically creates its container.
+// minimal container divs for the Preact app. Skill IDs are derived from
+// TRACKS so adding a skill to the catalog automatically creates its container.
 
-import { TRACKS } from './mode-catalog.ts';
+import { TRACKS } from './skill-catalog.ts';
 
 // ---------------------------------------------------------------------------
-// Mode screen containers — empty divs that Preact renders into at runtime.
+// Skill screen containers — empty divs that Preact renders into at runtime.
 // ---------------------------------------------------------------------------
 
-function modeScreens(): string {
+function skillScreens(): string {
   const ids = [...new Set(TRACKS.flatMap((t) => t.skills))];
   return ids
-    .map((id) => `  <div class="mode-screen phase-idle" id="mode-${id}"></div>`)
+    .map((id) =>
+      `  <div class="skill-screen phase-idle" id="skill-${id}"></div>`
+    )
     .join('\n');
 }
 
@@ -56,7 +58,7 @@ export function assembleHTML(css: string, js: string): string {
   <div id="app">
 ${BRAND_STRIP_HTML}
 ${HOME_SCREEN_HTML}
-${modeScreens()}
+${skillScreens()}
   </div>
 
   <script>

@@ -7,7 +7,7 @@ import {
   timerWarning,
 } from '../fixtures/index.ts';
 import { CountdownBar, FeedbackDisplay, TextPrompt } from './quiz-ui.tsx';
-import { QuizSession } from './mode-screen.tsx';
+import { QuizSession } from './skill-screen.tsx';
 import { PreviewGrid, Section } from './preview-shared.tsx';
 
 export function QuizUITab({ tabId }: { tabId: string }) {
