@@ -334,7 +334,7 @@ export function MultiTapQuizArea(
   },
 ) {
   // Multi-tap modes render prompt text + interactive fretboard.
-  // The fretboard is rendered by GenericMode (not the controller) using
+  // The fretboard is rendered by GenericSkill (not the controller) using
   // shared multi-tap state from useMultiTapInput.
   return (
     <QuizStage

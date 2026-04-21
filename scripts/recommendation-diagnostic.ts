@@ -34,16 +34,16 @@ import type { RecommendationResult } from '../src/types.ts';
 import {
   buildRecommendationText,
   computePracticeSummary,
-} from '../src/mode-ui-state.ts';
+} from '../src/skill-ui-state.ts';
 import {
-  ALL_GROUP_IDS,
   ALL_ITEMS,
-  DISTANCE_GROUPS,
-  getItemIdsForGroup,
+  ALL_LEVEL_IDS,
+  DISTANCE_LEVELS,
+  getItemIdsForLevel,
 } from '../src/skills/semitone-math/logic.ts';
 import {
   generateLocalStorageData,
-  type GroupSpec,
+  type LevelSpec,
   type ScenarioOutput,
   SCENARIOS,
 } from '../src/fixtures/recommendation-scenarios.ts';
@@ -70,7 +70,7 @@ type SerializedRow = {
   levelFreshness: number;
   gateOpen: boolean;
   groupRecs: {
-    groupId: string;
+    levelId: string;
     automatic: number;
     working: number;
     unseen: number;
@@ -78,7 +78,7 @@ type SerializedRow = {
   recommendedIds: string[];
   expandIndex: string | null;
   expandNewCount: number;
-  levelRecs: { groupId: string; type: string }[];
+  levelRecs: { levelId: string; type: string }[];
   recommendationText: string;
   statusLabel: string;
   statusDetail: string;
@@ -134,7 +134,7 @@ function autoSessionName(): string {
 // ---------------------------------------------------------------------------
 
 function analyzeScenario(
-  groupStats: Record<string, GroupSpec>,
+  groupStats: Record<string, LevelSpec>,
   now: number,
 ): Omit<
   SerializedRow,
@@ -155,20 +155,20 @@ function analyzeScenario(
   }
 
   // Sort unstarted by definition order (matching use-group-scope).
-  const idOrder = new Map(ALL_GROUP_IDS.map((id, i) => [id, i]));
+  const idOrder = new Map(ALL_LEVEL_IDS.map((id, i) => [id, i]));
   const recommendation = computeRecommendations(
     selector,
-    ALL_GROUP_IDS,
-    getItemIdsForGroup,
+    ALL_LEVEL_IDS,
+    getItemIdsForLevel,
     {},
     {
       sortUnstarted: (a, b) =>
-        (idOrder.get(a.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0),
+        (idOrder.get(a.levelId) ?? 0) - (idOrder.get(b.levelId) ?? 0),
     },
   );
 
   // Build recommendation text
-  const groupById = new Map(DISTANCE_GROUPS.map((g) => [g.id, g]));
+  const groupById = new Map(DISTANCE_LEVELS.map((g) => [g.id, g]));
   const getGroupLabel = (id: string) => groupById.get(id)?.label ?? id;
   const recommendationText = buildRecommendationText(
     recommendation,
@@ -188,12 +188,12 @@ function analyzeScenario(
 
   // Compute algorithm internals
   const recs = selector.getGroupRecommendations(
-    ALL_GROUP_IDS,
-    getItemIdsForGroup,
+    ALL_LEVEL_IDS,
+    getItemIdsForLevel,
   );
   const started = recs.filter((r) => r.unseenCount < r.totalCount);
 
-  const startedItemIds = started.flatMap((r) => getItemIdsForGroup(r.groupId));
+  const startedItemIds = started.flatMap((r) => getItemIdsForLevel(r.levelId));
   const { level: levelSpeed } = selector.getLevelSpeed(startedItemIds);
   const { level: levelFreshness } = selector.getLevelFreshness(
     startedItemIds,
@@ -202,7 +202,7 @@ function analyzeScenario(
   );
 
   const groupRecs = recs.map((r) => ({
-    groupId: r.groupId,
+    levelId: r.levelId,
     automatic: r.automaticCount,
     working: r.workingCount,
     unseen: r.unseenCount,
@@ -300,13 +300,13 @@ async function captureRound(
 
       await page.goto(`${baseUrl}/?fixtures`);
       await page.waitForLoadState('networkidle');
-      await page.click('[data-mode="semitoneMath"]');
-      await page.waitForSelector('#mode-semitoneMath.mode-active');
-      await page.click('#mode-semitoneMath [data-tab="progress"]');
+      await page.click('[data-skill="semitoneMath"]');
+      await page.waitForSelector('#skill-semitoneMath.skill-active');
+      await page.click('#skill-semitoneMath [data-tab="progress"]');
       await page.waitForTimeout(300);
 
       const statsContainer = await page.$(
-        '#mode-semitoneMath .stats-container',
+        '#skill-semitoneMath .stats-container',
       );
       const screenshotFile = `${scenario.name}.png`;
       if (statsContainer) {
@@ -440,7 +440,7 @@ function generateReviewHTML(sessionName: string, session: Session): void {
         .map(
           (g) =>
             `<div class="group-row">` +
-            `<span class="group-label">${g.groupId}</span> ` +
+            `<span class="group-label">${g.levelId}</span> ` +
             `<span class="automatic">${g.automatic}A</span> ` +
             `<span class="working">${g.working}W</span> ` +
             `<span class="unseen">${g.unseen}U</span>` +
@@ -460,7 +460,7 @@ function generateReviewHTML(sessionName: string, session: Session): void {
       const recommendedLabels = row.recommendedIds
         .join(', ');
       const levelRecLabels = row.levelRecs
-        .map((r) => `${r.type}(${r.groupId})`)
+        .map((r) => `${r.type}(${r.levelId})`)
         .join(', ');
       const recHtml =
         `<div>Recommended: <strong>${

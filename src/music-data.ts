@@ -70,7 +70,7 @@ export const INTERVALS: Interval[] = [
 export const INTERVAL_ABBREVS = INTERVALS.map((i) => i.abbrev);
 
 // Mode display strings (MODE_NAMES, MODE_DESCRIPTIONS, MODE_BEFORE_AFTER,
-// TRACKS) have been moved to mode-catalog.ts. Import from there directly.
+// TRACKS) have been moved to skill-catalog.ts. Import from there directly.
 
 /** Look up a note by its semitone number (0–11). */
 export function noteByNum(num: number) {

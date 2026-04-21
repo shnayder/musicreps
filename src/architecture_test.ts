@@ -166,7 +166,7 @@ function classifyLayer(file: string): Layer {
   if (file === 'src/declarative/generic-skill.tsx') return 'ui';
   if (file === 'src/declarative/quiz-areas.tsx') return 'ui';
   if (file === 'src/declarative/practice-views.tsx') return 'ui';
-  if (file.match(/src\/modes\/[^/]+\/logic\.ts$/)) return 'skill-logic';
+  if (file.match(/src\/skills\/[^/]+\/logic\.ts$/)) return 'skill-logic';
   if (file.startsWith('src/skills/')) return 'skill-component';
   if (file === 'src/skill-utils.ts') return 'skill-logic';
   if (file === 'src/skill-definitions.ts') return 'skill-component';
@@ -175,9 +175,9 @@ function classifyLayer(file: string): Layer {
   return 'app'; // fallback for unknown files
 }
 
-/** Extract mode name from a skills/ path, or null. */
+/** Extract skill name from a skills/ path, or null. */
 function skillName(file: string): string | null {
-  const m = file.match(/^src\/modes\/([^/]+)\//);
+  const m = file.match(/^src\/skills\/([^/]+)\//);
   return m ? m[1] : null;
 }
 

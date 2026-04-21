@@ -19,11 +19,11 @@ import {
 import {
   building,
   fretboardItemIds,
-  type GroupItemProfile,
   justStarting,
+  type LevelItemProfile,
   masteredFresh,
   masteredStale,
-  perGroupScenario,
+  perLevelScenario,
   returnedAfterBreak,
   semitoneMathItemIds,
 } from '../src/fixtures/heatmap-scenarios.ts';
@@ -46,11 +46,11 @@ import {
   getLevels,
 } from '../src/skills/fretboard/logic.ts';
 import {
-  ALL_GROUP_IDS as SEMI_MATH_GROUP_IDS,
+  ALL_LEVEL_IDS as SEMI_MATH_GROUP_IDS,
   getItemIdsForLevel as semiMathGetGroup,
 } from '../src/skills/semitone-math/logic.ts';
 import {
-  ALL_GROUP_IDS as KEY_SIG_GROUP_IDS,
+  ALL_LEVEL_IDS as KEY_SIG_GROUP_IDS,
   getItemIdsForLevel as keySigGetGroup,
 } from '../src/skills/key-signatures/logic.ts';
 import {
@@ -149,7 +149,7 @@ export function buildManifest(): ScreenshotEntry[] {
         'intervalMath',
       ]),
       // fretboard: groups 0-2 mastered but stale → "Review"
-      ...perGroupScenario('fretboard', [
+      ...perLevelScenario('fretboard', [
         { itemIds: gIds[0], state: 'stale' },
         { itemIds: gIds[1], state: 'stale' },
         { itemIds: gIds[2], state: 'stale' },
@@ -159,7 +159,7 @@ export function buildManifest(): ScreenshotEntry[] {
         })),
       ]),
       // semitoneMath: first group slow but fresh → "Practice"
-      ...perGroupScenario('semitoneMath', [
+      ...perLevelScenario('semitoneMath', [
         {
           itemIds: semiMathGetGroup(SEMI_MATH_GROUP_IDS[0]),
           state: 'working',
@@ -190,8 +190,8 @@ export function buildManifest(): ScreenshotEntry[] {
     skillId: 'home',
     localStorageData: {
       starredSkills: JSON.stringify(['noteSemitones', 'keySignatures']),
-      // noteSemitones: all items automatic (single-level, use perGroupScenario)
-      ...perGroupScenario('noteSemitones', [
+      // noteSemitones: all items automatic (single-level, use perLevelScenario)
+      ...perLevelScenario('noteSemitones', [
         { itemIds: NOTE_SEMI_ITEMS, state: 'automatic' },
       ]),
       // keySignatures: all groups automatic
@@ -383,14 +383,14 @@ export function buildManifest(): ScreenshotEntry[] {
 
   // Progress tab: group-aware fretboard scenarios
   // Each scenario has different groups in different learning stages.
-  const unseen = (ids: string[]): GroupItemProfile => ({
+  const unseen = (ids: string[]): LevelItemProfile => ({
     itemIds: ids,
     state: 'unseen',
   });
 
   const fbGroupScenarios: [
     string,
-    GroupItemProfile[],
+    LevelItemProfile[],
     string[], // enabled group IDs
   ][] = [
     // Just started group 0 — a few items seen, rest unseen
@@ -452,7 +452,7 @@ export function buildManifest(): ScreenshotEntry[] {
 
   for (const [label, groups, enabledLevelIds] of fbGroupScenarios) {
     const data = {
-      ...perGroupScenario('fretboard', groups),
+      ...perLevelScenario('fretboard', groups),
       fretboard_enabledLevels: JSON.stringify(enabledLevelIds),
     };
     // Practice tab — suggested mode (default)
@@ -559,7 +559,7 @@ export function buildManifest(): ScreenshotEntry[] {
   // Reuses the fb-working group scenario so the bars are non-trivial.
   const fbWorking = fbGroupScenarios.find(([l]) => l === 'fb-working')!;
   const fbWorkingLocalStorage = {
-    ...perGroupScenario('fretboard', fbWorking[1]),
+    ...perLevelScenario('fretboard', fbWorking[1]),
     fretboard_enabledLevels: JSON.stringify(fbWorking[2]),
   };
   entries.push({

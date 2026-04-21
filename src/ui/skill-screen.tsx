@@ -181,7 +181,7 @@ export function SkillScreen(
   },
 ) {
   return (
-    <div class={`skill-screen phase-${phase}`} id={`mode-${id}`}>
+    <div class={`skill-screen phase-${phase}`} id={`skill-${id}`}>
       {children}
     </div>
   );

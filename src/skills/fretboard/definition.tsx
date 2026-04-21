@@ -111,8 +111,8 @@ export function createFretboardDef(
       levels,
       getItemIdsForLevel: (id) => getItemIdsForLevel(instrument, id),
       allLevelIds,
-      // Legacy storage key — uses old "enabledLevels" naming.
-      storageKey: instrument.storageNamespace + '_enabledLevels',
+      // Legacy storage key — uses old "enabledGroups" naming.
+      storageKey: instrument.storageNamespace + '_enabledGroups',
       scopeLabel: 'Groups',
       defaultEnabled: [allLevelIds[0]],
       formatLabel: (enabled) => formatLabel(instrument, enabled),

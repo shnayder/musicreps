@@ -403,7 +403,7 @@ describe('SkillScreen', () => {
       </SkillScreen>,
     );
     assert.ok(html.includes('skill-screen phase-idle'));
-    assert.ok(html.includes('id="mode-test"'));
+    assert.ok(html.includes('id="skill-test"'));
   });
 
   it('changes phase class', () => {
