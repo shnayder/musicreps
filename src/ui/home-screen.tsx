@@ -479,7 +479,7 @@ function SettingsAboutLegal(
               Support
             </a>
           )}
-          <span class='settings-meta'>Build #{version}</span>
+          <span class='settings-meta'>Build {version}</span>
         </div>
       </Section>
 
