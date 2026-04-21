@@ -146,6 +146,7 @@ func writeContentsJSON(to dir: String, imageName: String) {
         "version" : 1
       }
     }
+
     """
     let path = "\(dir)/Contents.json"
     try! json.write(toFile: path, atomically: true, encoding: .utf8)

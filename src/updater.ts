@@ -103,6 +103,7 @@ export interface OTAState {
   version: string;
   path: string;
   attempts: number;
+  releaseBase: string;
 }
 
 /** Dependencies injected for testing. Production uses real implementations. */
