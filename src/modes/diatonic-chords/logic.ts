@@ -4,6 +4,7 @@
 // 168 items: 12 keys × 7 degrees × 2 directions.
 
 import type { DiatonicChord } from '../../types.ts';
+import { shuffleByItemHash } from '../../mode-utils.ts';
 import {
   DIATONIC_CHORDS,
   getScaleDegreeNote,
@@ -57,18 +58,21 @@ export function getItemIdsForGroup(groupId: string): string[] {
       }
     }
   }
-  return items;
+  return shuffleByItemHash(items);
 }
 
 /** All 168 item IDs: 12 keys × 7 degrees × 2 directions. */
-export const ALL_ITEMS: string[] = [];
-for (let d = 1; d <= 7; d++) {
-  for (const dir of ['fwd', 'rev']) {
-    for (const key of MAJOR_KEYS) {
-      ALL_ITEMS.push(key.root + ':' + d + ':' + dir);
+export const ALL_ITEMS: string[] = (() => {
+  const items: string[] = [];
+  for (let d = 1; d <= 7; d++) {
+    for (const dir of ['fwd', 'rev']) {
+      for (const key of MAJOR_KEYS) {
+        items.push(key.root + ':' + d + ':' + dir);
+      }
     }
   }
-}
+  return shuffleByItemHash(items);
+})();
 
 export const ALL_GROUP_IDS: string[] = CHORD_GROUPS.map((g) => g.id);
 

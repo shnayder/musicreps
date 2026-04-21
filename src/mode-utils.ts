@@ -153,3 +153,31 @@ export function buildBidirectionalStatsRows(
     revItemId: item.key + ':rev',
   }));
 }
+
+// ---------------------------------------------------------------------------
+// Deterministic item reordering
+// ---------------------------------------------------------------------------
+// Items sorted by hash of their ID produce a pseudo-random but stable order.
+// Each item's position depends only on its own string — adding or removing
+// items doesn't reshuffle existing ones.
+
+/** Stable numeric hash with good avalanche (FNV-1a + final mix). */
+function hashString(s: string): number {
+  let h = 0x811c9dc5; // FNV offset basis
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193); // FNV prime
+  }
+  // Final avalanche mix (murmur3-style) to spread nearby inputs apart
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b);
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35);
+  h ^= h >>> 16;
+  return h >>> 0;
+}
+
+/** Reorder items by hash of their ID — stable across add/remove. */
+export function shuffleByItemHash(items: string[]): string[] {
+  return [...items].sort((a, b) => hashString(a) - hashString(b));
+}

@@ -4,6 +4,7 @@
 // 144 items: 12 keys × 6 degrees × 2 directions (1st excluded).
 
 import { getScaleDegreeNote, MAJOR_KEYS } from '../../music-data.ts';
+import { shuffleByItemHash } from '../../mode-utils.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -56,18 +57,21 @@ export function getItemIdsForGroup(groupId: string): string[] {
       }
     }
   }
-  return items;
+  return shuffleByItemHash(items);
 }
 
 /** All 144 item IDs: 12 keys × 6 degrees × 2 directions (1st excluded). */
-export const ALL_ITEMS: string[] = [];
-for (const d of ACTIVE_DEGREES) {
-  for (const dir of ['fwd', 'rev']) {
-    for (const key of MAJOR_KEYS) {
-      ALL_ITEMS.push(key.root + ':' + d + ':' + dir);
+export const ALL_ITEMS: string[] = (() => {
+  const items: string[] = [];
+  for (const d of ACTIVE_DEGREES) {
+    for (const dir of ['fwd', 'rev']) {
+      for (const key of MAJOR_KEYS) {
+        items.push(key.root + ':' + d + ':' + dir);
+      }
     }
   }
-}
+  return shuffleByItemHash(items);
+})();
 
 export const ALL_GROUP_IDS: string[] = DEGREE_GROUPS.map((g) => g.id);
 

@@ -8,6 +8,7 @@
 
 import type { ChordType } from '../../types.ts';
 import type { SequentialEvalResult } from '../../declarative/types.ts';
+import { shuffleByItemHash } from '../../mode-utils.ts';
 import {
   CHORD_ROOTS,
   CHORD_TYPES,
@@ -109,16 +110,19 @@ export function getItemIdsForGroup(groupId: string): string[] {
       items.push(root + ':' + type.name);
     }
   }
-  return items;
+  return shuffleByItemHash(items);
 }
 
 /** All item IDs: 12 roots × all chord types. */
-export const ALL_ITEMS: string[] = [];
-for (const type of CHORD_TYPES) {
-  for (const root of CHORD_ROOT_CYCLE) {
-    ALL_ITEMS.push(root + ':' + type.name);
+export const ALL_ITEMS: string[] = (() => {
+  const items: string[] = [];
+  for (const type of CHORD_TYPES) {
+    for (const root of CHORD_ROOT_CYCLE) {
+      items.push(root + ':' + type.name);
+    }
   }
-}
+  return shuffleByItemHash(items);
+})();
 
 export const ALL_GROUP_IDS: string[] = SPELLING_GROUPS.map((g) => g.id);
 
