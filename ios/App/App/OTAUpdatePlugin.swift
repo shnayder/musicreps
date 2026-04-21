@@ -204,11 +204,13 @@ public class OTAUpdatePlugin: CAPPlugin, CAPBridgedPlugin {
 
     /// Returns current OTA state for the JS updater.
     @objc func getState(_ call: CAPPluginCall) {
+        let releaseBase = Bundle.main.infoDictionary?["OTAReleaseBase"] as? String ?? ""
         call.resolve([
             "status": defaults.string(forKey: kStatus) ?? "none",
             "version": defaults.string(forKey: kVersion) ?? "",
             "path": defaults.string(forKey: kRelPath) ?? "",
             "attempts": defaults.integer(forKey: kAttempts),
+            "releaseBase": releaseBase,
         ])
     }
 
