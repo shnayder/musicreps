@@ -2889,7 +2889,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1499"></div>
+  <div class="home-screen" id="home-screen" data-version="#1504"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -10083,12 +10083,7 @@ Build: ${version}
   });
 
   // src/updater.ts
-  var DEFAULT_RELEASE_BASE = "https://shnayder.github.io/musicreps/release";
   var CHECK_INTERVAL_MS = 60 * 60 * 1e3;
-  function getReleaseBase() {
-    const el = document.getElementById("home-screen");
-    return el?.dataset.releaseBase || DEFAULT_RELEASE_BASE;
-  }
   var lastCheckTime = 0;
   function getOTAPlugin() {
     return globalThis.Capacitor?.Plugins?.OTAUpdate;
@@ -10138,11 +10133,7 @@ Build: ${version}
     await deps.registerUpdate(dir, manifest.version);
     return "update-registered";
   }
-  function productionDeps() {
-    const plugin = getOTAPlugin();
-    const fs = getFilesystemPlugin();
-    if (!plugin || !fs) return null;
-    const base = getReleaseBase();
+  function productionDeps(plugin, fs, base) {
     return {
       fetchManifest: async () => {
         const resp = await fetch(`${base}/version.json`, { cache: "no-store" });
@@ -10178,12 +10169,20 @@ Build: ${version}
     const now = Date.now();
     if (now - lastCheckTime < CHECK_INTERVAL_MS) return;
     lastCheckTime = now;
-    const deps = productionDeps();
-    if (!deps) {
+    const plugin = getOTAPlugin();
+    const fs = getFilesystemPlugin();
+    if (!plugin || !fs) {
       console.log("[OTA] plugin not available, skipping");
       return;
     }
     try {
+      const state = await plugin.getState();
+      const releaseBase = state.releaseBase === void 0 ? "https://shnayder.github.io/musicreps/release" : state.releaseBase;
+      if (!releaseBase) {
+        console.log("[OTA] no release base configured, skipping (dev build)");
+        return;
+      }
+      const deps = productionDeps(plugin, fs, releaseBase);
       const result = await checkForUpdateCore(deps);
       const messages = {
         "fetch-failed": "[OTA] version.json fetch failed",
