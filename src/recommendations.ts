@@ -225,12 +225,13 @@ export function computeLevelRecs(
   const recs: LevelRecommendation[] = [];
 
   // Tier 1: review + practice, in level order.
-  // Each status gets at most one rec: review if solid+ and stale,
-  // practice if below solid. A stale below-solid level gets practice
-  // (review only applies to solid+).
+  // Each status gets at most one rec: review if solid+ and actually stale
+  // (reviewInHours === 0, meaning avgFreshness <= FRESHNESS_THRESHOLD),
+  // practice if below solid. Levels with reviewInHours > 0 aren't due
+  // yet — they get a UI pill ("Review in Xh") but no active rec.
   for (const s of statuses) {
     if (
-      s.reviewStatus === 'soon' &&
+      s.reviewStatus === 'soon' && s.reviewInHours === 0 &&
       (s.speedLabel === 'solid' || s.speedLabel === 'automatic')
     ) {
       recs.push({ groupId: s.groupId, type: 'review' });
@@ -260,12 +261,15 @@ export function computeLevelRecs(
 
 /**
  * Check whether the expansion gate is open.
- * All started levels must be ≥ Solid (P10 speed ≥ 0.7) and none need
- * review soon.
+ * All started levels must be ≥ Solid (P10 speed ≥ 0.7) and none actually
+ * due for review (freshness below threshold, i.e. reviewInHours === 0).
  */
 export function checkExpansionGate(statuses: LevelStatus[]): boolean {
   if (statuses.length === 0) return false;
-  return statuses.every((s) => s.speed >= 0.7 && s.reviewStatus !== 'soon');
+  return statuses.every((s) =>
+    s.speed >= 0.7 &&
+    !(s.reviewStatus === 'soon' && s.reviewInHours === 0)
+  );
 }
 
 // ---------------------------------------------------------------------------

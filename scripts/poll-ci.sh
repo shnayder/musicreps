@@ -56,6 +56,20 @@ for i in $(seq 1 $MAX_ATTEMPTS); do
   sleep $INTERVAL
 done
 
+# --- Merge status (if PR given) ---
+if [ -n "$PR_NUMBER" ]; then
+  echo ""
+  MERGE_JSON=$(gh pr view "$PR_NUMBER" --json mergeable,mergeStateStatus)
+  MERGEABLE=$(echo "$MERGE_JSON" | jq -r '.mergeable')
+  MERGE_STATE=$(echo "$MERGE_JSON" | jq -r '.mergeStateStatus')
+  case "$MERGEABLE" in
+    MERGEABLE)  echo "Merge: clean" ;;
+    CONFLICTING) echo "Merge: CONFLICTS — rebase or merge main to resolve" ;;
+    UNKNOWN)    echo "Merge: unknown (GitHub still computing)" ;;
+    *)          echo "Merge: $MERGEABLE ($MERGE_STATE)" ;;
+  esac
+fi
+
 # --- Poll Copilot review (if PR given) ---
 if [ -n "$PR_NUMBER" ]; then
   echo ""
@@ -72,7 +86,7 @@ if [ -n "$PR_NUMBER" ]; then
       echo ""
       echo "--- Inline comments ---"
       gh api "repos/$REPO/pulls/$PR_NUMBER/comments" \
-        --jq '.[] | select(.user.login | test("copilot|github-actions")) | "[\(.path):\(.line)] \(.body)"'
+        --jq '.[] | select(.user.login | test("copilot|github-actions"; "i")) | "[\(.path):\(.line // .original_line // .start_line // "?")] \(.body)"'
       break
     fi
     if [ "$i" -eq "$MAX_ATTEMPTS" ]; then

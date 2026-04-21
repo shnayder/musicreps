@@ -308,7 +308,7 @@ export function computeReviewPill(
   const avgStability = stabilitySum / stabilityCount;
   const avgFreshness = freshnessSum / freshnessCount;
   const timing = computeReviewTiming(avgStability, avgFreshness);
-  if (timing.status === 'soon') return 'Review soon';
+  if (timing.status === 'soon' && timing.hours === 0) return 'Review soon';
   return `Review in ${formatReviewDuration(timing.hours)}`;
 }
 

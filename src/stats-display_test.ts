@@ -332,7 +332,7 @@ describe('computeReviewPill', () => {
     assert.equal(computeReviewPill(selector, ['a']), 'Review soon');
   });
 
-  it('returns "Review soon" when ≤24h remaining', () => {
+  it('returns "Review in Xd" when ≤24h remaining but not yet due', () => {
     const selector = {
       getStats: () => ({
         recentTimes: [1000],
@@ -344,8 +344,10 @@ describe('computeReviewPill', () => {
       }),
       getFreshness: () => 0.7,
     };
-    // stability=30h, freshness=0.7 → remaining = 30*(1+log2(0.7)) ≈ 30*0.485 ≈ 14.6h
-    assert.equal(computeReviewPill(selector, ['a']), 'Review soon');
+    // stability=30h, freshness=0.7 → remaining = 30*(1+log2(0.7)) ≈ 14.6h
+    // Not yet due (hours > 0), so shows "Review in Xd" not "Review soon".
+    const pill = computeReviewPill(selector, ['a']);
+    assert.ok(pill?.startsWith('Review in '), `pill: ${pill}`);
   });
 
   it('returns "Review in Xd" for moderate stability', () => {
