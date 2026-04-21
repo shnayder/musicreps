@@ -1,0 +1,62 @@
+name: Deploy Staging
+
+on:
+  push:
+    tags:
+      - 'release-staging-v*'
+
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout tagged commit
+        uses: actions/checkout@v4
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Setup Node (for esbuild)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run checks
+        run: deno task ok
+
+      - name: Get commit count
+        id: commit-count
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Get total commit count via GitHub API (avoids fetching full history)
+          COUNT=$(gh api "repos/${{ github.repository }}/commits?sha=main&per_page=1" \
+            --include 2>/dev/null \
+            | grep -i '^link:' \
+            | sed 's/.*page=\([0-9]*\)>; rel="last".*/\1/')
+          if [ -z "$COUNT" ]; then
+            echo "::warning::Could not determine commit count from GitHub API"
+          fi
+          echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: deno task build
+        env:
+          BUILD_NUMBER: ${{ steps.commit-count.outputs.count }}
+          APP_CONTACT_EMAIL: musicrepsapp@gmail.com
+          APP_SUPPORT_URL: https://shnayder.github.io/musicreps/support.html
+          APP_TERMS_URL: https://shnayder.github.io/musicreps/terms.html
+          APP_PRIVACY_URL: https://shnayder.github.io/musicreps/privacy.html
+
+      - name: Deploy to release-staging/
+        run: bash scripts/deploy-gh-pages.sh release-staging
