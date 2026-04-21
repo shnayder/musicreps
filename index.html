@@ -553,8 +553,8 @@ body {
    z-index: -1 paints above layout-main's background (thanks to isolation:
    isolate creating a stacking context) but below all normal-flow children.
    No z-index needed on any child elements. */
-.mode-screen.phase-idle .layout-main::before,
-.mode-screen.phase-round-complete .layout-main::before {
+.skill-screen.phase-idle .layout-main::before,
+.skill-screen.phase-round-complete .layout-main::before {
   content: '';
   position: absolute;
   left: 50%;
@@ -586,9 +586,9 @@ body {
      indicator / app switcher gesture area. */
   padding-bottom: max(var(--gap-group), env(safe-area-inset-bottom, 0));
 }
-/* mode-nav owns its own bottom safe-area clearance and must stay flush
+/* skill-nav owns its own bottom safe-area clearance and must stay flush
    to the screen edge, so don't double up. */
-.layout-footer:has(> .mode-nav) {
+.layout-footer:has(> .skill-nav) {
   padding-bottom: 0;
 }
 
@@ -871,9 +871,9 @@ body.native-app .brand-strip {
   white-space: nowrap;
   color: inherit;
 }
-/* mode-nav is inside LayoutFooter — no position: fixed needed.
-   mode-nav owns the bottom safe-area clearance (body does not). */
-.mode-nav {
+/* skill-nav is inside LayoutFooter — no position: fixed needed.
+   skill-nav owns the bottom safe-area clearance (body does not). */
+.skill-nav {
   display: flex;
   background: var(--color-chrome);
   border-top: 1px solid var(--color-border-lighter);
@@ -881,25 +881,25 @@ body.native-app .brand-strip {
   padding: var(--gap-related) var(--size-content-inset);
   padding-bottom: max(var(--gap-related), env(safe-area-inset-bottom, 0));
 }
-.mode-nav .tab-btn {
+.skill-nav .tab-btn {
   padding: var(--gap-related) var(--gap-group);
 }
-.mode-nav .tab-btn.active::after {
+.skill-nav .tab-btn.active::after {
   /* No underline — the icon color is enough for bottom nav */
   display: none;
 }
 /* Note: bottom nav padding is now handled by ScreenLayout / LayoutFooter.
    No ad-hoc padding-bottom needed on tab panels. */
 @media (min-width: 768px) {
-  .mode-nav {
+  .skill-nav {
     border-top: none;
     border-bottom: 2px solid var(--color-border-lighter);
     padding-bottom: 0;
   }
-  .mode-nav .tab-btn {
+  .skill-nav .tab-btn {
     padding: var(--gap-group) var(--pad-region);
   }
-  .mode-nav .tab-btn.active::after {
+  .skill-nav .tab-btn.active::after {
     display: block;
   }
   .tab-icon-label {
@@ -908,10 +908,10 @@ body.native-app .brand-strip {
   }
 }
 
-.home-modes {
+.home-skills {
   flex: 1;
 }
-.home-mode-btn {
+.home-skill-btn {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -926,13 +926,13 @@ body.native-app .brand-strip {
   cursor: pointer;
   position: relative;
 }
-.home-mode-btn::after {
+.home-skill-btn::after {
   content: none;
 }
-.home-mode-btn:hover {
+.home-skill-btn:hover {
   background: var(--color-surface);
 }
-.home-mode-btn:active {
+.home-skill-btn:active {
   background: var(--color-surface-pressed);
 }
 /* --- Track accordion sections --- */
@@ -1071,7 +1071,7 @@ body.native-app .brand-strip {
   border-radius: var(--radius-md);
   text-align: center;
 }
-/* --- Skill cards (extends home-mode-btn) --- */
+/* --- Skill cards (extends home-skill-btn) --- */
 .skill-card {
   position: relative;
 }
@@ -1256,13 +1256,13 @@ body.native-app .brand-strip {
 }
 
 /* --- Mode screens --- */
-.mode-screen {
+.skill-screen {
   display: none;
   padding-top: 0;
   flex: 1;
   min-height: 0;
 }
-.mode-screen.mode-active {
+.skill-screen.skill-active {
   display: flex;
   flex-direction: column;
 }
@@ -1380,7 +1380,7 @@ body.native-app .brand-strip {
 .screen-header-title .skill-icon {
   color: var(--type-heading-page-color);
 }
-.screen-header-title .mode-title {
+.screen-header-title .skill-title {
   flex: none;
 }
 /* Spacer keeps the centered title balanced when close or right slot is absent.
@@ -1606,14 +1606,14 @@ body.native-app .brand-strip {
   flex: 1;
   min-height: 0;
 }
-.group-progress-bar {
+.level-progress-bar {
   display: flex;
   height: 8px;
   border-radius: var(--radius-sm);
   overflow: hidden;
   background: var(--heatmap-none);
 }
-.group-progress-bar.skipped {
+.level-progress-bar.skipped {
   opacity: var(--opacity-subtle);
 }
 .group-bar-slice {
@@ -1766,11 +1766,11 @@ button {
 }
 
 /* --- Quiz-active visual focus --- */
-/* .mode-screen prefix gives 0-2-0 specificity to override
-   .mode-screen.mode-active { display: block } (also 0-2-0, but earlier). */
-.mode-screen.phase-active,
-.mode-screen.phase-round-complete,
-.mode-screen.phase-calibration {
+/* .skill-screen prefix gives 0-2-0 specificity to override
+   .skill-screen.skill-active { display: block } (also 0-2-0, but earlier). */
+.skill-screen.phase-active,
+.skill-screen.phase-round-complete,
+.skill-screen.phase-calibration {
   background: var(--color-card);
   display: flex;
   flex-direction: column;
@@ -2662,7 +2662,7 @@ button {
   outline: none;
 }
 /* Specific overrides for elements that need different focus styling */
-.home-mode-btn:focus-visible {
+.home-skill-btn:focus-visible {
   outline-offset: -2px;
 }
 
@@ -2889,20 +2889,20 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1494"></div>
-  <div class="mode-screen phase-idle" id="mode-fretboard"></div>
-  <div class="mode-screen phase-idle" id="mode-speedTap"></div>
-  <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
-  <div class="mode-screen phase-idle" id="mode-ukulele"></div>
-  <div class="mode-screen phase-idle" id="mode-ukuleleChordShapes"></div>
-  <div class="mode-screen phase-idle" id="mode-noteSemitones"></div>
-  <div class="mode-screen phase-idle" id="mode-intervalSemitones"></div>
-  <div class="mode-screen phase-idle" id="mode-semitoneMath"></div>
-  <div class="mode-screen phase-idle" id="mode-intervalMath"></div>
-  <div class="mode-screen phase-idle" id="mode-scaleDegrees"></div>
-  <div class="mode-screen phase-idle" id="mode-diatonicChords"></div>
-  <div class="mode-screen phase-idle" id="mode-chordSpelling"></div>
-  <div class="mode-screen phase-idle" id="mode-keySignatures"></div>
+  <div class="home-screen" id="home-screen" data-version="#1499"></div>
+  <div class="skill-screen phase-idle" id="skill-fretboard"></div>
+  <div class="skill-screen phase-idle" id="skill-speedTap"></div>
+  <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
+  <div class="skill-screen phase-idle" id="skill-ukulele"></div>
+  <div class="skill-screen phase-idle" id="skill-ukuleleChordShapes"></div>
+  <div class="skill-screen phase-idle" id="skill-noteSemitones"></div>
+  <div class="skill-screen phase-idle" id="skill-intervalSemitones"></div>
+  <div class="skill-screen phase-idle" id="skill-semitoneMath"></div>
+  <div class="skill-screen phase-idle" id="skill-intervalMath"></div>
+  <div class="skill-screen phase-idle" id="skill-scaleDegrees"></div>
+  <div class="skill-screen phase-idle" id="skill-diatonicChords"></div>
+  <div class="skill-screen phase-idle" id="skill-chordSpelling"></div>
+  <div class="skill-screen phase-idle" id="skill-keySignatures"></div>
   </div>
 
   <script>
@@ -4459,68 +4459,68 @@ body.native-sim #app {
   }
 
   // src/navigation.ts
-  function initNavigationListeners(getCurrentModeId, navigateHome) {
+  function initNavigationListeners(getCurrentSkillId, navigateHome) {
     document.addEventListener("keydown", (e3) => {
-      const modeId = getCurrentModeId();
-      if (e3.key !== "Escape" || !modeId) return;
+      const skillId = getCurrentSkillId();
+      if (e3.key !== "Escape" || !skillId) return;
       if (document.querySelector(".settings-overlay.open")) return;
-      const modeScreen = document.getElementById("mode-" + modeId);
-      if (modeScreen && !modeScreen.classList.contains("phase-idle")) return;
+      const skillScreen = document.getElementById("skill-" + skillId);
+      if (skillScreen && !skillScreen.classList.contains("phase-idle")) return;
       navigateHome();
     });
   }
   function createNavigation() {
-    const LAST_MODE_KEY = "fretboard_lastMode";
-    const modes2 = {};
-    let currentModeId = null;
+    const LAST_SKILL_KEY = "fretboard_lastMode";
+    const skills = {};
+    let currentSkillId = null;
     const homeScreen = document.getElementById("home-screen");
-    function registerMode(id, modeController) {
-      modes2[id] = modeController;
+    function registerSkill(id, skillController) {
+      skills[id] = skillController;
     }
     function navigateHome() {
-      const previousModeId = currentModeId;
-      if (currentModeId && modes2[currentModeId]) {
-        modes2[currentModeId].deactivate();
-        const currentScreen = document.getElementById("mode-" + currentModeId);
-        if (currentScreen) currentScreen.classList.remove("mode-active");
+      const previousSkillId = currentSkillId;
+      if (currentSkillId && skills[currentSkillId]) {
+        skills[currentSkillId].deactivate();
+        const currentScreen = document.getElementById("skill-" + currentSkillId);
+        if (currentScreen) currentScreen.classList.remove("skill-active");
       }
-      currentModeId = null;
+      currentSkillId = null;
       if (homeScreen) homeScreen.classList.remove("hidden");
       requestAnimationFrame(() => {
-        if (previousModeId && homeScreen) {
+        if (previousSkillId && homeScreen) {
           const btn = homeScreen.querySelector(
-            '.home-mode-btn[data-mode="' + previousModeId + '"]'
+            '.home-skill-btn[data-skill="' + previousSkillId + '"]'
           );
           if (btn) btn.focus();
         }
       });
     }
-    function switchTo(modeId) {
-      if (!modes2[modeId]) return;
+    function switchTo(skillId) {
+      if (!skills[skillId]) return;
       if (homeScreen) homeScreen.classList.add("hidden");
-      if (currentModeId && modes2[currentModeId]) {
-        modes2[currentModeId].deactivate();
-        const currentScreen = document.getElementById("mode-" + currentModeId);
-        if (currentScreen) currentScreen.classList.remove("mode-active");
+      if (currentSkillId && skills[currentSkillId]) {
+        skills[currentSkillId].deactivate();
+        const currentScreen = document.getElementById("skill-" + currentSkillId);
+        if (currentScreen) currentScreen.classList.remove("skill-active");
       }
-      currentModeId = modeId;
-      const newScreen = document.getElementById("mode-" + modeId);
-      if (newScreen) newScreen.classList.add("mode-active");
-      modes2[modeId].activate();
+      currentSkillId = skillId;
+      const newScreen = document.getElementById("skill-" + skillId);
+      if (newScreen) newScreen.classList.add("skill-active");
+      skills[skillId].activate();
       requestAnimationFrame(() => {
         if (newScreen) {
           const target = newScreen.querySelector(".start-btn");
           if (target) target.focus();
         }
       });
-      storage.setItem(LAST_MODE_KEY, modeId);
+      storage.setItem(LAST_SKILL_KEY, skillId);
     }
     function init() {
-      initNavigationListeners(() => currentModeId, navigateHome);
-      for (const id of Object.keys(modes2)) modes2[id].init();
+      initNavigationListeners(() => currentSkillId, navigateHome);
+      for (const id of Object.keys(skills)) skills[id].init();
       navigateHome();
     }
-    return { registerMode, switchTo, navigateHome, init };
+    return { registerSkill, switchTo, navigateHome, init };
   }
 
   // src/settings.ts
@@ -5030,8 +5030,8 @@ body.native-sim #app {
     return "function" == typeof t3 ? t3(n2) : t3;
   }
 
-  // src/mode-catalog.ts
-  var MODE_DESCRIPTIONS = {
+  // src/skill-catalog.ts
+  var SKILL_DESCRIPTIONS = {
     fretboard: "Name any fret instantly",
     ukulele: "Name any fret instantly",
     speedTap: "Instantly find every position of any note",
@@ -5046,7 +5046,7 @@ body.native-sim #app {
     guitarChordShapes: "Tap chord fingerings from memory",
     ukuleleChordShapes: "Tap chord fingerings from memory"
   };
-  var MODE_ABOUT_DESCRIPTIONS = {
+  var SKILL_ABOUT_DESCRIPTIONS = {
     fretboard: "You can get far on guitar without knowing note names \u2014 shapes, tab, and fret numbers go a long way. Knowing the notes unlocks the next level: finding your bearings when someone calls a key at a jam, building chord voicings anywhere on the neck, moving a riff to a new position, or understanding what makes that chord you stumbled on actually work. A musician who knows their instrument can do things that someone who memorized patterns can\u2019t. This skill builds instant recall for every note on every fret.",
     ukulele: "You can get far on ukulele without knowing note names \u2014 shapes, tab, and fret numbers go a long way. Knowing the notes unlocks the next level: finding your bearings when someone calls a key at a jam, building chord voicings anywhere on the neck, moving a riff to a new position, or understanding what makes that chord you stumbled on actually work. A musician who knows their instrument can do things that someone who memorized patterns can\u2019t. This skill builds instant recall for every note on every fret.",
     speedTap: "Speed Tap complements the fretboard learning skill, teaching you to find every instance of a note on the neck. This lets you move between positions fluidly \u2014 jump to a higher octave, find a bass note, or play a chord wherever your hand happens to be.",
@@ -5061,7 +5061,7 @@ body.native-sim #app {
     guitarChordShapes: "This skill builds instant recall for common chord voicings on the guitar. Automate the shapes so you can focus on moving your fingers, not remembering where they\u2019re supposed to go.",
     ukuleleChordShapes: "This skill builds instant recall for common chord voicings on the ukulele. Automate the shapes so you can focus on moving your fingers, not remembering where they\u2019re supposed to go."
   };
-  var MODE_NAMES = {
+  var SKILL_NAMES = {
     fretboard: "Guitar Fretboard",
     ukulele: "Ukulele Fretboard",
     speedTap: "Speed Tap",
@@ -5077,7 +5077,7 @@ body.native-sim #app {
     ukuleleChordShapes: "Ukulele Chord Shapes"
   };
   var d3 = displayNote;
-  var MODE_BEFORE_AFTER = {
+  var SKILL_BEFORE_AFTER = {
     fretboard: {
       before: () => [
         `7th fret, ${d3("G")} string.`,
@@ -5470,8 +5470,8 @@ body.native-sim #app {
     const index = Math.min(values.length - 1, Math.max(0, rawIndex));
     return { level: values[index], seen };
   }
-  function computeGroupRecommendations(getSpeedScore, groupIds, getItemIds) {
-    const results = groupIds.map((id) => {
+  function computeLevelStats(getSpeedScore, levelIds, getItemIds) {
+    const results = levelIds.map((id) => {
       const items = getItemIds(id);
       let workingCount = 0;
       let unseenCount = 0;
@@ -5487,7 +5487,7 @@ body.native-sim #app {
         }
       }
       return {
-        groupId: id,
+        levelId: id,
         workingCount,
         unseenCount,
         automaticCount,
@@ -5619,9 +5619,9 @@ body.native-sim #app {
         itemIds,
         percentile
       ),
-      getGroupRecommendations: (groupIds, getItemIds) => computeGroupRecommendations(
+      getLevelStats: (levelIds, getItemIds) => computeLevelStats(
         getSpeedScore,
-        groupIds,
+        levelIds,
         getItemIds
       ),
       checkAllAutomatic: (items) => checkAllItemsAutomatic(getSpeedScore, items),
@@ -5695,13 +5695,13 @@ body.native-sim #app {
 
   // src/effort.ts
   var modes = [];
-  function registerModeForEffort(info) {
+  function registerSkillForEffort(info) {
     modes.push(info);
   }
-  function getRegisteredModes() {
+  function getRegisteredSkills() {
     return modes;
   }
-  function computeModeEffort(mode, storage2) {
+  function computeSkillEffort(mode, storage2) {
     let totalReps = 0;
     let itemsStarted = 0;
     for (const itemId2 of mode.allItems) {
@@ -5765,29 +5765,29 @@ body.native-sim #app {
     data[today] = (data[today] || 0) + 1;
     saveDailyReps(data, store);
   }
-  function computeGlobalEffort(modeEfforts, dailyReps) {
+  function computeGlobalEffort(skillEfforts, dailyReps) {
     const dates = Object.keys(dailyReps).filter((d4) => dailyReps[d4] > 0);
     const totalFromDaily = dates.reduce((sum, d4) => sum + dailyReps[d4], 0);
-    const totalFromModes = modeEfforts.reduce((s3, m3) => s3 + m3.totalReps, 0);
+    const totalFromSkills = skillEfforts.reduce((s3, m3) => s3 + m3.totalReps, 0);
     return {
-      totalReps: Math.max(totalFromDaily, totalFromModes),
+      totalReps: Math.max(totalFromDaily, totalFromSkills),
       daysActive: dates.length,
       dailyReps
     };
   }
   function getGlobalEffort() {
-    const modes2 = getRegisteredModes();
-    const modeEfforts = modes2.map(
-      (m3) => computeModeEffort(m3, createStorageAdapter(m3.namespace))
+    const modes2 = getRegisteredSkills();
+    const skillEfforts = modes2.map(
+      (m3) => computeSkillEffort(m3, createStorageAdapter(m3.namespace))
     );
-    return computeGlobalEffort(modeEfforts, getDailyReps());
+    return computeGlobalEffort(skillEfforts, getDailyReps());
   }
 
   // src/dev-panel.ts
   function getDevPanelData() {
-    const modes2 = getRegisteredModes();
+    const modes2 = getRegisteredSkills();
     const modeEfforts = modes2.map(
-      (m3) => computeModeEffort(m3, createStorageAdapter(m3.namespace))
+      (m3) => computeSkillEffort(m3, createStorageAdapter(m3.namespace))
     );
     const daily = getDailyReps();
     const global2 = computeGlobalEffort(modeEfforts, daily);
@@ -5903,8 +5903,8 @@ body.native-sim #app {
     guitarChordShapes: Guitar,
     ukuleleChordShapes: Guitar
   };
-  function SkillIcon({ modeId }) {
-    const Icon = MODE_ICONS[modeId];
+  function SkillIcon({ skillId }) {
+    const Icon = MODE_ICONS[skillId];
     if (!Icon) return null;
     return /* @__PURE__ */ u2(Icon, {});
   }
@@ -6000,7 +6000,7 @@ body.native-sim #app {
       avgFreshness: freshnessSum / freshnessCount
     };
   }
-  function classifyGroups(recs) {
+  function classifyLevels(recs) {
     const started = [];
     const unstarted = [];
     for (const r3 of recs) {
@@ -6017,11 +6017,11 @@ body.native-sim #app {
       const sorted = sortFn ? [...unstarted].sort(sortFn) : unstarted;
       const first = sorted[0];
       return {
-        recommended: /* @__PURE__ */ new Set([first.groupId]),
-        enabled: /* @__PURE__ */ new Set([first.groupId]),
-        expandIndex: first.groupId,
+        recommended: /* @__PURE__ */ new Set([first.levelId]),
+        enabled: /* @__PURE__ */ new Set([first.levelId]),
+        expandIndex: first.levelId,
         expandNewCount: first.totalCount,
-        levelRecs: [{ groupId: first.groupId, type: "expand" }]
+        levelRecs: [{ levelId: first.levelId, type: "expand" }]
       };
     }
     return {
@@ -6032,8 +6032,8 @@ body.native-sim #app {
       levelRecs: []
     };
   }
-  function classifyLevelStatus(selector, groupId, getItemIds) {
-    const itemIds = getItemIds(groupId);
+  function classifyLevel(selector, levelId, getItemIds) {
+    const itemIds = getItemIds(levelId);
     const { level: speed } = selector.getLevelSpeed(itemIds);
     const speedLabel2 = getSpeedLevel(speed).key;
     let reviewStatus = null;
@@ -6047,7 +6047,7 @@ body.native-sim #app {
       }
     }
     return {
-      groupId,
+      levelId,
       speed,
       speedLabel: speedLabel2,
       reviewStatus,
@@ -6058,14 +6058,14 @@ body.native-sim #app {
     const recs = [];
     for (const s3 of statuses) {
       if (s3.reviewStatus === "soon" && s3.reviewInHours === 0 && (s3.speedLabel === "solid" || s3.speedLabel === "automatic")) {
-        recs.push({ groupId: s3.groupId, type: "review" });
+        recs.push({ levelId: s3.levelId, type: "review" });
       } else if (s3.speedLabel === "starting" || s3.speedLabel === "hesitant" || s3.speedLabel === "learning") {
-        recs.push({ groupId: s3.groupId, type: "practice" });
+        recs.push({ levelId: s3.levelId, type: "practice" });
       }
     }
     for (const s3 of statuses) {
       if (s3.speedLabel === "solid" && s3.reviewStatus === null) {
-        recs.push({ groupId: s3.groupId, type: "automate" });
+        recs.push({ levelId: s3.levelId, type: "automate" });
       }
     }
     return recs;
@@ -6080,13 +6080,13 @@ body.native-sim #app {
     const learnedCount = statuses.filter((s3) => s3.speedLabel === "solid").length;
     return learnedCount >= 3;
   }
-  function computeRecommendations(selector, allGroupIds, getItemIds, config, options) {
+  function computeRecommendations(selector, allLevelIds, getItemIds, config, options) {
     const sortFn = options?.sortUnstarted;
-    const recs = selector.getGroupRecommendations(allGroupIds, getItemIds);
-    const { started, unstarted } = classifyGroups(recs);
+    const recs = selector.getLevelStats(allLevelIds, getItemIds);
+    const { started, unstarted } = classifyLevels(recs);
     if (started.length === 0) return freshStartResult(unstarted, sortFn);
     const statuses = started.map(
-      (r3) => classifyLevelStatus(selector, r3.groupId, getItemIds)
+      (r3) => classifyLevel(selector, r3.levelId, getItemIds)
     );
     const levelRecs = computeLevelRecs(statuses);
     const gateOpen = checkExpansionGate(statuses);
@@ -6094,10 +6094,10 @@ body.native-sim #app {
     let expandNewCount = 0;
     if (gateOpen && unstarted.length > 0) {
       const sorted = sortFn ? [...unstarted].sort(sortFn) : unstarted;
-      expandIndex = sorted[0].groupId;
+      expandIndex = sorted[0].levelId;
       expandNewCount = sorted[0].totalCount;
       const expandRec = {
-        groupId: expandIndex,
+        levelId: expandIndex,
         type: "expand"
       };
       if (shouldThrottleExpansion(statuses)) {
@@ -6116,20 +6116,20 @@ body.native-sim #app {
     const enabled = /* @__PURE__ */ new Set();
     let budget = maxWork;
     for (const rec of levelRecs) {
-      if (recommended.has(rec.groupId)) continue;
-      const itemCount = getItemIds(rec.groupId).length;
+      if (recommended.has(rec.levelId)) continue;
+      const itemCount = getItemIds(rec.levelId).length;
       if (recommended.size > 0 && budget - itemCount < 0) continue;
-      recommended.add(rec.groupId);
-      enabled.add(rec.groupId);
+      recommended.add(rec.levelId);
+      enabled.add(rec.levelId);
       budget -= itemCount;
     }
     if (recommended.size === 0) {
       for (const s3 of statuses) {
-        recommended.add(s3.groupId);
-        enabled.add(s3.groupId);
+        recommended.add(s3.levelId);
+        enabled.add(s3.levelId);
       }
     }
-    const filteredRecs = levelRecs.filter((r3) => recommended.has(r3.groupId));
+    const filteredRecs = levelRecs.filter((r3) => recommended.has(r3.levelId));
     if (expandIndex !== null && !recommended.has(expandIndex)) {
       expandIndex = null;
       expandNewCount = 0;
@@ -6246,7 +6246,7 @@ body.native-sim #app {
     });
     return items.map((item) => item.color);
   }
-  function progressBarGroupSegment(selector, itemIds) {
+  function progressBarLevelSegment(selector, itemIds) {
     let speedSum = 0, speedCount = 0;
     for (const id of itemIds) {
       const sp = selector.getSpeedScore(id);
@@ -6269,11 +6269,11 @@ body.native-sim #app {
       if (colors.length > 0 && colors[0] === colors[colors.length - 1] && selector.getSpeedScore(ids[0]) === null) return [];
       return colors.map((c3) => ({ color: c3, weight: 1 }));
     }
-    const skipped = input.skippedGroups;
-    const active = skipped ? input.groups.filter((g4) => !skipped.has(g4.id)) : input.groups;
+    const skipped = input.skippedLevels;
+    const active = skipped ? input.levels.filter((g4) => !skipped.has(g4.id)) : input.levels;
     if (active.length === 0) return [];
     const segments = active.map(
-      (g4) => progressBarGroupSegment(selector, g4.itemIds)
+      (g4) => progressBarLevelSegment(selector, g4.itemIds)
     );
     if (segments.every((s3) => s3.zone === 2)) return [];
     segments.sort((a3, b2) => {
@@ -6500,11 +6500,11 @@ body.native-sim #app {
     };
   }
 
-  // src/modes/fretboard/logic.ts
+  // src/skills/fretboard/logic.ts
   function fretLabel(start, end) {
     return "Frets " + start + "\u2013" + end;
   }
-  var FRET_GROUPS = [
+  var FRET_LEVELS = [
     {
       id: "frets-0-3-natural",
       label: () => fretLabel(0, 3),
@@ -6548,8 +6548,8 @@ body.native-sim #app {
       noteFilter: "sharps-flats"
     }
   ];
-  function getGroups(_instrument) {
-    return FRET_GROUPS;
+  function getLevels(_instrument) {
+    return FRET_LEVELS;
   }
   var helpersCache = /* @__PURE__ */ new Map();
   function getHelpers(instrument) {
@@ -6566,9 +6566,9 @@ body.native-sim #app {
     }
     return h3;
   }
-  function getItemIdsForGroup(instrument, groupId) {
-    const groups = getGroups(instrument);
-    const group = groups.find((g4) => g4.id === groupId);
+  function getItemIdsForLevel(instrument, levelId) {
+    const groups = getLevels(instrument);
+    const group = groups.find((g4) => g4.id === levelId);
     if (!group) return [];
     const fb = getHelpers(instrument);
     return fb.getItemIdsForFretRange(
@@ -6587,8 +6587,8 @@ body.native-sim #app {
     }
     return items;
   }
-  function getAllGroupIds(instrument) {
-    return getGroups(instrument).map((g4) => g4.id);
+  function getAllLevelIds(instrument) {
+    return getLevels(instrument).map((g4) => g4.id);
   }
   function getQuestion(instrument, itemId2, ctx) {
     const fb = getHelpers(instrument);
@@ -6596,13 +6596,13 @@ body.native-sim #app {
     return { ...base, useFlats: ctx?.useFlats ?? false };
   }
   function formatLabel(instrument, enabledGroups) {
-    const groups = getGroups(instrument);
+    const groups = getLevels(instrument);
     if (enabledGroups.size === groups.length) return "all groups";
     const labels = groups.filter((g4) => enabledGroups.has(g4.id)).map((g4) => g4.label());
     return labels.join(", ");
   }
 
-  // src/modes/fretboard/definition.tsx
+  // src/skills/fretboard/definition.tsx
   var FB_QUIZ_HL = "hsl(50, 100%, 50%)";
   function setCircleFill(root, string, fret, color) {
     const circle = root.querySelector(
@@ -6616,16 +6616,16 @@ body.native-sim #app {
     });
   }
   function createFretboardDef(instrument) {
-    const groups = getGroups(instrument);
+    const levels = getLevels(instrument);
     const allItems2 = getAllItems(instrument);
-    const allGroupIds = getAllGroupIds(instrument);
+    const allLevelIds = getAllLevelIds(instrument);
     return {
       id: instrument.id,
       name: instrument.name,
       namespace: instrument.storageNamespace,
-      description: MODE_DESCRIPTIONS[instrument.id],
-      aboutDescription: MODE_ABOUT_DESCRIPTIONS[instrument.id],
-      beforeAfter: MODE_BEFORE_AFTER[instrument.id],
+      description: SKILL_DESCRIPTIONS[instrument.id],
+      aboutDescription: SKILL_ABOUT_DESCRIPTIONS[instrument.id],
+      beforeAfter: SKILL_BEFORE_AFTER[instrument.id],
       itemNoun: "positions",
       allItems: allItems2,
       getQuestion: (itemId2, ctx) => getQuestion(instrument, itemId2, ctx),
@@ -6645,17 +6645,18 @@ body.native-sim #app {
       getUseFlats: (q4) => q4.useFlats,
       buttons: { kind: "note", columns: 6 },
       scope: {
-        kind: "groups",
-        groups,
-        getItemIdsForGroup: (id) => getItemIdsForGroup(instrument, id),
-        allGroupIds,
+        kind: "levels",
+        levels,
+        getItemIdsForLevel: (id) => getItemIdsForLevel(instrument, id),
+        allLevelIds,
+        // Legacy storage key — uses old "enabledGroups" naming.
         storageKey: instrument.storageNamespace + "_enabledGroups",
         scopeLabel: "Groups",
-        defaultEnabled: [allGroupIds[0]],
+        defaultEnabled: [allLevelIds[0]],
         formatLabel: (enabled) => formatLabel(instrument, enabled)
       },
       stats: { kind: "none" },
-      useController: (enabledGroups) => useFretboardController(instrument, groups, enabledGroups)
+      useController: (enabledLevels) => useFretboardController(instrument, levels, enabledLevels)
     };
   }
   function FretboardPrompt({
@@ -6696,7 +6697,7 @@ body.native-sim #app {
       }
     );
   }
-  function useFretboardController(instrument, groups, enabledGroups) {
+  function useFretboardController(instrument, levels, enabledLevels) {
     const quizFbRef = A2(null);
     const progressFbRef = A2(null);
     const svgHTML = T2(
@@ -6708,12 +6709,12 @@ body.native-sim #app {
       [instrument]
     );
     const hasAccidentals = T2(() => {
-      for (const id of enabledGroups) {
-        const g4 = groups.find((g5) => g5.id === id);
+      for (const id of enabledLevels) {
+        const g4 = levels.find((g5) => g5.id === id);
         if (g4?.noteFilter === "sharps-flats") return true;
       }
       return false;
-    }, [enabledGroups, groups]);
+    }, [enabledLevels, levels]);
     const engineSubmitRef = A2(() => {
     });
     const hasAccidentalsRef = A2(hasAccidentals);
@@ -6765,7 +6766,7 @@ body.native-sim #app {
     };
   }
 
-  // src/modes/note-semitones/logic.ts
+  // src/skills/note-semitones/logic.ts
   var ALL_ITEMS = [
     ...ROOT_CYCLE.map((n2) => n2 + ":fwd"),
     ...ROOT_CYCLE.map((n2) => n2 + ":rev")
@@ -6790,14 +6791,14 @@ body.native-sim #app {
     }));
   }
 
-  // src/modes/note-semitones/definition.ts
+  // src/skills/note-semitones/definition.ts
   var NOTE_SEMITONES_DEF = {
     id: "noteSemitones",
     name: "Note \u2194 Semitones",
     namespace: "noteSemitones",
-    description: MODE_DESCRIPTIONS.noteSemitones,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.noteSemitones,
-    beforeAfter: MODE_BEFORE_AFTER.noteSemitones,
+    description: SKILL_DESCRIPTIONS.noteSemitones,
+    aboutDescription: SKILL_ABOUT_DESCRIPTIONS.noteSemitones,
+    beforeAfter: SKILL_BEFORE_AFTER.noteSemitones,
     itemNoun: "items",
     allItems: ALL_ITEMS,
     getQuestion: getQuestion2,
@@ -6832,7 +6833,7 @@ body.native-sim #app {
     }
   };
 
-  // src/modes/interval-semitones/logic.ts
+  // src/skills/interval-semitones/logic.ts
   var ALL_ITEMS2 = [
     ...INTERVALS.map((i3) => i3.abbrev + ":fwd"),
     ...INTERVALS.map((i3) => i3.abbrev + ":rev")
@@ -6857,14 +6858,14 @@ body.native-sim #app {
     }));
   }
 
-  // src/modes/interval-semitones/definition.ts
+  // src/skills/interval-semitones/definition.ts
   var INTERVAL_SEMITONES_DEF = {
     id: "intervalSemitones",
     name: "Interval \u2194 Semitones",
     namespace: "intervalSemitones",
-    description: MODE_DESCRIPTIONS.intervalSemitones,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.intervalSemitones,
-    beforeAfter: MODE_BEFORE_AFTER.intervalSemitones,
+    description: SKILL_DESCRIPTIONS.intervalSemitones,
+    aboutDescription: SKILL_ABOUT_DESCRIPTIONS.intervalSemitones,
+    beforeAfter: SKILL_BEFORE_AFTER.intervalSemitones,
     itemNoun: "items",
     allItems: ALL_ITEMS2,
     getQuestion: getQuestion3,
@@ -6898,7 +6899,7 @@ body.native-sim #app {
     }
   };
 
-  // src/mode-utils.ts
+  // src/skill-utils.ts
   function buildMathIds(notes, values) {
     const ids = [];
     for (let i3 = 0; i3 < notes.length; i3++) {
@@ -6940,8 +6941,8 @@ body.native-sim #app {
     });
   }
 
-  // src/modes/semitone-math/logic.ts
-  var DISTANCE_GROUPS = [
+  // src/skills/semitone-math/logic.ts
+  var DISTANCE_LEVELS = [
     {
       id: "dist-1-2",
       distances: [1, 2],
@@ -6973,8 +6974,8 @@ body.native-sim #app {
       longLabel: "9\u201311 semitones apart"
     }
   ];
-  function getItemIdsForGroup2(groupId) {
-    const group = DISTANCE_GROUPS.find((g4) => g4.id === groupId);
+  function getItemIdsForLevel2(levelId) {
+    const group = DISTANCE_LEVELS.find((g4) => g4.id === levelId);
     if (!group) return [];
     const items = [];
     for (const d4 of group.distances) {
@@ -6990,7 +6991,7 @@ body.native-sim #app {
     ROOT_CYCLE,
     Array.from({ length: 11 }, (_3, i3) => i3 + 1)
   ));
-  var ALL_GROUP_IDS = DISTANCE_GROUPS.map((g4) => g4.id);
+  var ALL_LEVEL_IDS = DISTANCE_LEVELS.map((g4) => g4.id);
   function getQuestion4(itemId2) {
     const parsed = parseMathId(itemId2);
     const noteName = parsed.note;
@@ -7020,14 +7021,14 @@ body.native-sim #app {
     return [noteName + "+" + n2, noteName + "-" + n2];
   }
 
-  // src/modes/semitone-math/definition.ts
+  // src/skills/semitone-math/definition.ts
   var SEMITONE_MATH_DEF = {
     id: "semitoneMath",
     name: "Semitone Math",
     namespace: "semitoneMath",
-    description: MODE_DESCRIPTIONS.semitoneMath,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.semitoneMath,
-    beforeAfter: MODE_BEFORE_AFTER.semitoneMath,
+    description: SKILL_DESCRIPTIONS.semitoneMath,
+    aboutDescription: SKILL_ABOUT_DESCRIPTIONS.semitoneMath,
+    beforeAfter: SKILL_BEFORE_AFTER.semitoneMath,
     itemNoun: "items",
     allItems: ALL_ITEMS3,
     getQuestion: getQuestion4,
@@ -7043,16 +7044,17 @@ body.native-sim #app {
     inputPlaceholder: "Note name",
     buttons: { kind: "note" },
     scope: {
-      kind: "groups",
-      groups: DISTANCE_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup2,
-      allGroupIds: ALL_GROUP_IDS,
+      kind: "levels",
+      levels: DISTANCE_LEVELS,
+      getItemIdsForLevel: getItemIdsForLevel2,
+      allLevelIds: ALL_LEVEL_IDS,
+      // Legacy storage key — uses old "enabledGroups" naming.
       storageKey: "semitoneMath_enabledGroups",
       scopeLabel: "Distances",
-      defaultEnabled: [ALL_GROUP_IDS[0]],
-      formatLabel: (groups) => {
-        if (groups.size === DISTANCE_GROUPS.length) return "all distances";
-        const labels = DISTANCE_GROUPS.filter((g4) => groups.has(g4.id)).map((g4) => g4.label);
+      defaultEnabled: [ALL_LEVEL_IDS[0]],
+      formatLabel: (levels) => {
+        if (levels.size === DISTANCE_LEVELS.length) return "all distances";
+        const labels = DISTANCE_LEVELS.filter((g4) => levels.has(g4.id)).map((g4) => g4.label);
         return labels.join(", ");
       }
     },
@@ -7063,11 +7065,11 @@ body.native-sim #app {
     }
   };
 
-  // src/modes/interval-math/logic.ts
+  // src/skills/interval-math/logic.ts
   var MATH_INTERVALS = INTERVALS.filter(
     (i3) => i3.num >= 1 && i3.num <= 11
   );
-  var DISTANCE_GROUPS2 = [
+  var DISTANCE_LEVELS2 = [
     {
       id: "seconds",
       distances: [1, 2],
@@ -7099,8 +7101,8 @@ body.native-sim #app {
       longLabel: "Sixths & sevenths (M6, m7, M7)"
     }
   ];
-  function getItemIdsForGroup3(groupId) {
-    const group = DISTANCE_GROUPS2.find((g4) => g4.id === groupId);
+  function getItemIdsForLevel3(levelId) {
+    const group = DISTANCE_LEVELS2.find((g4) => g4.id === levelId);
     if (!group) return [];
     const intervals = MATH_INTERVALS.filter(
       (i3) => group.distances.includes(i3.num)
@@ -7119,7 +7121,7 @@ body.native-sim #app {
     ROOT_CYCLE,
     MATH_INTERVALS.map((i3) => i3.abbrev)
   ));
-  var ALL_GROUP_IDS2 = DISTANCE_GROUPS2.map((g4) => g4.id);
+  var ALL_LEVEL_IDS2 = DISTANCE_LEVELS2.map((g4) => g4.id);
   function getQuestion5(itemId2) {
     const parsed = parseMathId(itemId2);
     const noteName = parsed.note;
@@ -7152,14 +7154,14 @@ body.native-sim #app {
     return [noteName + "+" + abbrev, noteName + "-" + abbrev];
   }
 
-  // src/modes/interval-math/definition.ts
+  // src/skills/interval-math/definition.ts
   var INTERVAL_MATH_DEF = {
     id: "intervalMath",
     name: "Interval Math",
     namespace: "intervalMath",
-    description: MODE_DESCRIPTIONS.intervalMath,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.intervalMath,
-    beforeAfter: MODE_BEFORE_AFTER.intervalMath,
+    description: SKILL_DESCRIPTIONS.intervalMath,
+    aboutDescription: SKILL_ABOUT_DESCRIPTIONS.intervalMath,
+    beforeAfter: SKILL_BEFORE_AFTER.intervalMath,
     itemNoun: "items",
     allItems: ALL_ITEMS4,
     getQuestion: getQuestion5,
@@ -7180,16 +7182,17 @@ body.native-sim #app {
     inputPlaceholder: "Note name",
     buttons: { kind: "note" },
     scope: {
-      kind: "groups",
-      groups: DISTANCE_GROUPS2,
-      getItemIdsForGroup: getItemIdsForGroup3,
-      allGroupIds: ALL_GROUP_IDS2,
+      kind: "levels",
+      levels: DISTANCE_LEVELS2,
+      getItemIdsForLevel: getItemIdsForLevel3,
+      allLevelIds: ALL_LEVEL_IDS2,
+      // Legacy storage key — uses old "enabledGroups" naming.
       storageKey: "intervalMath_enabledGroups",
       scopeLabel: "Intervals",
-      defaultEnabled: [ALL_GROUP_IDS2[0]],
-      formatLabel: (groups) => {
-        if (groups.size === DISTANCE_GROUPS2.length) return "all intervals";
-        const labels = DISTANCE_GROUPS2.filter((g4) => groups.has(g4.id)).map((g4) => g4.label);
+      defaultEnabled: [ALL_LEVEL_IDS2[0]],
+      formatLabel: (levels) => {
+        if (levels.size === DISTANCE_LEVELS2.length) return "all intervals";
+        const labels = DISTANCE_LEVELS2.filter((g4) => levels.has(g4.id)).map((g4) => g4.label);
         return labels.join(", ");
       }
     },
@@ -7200,8 +7203,8 @@ body.native-sim #app {
     }
   };
 
-  // src/modes/key-signatures/logic.ts
-  var KEY_GROUPS = [
+  // src/skills/key-signatures/logic.ts
+  var KEY_LEVELS = [
     {
       id: "major-easy",
       keys: ["C", "G", "F", "D", "Bb", "A", "Eb"],
@@ -7232,7 +7235,7 @@ body.native-sim #app {
     );
     return { id, keys, label, longLabel };
   }
-  var MINOR_KEY_GROUPS = [
+  var MINOR_KEY_LEVELS = [
     minorKeyGroup(
       "minor-easy",
       MAJOR_KEYS.filter((k3) => k3.accidentalCount <= 3),
@@ -7246,9 +7249,9 @@ body.native-sim #app {
       "Minor keys (4+ \u266F/\u266D)"
     )
   ];
-  var ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
-  function getItemIdsForGroup4(groupId) {
-    const group = ALL_KEY_GROUPS.find((g4) => g4.id === groupId);
+  var ALL_KEY_LEVELS = [...KEY_LEVELS, ...MINOR_KEY_LEVELS];
+  function getItemIdsForLevel4(levelId) {
+    const group = ALL_KEY_LEVELS.find((g4) => g4.id === levelId);
     if (!group) return [];
     return shuffleByItemHash([
       ...group.keys.map((r3) => r3 + ":fwd"),
@@ -7264,7 +7267,7 @@ body.native-sim #app {
       ...allRoots.map((r3) => r3 + ":rev")
     ]);
   })();
-  var ALL_GROUP_IDS3 = ALL_KEY_GROUPS.map((g4) => g4.id);
+  var ALL_LEVEL_IDS3 = ALL_KEY_LEVELS.map((g4) => g4.id);
   function getQuestion6(itemId2) {
     const [rootPart, dir] = itemId2.split(":");
     const isMinor = rootPart.endsWith("m") && rootPart.length > 1 && MINOR_ROOT_TO_MAJOR.has(rootPart.slice(0, -1));
@@ -7301,14 +7304,14 @@ body.native-sim #app {
     });
   }
 
-  // src/modes/key-signatures/definition.ts
+  // src/skills/key-signatures/definition.ts
   var KEY_SIGNATURES_DEF = {
     id: "keySignatures",
     name: "Key Signatures",
     namespace: "keySignatures",
-    description: MODE_DESCRIPTIONS.keySignatures,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.keySignatures,
-    beforeAfter: MODE_BEFORE_AFTER.keySignatures,
+    description: SKILL_DESCRIPTIONS.keySignatures,
+    aboutDescription: SKILL_ABOUT_DESCRIPTIONS.keySignatures,
+    beforeAfter: SKILL_BEFORE_AFTER.keySignatures,
     itemNoun: "items",
     allItems: ALL_ITEMS5,
     getQuestion: getQuestion6,
@@ -7335,16 +7338,17 @@ body.native-sim #app {
       rev: { kind: "note" }
     },
     scope: {
-      kind: "groups",
-      groups: ALL_KEY_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup4,
-      allGroupIds: ALL_GROUP_IDS3,
+      kind: "levels",
+      levels: ALL_KEY_LEVELS,
+      getItemIdsForLevel: getItemIdsForLevel4,
+      allLevelIds: ALL_LEVEL_IDS3,
+      // Legacy storage key — uses old "enabledGroups" naming.
       storageKey: "keySignatures_enabledGroups",
       scopeLabel: "Keys",
-      defaultEnabled: [ALL_GROUP_IDS3[0]],
-      formatLabel: (groups) => {
-        if (groups.size === ALL_KEY_GROUPS.length) return "all keys";
-        const keys = ALL_KEY_GROUPS.filter((g4) => groups.has(g4.id)).flatMap((g4) => g4.keys).map((k3) => displayNote(k3));
+      defaultEnabled: [ALL_LEVEL_IDS3[0]],
+      formatLabel: (levels) => {
+        if (levels.size === ALL_KEY_LEVELS.length) return "all keys";
+        const keys = ALL_KEY_LEVELS.filter((g4) => levels.has(g4.id)).flatMap((g4) => g4.keys).map((k3) => displayNote(k3));
         return keys.join(", ");
       }
     },
@@ -7358,10 +7362,10 @@ body.native-sim #app {
     }
   };
 
-  // src/modes/scale-degrees/logic.ts
+  // src/skills/scale-degrees/logic.ts
   var DEGREE_LABELS2 = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th"];
   var ACTIVE_DEGREES = [2, 3, 4, 5, 6, 7];
-  var DEGREE_GROUPS = [
+  var DEGREE_LEVELS = [
     {
       id: "4th-5th",
       degrees: [4, 5],
@@ -7381,8 +7385,8 @@ body.native-sim #app {
       longLabel: "2nd & 6th degrees"
     }
   ];
-  function getItemIdsForGroup5(groupId) {
-    const group = DEGREE_GROUPS.find((g4) => g4.id === groupId);
+  function getItemIdsForLevel5(levelId) {
+    const group = DEGREE_LEVELS.find((g4) => g4.id === levelId);
     if (!group) return [];
     const items = [];
     const sortedDegrees = [...group.degrees].sort((a3, b2) => a3 - b2);
@@ -7406,7 +7410,7 @@ body.native-sim #app {
     }
     return shuffleByItemHash(items);
   })();
-  var ALL_GROUP_IDS4 = DEGREE_GROUPS.map((g4) => g4.id);
+  var ALL_LEVEL_IDS4 = DEGREE_LEVELS.map((g4) => g4.id);
   var GRID_NOTES = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
     displayName: k3.root
@@ -7424,14 +7428,14 @@ body.native-sim #app {
     return [keyRoot + ":" + d4 + ":fwd", keyRoot + ":" + d4 + ":rev"];
   }
 
-  // src/modes/scale-degrees/definition.ts
+  // src/skills/scale-degrees/definition.ts
   var SCALE_DEGREES_DEF = {
     id: "scaleDegrees",
     name: "Scale Degrees",
     namespace: "scaleDegrees",
-    description: MODE_DESCRIPTIONS.scaleDegrees,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.scaleDegrees,
-    beforeAfter: MODE_BEFORE_AFTER.scaleDegrees,
+    description: SKILL_DESCRIPTIONS.scaleDegrees,
+    aboutDescription: SKILL_ABOUT_DESCRIPTIONS.scaleDegrees,
+    beforeAfter: SKILL_BEFORE_AFTER.scaleDegrees,
     itemNoun: "items",
     allItems: ALL_ITEMS6,
     getQuestion: getQuestion7,
@@ -7459,16 +7463,17 @@ body.native-sim #app {
       rev: { kind: "degree" }
     },
     scope: {
-      kind: "groups",
-      groups: DEGREE_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup5,
-      allGroupIds: ALL_GROUP_IDS4,
+      kind: "levels",
+      levels: DEGREE_LEVELS,
+      getItemIdsForLevel: getItemIdsForLevel5,
+      allLevelIds: ALL_LEVEL_IDS4,
+      // Legacy storage key — uses old "enabledGroups" naming.
       storageKey: "scaleDegrees_enabledGroups",
       scopeLabel: "Degrees",
-      defaultEnabled: [ALL_GROUP_IDS4[0]],
-      formatLabel: (groups) => {
-        if (groups.size === DEGREE_GROUPS.length) return "all degrees";
-        const degrees = DEGREE_GROUPS.filter((g4) => groups.has(g4.id)).flatMap((g4) => g4.degrees).sort((a3, b2) => a3 - b2);
+      defaultEnabled: [ALL_LEVEL_IDS4[0]],
+      formatLabel: (levels) => {
+        if (levels.size === DEGREE_LEVELS.length) return "all degrees";
+        const degrees = DEGREE_LEVELS.filter((g4) => levels.has(g4.id)).flatMap((g4) => g4.degrees).sort((a3, b2) => a3 - b2);
         return degrees.map((d4) => DEGREE_LABELS2[d4 - 1]).join(", ") + " degrees";
       }
     },
@@ -7480,8 +7485,8 @@ body.native-sim #app {
     }
   };
 
-  // src/modes/diatonic-chords/logic.ts
-  var CHORD_GROUPS = [
+  // src/skills/diatonic-chords/logic.ts
+  var CHORD_LEVELS = [
     {
       id: "primary",
       degrees: [1, 4, 5],
@@ -7502,8 +7507,8 @@ body.native-sim #app {
       longLabel: "Tertiary chords (iii, vii\xB0)"
     }
   ];
-  function getItemIdsForGroup6(groupId) {
-    const group = CHORD_GROUPS.find((g4) => g4.id === groupId);
+  function getItemIdsForLevel6(levelId) {
+    const group = CHORD_LEVELS.find((g4) => g4.id === levelId);
     if (!group) return [];
     const items = [];
     const sortedDegrees = [...group.degrees].sort((a3, b2) => a3 - b2);
@@ -7527,7 +7532,7 @@ body.native-sim #app {
     }
     return shuffleByItemHash(items);
   })();
-  var ALL_GROUP_IDS5 = CHORD_GROUPS.map((g4) => g4.id);
+  var ALL_LEVEL_IDS5 = CHORD_LEVELS.map((g4) => g4.id);
   var GRID_NOTES2 = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
     displayName: k3.root
@@ -7552,14 +7557,14 @@ body.native-sim #app {
     return [keyRoot + ":" + d4 + ":fwd", keyRoot + ":" + d4 + ":rev"];
   }
 
-  // src/modes/diatonic-chords/definition.ts
+  // src/skills/diatonic-chords/definition.ts
   var DIATONIC_CHORDS_DEF = {
     id: "diatonicChords",
     name: "Diatonic Chords",
     namespace: "diatonicChords",
-    description: MODE_DESCRIPTIONS.diatonicChords,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.diatonicChords,
-    beforeAfter: MODE_BEFORE_AFTER.diatonicChords,
+    description: SKILL_DESCRIPTIONS.diatonicChords,
+    aboutDescription: SKILL_ABOUT_DESCRIPTIONS.diatonicChords,
+    beforeAfter: SKILL_BEFORE_AFTER.diatonicChords,
     itemNoun: "items",
     allItems: ALL_ITEMS7,
     getQuestion: getQuestion8,
@@ -7588,16 +7593,17 @@ body.native-sim #app {
       rev: { kind: "numeral" }
     },
     scope: {
-      kind: "groups",
-      groups: CHORD_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup6,
-      allGroupIds: ALL_GROUP_IDS5,
+      kind: "levels",
+      levels: CHORD_LEVELS,
+      getItemIdsForLevel: getItemIdsForLevel6,
+      allLevelIds: ALL_LEVEL_IDS5,
+      // Legacy storage key — uses old "enabledGroups" naming.
       storageKey: "diatonicChords_enabledGroups",
       scopeLabel: "Chords",
-      defaultEnabled: [ALL_GROUP_IDS5[0]],
-      formatLabel: (groups) => {
-        if (groups.size === CHORD_GROUPS.length) return "all chords";
-        const numerals = CHORD_GROUPS.filter((g4) => groups.has(g4.id)).flatMap((g4) => g4.degrees).sort((a3, b2) => a3 - b2).map((d4) => ROMAN_NUMERALS[d4 - 1]);
+      defaultEnabled: [ALL_LEVEL_IDS5[0]],
+      formatLabel: (levels) => {
+        if (levels.size === CHORD_LEVELS.length) return "all chords";
+        const numerals = CHORD_LEVELS.filter((g4) => levels.has(g4.id)).flatMap((g4) => g4.degrees).sort((a3, b2) => a3 - b2).map((d4) => ROMAN_NUMERALS[d4 - 1]);
         return numerals.join(", ") + " chords";
       }
     },
@@ -7609,8 +7615,8 @@ body.native-sim #app {
     }
   };
 
-  // src/modes/chord-spelling/logic.ts
-  var GROUP_LONG_LABELS = {
+  // src/skills/chord-spelling/logic.ts
+  var LEVEL_LONG_LABELS = {
     0: "Major triads",
     1: "Minor triads",
     2: "Dominant 7th",
@@ -7619,7 +7625,7 @@ body.native-sim #app {
     5: "Diminished, augmented & half-dim",
     6: "Suspended & 6th chords"
   };
-  var GROUP_IDS = {
+  var LEVEL_IDS = {
     0: "triads-major",
     1: "triads-minor",
     2: "dom-7th",
@@ -7637,13 +7643,13 @@ body.native-sim #app {
     for (let g4 = 0; g4 <= maxGroup; g4++) {
       const types = CHORD_TYPES.filter((t3) => t3.group === g4);
       const label = types.map((t3) => t3.symbol || "maj").join(", ");
-      const longLabel = GROUP_LONG_LABELS[g4] ?? label;
-      const id = GROUP_IDS[g4] ?? String(g4);
+      const longLabel = LEVEL_LONG_LABELS[g4] ?? label;
+      const id = LEVEL_IDS[g4] ?? String(g4);
       result.push({ id, types, label, longLabel });
     }
     return result;
   }
-  var SPELLING_GROUPS = buildGroups();
+  var SPELLING_LEVELS = buildGroups();
   var CHORD_ROOT_CYCLE = [
     "C",
     "G",
@@ -7658,8 +7664,8 @@ body.native-sim #app {
     "Bb",
     "F"
   ];
-  function getItemIdsForGroup7(groupId) {
-    const group = SPELLING_GROUPS.find((g4) => g4.id === groupId);
+  function getItemIdsForLevel7(levelId) {
+    const group = SPELLING_LEVELS.find((g4) => g4.id === levelId);
     if (!group) return [];
     const items = [];
     for (const type of group.types) {
@@ -7678,7 +7684,7 @@ body.native-sim #app {
     }
     return shuffleByItemHash(items);
   })();
-  var ALL_GROUP_IDS6 = SPELLING_GROUPS.map((g4) => g4.id);
+  var ALL_LEVEL_IDS6 = SPELLING_LEVELS.map((g4) => g4.id);
   var GRID_NOTES3 = CHORD_ROOTS.map((r3) => ({
     name: r3,
     displayName: r3
@@ -7725,15 +7731,15 @@ body.native-sim #app {
     return rootName + ":" + CHORD_TYPES[colIdx].name;
   }
 
-  // src/modes/chord-spelling/definition.ts
+  // src/skills/chord-spelling/definition.ts
   var CHORD_SPELLING_DEF = {
     id: "chordSpelling",
     name: "Chord Spelling",
     namespace: "chordSpelling",
     motorTaskType: "chord-sequence",
-    description: MODE_DESCRIPTIONS.chordSpelling,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.chordSpelling,
-    beforeAfter: MODE_BEFORE_AFTER.chordSpelling,
+    description: SKILL_DESCRIPTIONS.chordSpelling,
+    aboutDescription: SKILL_ABOUT_DESCRIPTIONS.chordSpelling,
+    beforeAfter: SKILL_BEFORE_AFTER.chordSpelling,
     itemNoun: "items",
     allItems: ALL_ITEMS8,
     getQuestion: (itemId2) => parseItem(itemId2),
@@ -7748,16 +7754,17 @@ body.native-sim #app {
     },
     buttons: { kind: "split-note" },
     scope: {
-      kind: "groups",
-      groups: SPELLING_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup7,
-      allGroupIds: ALL_GROUP_IDS6,
+      kind: "levels",
+      levels: SPELLING_LEVELS,
+      getItemIdsForLevel: getItemIdsForLevel7,
+      allLevelIds: ALL_LEVEL_IDS6,
+      // Legacy storage key — uses old "enabledGroups" naming.
       storageKey: "chordSpelling_enabledGroups",
       scopeLabel: "Chord types",
-      defaultEnabled: [ALL_GROUP_IDS6[0]],
-      formatLabel: (groups) => {
-        if (groups.size === SPELLING_GROUPS.length) return "all chord types";
-        const labels = SPELLING_GROUPS.filter((g4) => groups.has(g4.id)).map((g4) => g4.label);
+      defaultEnabled: [ALL_LEVEL_IDS6[0]],
+      formatLabel: (levels) => {
+        if (levels.size === SPELLING_LEVELS.length) return "all chord types";
+        const labels = SPELLING_LEVELS.filter((g4) => levels.has(g4.id)).map((g4) => g4.label);
         return labels.join(", ") + " chords";
       }
     },
@@ -7769,7 +7776,7 @@ body.native-sim #app {
     }
   };
 
-  // src/modes/speed-tap/logic.ts
+  // src/skills/speed-tap/logic.ts
   var noteNames = NOTES.map((n2) => n2.name);
   var ALL_ITEMS9 = NOTES.map((n2) => n2.name);
   function getNoteAtPosition(string, fret) {
@@ -7818,16 +7825,16 @@ body.native-sim #app {
   var ACCIDENTAL_NOTES = NOTES.filter((n2) => !NATURAL_NOTES.includes(n2.name)).map((n2) => n2.name);
   var NATURALS_CYCLE = ["C", "G", "D", "A", "E", "B", "F"];
   var ACCIDENTALS_CYCLE = ["F#", "C#", "G#", "D#", "A#"];
-  var NOTE_GROUPS = [
+  var NOTE_LEVELS = [
     { id: "naturals", label: "Naturals", longLabel: "Natural notes" },
     { id: "sharps-flats", label: "\u266F/\u266D", longLabel: "Sharps & flats" }
   ];
-  var ALL_GROUP_IDS7 = NOTE_GROUPS.map((g4) => g4.id);
-  function getItemIdsForGroup8(groupId) {
-    if (groupId === "naturals") {
+  var ALL_LEVEL_IDS7 = NOTE_LEVELS.map((g4) => g4.id);
+  function getItemIdsForLevel8(levelId) {
+    if (levelId === "naturals") {
       return NATURALS_CYCLE.filter((n2) => NATURAL_NOTES.includes(n2));
     }
-    if (groupId === "sharps-flats") {
+    if (levelId === "sharps-flats") {
       return ACCIDENTALS_CYCLE.filter((n2) => ACCIDENTAL_NOTES.includes(n2));
     }
     return [];
@@ -7838,7 +7845,7 @@ body.native-sim #app {
     return "natural notes";
   }
 
-  // src/modes/speed-tap/definition.tsx
+  // src/skills/speed-tap/definition.tsx
   function useSpeedTapController() {
     const renderStats = q2(
       (selector) => {
@@ -7867,9 +7874,9 @@ body.native-sim #app {
     name: "Speed Tap",
     namespace: "speedTap",
     motorTaskType: "fretboard-tap",
-    description: MODE_DESCRIPTIONS.speedTap,
-    aboutDescription: MODE_ABOUT_DESCRIPTIONS.speedTap,
-    beforeAfter: MODE_BEFORE_AFTER.speedTap,
+    description: SKILL_DESCRIPTIONS.speedTap,
+    aboutDescription: SKILL_ABOUT_DESCRIPTIONS.speedTap,
+    beforeAfter: SKILL_BEFORE_AFTER.speedTap,
     itemNoun: "notes",
     allItems: ALL_ITEMS9,
     getQuestion: parseItem2,
@@ -7882,20 +7889,21 @@ body.native-sim #app {
     getExpectedResponseCount: (itemId2) => getPositionsForNote(itemId2).length,
     buttons: { kind: "none" },
     scope: {
-      kind: "groups",
-      groups: NOTE_GROUPS,
-      getItemIdsForGroup: getItemIdsForGroup8,
-      allGroupIds: ALL_GROUP_IDS7,
+      kind: "levels",
+      levels: NOTE_LEVELS,
+      getItemIdsForLevel: getItemIdsForLevel8,
+      allLevelIds: ALL_LEVEL_IDS7,
+      // Legacy storage key — uses old "enabledGroups" naming.
       storageKey: "speedTap_enabledGroups",
       scopeLabel: "Notes",
-      defaultEnabled: [ALL_GROUP_IDS7[0]],
+      defaultEnabled: [ALL_LEVEL_IDS7[0]],
       formatLabel: formatGroupLabel
     },
     stats: { kind: "none" },
     useController: () => useSpeedTapController()
   };
 
-  // src/modes/chord-shapes/voicings.ts
+  // src/skills/chord-shapes/voicings.ts
   var GUITAR_VOICINGS = [
     // --- Major ---
     { root: "C", quality: "major", symbol: "", strings: [0, 1, 0, 2, 3, "x"] },
@@ -8010,7 +8018,7 @@ body.native-sim #app {
     return instrument === "guitar" ? GUITAR_VOICINGS : UKULELE_VOICINGS;
   }
 
-  // src/modes/chord-shapes/logic.ts
+  // src/skills/chord-shapes/logic.ts
   function positionKey2(string, fret) {
     return string + "-" + fret;
   }
@@ -8059,8 +8067,8 @@ body.native-sim #app {
   }
   function allItems(instrument) {
     const out = [];
-    for (const q4 of ALL_GROUP_IDS8) {
-      out.push(...getItemIdsForGroup9(instrument, q4));
+    for (const q4 of ALL_LEVEL_IDS8) {
+      out.push(...getItemIdsForLevel9(instrument, q4));
     }
     return out;
   }
@@ -8080,7 +8088,7 @@ body.native-sim #app {
       missed
     };
   }
-  var QUALITY_GROUPS = [
+  var QUALITY_LEVELS = [
     {
       id: "major",
       label: "Major",
@@ -8117,12 +8125,12 @@ body.native-sim #app {
       qualities: ["sus2", "sus4"]
     }
   ];
-  var ALL_GROUP_IDS8 = QUALITY_GROUPS.map((g4) => g4.id);
+  var ALL_LEVEL_IDS8 = QUALITY_LEVELS.map((g4) => g4.id);
   var CHORD_SHAPE_ROOT_ORDER = Object.fromEntries(
     ["C", "G", "D", "A", "E", "B", "F#", "Db", "Ab", "Eb", "Bb", "F"].map((r3, i3) => [r3, i3])
   );
-  function getItemIdsForGroup9(instrument, groupId) {
-    const group = QUALITY_GROUPS.find((g4) => g4.id === groupId);
+  function getItemIdsForLevel9(instrument, levelId) {
+    const group = QUALITY_LEVELS.find((g4) => g4.id === levelId);
     const qualities = group?.qualities ?? [];
     const voicings = getVoicings(instrument).filter(
       (v3) => qualities.includes(v3.quality)
@@ -8135,11 +8143,11 @@ body.native-sim #app {
     return voicings.map(itemId);
   }
   function formatGroupLabel2(enabledGroups) {
-    if (enabledGroups.size === ALL_GROUP_IDS8.length) return "all chords";
-    return QUALITY_GROUPS.filter((g4) => enabledGroups.has(g4.id)).map((g4) => g4.shortLabel).join(" & ");
+    if (enabledGroups.size === ALL_LEVEL_IDS8.length) return "all chords";
+    return QUALITY_LEVELS.filter((g4) => enabledGroups.has(g4.id)).map((g4) => g4.shortLabel).join(" & ");
   }
 
-  // src/modes/chord-shapes/definition.tsx
+  // src/skills/chord-shapes/definition.tsx
   function useChordShapesController(instrument) {
     const voicings = getVoicings(instrument);
     const renderStats = q2(
@@ -8200,9 +8208,9 @@ body.native-sim #app {
       name: isGuitar ? "Guitar Chord Shapes" : "Ukulele Chord Shapes",
       namespace: id,
       motorTaskType: "fretboard-tap",
-      description: MODE_DESCRIPTIONS[id],
-      aboutDescription: MODE_ABOUT_DESCRIPTIONS[id],
-      beforeAfter: MODE_BEFORE_AFTER[id],
+      description: SKILL_DESCRIPTIONS[id],
+      aboutDescription: SKILL_ABOUT_DESCRIPTIONS[id],
+      beforeAfter: SKILL_BEFORE_AFTER[id],
       itemNoun: "chords",
       allItems: items,
       getQuestion: (itemId2) => parseItem3(instrument, itemId2),
@@ -8221,13 +8229,14 @@ body.native-sim #app {
       },
       buttons: { kind: "none" },
       scope: {
-        kind: "groups",
-        groups: QUALITY_GROUPS,
-        getItemIdsForGroup: (groupId) => getItemIdsForGroup9(instrument, groupId),
-        allGroupIds: ALL_GROUP_IDS8,
+        kind: "levels",
+        levels: QUALITY_LEVELS,
+        getItemIdsForLevel: (levelId) => getItemIdsForLevel9(instrument, levelId),
+        allLevelIds: ALL_LEVEL_IDS8,
+        // Legacy storage key — uses old "enabledGroups" naming.
         storageKey: id + "_enabledGroups",
         scopeLabel: "Chords",
-        defaultEnabled: [ALL_GROUP_IDS8[0]],
+        defaultEnabled: [ALL_LEVEL_IDS8[0]],
         formatLabel: formatGroupLabel2
       },
       stats: { kind: "none" },
@@ -8237,8 +8246,8 @@ body.native-sim #app {
   var GUITAR_CHORD_SHAPES_DEF = createChordShapesDef("guitar");
   var UKULELE_CHORD_SHAPES_DEF = createChordShapesDef("ukulele");
 
-  // src/mode-definitions.ts
-  var ALL_MODE_DEFINITIONS = [
+  // src/skill-definitions.ts
+  var ALL_SKILL_DEFINITIONS = [
     createFretboardDef(GUITAR),
     createFretboardDef(UKULELE),
     NOTE_SEMITONES_DEF,
@@ -8254,33 +8263,33 @@ body.native-sim #app {
     UKULELE_CHORD_SHAPES_DEF
   ];
 
-  // src/mode-progress-manifest.ts
+  // src/skill-progress-manifest.ts
   function entryFromDef(def) {
     const scope = def.scope;
     return {
-      modeId: def.id,
+      skillId: def.id,
       namespace: def.namespace,
       motorTaskType: def.motorTaskType,
       getResponseCount: def.getExpectedResponseCount,
-      groups: scope.kind === "groups" ? scope.groups.map((g4) => ({
+      levels: scope.kind === "levels" ? scope.levels.map((g4) => ({
         id: g4.id,
         label: g4.label,
         longLabel: g4.longLabel,
-        getItemIds: () => scope.getItemIdsForGroup(g4.id)
+        getItemIds: () => scope.getItemIdsForLevel(g4.id)
       })) : [{ id: "all", label: "All", getItemIds: () => def.allItems }],
       allItemIds: () => def.allItems
     };
   }
-  var MODE_PROGRESS_MANIFEST = ALL_MODE_DEFINITIONS.map(entryFromDef);
+  var SKILL_PROGRESS_MANIFEST = ALL_SKILL_DEFINITIONS.map(entryFromDef);
 
   // src/home-recommendations.ts
-  function notStarted(modeId) {
-    return { modeId, type: "not-started", urgency: 0, cueLabel: "", detail: "" };
+  function notStarted(skillId) {
+    return { skillId, type: "not-started", urgency: 0, cueLabel: "", detail: "" };
   }
-  function groupLabelText(groupIds, labelMap) {
-    return groupIds.map((id) => labelMap.get(id) ?? id).join(", ");
+  function levelLabelText(levelIds, labelMap) {
+    return levelIds.map((id) => labelMap.get(id) ?? id).join(", ");
   }
-  function computeSkillRecommendation(entry, storage2, motorBaseline, skippedGroups, config) {
+  function computeSkillRecommendation(entry, storage2, motorBaseline, skippedLevels, config) {
     const cfg = motorBaseline !== null ? deriveScaledConfig(motorBaseline) : void 0;
     const selector = createAdaptiveSelector(
       storage2,
@@ -8288,40 +8297,40 @@ body.native-sim #app {
       Math.random,
       entry.getResponseCount ?? null
     );
-    const allGroupIds = entry.groups.filter((g4) => !skippedGroups.has(g4.id)).map((g4) => g4.id);
-    if (allGroupIds.length === 0) return notStarted(entry.modeId);
-    const groupById = new Map(entry.groups.map((g4) => [g4.id, g4]));
-    const getItemIds = (id) => groupById.get(id)?.getItemIds() ?? [];
-    const allItemIds = allGroupIds.flatMap(getItemIds);
+    const allLevelIds = entry.levels.filter((g4) => !skippedLevels.has(g4.id)).map((g4) => g4.id);
+    if (allLevelIds.length === 0) return notStarted(entry.skillId);
+    const levelById = new Map(entry.levels.map((g4) => [g4.id, g4]));
+    const getItemIds = (id) => levelById.get(id)?.getItemIds() ?? [];
+    const allItemIds = allLevelIds.flatMap(getItemIds);
     const { seen } = selector.getLevelSpeed(allItemIds);
-    if (seen === 0) return notStarted(entry.modeId);
-    const idOrder = new Map(entry.groups.map((g4, i3) => [g4.id, i3]));
+    if (seen === 0) return notStarted(entry.skillId);
+    const idOrder = new Map(entry.levels.map((g4, i3) => [g4.id, i3]));
     const result = computeRecommendations(
       selector,
-      allGroupIds,
+      allLevelIds,
       getItemIds,
       config,
       {
-        sortUnstarted: (a3, b2) => (idOrder.get(a3.groupId) ?? 0) - (idOrder.get(b2.groupId) ?? 0)
+        sortUnstarted: (a3, b2) => (idOrder.get(a3.levelId) ?? 0) - (idOrder.get(b2.levelId) ?? 0)
       }
     );
     return classifySkill(entry, result);
   }
   function classifySkill(entry, result) {
-    const modeId = entry.modeId;
-    const singleGroup = entry.groups.length <= 1;
+    const skillId = entry.skillId;
+    const singleLevel = entry.levels.length <= 1;
     const resolve = (v3) => typeof v3 === "function" ? v3() : v3;
     const labelMap = new Map(
-      entry.groups.map((g4) => [g4.id, resolve(g4.longLabel ?? g4.label)])
+      entry.levels.map((g4) => [g4.id, resolve(g4.longLabel ?? g4.label)])
     );
     if (result.levelRecs.length === 0) {
-      return { modeId, type: "automatic", urgency: 0, cueLabel: "", detail: "" };
+      return { skillId, type: "automatic", urgency: 0, cueLabel: "", detail: "" };
     }
-    const reviewIds = result.levelRecs.filter((r3) => r3.type === "review").map((r3) => r3.groupId);
+    const reviewIds = result.levelRecs.filter((r3) => r3.type === "review").map((r3) => r3.levelId);
     if (reviewIds.length > 0) {
-      const detail = singleGroup ? "Review" : `Review ${groupLabelText(reviewIds, labelMap)}`;
+      const detail = singleLevel ? "Review" : `Review ${levelLabelText(reviewIds, labelMap)}`;
       return {
-        modeId,
+        skillId,
         type: "review",
         urgency: reviewIds.length,
         cueLabel: "Review",
@@ -8330,10 +8339,10 @@ body.native-sim #app {
     }
     const firstType = result.levelRecs[0].type;
     if (firstType === "practice" || firstType === "automate") {
-      const practiceIds = result.levelRecs.filter((r3) => r3.type === "practice" || r3.type === "automate").map((r3) => r3.groupId);
-      const detail = singleGroup ? "Practice" : `Practice ${groupLabelText(practiceIds, labelMap)}`;
+      const practiceIds = result.levelRecs.filter((r3) => r3.type === "practice" || r3.type === "automate").map((r3) => r3.levelId);
+      const detail = singleLevel ? "Practice" : `Practice ${levelLabelText(practiceIds, labelMap)}`;
       return {
-        modeId,
+        skillId,
         type: "practice",
         urgency: practiceIds.length,
         cueLabel: "Practice",
@@ -8342,16 +8351,16 @@ body.native-sim #app {
     }
     if (firstType === "expand") {
       const expandId = result.expandIndex;
-      const detail = singleGroup ? "Start" : `Start ${expandId ? labelMap.get(expandId) ?? expandId : "next level"}`;
+      const detail = singleLevel ? "Start" : `Start ${expandId ? labelMap.get(expandId) ?? expandId : "next level"}`;
       return {
-        modeId,
+        skillId,
         type: "start",
         urgency: 0,
         cueLabel: "Start",
         detail
       };
     }
-    return { modeId, type: "automatic", urgency: 0, cueLabel: "", detail: "" };
+    return { skillId, type: "automatic", urgency: 0, cueLabel: "", detail: "" };
   }
   var TYPE_PRIORITY = {
     "review": 0,
@@ -8374,8 +8383,8 @@ body.native-sim #app {
     }
     const notStarted2 = recommendations.filter((r3) => r3.type === "not-started");
     if (notStarted2.length > 0) {
-      for (const modeId of definitionOrder) {
-        const rec = notStarted2.find((r3) => r3.modeId === modeId);
+      for (const skillId of definitionOrder) {
+        const rec = notStarted2.find((r3) => r3.skillId === skillId);
         if (rec) {
           return [{
             ...rec,
@@ -8390,7 +8399,7 @@ body.native-sim #app {
   }
 
   // src/hooks/use-home-progress.ts
-  function loadSkippedGroups(namespace) {
+  function loadSkippedLevels(namespace) {
     try {
       const raw = storage.getItem(namespace + "_enabledGroups_skipped");
       if (!raw) return /* @__PURE__ */ new Set();
@@ -8407,7 +8416,7 @@ body.native-sim #app {
     }
     return /* @__PURE__ */ new Set();
   }
-  function computeProgressForMode(entry, storage2, motorBaseline, skippedGroups) {
+  function computeProgressForSkill(entry, storage2, motorBaseline, skippedLevels) {
     const cfg = motorBaseline !== null ? deriveScaledConfig(motorBaseline) : void 0;
     const selector = createAdaptiveSelector(
       storage2,
@@ -8415,32 +8424,32 @@ body.native-sim #app {
       Math.random,
       entry.getResponseCount ?? null
     );
-    const input = entry.groups.length === 1 ? { kind: "items", itemIds: entry.allItemIds() } : {
-      kind: "groups",
-      groups: entry.groups.map((g4) => ({
+    const input = entry.levels.length === 1 ? { kind: "items", itemIds: entry.allItemIds() } : {
+      kind: "levels",
+      levels: entry.levels.map((g4) => ({
         id: g4.id,
         itemIds: g4.getItemIds()
       })),
-      skippedGroups
+      skippedLevels
     };
-    const activeGroupCount = skippedGroups ? entry.groups.filter((g4) => !skippedGroups.has(g4.id)).length : entry.groups.length;
-    if (entry.groups.length === 1 && skippedGroups?.has(entry.groups[0].id)) {
-      return { segments: [], activeGroupCount: 0 };
+    const activeLevelCount = skippedLevels ? entry.levels.filter((g4) => !skippedLevels.has(g4.id)).length : entry.levels.length;
+    if (entry.levels.length === 1 && skippedLevels?.has(entry.levels[0].id)) {
+      return { segments: [], activeLevelCount: 0 };
     }
     return {
       segments: computeProgressColors(selector, input),
-      activeGroupCount
+      activeLevelCount
     };
   }
-  function computeAllProgress(createStorage = createStorageAdapter, getBaseline = readMotorBaseline, getSkipped = loadSkippedGroups) {
+  function computeAllProgress(createStorage = createStorageAdapter, getBaseline = readMotorBaseline, getSkipped = loadSkippedLevels) {
     const resolveBaseline = typeof getBaseline === "function" ? getBaseline : () => getBaseline;
     const result = /* @__PURE__ */ new Map();
-    for (const entry of MODE_PROGRESS_MANIFEST) {
+    for (const entry of SKILL_PROGRESS_MANIFEST) {
       const skipped = getSkipped(entry.namespace);
       const baseline = resolveBaseline(entry.motorTaskType ?? "note-button");
       result.set(
-        entry.modeId,
-        computeProgressForMode(
+        entry.skillId,
+        computeProgressForSkill(
           entry,
           createStorage(entry.namespace),
           baseline,
@@ -8450,13 +8459,13 @@ body.native-sim #app {
     }
     return result;
   }
-  function computeAllRecommendations(starred, createStorage = createStorageAdapter, getBaseline = readMotorBaseline, getSkipped = loadSkippedGroups, definitionOrder) {
+  function computeAllRecommendations(starred, createStorage = createStorageAdapter, getBaseline = readMotorBaseline, getSkipped = loadSkippedLevels, definitionOrder) {
     if (starred.size === 0) return [];
     const resolveBaseline = typeof getBaseline === "function" ? getBaseline : () => getBaseline;
     const config = {};
     const perSkill = [];
-    for (const entry of MODE_PROGRESS_MANIFEST) {
-      if (!starred.has(entry.modeId)) continue;
+    for (const entry of SKILL_PROGRESS_MANIFEST) {
+      if (!starred.has(entry.skillId)) continue;
       const skipped = getSkipped(entry.namespace);
       const baseline = resolveBaseline(entry.motorTaskType ?? "note-button");
       perSkill.push(
@@ -8469,7 +8478,7 @@ body.native-sim #app {
         )
       );
     }
-    const order = definitionOrder ?? MODE_PROGRESS_MANIFEST.map((e3) => e3.modeId);
+    const order = definitionOrder ?? SKILL_PROGRESS_MANIFEST.map((e3) => e3.skillId);
     return rankSkillRecommendations(perSkill, order);
   }
   function readMotorBaseline(taskType = "note-button") {
@@ -8921,7 +8930,7 @@ body.native-sim #app {
     const totalSlots = segments.length;
     const usedFlex = segments.reduce((sum, s3) => sum + s3.weight, 0);
     const spacerFlex = totalSlots - usedFlex;
-    return /* @__PURE__ */ u2("div", { class: "group-progress-bar" + (disabled ? " skipped" : ""), children: [
+    return /* @__PURE__ */ u2("div", { class: "level-progress-bar" + (disabled ? " skipped" : ""), children: [
       segments.map(
         (seg, i3) => seg.weight > 0 ? /* @__PURE__ */ u2(
           "div",
@@ -8971,7 +8980,7 @@ body.native-sim #app {
     ] });
   }
 
-  // src/ui/mode-screen.tsx
+  // src/ui/skill-screen.tsx
   function CloseButton({ onClick, ariaLabel }) {
     return /* @__PURE__ */ u2(
       "button",
@@ -9050,7 +9059,7 @@ body.native-sim #app {
       ) : /* @__PURE__ */ u2("div", { class: "screen-header-spacer" }),
       /* @__PURE__ */ u2("div", { class: "screen-header-title", children: [
         icon,
-        /* @__PURE__ */ u2(Text, { role: "heading-page", as: "h1", class: "mode-title", children: title })
+        /* @__PURE__ */ u2(Text, { role: "heading-page", as: "h1", class: "skill-title", children: title })
       ] }),
       right ?? /* @__PURE__ */ u2("div", { class: "screen-header-spacer" })
     ] }) });
@@ -9317,7 +9326,7 @@ body.native-sim #app {
             activeTab,
             onTabSwitch,
             prefix,
-            class: "mode-nav"
+            class: "skill-nav"
           }
         )
       ] })
@@ -9454,11 +9463,11 @@ body.native-sim #app {
   function TrackPill({ label }) {
     return /* @__PURE__ */ u2(Pill, { variant: "track", children: label });
   }
-  function SkillCardHeader({ modeId, trackLabel, progress }) {
-    const name = MODE_NAMES[modeId] || modeId;
-    const desc = MODE_DESCRIPTIONS[modeId] || "";
+  function SkillCardHeader({ skillId, trackLabel, progress }) {
+    const name = SKILL_NAMES[skillId] || skillId;
+    const desc = SKILL_DESCRIPTIONS[skillId] || "";
     return /* @__PURE__ */ u2(Bar, { gap: "group", class: "skill-card-header", children: [
-      /* @__PURE__ */ u2(SkillIcon, { modeId }),
+      /* @__PURE__ */ u2(SkillIcon, { skillId }),
       /* @__PURE__ */ u2(Stack, { gap: "group", class: "skill-card-content", children: [
         /* @__PURE__ */ u2(Stack, { gap: "micro", class: "skill-card-title-block", children: [
           /* @__PURE__ */ u2(Text, { role: "heading-card", as: "span", children: name }),
@@ -9469,25 +9478,25 @@ body.native-sim #app {
       ] })
     ] });
   }
-  function SkillCard({ modeId, isStarred, onToggleStar, onSelectMode, progress }) {
-    const name = MODE_NAMES[modeId] || modeId;
+  function SkillCard({ skillId, isStarred, onToggleStar, onSelectSkill, progress }) {
+    const name = SKILL_NAMES[skillId] || skillId;
     const handleKeyDown = q2(
       (e3) => {
         if (e3.key === "Enter" || e3.key === " ") {
           e3.preventDefault();
-          onSelectMode(modeId);
+          onSelectSkill(skillId);
         }
       },
-      [modeId, onSelectMode]
+      [skillId, onSelectSkill]
     );
     return /* @__PURE__ */ u2(
       "div",
       {
-        class: "home-mode-btn skill-card",
-        "data-mode": modeId,
+        class: "home-skill-btn skill-card",
+        "data-skill": skillId,
         role: "button",
         tabIndex: 0,
-        onClick: () => onSelectMode(modeId),
+        onClick: () => onSelectSkill(skillId),
         onKeyDown: handleKeyDown,
         children: [
           /* @__PURE__ */ u2(
@@ -9499,43 +9508,43 @@ body.native-sim #app {
               "aria-pressed": isStarred,
               onClick: (e3) => {
                 e3.stopPropagation();
-                onToggleStar(modeId);
+                onToggleStar(skillId);
               },
               children: isStarred ? "\u2605" : "\u2606"
             }
           ),
-          /* @__PURE__ */ u2(SkillCardHeader, { modeId, progress })
+          /* @__PURE__ */ u2(SkillCardHeader, { skillId, progress })
         ]
       }
     );
   }
   function ActiveSkillCard({
-    modeId,
+    skillId,
     trackLabel,
     onToggleStar,
-    onSelectMode,
+    onSelectSkill,
     progress,
     rec
   }) {
-    const name = MODE_NAMES[modeId] || modeId;
+    const name = SKILL_NAMES[skillId] || skillId;
     const hasRec = !!rec?.detail;
     const handleKeyDown = q2(
       (e3) => {
         if (e3.key === "Enter" || e3.key === " ") {
           e3.preventDefault();
-          onSelectMode(modeId);
+          onSelectSkill(skillId);
         }
       },
-      [modeId, onSelectMode]
+      [skillId, onSelectSkill]
     );
     return /* @__PURE__ */ u2(
       "div",
       {
-        class: `home-mode-btn skill-card active-skill-card${hasRec ? " has-rec" : ""}`,
-        "data-mode": modeId,
+        class: `home-skill-btn skill-card active-skill-card${hasRec ? " has-rec" : ""}`,
+        "data-skill": skillId,
         role: "button",
         tabIndex: 0,
-        onClick: () => onSelectMode(modeId),
+        onClick: () => onSelectSkill(skillId),
         onKeyDown: handleKeyDown,
         children: /* @__PURE__ */ u2("div", { class: "skill-card-body", children: [
           /* @__PURE__ */ u2(
@@ -9547,13 +9556,13 @@ body.native-sim #app {
               "aria-pressed": true,
               onClick: (e3) => {
                 e3.stopPropagation();
-                onToggleStar(modeId);
+                onToggleStar(skillId);
               },
               children: "\u2605"
             }
           ),
           /* @__PURE__ */ u2(Bar, { gap: "group", class: "skill-card-header", children: [
-            /* @__PURE__ */ u2(SkillIcon, { modeId }),
+            /* @__PURE__ */ u2(SkillIcon, { skillId }),
             /* @__PURE__ */ u2(Stack, { gap: "group", class: "skill-card-content", children: [
               /* @__PURE__ */ u2(Stack, { gap: "micro", class: "skill-card-title-block", children: [
                 /* @__PURE__ */ u2(Text, { role: "heading-card", as: "span", children: name }),
@@ -9563,10 +9572,10 @@ body.native-sim #app {
                 /* @__PURE__ */ u2("strong", { children: rec.cueLabel }),
                 rec.detail !== rec.cueLabel && (rec.detail.startsWith(rec.cueLabel) ? ` ${rec.detail.slice(rec.cueLabel.length).trimStart()}` : ` \u2014 ${rec.detail}`)
               ] }),
-              progress && (progress.segments.length > 0 || progress.activeGroupCount > 0) && /* @__PURE__ */ u2(
+              progress && (progress.segments.length > 0 || progress.activeLevelCount > 0) && /* @__PURE__ */ u2(
                 GroupProgressBar,
                 {
-                  segments: progress.segments.length > 0 ? progress.segments : notStartedSegments(progress.activeGroupCount)
+                  segments: progress.segments.length > 0 ? progress.segments : notStartedSegments(progress.activeLevelCount)
                 }
               )
             ] })
@@ -9581,7 +9590,7 @@ body.native-sim #app {
       () => ({ color: "var(--heatmap-none)", weight: 1 })
     );
   }
-  function ActiveSkillsList({ starred, onToggleStar, onSelectMode, progress, recommendations }) {
+  function ActiveSkillsList({ starred, onToggleStar, onSelectSkill, progress, recommendations }) {
     if (starred.size === 0) {
       return /* @__PURE__ */ u2(Stack, { gap: "group", children: [
         /* @__PURE__ */ u2(Text, { role: "heading-section", as: "h2", children: "Active Skills" }),
@@ -9593,15 +9602,15 @@ body.native-sim #app {
       ] });
     }
     const recMap = /* @__PURE__ */ new Map();
-    for (const rec of recommendations) recMap.set(rec.modeId, rec);
+    for (const rec of recommendations) recMap.set(rec.skillId, rec);
     const recommended = [];
     const remaining = [];
-    const trackFor = (modeId) => TRACKS.find((t3) => t3.skills.includes(modeId));
+    const trackFor = (skillId) => TRACKS.find((t3) => t3.skills.includes(skillId));
     for (const rec of recommendations) {
-      if (starred.has(rec.modeId)) {
-        const track = trackFor(rec.modeId);
+      if (starred.has(rec.skillId)) {
+        const track = trackFor(rec.skillId);
         recommended.push({
-          modeId: rec.modeId,
+          skillId: rec.skillId,
           trackId: track?.id || "core",
           trackLabel: track?.label ?? "",
           rec
@@ -9609,9 +9618,9 @@ body.native-sim #app {
       }
     }
     for (const track of TRACKS) {
-      for (const modeId of track.skills) {
-        if (starred.has(modeId) && !recMap.has(modeId)) {
-          remaining.push({ modeId, trackId: track.id, trackLabel: track.label });
+      for (const skillId of track.skills) {
+        if (starred.has(skillId) && !recMap.has(skillId)) {
+          remaining.push({ skillId, trackId: track.id, trackLabel: track.label });
         }
       }
     }
@@ -9625,17 +9634,17 @@ body.native-sim #app {
         /* @__PURE__ */ u2("strong", { children: "All Skills" }),
         " to keep going."
       ] }),
-      ordered.map(({ modeId, trackLabel, rec }) => /* @__PURE__ */ u2(
+      ordered.map(({ skillId, trackLabel, rec }) => /* @__PURE__ */ u2(
         ActiveSkillCard,
         {
-          modeId,
+          skillId,
           trackLabel,
           onToggleStar,
-          onSelectMode,
-          progress: progress.get(modeId),
+          onSelectSkill,
+          progress: progress.get(skillId),
           rec: rec?.detail ? { cueLabel: rec.cueLabel, detail: rec.detail } : void 0
         },
-        modeId
+        skillId
       ))
     ] });
   }
@@ -9766,7 +9775,7 @@ Build: ${version}
         {
           headers: ["Mode", "Reps", "Items"],
           rows: data.modeEfforts.map((m3) => [
-            MODE_NAMES[m3.id] || m3.id,
+            SKILL_NAMES[m3.id] || m3.id,
             String(m3.totalReps),
             `${m3.itemsStarted}/${m3.totalItems}`
           ])
@@ -9797,7 +9806,7 @@ Build: ${version}
       /* @__PURE__ */ u2("tbody", { children: rows.map((row, ri) => /* @__PURE__ */ u2("tr", { children: row.map((cell, ci) => /* @__PURE__ */ u2("td", { class: ci > 0 ? "num" : "", children: cell }, ci)) }, ri)) })
     ] });
   }
-  function AllSkillsList({ accordion, starred, onToggleExpand, onToggleStar, onSelectMode, progress }) {
+  function AllSkillsList({ accordion, starred, onToggleExpand, onToggleStar, onSelectSkill, progress }) {
     return /* @__PURE__ */ u2(Stack, { gap: "group", children: [
       /* @__PURE__ */ u2(Text, { role: "heading-section", as: "h2", children: "All Skills" }),
       /* @__PURE__ */ u2(Text, { role: "status", as: "p", class: "text-hint", children: "Star the skills you want to automate." }),
@@ -9807,16 +9816,16 @@ Build: ${version}
           label: track.label,
           isExpanded: accordion[track.id] !== false,
           onToggle: () => onToggleExpand(track.id),
-          children: track.skills.map((modeId) => /* @__PURE__ */ u2(
+          children: track.skills.map((skillId) => /* @__PURE__ */ u2(
             SkillCard,
             {
-              modeId,
-              isStarred: starred.has(modeId),
+              skillId,
+              isStarred: starred.has(skillId),
               onToggleStar,
-              onSelectMode,
-              progress: progress.get(modeId)
+              onSelectSkill,
+              progress: progress.get(skillId)
             },
-            modeId
+            skillId
           ))
         },
         track.id
@@ -9921,7 +9930,7 @@ Build: ${version}
     version,
     useSolfege,
     setUseSolfege: setUseSolfege2,
-    onSelectMode,
+    onSelectSkill,
     onToggleStar,
     onToggleExpand,
     onOpenDev
@@ -9935,7 +9944,7 @@ Build: ${version}
           {
             starred,
             onToggleStar,
-            onSelectMode,
+            onSelectSkill,
             progress,
             recommendations
           }
@@ -9951,7 +9960,7 @@ Build: ${version}
             starred,
             onToggleExpand,
             onToggleStar,
-            onSelectMode,
+            onSelectSkill,
             progress
           }
         ) })
@@ -9978,7 +9987,7 @@ Build: ${version}
       }
     ];
   }
-  function HomeScreen({ onSelectMode, settings, appConfig, showDevLink, version }) {
+  function HomeScreen({ onSelectSkill, settings, appConfig, showDevLink, version }) {
     const [starred, setStarred] = d2(loadStarredSkills);
     const { progress, recommendations } = useHomeProgress(starred);
     const [accordion, setAccordion] = d2(loadAccordionState);
@@ -9989,10 +9998,10 @@ Build: ${version}
     );
     const globalEffort = T2(getGlobalEffort, [progress]);
     const prefix = useTabsPrefix();
-    const handleToggleStar = q2((modeId) => {
+    const handleToggleStar = q2((skillId) => {
       setStarred((prev) => {
         const next = new Set(prev);
-        next.has(modeId) ? next.delete(modeId) : next.add(modeId);
+        next.has(skillId) ? next.delete(skillId) : next.add(skillId);
         saveStarredSkills(next);
         return next;
       });
@@ -10018,7 +10027,7 @@ Build: ${version}
       version,
       useSolfege,
       setUseSolfege: setUseSolfege2,
-      onSelectMode,
+      onSelectSkill,
       onToggleStar: handleToggleStar,
       onToggleExpand: handleToggleExpand,
       onOpenDev: showDevLink ? () => setShowDev(true) : void 0
@@ -10044,7 +10053,7 @@ Build: ${version}
           activeTab: tab,
           onTabSwitch: handleChangeTab,
           prefix,
-          class: "mode-nav"
+          class: "skill-nav"
         }
       ) })
     ] });
@@ -10297,7 +10306,7 @@ Build: ${version}
     return lock.locked && lock.snapshot !== null ? lock.snapshot : live;
   }
 
-  // src/mode-ui-state.ts
+  // src/skill-ui-state.ts
   function countAutomatic(itemIds, getSpeedScore) {
     let automatic = 0;
     let seen = 0;
@@ -10311,37 +10320,37 @@ Build: ${version}
     return { automatic, seen };
   }
   var statusLabelFromLevel = speedLabel;
-  function groupRecsByType(levelRecs) {
+  function recsByType(levelRecs) {
     const seen = /* @__PURE__ */ new Set();
     const byType = {};
     for (const rec of levelRecs) {
-      if (seen.has(rec.groupId)) continue;
-      seen.add(rec.groupId);
+      if (seen.has(rec.levelId)) continue;
+      seen.add(rec.levelId);
       if (!byType[rec.type]) byType[rec.type] = [];
-      byType[rec.type].push(rec.groupId);
+      byType[rec.type].push(rec.levelId);
     }
     return byType;
   }
-  function buildRecommendationLines(result, getGroupLabel) {
+  function buildRecommendationLines(result, getLevelLabel) {
     if (result.recommended.size === 0) return [];
-    const byType = groupRecsByType(result.levelRecs);
+    const byType = recsByType(result.levelRecs);
     const lines = [];
     if (byType["review"]) {
-      const labels = byType["review"].map(getGroupLabel);
+      const labels = byType["review"].map(getLevelLabel);
       lines.push({ verb: "Review", levels: labels });
     }
     if (byType["practice"]) {
-      const labels = byType["practice"].map(getGroupLabel);
+      const labels = byType["practice"].map(getLevelLabel);
       lines.push({ verb: "Practice", levels: labels });
     }
     if (byType["expand"] && result.expandIndex !== null) {
       lines.push({
         verb: "Start",
-        levels: [getGroupLabel(result.expandIndex)]
+        levels: [getLevelLabel(result.expandIndex)]
       });
     }
     if (byType["automate"]) {
-      const labels = byType["automate"].map(getGroupLabel);
+      const labels = byType["automate"].map(getLevelLabel);
       lines.push({ verb: "Practice", levels: labels });
     }
     return lines;
@@ -10358,9 +10367,9 @@ Build: ${version}
         return line.verb.toLowerCase();
     }
   }
-  function buildRecommendationText(result, getGroupLabel, extraParts) {
+  function buildRecommendationText(result, getLevelLabel, extraParts) {
     if (result.recommended.size === 0) return "";
-    const lines = buildRecommendationLines(result, getGroupLabel);
+    const lines = buildRecommendationLines(result, getLevelLabel);
     const parts = lines.map(
       (line) => flatVerb(line) + " " + line.levels.join(", ")
     );
@@ -10405,7 +10414,7 @@ Build: ${version}
   // src/hooks/use-scope-state.ts
   function loadScope(spec) {
     if (spec.kind === "none") return { kind: "none" };
-    if (spec.kind === "groups") {
+    if (spec.kind === "levels") {
       let enabled = new Set(spec.defaultEnabled);
       const saved = storage.getItem(spec.storageKey);
       if (saved) {
@@ -10415,8 +10424,8 @@ Build: ${version}
             if (parsed.length > 0 && typeof parsed[0] === "number") {
               const newEnabled = /* @__PURE__ */ new Set();
               for (const idx of parsed) {
-                if (idx >= 0 && idx < spec.groups.length) {
-                  newEnabled.add(spec.groups[idx].id);
+                if (idx >= 0 && idx < spec.levels.length) {
+                  newEnabled.add(spec.levels[idx].id);
                 }
               }
               if (newEnabled.size > 0) enabled = newEnabled;
@@ -10431,7 +10440,7 @@ Build: ${version}
         }
       }
       for (const id of enabled) {
-        if (!spec.groups.some((g4) => g4.id === id)) enabled.delete(id);
+        if (!spec.levels.some((g4) => g4.id === id)) enabled.delete(id);
       }
       if (enabled.size === 0) {
         for (const d4 of spec.defaultEnabled) enabled.add(d4);
@@ -10447,7 +10456,7 @@ Build: ${version}
               if (typeof first === "number") {
                 for (const [idx, reason] of parsed) {
                   if (typeof idx === "number" && Number.isInteger(idx) && (reason === "mastered" || reason === "deferred")) {
-                    const group = spec.groups[idx];
+                    const group = spec.levels[idx];
                     if (group) skipped.set(group.id, reason);
                   }
                 }
@@ -10461,7 +10470,7 @@ Build: ${version}
             } else {
               for (const idx of parsed) {
                 if (typeof idx === "number") {
-                  const group = spec.groups[idx];
+                  const group = spec.levels[idx];
                   if (group) skipped.set(group.id, "deferred");
                 }
               }
@@ -10471,10 +10480,10 @@ Build: ${version}
         }
       }
       for (const id of skipped.keys()) {
-        if (!spec.groups.some((g4) => g4.id === id)) skipped.delete(id);
+        if (!spec.levels.some((g4) => g4.id === id)) skipped.delete(id);
       }
       for (const id of skipped.keys()) enabled.delete(id);
-      return { kind: "groups", enabledGroups: enabled, skippedGroups: skipped };
+      return { kind: "levels", enabledLevels: enabled, skippedLevels: skipped };
     }
     if (spec.kind === "note-filter") {
       let noteFilter = "natural";
@@ -10487,14 +10496,14 @@ Build: ${version}
     return { kind: "none" };
   }
   function saveScope(spec, scope) {
-    if (spec.kind === "groups" && scope.kind === "groups") {
+    if (spec.kind === "levels" && scope.kind === "levels") {
       storage.setItem(
         spec.storageKey,
-        JSON.stringify([...scope.enabledGroups])
+        JSON.stringify([...scope.enabledLevels])
       );
       storage.setItem(
         spec.storageKey + "_skipped",
-        JSON.stringify([...scope.skippedGroups.entries()])
+        JSON.stringify([...scope.skippedLevels.entries()])
       );
     } else if (spec.kind === "note-filter" && scope.kind === "note-filter") {
       try {
@@ -10509,54 +10518,54 @@ Build: ${version}
       setScopeRaw(next);
       saveScope(spec, next);
     }, [spec]);
-    const toggleGroup = q2((id) => {
+    const toggleLevel = q2((id) => {
       setScopeRaw((prev) => {
-        if (prev.kind !== "groups") return prev;
-        const next = new Set(prev.enabledGroups);
+        if (prev.kind !== "levels") return prev;
+        const next = new Set(prev.enabledLevels);
         if (next.has(id)) {
           next.delete(id);
         } else {
           next.add(id);
         }
         const updated = {
-          kind: "groups",
-          enabledGroups: next,
-          skippedGroups: prev.skippedGroups
+          kind: "levels",
+          enabledLevels: next,
+          skippedLevels: prev.skippedLevels
         };
         saveScope(spec, updated);
         return updated;
       });
     }, [spec]);
-    const skipGroup = q2((id, reason) => {
+    const skipLevel = q2((id, reason) => {
       setScopeRaw((prev) => {
-        if (prev.kind !== "groups") return prev;
-        const groupCount = spec.groups.length;
-        if (prev.skippedGroups.size + (prev.skippedGroups.has(id) ? 0 : 1) >= groupCount) return prev;
-        const groupSpec = spec;
-        if (!groupSpec.groups.some((g4) => g4.id === id)) return prev;
-        const nextSkipped = new Map(prev.skippedGroups);
+        if (prev.kind !== "levels") return prev;
+        const levelCount = spec.levels.length;
+        if (prev.skippedLevels.size + (prev.skippedLevels.has(id) ? 0 : 1) >= levelCount) return prev;
+        const levelSpec = spec;
+        if (!levelSpec.levels.some((g4) => g4.id === id)) return prev;
+        const nextSkipped = new Map(prev.skippedLevels);
         nextSkipped.set(id, reason);
-        const nextEnabled = new Set(prev.enabledGroups);
+        const nextEnabled = new Set(prev.enabledLevels);
         nextEnabled.delete(id);
         const updated = {
-          kind: "groups",
-          enabledGroups: nextEnabled,
-          skippedGroups: nextSkipped
+          kind: "levels",
+          enabledLevels: nextEnabled,
+          skippedLevels: nextSkipped
         };
         saveScope(spec, updated);
         return updated;
       });
     }, [spec]);
-    const unskipGroup = q2((id) => {
+    const unskipLevel = q2((id) => {
       setScopeRaw((prev) => {
-        if (prev.kind !== "groups") return prev;
-        if (!prev.skippedGroups.has(id)) return prev;
-        const nextSkipped = new Map(prev.skippedGroups);
+        if (prev.kind !== "levels") return prev;
+        if (!prev.skippedLevels.has(id)) return prev;
+        const nextSkipped = new Map(prev.skippedLevels);
         nextSkipped.delete(id);
         const updated = {
-          kind: "groups",
-          enabledGroups: prev.enabledGroups,
-          skippedGroups: nextSkipped
+          kind: "levels",
+          enabledLevels: prev.enabledLevels,
+          skippedLevels: nextSkipped
         };
         saveScope(spec, updated);
         return updated;
@@ -10573,9 +10582,9 @@ Build: ${version}
       });
     }, [spec]);
     return [scope, {
-      toggleGroup,
-      skipGroup,
-      unskipGroup,
+      toggleLevel,
+      skipLevel,
+      unskipLevel,
       setNoteFilter,
       setScope
     }];
@@ -10588,7 +10597,7 @@ Build: ${version}
     return v3;
   }
 
-  // src/hooks/use-group-scope.ts
+  // src/hooks/use-level-scope.ts
   var EMPTY_SKIPPED = /* @__PURE__ */ new Map();
   function useStableGetter(value) {
     const ref = A2(value);
@@ -10616,36 +10625,36 @@ Build: ${version}
     }, [pmKey]);
     return [mode, setMode];
   }
-  function useRecommendationData(spec, activeGroupIds, notationVersion) {
+  function useRecommendationData(spec, activeLevelIds, notationVersion) {
     const idOrder = T2(
-      () => new Map(spec.allGroupIds.map((id, i3) => [id, i3])),
-      [spec.allGroupIds]
+      () => new Map(spec.allLevelIds.map((id, i3) => [id, i3])),
+      [spec.allLevelIds]
     );
     const recommendation = T2(
       () => computeRecommendations(
         spec.selector,
-        activeGroupIds,
-        spec.getItemIdsForGroup,
+        activeLevelIds,
+        spec.getItemIdsForLevel,
         {},
         {
-          sortUnstarted: (a3, b2) => (idOrder.get(a3.groupId) ?? 0) - (idOrder.get(b2.groupId) ?? 0)
+          sortUnstarted: (a3, b2) => (idOrder.get(a3.levelId) ?? 0) - (idOrder.get(b2.levelId) ?? 0)
         }
       ),
       [
         spec.selector,
         spec.selector.version,
-        activeGroupIds,
-        spec.getItemIdsForGroup,
+        activeLevelIds,
+        spec.getItemIdsForLevel,
         idOrder
       ]
     );
     const getLabel = q2(
       (id) => {
-        const g4 = spec.groups.find((g5) => g5.id === id);
+        const g4 = spec.levels.find((g5) => g5.id === id);
         if (!g4) return id;
         return resolveLabel(g4.longLabel ?? g4.label);
       },
-      [spec.groups, notationVersion]
+      [spec.levels, notationVersion]
     );
     const suggestionLines = T2(
       () => buildRecommendationLines(recommendation, getLabel),
@@ -10662,64 +10671,64 @@ Build: ${version}
       recommendationText
     };
   }
-  function useGroupScope(spec) {
+  function useLevelScope(spec) {
     const notationVersion = useNotationVersion();
     const [practiceMode, setPracticeMode] = usePracticeMode(spec.storageKey);
     const [scope, scopeActions] = useScopeState({
-      kind: "groups",
-      groups: spec.groups.map((g4) => ({
+      kind: "levels",
+      levels: spec.levels.map((g4) => ({
         id: g4.id,
         label: resolveLabel(g4.label),
-        itemIds: spec.getItemIdsForGroup(g4.id)
+        itemIds: spec.getItemIdsForLevel(g4.id)
       })),
       defaultEnabled: spec.defaultEnabled,
       storageKey: spec.storageKey,
       label: spec.scopeLabel
     });
-    const customGroups = scope.kind === "groups" ? scope.enabledGroups : new Set(spec.defaultEnabled);
-    const skippedGroups = scope.kind === "groups" ? scope.skippedGroups : EMPTY_SKIPPED;
-    const activeGroupIds = T2(
-      () => spec.allGroupIds.filter((id) => !skippedGroups.has(id)),
-      [spec.allGroupIds, skippedGroups]
+    const customLevels = scope.kind === "levels" ? scope.enabledLevels : new Set(spec.defaultEnabled);
+    const skippedLevels = scope.kind === "levels" ? scope.skippedLevels : EMPTY_SKIPPED;
+    const activeLevelIds = T2(
+      () => spec.allLevelIds.filter((id) => !skippedLevels.has(id)),
+      [spec.allLevelIds, skippedLevels]
     );
-    const rec = useRecommendationData(spec, activeGroupIds, notationVersion);
-    const liveEnabledGroups = practiceMode === "suggested" && rec.suggestedScope.size > 0 ? rec.suggestedScope : customGroups;
-    const liveEnabledGroupsRef = A2(liveEnabledGroups);
-    liveEnabledGroupsRef.current = liveEnabledGroups;
+    const rec = useRecommendationData(spec, activeLevelIds, notationVersion);
+    const liveEnabledLevels = practiceMode === "suggested" && rec.suggestedScope.size > 0 ? rec.suggestedScope : customLevels;
+    const liveEnabledLevelsRef = A2(liveEnabledLevels);
+    liveEnabledLevelsRef.current = liveEnabledLevels;
     const [scopeLock, setScopeLock] = d2(
       createScopeLock
     );
     const setScopeLocked = q2((locked) => {
       setScopeLock(
-        (prev) => nextScopeLockState(prev, locked, liveEnabledGroupsRef.current)
+        (prev) => nextScopeLockState(prev, locked, liveEnabledLevelsRef.current)
       );
     }, []);
-    const enabledGroups = readScope(scopeLock, liveEnabledGroups);
+    const enabledLevels = readScope(scopeLock, liveEnabledLevels);
     const enabledItems = T2(() => {
       const items = [];
-      for (const id of spec.allGroupIds) {
-        if (enabledGroups.has(id)) items.push(...spec.getItemIdsForGroup(id));
+      for (const id of spec.allLevelIds) {
+        if (enabledLevels.has(id)) items.push(...spec.getItemIdsForLevel(id));
       }
       return items;
-    }, [enabledGroups, spec.allGroupIds, spec.getItemIdsForGroup]);
+    }, [enabledLevels, spec.allLevelIds, spec.getItemIdsForLevel]);
     const practicingLabel = T2(
-      () => spec.formatLabel(enabledGroups),
-      [enabledGroups, spec.formatLabel, notationVersion]
+      () => spec.formatLabel(enabledLevels),
+      [enabledLevels, spec.formatLabel, notationVersion]
     );
     const applyRecommendation = q2(() => {
       if (rec.recommendation.enabled) {
         scopeActions.setScope({
-          kind: "groups",
-          enabledGroups: rec.recommendation.enabled,
-          skippedGroups
+          kind: "levels",
+          enabledLevels: rec.recommendation.enabled,
+          skippedLevels
         });
       }
-    }, [rec.recommendation, scopeActions, skippedGroups]);
+    }, [rec.recommendation, scopeActions, skippedLevels]);
     return {
       scope,
       scopeActions,
-      enabledGroups,
-      skippedGroups,
+      enabledLevels,
+      skippedLevels,
       enabledItems,
       practicingLabel,
       recommendation: rec.recommendation,
@@ -10736,12 +10745,12 @@ Build: ${version}
   }
 
   // src/ui/practice-config.tsx
-  function SkillHeader({ modeId, title, totalReps, onBack }) {
+  function SkillHeader({ skillId, title, totalReps, onBack }) {
     return /* @__PURE__ */ u2(
       ScreenHeader,
       {
         title,
-        icon: modeId && /* @__PURE__ */ u2(SkillIcon, { modeId }),
+        icon: skillId && /* @__PURE__ */ u2(SkillIcon, { skillId }),
         onClose: onBack,
         closeAriaLabel: "Back to home",
         right: totalReps != null ? /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", class: "skill-header-reps", children: [
@@ -10759,11 +10768,11 @@ Build: ${version}
       line.levels.join(", ")
     ] }, i3)) });
   }
-  function LevelToggles({ labels, groupIds, active, onToggle }) {
+  function LevelToggles({ labels, levelIds, active, onToggle }) {
     return /* @__PURE__ */ u2(Card, { variant: "well", class: "level-toggles-section", children: [
       /* @__PURE__ */ u2(Text, { role: "heading-subsection", as: "div", class: "level-toggles-header", children: "Choose levels" }),
       /* @__PURE__ */ u2("div", { class: "level-toggles", children: labels.map((label, i3) => {
-        const id = groupIds[i3];
+        const id = levelIds[i3];
         return /* @__PURE__ */ u2(
           "button",
           {
@@ -12383,42 +12392,42 @@ Build: ${version}
     }
     return { verb: "Practice", levels: [] };
   }
-  function GroupPracticeContent({ def, groupScopeResult }) {
-    const groupScope = def.scope.kind === "groups" ? def.scope : null;
-    if (!groupScope) return null;
-    const groupLabels = groupScope.allGroupIds.map((id) => {
-      const g4 = groupScope.groups.find((g5) => g5.id === id);
+  function LevelPracticeContent({ def, levelScopeResult }) {
+    const levelScope = def.scope.kind === "levels" ? def.scope : null;
+    if (!levelScope) return null;
+    const levelLabels = levelScope.allLevelIds.map((id) => {
+      const g4 = levelScope.levels.find((g5) => g5.id === id);
       return g4 ? resolveGroupLabel(g4.label) : id;
     });
     return /* @__PURE__ */ u2(k, { children: /* @__PURE__ */ u2(
       PracticeConfig,
       {
-        mode: groupScopeResult.practiceMode,
-        onModeChange: groupScopeResult.setPracticeMode,
-        suggestedContent: /* @__PURE__ */ u2(SuggestionLines, { lines: groupScopeResult.suggestionLines }),
+        mode: levelScopeResult.practiceMode,
+        onModeChange: levelScopeResult.setPracticeMode,
+        suggestedContent: /* @__PURE__ */ u2(SuggestionLines, { lines: levelScopeResult.suggestionLines }),
         customContent: /* @__PURE__ */ u2(
           LevelToggles,
           {
-            labels: groupLabels,
-            groupIds: groupScope.allGroupIds,
-            active: groupScopeResult.practiceMode === "custom" ? groupScopeResult.enabledGroups : groupScopeResult.suggestedScope,
-            onToggle: groupScopeResult.scopeActions.toggleGroup
+            labels: levelLabels,
+            levelIds: levelScope.allLevelIds,
+            active: levelScopeResult.practiceMode === "custom" ? levelScopeResult.enabledLevels : levelScopeResult.suggestedScope,
+            onToggle: levelScopeResult.scopeActions.toggleLevel
           }
         )
       }
     ) });
   }
-  function LevelProgressCards({ def, learner, groupScopeResult }) {
-    const groupScope = def.scope.kind === "groups" ? def.scope : null;
-    if (!groupScope) return null;
-    return /* @__PURE__ */ u2(Stack, { gap: "related", class: "level-progress-cards", children: groupScope.allGroupIds.map((id) => {
-      const g4 = groupScope.groups.find((g5) => g5.id === id);
-      const itemIds = groupScope.getItemIdsForGroup(id);
+  function LevelProgressCards({ def, learner, levelScopeResult }) {
+    const levelScope = def.scope.kind === "levels" ? def.scope : null;
+    if (!levelScope) return null;
+    return /* @__PURE__ */ u2(Stack, { gap: "related", class: "level-progress-cards", children: levelScope.allLevelIds.map((id) => {
+      const g4 = levelScope.levels.find((g5) => g5.id === id);
+      const itemIds = levelScope.getItemIdsForLevel(id);
       const colors = progressBarColors(learner.selector, itemIds);
-      const ls = groupScopeResult.recommendation.levelStatuses?.find((s3) => s3.groupId === id);
+      const ls = levelScopeResult.recommendation.levelStatuses?.find((s3) => s3.levelId === id);
       const sl = ls ? SPEED_LEVELS.find((l3) => l3.key === ls.speedLabel) ?? null : null;
       const pill = ls?.reviewInHours != null ? ls.reviewStatus === "soon" && ls.reviewInHours === 0 ? "Review soon" : `Review in ${formatReviewDuration(ls.reviewInHours)}` : void 0;
-      const skipReason = groupScopeResult.skippedGroups.get(id);
+      const skipReason = levelScopeResult.skippedLevels.get(id);
       const status = skipReason === "mastered" ? "known" : skipReason === "deferred" ? "skipped" : "normal";
       const label = g4 ? resolveGroupLabel(
         g4.longLabel ?? g4.label
@@ -12433,8 +12442,8 @@ Build: ${version}
           colors,
           status,
           baseline: learner.motorBaseline,
-          onToggleKnown: () => skipReason === "mastered" ? groupScopeResult.scopeActions.unskipGroup(id) : groupScopeResult.scopeActions.skipGroup(id, "mastered"),
-          onToggleSkip: () => skipReason === "deferred" ? groupScopeResult.scopeActions.unskipGroup(id) : groupScopeResult.scopeActions.skipGroup(id, "deferred")
+          onToggleKnown: () => skipReason === "mastered" ? levelScopeResult.scopeActions.unskipLevel(id) : levelScopeResult.scopeActions.skipLevel(id, "mastered"),
+          onToggleSkip: () => skipReason === "deferred" ? levelScopeResult.scopeActions.unskipLevel(id) : levelScopeResult.scopeActions.skipLevel(id, "deferred")
         },
         id
       );
@@ -12471,14 +12480,14 @@ Build: ${version}
     engine,
     learner,
     ctrl,
-    groupScopeResult,
+    levelScopeResult,
     ps,
     progressSegments,
     onCalibrate
   }) {
-    const hasGroups = def.scope.kind === "groups" && groupScopeResult;
+    const hasGroups = def.scope.kind === "levels" && levelScopeResult;
     const hasStats = def.stats.kind !== "none" || !!ctrl.renderStats;
-    const customItemCount = hasGroups && groupScopeResult.practiceMode === "custom" ? groupScopeResult.enabledItems.length : null;
+    const customItemCount = hasGroups && levelScopeResult.practiceMode === "custom" ? levelScopeResult.enabledItems.length : null;
     return /* @__PURE__ */ u2(
       PracticeTab,
       {
@@ -12487,14 +12496,14 @@ Build: ${version}
         progressKind: hasGroups ? "multi-level" : "single-level",
         progressBaseline: learner.motorBaseline,
         description: def.description,
-        scopeValid: !groupScopeResult || groupScopeResult.enabledGroups.size > 0,
+        scopeValid: !levelScopeResult || levelScopeResult.enabledLevels.size > 0,
         validationMessage: "Select at least one level",
         startLabel: customItemCount != null ? `Practice (${customItemCount} ${customItemCount === 1 ? "item" : "items"})` : void 0,
         practiceContent: hasGroups ? /* @__PURE__ */ u2(
-          GroupPracticeContent,
+          LevelPracticeContent,
           {
             def,
-            groupScopeResult
+            levelScopeResult
           }
         ) : /* @__PURE__ */ u2(Stack, { gap: "group", class: "practice-config", children: [
           /* @__PURE__ */ u2(Text, { role: "heading-section", children: "Recommendation" }),
@@ -12536,7 +12545,7 @@ Build: ${version}
           {
             def,
             learner,
-            groupScopeResult
+            levelScopeResult
           }
         ) }) : void 0,
         baseline: onCalibrate ? learner.motorBaseline : void 0,
@@ -13108,7 +13117,7 @@ Build: ${version}
         const selector = focusTargets[phase];
         if (selector) {
           requestAnimationFrame(() => {
-            if (!container.classList.contains("mode-active")) return;
+            if (!container.classList.contains("skill-active")) return;
             const el = container.querySelector(selector);
             if (el) el.focus();
           });
@@ -13117,8 +13126,8 @@ Build: ${version}
     }, [phase, container, focusTargets]);
   }
 
-  // src/hooks/use-mode-lifecycle.ts
-  function useModeLifecycle(onMount, engine, learner, onDeactivate, onActivate) {
+  // src/hooks/use-skill-lifecycle.ts
+  function useSkillLifecycle(onMount, engine, learner, onDeactivate, onActivate) {
     _2(() => {
       onMount({
         activate() {
@@ -13352,9 +13361,9 @@ Build: ${version}
     };
   }
 
-  // src/declarative/generic-mode-hooks.ts
+  // src/declarative/generic-skill-hooks.ts
   var EMPTY_GROUPS = /* @__PURE__ */ new Set();
-  function useGenericEngine(def, ctrl, ctrlRef, groupScopeResult, learner, container) {
+  function useGenericEngine(def, ctrl, ctrlRef, levelScopeResult, learner, container) {
     const currentQRef = A2(null);
     const isSequential = !!def.sequential;
     const isMultiTap = !!def.multiTap;
@@ -13367,9 +13376,9 @@ Build: ${version}
     const lastAnswerRef = A2(null);
     const getEnabledItemsRef = A2(() => def.allItems);
     const getPracticingLabelRef = A2(() => "all items");
-    if (groupScopeResult) {
-      getEnabledItemsRef.current = groupScopeResult.getEnabledItems;
-      getPracticingLabelRef.current = groupScopeResult.getPracticingLabel;
+    if (levelScopeResult) {
+      getEnabledItemsRef.current = levelScopeResult.getEnabledItems;
+      getPracticingLabelRef.current = levelScopeResult.getPracticingLabel;
     }
     const engineConfig = T2(
       () => buildGenericEngineConfig(
@@ -13405,12 +13414,12 @@ Build: ${version}
     }
     return def.buttons;
   }
-  function buildGroupScopeSpec(def, selector) {
-    if (def.scope.kind !== "groups") return null;
+  function buildLevelScopeSpec(def, selector) {
+    if (def.scope.kind !== "levels") return null;
     return {
-      groups: def.scope.groups,
-      getItemIdsForGroup: def.scope.getItemIdsForGroup,
-      allGroupIds: def.scope.allGroupIds,
+      levels: def.scope.levels,
+      getItemIdsForLevel: def.scope.getItemIdsForLevel,
+      allLevelIds: def.scope.allLevelIds,
       storageKey: def.scope.storageKey,
       scopeLabel: def.scope.scopeLabel,
       defaultEnabled: def.scope.defaultEnabled,
@@ -13440,7 +13449,7 @@ Build: ${version}
       handleKey: hasHandleKey ? (e3, ctx) => ctrlRef.current.handleKey(e3, ctx) : void 0
     };
   }
-  function useGenericDerivedState(def, engine, learner, groupScopeResult, currentQRef, seqInput, multiTapInput, isSequential, container, onMount, presentationPhase, deactivateCleanup) {
+  function useGenericDerivedState(def, engine, learner, levelScopeResult, currentQRef, seqInput, multiTapInput, isSequential, container, onMount, presentationPhase, deactivateCleanup) {
     const currentQ = T2(() => {
       const id = engine.state.currentItemId;
       if (!id || engine.state.phase === "idle") return null;
@@ -13461,10 +13470,10 @@ Build: ${version}
       selector: learner.selector,
       engine,
       itemNoun: def.itemNoun,
-      recommendation: groupScopeResult?.recommendation ?? null,
-      recommendationText: groupScopeResult?.recommendationText ?? ""
+      recommendation: levelScopeResult?.recommendation ?? null,
+      recommendationText: levelScopeResult?.recommendationText ?? ""
     });
-    useModeLifecycle(
+    useSkillLifecycle(
       onMount,
       engine,
       learner,
@@ -13511,53 +13520,53 @@ Build: ${version}
       deactivateCleanup
     };
   }
-  function useProgressColors(def, learner, _phase, skippedGroups) {
+  function useProgressColors(def, learner, _phase, skippedLevels) {
     return T2(() => {
-      if (def.scope.kind === "groups") {
+      if (def.scope.kind === "levels") {
         const scope = def.scope;
         return computeProgressColors(learner.selector, {
-          kind: "groups",
-          groups: scope.allGroupIds.map((id) => ({
+          kind: "levels",
+          levels: scope.allLevelIds.map((id) => ({
             id,
-            itemIds: scope.getItemIdsForGroup(id)
+            itemIds: scope.getItemIdsForLevel(id)
           })),
-          skippedGroups
+          skippedLevels
         });
       }
       return computeProgressColors(learner.selector, {
         kind: "items",
         itemIds: def.allItems
       });
-    }, [def, learner.selector, learner.selector.version, _phase, skippedGroups]);
+    }, [def, learner.selector, learner.selector.version, _phase, skippedLevels]);
   }
-  function useLevelBars(def, learner, _phase, groupScopeResult) {
-    const enabledGroups = groupScopeResult?.enabledGroups;
+  function useLevelBars(def, learner, _phase, levelScopeResult) {
+    const enabledLevels = levelScopeResult?.enabledLevels;
     return T2(() => {
       if (_phase !== "round-complete") return [];
-      if (def.scope.kind === "groups" && enabledGroups) {
+      if (def.scope.kind === "levels" && enabledLevels) {
         const scope = def.scope;
-        return scope.allGroupIds.filter((id) => enabledGroups.has(id)).map((id) => {
-          const g4 = scope.groups.find((g5) => g5.id === id);
+        return scope.allLevelIds.filter((id) => enabledLevels.has(id)).map((id) => {
+          const g4 = scope.levels.find((g5) => g5.id === id);
           const label = g4 ? resolveGroupLabel(g4.longLabel ?? g4.label) : id;
           const colors2 = progressBarColors(
             learner.selector,
-            scope.getItemIdsForGroup(id)
+            scope.getItemIdsForLevel(id)
           );
           return { id, label, colors: colors2 };
         });
       }
       const colors = progressBarColors(learner.selector, def.allItems);
       return colors.length > 0 ? [{ id: "_all", label: "", colors }] : [];
-    }, [def, learner.selector, learner.selector.version, _phase, enabledGroups]);
+    }, [def, learner.selector, learner.selector.version, _phase, enabledLevels]);
   }
 
-  // src/declarative/generic-mode.tsx
-  function GenericModeBody({
+  // src/declarative/generic-skill.tsx
+  function GenericSkillBody({
     def,
     engine,
     learner,
     ctrl,
-    groupScopeResult,
+    levelScopeResult,
     ps,
     sc,
     currentQ,
@@ -13575,9 +13584,9 @@ Build: ${version}
     const activeButtons = resolveButtons(def, dir);
     const phase = engine.state.phase;
     const isIdle = phase === "idle" && !sc.speedCheck;
-    const skipped = groupScopeResult?.skippedGroups;
+    const skipped = levelScopeResult?.skippedLevels;
     const progressColors = useProgressColors(def, learner, phase, skipped);
-    const levelBars = useLevelBars(def, learner, phase, groupScopeResult);
+    const levelBars = useLevelBars(def, learner, phase, levelScopeResult);
     const totalReps = T2(() => {
       let sum = 0;
       for (const id of def.allItems) {
@@ -13591,7 +13600,7 @@ Build: ${version}
         /* @__PURE__ */ u2(LayoutHeader, { children: /* @__PURE__ */ u2(
           SkillHeader,
           {
-            modeId: def.id,
+            skillId: def.id,
             title: def.name,
             totalReps,
             onBack: navigateHome
@@ -13604,7 +13613,7 @@ Build: ${version}
             engine,
             learner,
             ctrl,
-            groupScopeResult,
+            levelScopeResult,
             ps,
             progressSegments: progressColors,
             onCalibrate: sc.hasSpeedCheck ? () => sc.setSpeedCheck("active") : void 0
@@ -13647,20 +13656,20 @@ Build: ${version}
       }
     );
   }
-  function GenericMode({ def, container, navigateHome, onMount }) {
+  function GenericSkill({ def, container, navigateHome, onMount }) {
     const learner = useLearnerModel(
       def.namespace,
       def.allItems,
       def.motorTaskType,
       def.getExpectedResponseCount
     );
-    const groupScopeSpec = T2(
-      () => buildGroupScopeSpec(def, learner.selector),
+    const levelScopeSpec = T2(
+      () => buildLevelScopeSpec(def, learner.selector),
       [def, learner.selector]
     );
-    const groupScopeResult = groupScopeSpec ? useGroupScope(groupScopeSpec) : null;
-    const enabledGroups = groupScopeResult?.enabledGroups ?? EMPTY_GROUPS;
-    const ctrl = def.useController ? def.useController(enabledGroups) : {};
+    const levelScopeResult = levelScopeSpec ? useLevelScope(levelScopeSpec) : null;
+    const enabledLevels = levelScopeResult?.enabledLevels ?? EMPTY_GROUPS;
+    const ctrl = def.useController ? def.useController(enabledLevels) : {};
     const ctrlRef = A2(ctrl);
     ctrlRef.current = ctrl;
     const {
@@ -13674,13 +13683,13 @@ Build: ${version}
       def,
       ctrl,
       ctrlRef,
-      groupScopeResult,
+      levelScopeResult,
       learner,
       container
     );
     const sc = useSpeedCheckOverlay(engine, def, ctrl);
     const enginePhase = engine.state.phase;
-    const setScopeLocked = groupScopeResult?.setScopeLocked;
+    const setScopeLocked = levelScopeResult?.setScopeLocked;
     y2(() => {
       if (!setScopeLocked) return;
       setScopeLocked(enginePhase !== "idle");
@@ -13689,7 +13698,7 @@ Build: ${version}
       def,
       engine,
       learner,
-      groupScopeResult,
+      levelScopeResult,
       currentQRef,
       seqInput,
       multiTapInput,
@@ -13700,13 +13709,13 @@ Build: ${version}
       sc.deactivateCleanup
     );
     return /* @__PURE__ */ u2(
-      GenericModeBody,
+      GenericSkillBody,
       {
         def,
         engine,
         learner,
         ctrl,
-        groupScopeResult,
+        levelScopeResult,
         ps,
         sc,
         currentQ,
@@ -13724,20 +13733,20 @@ Build: ${version}
   // src/app.ts
   document.addEventListener("touchstart", () => {
   }, { passive: true });
-  function registerDeclarativeMode(nav, def) {
-    registerModeForEffort({
+  function registerDeclarativeSkill(nav, def) {
+    registerSkillForEffort({
       id: def.id,
       namespace: def.namespace,
       allItems: def.allItems
     });
     let handle = null;
-    const container = document.getElementById("mode-" + def.id);
-    nav.registerMode(def.id, {
+    const container = document.getElementById("skill-" + def.id);
+    nav.registerSkill(def.id, {
       name: def.name,
       init() {
         container.textContent = "";
         J(
-          _(GenericMode, {
+          _(GenericSkill, {
             def,
             container,
             navigateHome: () => nav.navigateHome(),
@@ -13765,13 +13774,13 @@ Build: ${version}
     loadNotationPreference();
     cleanupLegacyKeys();
     const nav = createNavigation();
-    for (const def of ALL_MODE_DEFINITIONS) {
-      registerDeclarativeMode(nav, def);
+    for (const def of ALL_SKILL_DEFINITIONS) {
+      registerDeclarativeSkill(nav, def);
     }
     nav.init();
     const settings = createSettingsController({
       onNotationChange() {
-        document.querySelectorAll(".mode-screen.mode-active").forEach(
+        document.querySelectorAll(".skill-screen.skill-active").forEach(
           (el) => {
             refreshNoteButtonLabels(el);
           }
@@ -13795,7 +13804,7 @@ Build: ${version}
     homeRoot.textContent = "";
     J(
       _(HomeScreen, {
-        onSelectMode: (modeId) => nav.switchTo(modeId),
+        onSelectSkill: (skillId) => nav.switchTo(skillId),
         settings,
         appConfig: APP_CONFIG,
         showDevLink: true,
