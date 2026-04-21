@@ -3,6 +3,7 @@
 // Bidirectional: forward (key → signature), reverse (signature → key root).
 
 import type { MajorKey, StatsTableRow } from '../../types.ts';
+import { shuffleByItemHash } from '../../mode-utils.ts';
 import {
   displayKeysigLabel,
   displayNote,
@@ -91,12 +92,12 @@ export const ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
 export function getItemIdsForGroup(groupId: string): string[] {
   const group = ALL_KEY_GROUPS.find((g) => g.id === groupId);
   if (!group) return [];
-  // Direction outer (fwd first), group's `keys` list inner (already
-  // ordered by accidental count).
-  return [
+  // Build: direction outer (fwd first), keys inner.
+  // Final order is hash-shuffled for variety.
+  return shuffleByItemHash([
     ...group.keys.map((r) => r + ':fwd'),
     ...group.keys.map((r) => r + ':rev'),
-  ];
+  ]);
 }
 
 /** All 48 item IDs: 12 major + 12 minor keys × 2 directions. */
@@ -104,10 +105,10 @@ export const ALL_ITEMS: string[] = (() => {
   const majorRoots = MAJOR_KEYS.map((k) => k.root);
   const minorRoots = MINOR_ROOTS.map((r) => r + 'm');
   const allRoots = [...majorRoots, ...minorRoots];
-  return [
+  return shuffleByItemHash([
     ...allRoots.map((r) => r + ':fwd'),
     ...allRoots.map((r) => r + ':rev'),
-  ];
+  ]);
 })();
 
 export const ALL_GROUP_IDS: string[] = ALL_KEY_GROUPS.map((g) => g.id);

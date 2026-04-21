@@ -12,7 +12,11 @@ import {
   parseSpelledNote,
   ROOT_CYCLE,
 } from '../../music-data.ts';
-import { buildMathIds, parseMathId } from '../../mode-utils.ts';
+import {
+  buildMathIds,
+  parseMathId,
+  shuffleByItemHash,
+} from '../../mode-utils.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -70,8 +74,8 @@ export function getItemIdsForGroup(groupId: string): string[] {
     group.distances.includes(i.num)
   );
   const items: string[] = [];
-  // Outer: interval ascending within group; direction (+ then -);
-  // inner: ROOT_CYCLE roots.
+  // Build: interval ascending, then direction (+ then -), then ROOT_CYCLE.
+  // Final order is hash-shuffled for variety.
   for (const interval of intervals) {
     for (const sign of ['+', '-']) {
       for (const root of ROOT_CYCLE) {
@@ -79,14 +83,14 @@ export function getItemIdsForGroup(groupId: string): string[] {
       }
     }
   }
-  return items;
+  return shuffleByItemHash(items);
 }
 
 /** All 264 item IDs: 12 notes × 11 intervals × 2 directions (+/-). */
-export const ALL_ITEMS: string[] = buildMathIds(
+export const ALL_ITEMS: string[] = shuffleByItemHash(buildMathIds(
   ROOT_CYCLE,
   MATH_INTERVALS.map((i) => i.abbrev),
-);
+));
 
 export const ALL_GROUP_IDS: string[] = DISTANCE_GROUPS.map((g) => g.id);
 
