@@ -1819,6 +1819,25 @@ button {
    10. ANSWER BUTTONS
    ========================================================================== */
 
+/* Feedback text shown above the answer grid after the user answers.
+   Shows ✓ answer (correct) or ✗ input  ✓ answer (wrong).
+   Typography and spacing match SequentialSlots for visual consistency. */
+.answer-feedback-text {
+  display: flex;
+  justify-content: center;
+  gap: var(--gap-group);
+  margin: var(--pad-component) auto;
+  max-width: var(--size-answer-grid);
+  font-size: var(--type-quiz-response-size);
+  font-weight: var(--type-quiz-response-weight);
+}
+.answer-feedback-text .correct {
+  color: var(--color-success-text);
+}
+.answer-feedback-text .incorrect {
+  color: var(--color-error-text);
+}
+
 /* --- Unified answer grid (default 4 columns) --- */
 .answer-grid {
   display: grid;
@@ -2870,7 +2889,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1477"></div>
+  <div class="home-screen" id="home-screen" data-version="#1483"></div>
   <div class="mode-screen phase-idle" id="mode-fretboard"></div>
   <div class="mode-screen phase-idle" id="mode-speedTap"></div>
   <div class="mode-screen phase-idle" id="mode-guitarChordShapes"></div>
@@ -3954,6 +3973,7 @@ body.native-sim #app {
   );
   function isValidNoteInput(input) {
     if (VALID_NOTE_INPUTS.has(input.toLowerCase())) return true;
+    if (/^[A-Ga-g](##|bb)$/.test(input)) return true;
     if (_useSolfege) {
       const letter = resolveSolfegeToLetter(input);
       if (letter && VALID_NOTE_INPUTS.has(letter.toLowerCase())) return true;
@@ -4039,6 +4059,45 @@ body.native-sim #app {
   function spelledNoteSemitone(name) {
     const { letter, accidental } = parseSpelledNote(name);
     return ((NATURAL_SEMITONES[letter] + accidental) % 12 + 12) % 12;
+  }
+  function spelledNoteToCanonical(name) {
+    return NOTES[spelledNoteSemitone(name)].name;
+  }
+  var INTERVAL_LETTER_OFFSETS = {
+    m2: 1,
+    M2: 1,
+    m3: 2,
+    M3: 2,
+    P4: 3,
+    TT: 3,
+    P5: 4,
+    m6: 5,
+    M6: 5,
+    m7: 6,
+    M7: 6,
+    P8: 7
+  };
+  function addInterval(rootName, intervalAbbrev, direction) {
+    const root = parseSpelledNote(rootName);
+    const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
+    const rootSemitone = spelledNoteSemitone(rootName);
+    const letterOffset = INTERVAL_LETTER_OFFSETS[intervalAbbrev];
+    const interval = INTERVALS.find((i3) => i3.abbrev === intervalAbbrev);
+    const semitones = interval.num;
+    let targetLetterIdx;
+    let targetSemitone;
+    if (direction === "+") {
+      targetLetterIdx = (rootLetterIdx + letterOffset) % 7;
+      targetSemitone = (rootSemitone + semitones) % 12;
+    } else {
+      targetLetterIdx = (rootLetterIdx - letterOffset + 7) % 7;
+      targetSemitone = ((rootSemitone - semitones) % 12 + 12) % 12;
+    }
+    const targetLetter = LETTER_NAMES[targetLetterIdx];
+    const naturalSemitone = NATURAL_SEMITONES[targetLetter];
+    let acc = (targetSemitone - naturalSemitone + 12) % 12;
+    if (acc > 6) acc -= 12;
+    return spelledNoteName(targetLetter, acc);
   }
   function getScaleDegreeNote(keyRoot, degree) {
     const root = parseSpelledNote(keyRoot);
@@ -4389,7 +4448,7 @@ body.native-sim #app {
   function displayNote(name) {
     if (!name) return name;
     const letter = name[0].toUpperCase();
-    const acc = name.slice(1).replace(/#/g, "\u266F").replace(/b/g, "\u266D");
+    const acc = name.slice(1).replace(/##/g, "\u{1D12A}").replace(/bb/g, "\u{1D12B}").replace(/#/g, "\u266F").replace(/b/g, "\u266D");
     if (!_useSolfege) {
       return name[0] + acc;
     }
@@ -7019,19 +7078,24 @@ body.native-sim #app {
     const abbrev = parsed.value;
     const note = NOTES.find((n2) => n2.name === noteName);
     const interval = MATH_INTERVALS.find((i3) => i3.abbrev === abbrev);
-    const answer = op === "+" ? noteAdd(note.num, interval.num) : noteSub(note.num, interval.num);
-    const useFlats = op === "-";
-    const promptNoteName = displayNote(
-      pickAccidentalName(note.displayName, useFlats)
-    );
+    const rootSpelled = note.name;
+    const answerSpelled = addInterval(rootSpelled, abbrev, op);
+    const useFlats = deriveUseFlats(answerSpelled, op);
+    const promptNoteName = displayNote(rootSpelled);
     return {
       note,
       op,
       interval,
-      answer,
+      answerSpelled,
       useFlats,
       promptText: promptNoteName + " " + op + " " + interval.abbrev
     };
+  }
+  function deriveUseFlats(answerSpelled, op) {
+    const { accidental } = parseSpelledNote(answerSpelled);
+    if (accidental < 0) return true;
+    if (accidental > 0) return false;
+    return op === "-";
   }
   var GRID_COL_LABELS2 = MATH_INTERVALS.map((i3) => i3.abbrev);
   function getGridItemId2(noteName, colIdx) {
@@ -7053,9 +7117,14 @@ body.native-sim #app {
     getPromptText: (q4) => q4.promptText,
     quizInstruction: "What note?",
     answer: {
-      getExpectedValue: (q4) => q4.answer.name,
+      getExpectedValue: (q4) => q4.answerSpelled,
       comparison: "note-enharmonic",
-      getDisplayAnswer: (q4) => displayNote(pickAccidentalName(q4.answer.displayName, q4.useFlats))
+      getDisplayAnswer: (q4) => {
+        const display = displayNote(q4.answerSpelled);
+        const { accidental } = parseSpelledNote(q4.answerSpelled);
+        if (Math.abs(accidental) < 2) return display;
+        return display + " (= " + displayNote(spelledNoteToCanonical(q4.answerSpelled)) + ")";
+      }
     },
     validateInput: (_q, input) => isValidNoteInput(input),
     getUseFlats: (q4) => q4.useFlats,
@@ -11658,7 +11727,9 @@ Build: ${version}
     }
   }
   function toButtonValue(strategy, value) {
-    if (strategy === "note-enharmonic") return resolveNoteInput(value) ?? value;
+    if (strategy === "note-enharmonic") {
+      return resolveNoteInput(value) ?? spelledNoteToCanonical(value);
+    }
     return value;
   }
   function defaultDisplayAnswer(strategy, expected) {
@@ -11975,6 +12046,13 @@ Build: ${version}
     lastAnswerRef,
     instruction
   }) {
+    const showFeedbackText = engine.state.answered && engine.state.feedbackCorrect !== null && !ctrl.renderPrompt;
+    const isCorrect = engine.state.feedbackCorrect === true;
+    const displayAnswer = engine.state.feedbackDisplayAnswer ?? "";
+    const userInputDisplay = lastAnswerRef.current ? toButtonValue(
+      lastAnswerRef.current.comparison,
+      lastAnswerRef.current.normalizedInput
+    ) : engine.state.feedbackUserInput ?? "";
     return /* @__PURE__ */ u2(
       QuizStage,
       {
@@ -11983,6 +12061,19 @@ Build: ${version}
           ctrl.renderPrompt && currentQ ? ctrl.renderPrompt(currentQ) : /* @__PURE__ */ u2(Text, { role: "quiz-prompt", as: "div", class: "quiz-prompt", children: promptText })
         ] }),
         response: /* @__PURE__ */ u2(k, { children: [
+          showFeedbackText ? /* @__PURE__ */ u2("div", { class: "answer-feedback-text", children: isCorrect ? /* @__PURE__ */ u2("span", { class: "correct", children: [
+            "\u2713 ",
+            displayNote(displayAnswer)
+          ] }) : /* @__PURE__ */ u2(k, { children: [
+            /* @__PURE__ */ u2("span", { class: "incorrect", children: [
+              "\u2717 ",
+              displayNote(userInputDisplay)
+            ] }),
+            /* @__PURE__ */ u2("span", { class: "correct", children: [
+              "\u2713 ",
+              displayNote(displayAnswer)
+            ] })
+          ] }) }) : !ctrl.renderPrompt && /* @__PURE__ */ u2("div", { class: "answer-feedback-text", style: "visibility:hidden", children: "\xA0" }),
           /* @__PURE__ */ u2(
             ResponseButtons,
             {
@@ -12481,7 +12572,7 @@ Build: ${version}
       ...state,
       answered: true,
       answersEnabled: false,
-      feedbackText: isCorrect ? "Correct!" : "Incorrect \u2014 " + correctAnswer,
+      feedbackText: isCorrect ? "Correct \u2014 " + correctAnswer : "Incorrect \u2014 " + correctAnswer,
       feedbackClass: isCorrect ? "feedback correct" : "feedback incorrect",
       feedbackCorrect: isCorrect,
       feedbackDisplayAnswer: correctAnswer,
