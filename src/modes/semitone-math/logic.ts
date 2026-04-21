@@ -65,8 +65,8 @@ export function getItemIdsForGroup(groupId: string): string[] {
   const group = DISTANCE_GROUPS.find((g) => g.id === groupId);
   if (!group) return [];
   const items: string[] = [];
-  // Outer: distance within group ascending; then direction (+ then -);
-  // inner: ROOT_CYCLE (circle of fifths from C).
+  // Build: distance ascending, then direction (+ then -), then ROOT_CYCLE.
+  // Final order is hash-shuffled for variety.
   for (const d of group.distances) {
     for (const sign of ['+', '-']) {
       for (const root of ROOT_CYCLE) {

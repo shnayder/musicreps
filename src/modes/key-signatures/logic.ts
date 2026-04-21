@@ -92,8 +92,8 @@ export const ALL_KEY_GROUPS = [...KEY_GROUPS, ...MINOR_KEY_GROUPS];
 export function getItemIdsForGroup(groupId: string): string[] {
   const group = ALL_KEY_GROUPS.find((g) => g.id === groupId);
   if (!group) return [];
-  // Direction outer (fwd first), group's `keys` list inner (already
-  // ordered by accidental count). Shuffled by item hash for variety.
+  // Build: direction outer (fwd first), keys inner.
+  // Final order is hash-shuffled for variety.
   return shuffleByItemHash([
     ...group.keys.map((r) => r + ':fwd'),
     ...group.keys.map((r) => r + ':rev'),

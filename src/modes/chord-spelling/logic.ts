@@ -99,7 +99,7 @@ const CHORD_ROOT_CYCLE: string[] = [
 /**
  * Get all item IDs belonging to a chord type group.
  * Item ID format: "root:typeName" (e.g. "C:major", "F#:dim").
- * Order: chord type outer, circle-of-fifths roots inner.
+ * Built chord type outer, circle-of-fifths roots inner; hash-shuffled.
  */
 export function getItemIdsForGroup(groupId: string): string[] {
   const group = SPELLING_GROUPS.find((g) => g.id === groupId);

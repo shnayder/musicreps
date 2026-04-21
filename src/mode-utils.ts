@@ -177,7 +177,12 @@ function hashString(s: string): number {
   return h >>> 0;
 }
 
-/** Reorder items by hash of their ID — stable across add/remove. */
+/** Reorder items by hash of their ID — stable across add/remove.
+ *  Ties (hash collisions) break lexicographically for a total order. */
 export function shuffleByItemHash(items: string[]): string[] {
-  return [...items].sort((a, b) => hashString(a) - hashString(b));
+  return [...items].sort((a, b) => {
+    const d = hashString(a) - hashString(b);
+    if (d !== 0) return d;
+    return a < b ? -1 : a > b ? 1 : 0;
+  });
 }

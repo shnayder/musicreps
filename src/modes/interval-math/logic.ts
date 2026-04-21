@@ -74,8 +74,8 @@ export function getItemIdsForGroup(groupId: string): string[] {
     group.distances.includes(i.num)
   );
   const items: string[] = [];
-  // Outer: interval ascending within group; direction (+ then -);
-  // inner: ROOT_CYCLE roots.
+  // Build: interval ascending, then direction (+ then -), then ROOT_CYCLE.
+  // Final order is hash-shuffled for variety.
   for (const interval of intervals) {
     for (const sign of ['+', '-']) {
       for (const root of ROOT_CYCLE) {

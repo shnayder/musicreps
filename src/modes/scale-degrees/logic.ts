@@ -47,8 +47,8 @@ export function getItemIdsForGroup(groupId: string): string[] {
   const group = DEGREE_GROUPS.find((g) => g.id === groupId);
   if (!group) return [];
   const items: string[] = [];
-  // Outer: degree ascending within group; direction (fwd first);
-  // inner: MAJOR_KEYS (already circle-of-fifths order).
+  // Build: degree ascending, then direction (fwd first), then MAJOR_KEYS.
+  // Final order is hash-shuffled for variety.
   const sortedDegrees = [...group.degrees].sort((a, b) => a - b);
   for (const d of sortedDegrees) {
     for (const dir of ['fwd', 'rev']) {
