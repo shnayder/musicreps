@@ -65,7 +65,7 @@ if [ -n "$PR_NUMBER" ]; then
       echo ""
       echo "--- Inline comments ---"
       gh api "repos/$REPO/pulls/$PR_NUMBER/comments" \
-        --jq '.[] | select(.user.login | test("copilot|github-actions")) | "[\(.path):\(.line)] \(.body)"'
+        --jq '.[] | select(.user.login | test("copilot|github-actions"; "i")) | "[\(.path):\(.line // .original_line // .start_line // "?")] \(.body)"'
       break
     fi
     if [ "$i" -eq "$MAX_ATTEMPTS" ]; then
