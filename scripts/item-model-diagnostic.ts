@@ -965,7 +965,6 @@ function generateReviewHTML(
   <span>speedTarget=${cfg.speedTarget}ms</span>
   <span>alpha=${cfg.ewmaAlpha}</span>
   <span>initialStab=${cfg.initialStability}h</span>
-  <span>maxStab=${cfg.maxStability}h</span>
   <span>growthMax=${cfg.stabilityGrowthMax}</span>
   <span>decayOnWrong=${cfg.stabilityDecayOnWrong}</span>
   <span>selfCorrection&lt;${cfg.selfCorrectionThreshold}ms</span>

@@ -349,6 +349,21 @@ describe('computeLevelRecs', () => {
     assert.equal(recs[0].type, 'review');
   });
 
+  it('no review rec when reviewStatus is soon but not yet due', () => {
+    // Freshly practiced: reviewStatus 'soon' (hoursRemaining ≤ 24) but
+    // reviewInHours > 0 (freshness still above threshold). Should NOT
+    // trigger a review recommendation.
+    const s: LevelStatus = {
+      groupId: '0',
+      speed: 0.95,
+      speedLabel: 'automatic',
+      reviewStatus: 'soon',
+      reviewInHours: 4, // due in 4h, not yet
+    };
+    const recs = computeLevelRecs([s]);
+    assert.equal(recs.length, 0);
+  });
+
   it('produces no recs for automatic fresh levels', () => {
     const recs = computeLevelRecs([status('0', 'automatic')]);
     assert.equal(recs.length, 0);
@@ -419,6 +434,17 @@ describe('checkExpansionGate', () => {
 
   it('opens at exact threshold (0.7)', () => {
     assert.ok(checkExpansionGate([status(0.7)]));
+  });
+
+  it('stays open when review is upcoming but not yet due', () => {
+    const s: LevelStatus = {
+      groupId: '0',
+      speed: 0.95,
+      speedLabel: 'automatic',
+      reviewStatus: 'soon',
+      reviewInHours: 4, // due in 4h, not yet
+    };
+    assert.ok(checkExpansionGate([s]));
   });
 });
 

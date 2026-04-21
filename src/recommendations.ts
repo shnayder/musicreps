@@ -220,10 +220,13 @@ export function computeLevelRecs(
 ): LevelRecommendation[] {
   const recs: LevelRecommendation[] = [];
 
-  // Priority 1: review — Solid+ levels that need review soon.
+  // Priority 1: review — Solid+ levels where freshness is actually below
+  // threshold. reviewInHours === 0 means avgFreshness < FRESHNESS_THRESHOLD.
+  // Levels with reviewInHours > 0 aren't due yet — they still get a UI pill
+  // ("Review in Xh") but no active recommendation to review now.
   for (const s of statuses) {
     if (
-      s.reviewStatus === 'soon' &&
+      s.reviewStatus === 'soon' && s.reviewInHours === 0 &&
       (s.speedLabel === 'solid' || s.speedLabel === 'automatic')
     ) {
       recs.push({ groupId: s.groupId, type: 'review' });
@@ -259,12 +262,15 @@ export function computeLevelRecs(
 
 /**
  * Check whether the expansion gate is open.
- * All started levels must be ≥ Solid (P10 speed ≥ 0.7) and none need
- * review soon.
+ * All started levels must be ≥ Solid (P10 speed ≥ 0.7) and none actually
+ * due for review (freshness below threshold, i.e. reviewInHours === 0).
  */
 export function checkExpansionGate(statuses: LevelStatus[]): boolean {
   if (statuses.length === 0) return false;
-  return statuses.every((s) => s.speed >= 0.7 && s.reviewStatus !== 'soon');
+  return statuses.every((s) =>
+    s.speed >= 0.7 &&
+    !(s.reviewStatus === 'soon' && s.reviewInHours === 0)
+  );
 }
 
 // ---------------------------------------------------------------------------

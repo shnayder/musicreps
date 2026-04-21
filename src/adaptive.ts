@@ -13,30 +13,17 @@ import type {
 } from './types.ts';
 import { storage } from './storage.ts';
 
-// Working-set bucket constants. See exec-plan
-// "2026-04-12-within-level-working-sets" and backlog item #76.
-export const N_ACTIVE = 5;
-export const N_ACTIVE_EXPANDED = 7;
-export const M_REVIEW = 10;
-export const ACTIVE_BUCKET_BIAS = 0.7;
+// Working-set bucket constants. Three-bucket model with slot budget.
+// Initial learning items cost more slots (intensive drilling).
+export const TOTAL_SLOTS = 25;
+export const INITIAL_COST = 3;
+export const MAX_INITIAL = 5;
 
-/**
- * Effective active-bucket cap given the final review bucket size.
- *
- * When review is empty or tiny, the 30% review-preferred trials fall
- * through to active anyway, so we can afford a few more active items
- * without splintering attention. When review is busy, we keep the cap
- * tight so the user isn't juggling too many threads at once.
- *
- * - 0 review items    → 7 (N_ACTIVE_EXPANDED)
- * - 1–3 review items  → 6
- * - 4+ review items   → 5 (N_ACTIVE)
- */
-export function effectiveActiveCap(reviewSize: number): number {
-  if (reviewSize === 0) return N_ACTIVE_EXPANDED;
-  if (reviewSize <= 3) return N_ACTIVE + 1;
-  return N_ACTIVE;
-}
+// Bucket multipliers for unified weighted selection.
+export const INITIAL_LEARNING_MULTIPLIER = 3;
+export const SPEEDUP_MULTIPLIER = 1;
+export const REVIEW_MULTIPLIER = 1.5;
+export const FAST_FRESH_MULTIPLIER = 0.3;
 
 export const DEFAULT_CONFIG: AdaptiveConfig = {
   minTime: 1000,
@@ -46,7 +33,7 @@ export const DEFAULT_CONFIG: AdaptiveConfig = {
   maxResponseTime: 9000,
   // Forgetting model
   initialStability: 4, // hours — half-life after first correct answer
-  maxStability: 336, // hours (14 days) — stability ceiling
+
   stabilityGrowthMax: 0.9, // max additive growth factor (at freshness=0)
   stabilityDecayOnWrong: 0.3, // multiplier on wrong answer
   freshnessThreshold: 0.5, // freshness below this = "due" / "needs review"
@@ -161,7 +148,7 @@ export function updateStability(
     newStability = Math.max(newStability, elapsedHours * 1.5);
   }
 
-  return Math.min(newStability, cfg.maxStability);
+  return newStability;
 }
 
 /**
@@ -208,14 +195,19 @@ export function computeWeight(
 // Working-set bucket predicates & computeBuckets
 // ---------------------------------------------------------------------------
 
-/** Item not yet fast (speed < Automatic, including unseen). */
-export function needsActiveLearning(speedScore: number | null): boolean {
-  return speedScore == null || speedScore < 0.9;
+/** Item below Solid (speed < 0.7, including unseen). Intensive drilling. */
+export function needsInitialLearning(speedScore: number | null): boolean {
+  return speedScore == null || speedScore < 0.7;
+}
+
+/** Item between Solid and Automatic (0.7 ≤ speed < 0.9). Interleaved practice. */
+export function needsSpeedup(speedScore: number | null): boolean {
+  return speedScore != null && speedScore >= 0.7 && speedScore < 0.9;
 }
 
 /**
  * Item was fast but has gone stale. Mutually exclusive with
- * needsActiveLearning.
+ * needsInitialLearning and needsSpeedup.
  *
  * `freshness == null` (fast item with no stability data — e.g. legacy
  * stats or items that never had lastCorrectAt recorded) is treated as
@@ -232,28 +224,56 @@ export function needsReview(
 }
 
 export type WorkingBuckets = {
-  /** Up to `effectiveActiveCap(review.length)` items being actively learned (5–7). */
-  active: string[];
-  /** Up to M_REVIEW items needing review. */
+  /** Items below Solid — intensive drilling (slot cost: INITIAL_COST each). */
+  initialLearning: string[];
+  /** Items between Solid and Automatic — interleaved practice. */
+  speedup: string[];
+  /** Fast items gone stale — review. */
   review: string[];
   /** Items that are genuinely fast AND fresh — fallback pool. */
   fastFresh: string[];
 };
 
 /**
- * Partition an ordered list of items into the three working-set buckets.
+ * Compute per-bucket caps from a slot budget.
  *
- * Walks `orderedItems` once. Each item is classified and placed in the
- * matching bucket if that bucket has space. Overflow items (those whose
- * category is full) are **omitted** — they are not silently reclassified
- * as fastFresh. They'll be picked up on a future trial once a cap slot
- * frees up. Safe because buckets recompute every trial.
+ * Initial learning items cost INITIAL_COST slots each (they get intensive
+ * attention). Speedup and review items cost 1 slot each. The total budget
+ * is TOTAL_SLOTS. Unclaimed slots redistribute to the other bucket.
+ */
+export function computeBucketCaps(
+  initialCount: number,
+  speedupAvail: number,
+  reviewAvail: number,
+): { initialCap: number; speedupCap: number; reviewCap: number } {
+  const initialCap = Math.min(initialCount, MAX_INITIAL);
+  const remaining = TOTAL_SLOTS - initialCap * INITIAL_COST;
+  // Split remaining evenly, then redistribute unclaimed slots.
+  let speedupCap = Math.floor(remaining / 2);
+  let reviewCap = remaining - speedupCap;
+  // Clamp to available, redistribute surplus.
+  if (speedupAvail < speedupCap) {
+    reviewCap += speedupCap - speedupAvail;
+    speedupCap = speedupAvail;
+  }
+  if (reviewAvail < reviewCap) {
+    // Recalculate speedup from scratch: with review using only reviewAvail
+    // slots, speedup can take the rest of remaining (up to available).
+    speedupCap = Math.min(speedupAvail, remaining - reviewAvail);
+    reviewCap = reviewAvail;
+  }
+  return { initialCap, speedupCap, reviewCap };
+}
+
+/**
+ * Partition an ordered list of items into four working-set buckets.
  *
- * The active cap is **dynamic**: see `effectiveActiveCap`. Active is
- * filled up to `N_ACTIVE_EXPANDED` during the walk, then trimmed from
- * the tail once `review.length` is known. Trimmed items become
- * overflow (same fate they'd have had under a static cap), preserving
- * the fixed learning-order "earliest items first" semantics.
+ * Phase 1: classify all items into candidate lists (single pass, in order).
+ * Phase 2: compute caps using slot budget with redistribution.
+ * Phase 3: trim each list to its cap.
+ *
+ * Overflow items are omitted — they'll be picked up on a future trial
+ * once a slot frees up. Safe because buckets recompute every trial.
  *
  * `excludeId` (typically the last-selected item) is skipped entirely.
  */
@@ -264,28 +284,40 @@ export function computeBuckets(
   excludeId: string | null,
   freshnessThreshold: number = DEFAULT_CONFIG.freshnessThreshold,
 ): WorkingBuckets {
-  const active: string[] = [];
-  const review: string[] = [];
+  // Phase 1: classify into candidate lists.
+  const initialCandidates: string[] = [];
+  const speedupCandidates: string[] = [];
+  const reviewCandidates: string[] = [];
   const fastFresh: string[] = [];
   for (const id of orderedItems) {
     if (id === excludeId) continue;
     const speed = getSpeed(id);
-    if (needsActiveLearning(speed)) {
-      if (active.length < N_ACTIVE_EXPANDED) active.push(id);
-      continue;
+    if (needsInitialLearning(speed)) {
+      initialCandidates.push(id);
+    } else if (needsSpeedup(speed)) {
+      speedupCandidates.push(id);
+    } else {
+      const fresh = getFreshness(id);
+      if (needsReview(speed, fresh, freshnessThreshold)) {
+        reviewCandidates.push(id);
+      } else {
+        fastFresh.push(id);
+      }
     }
-    const fresh = getFreshness(id);
-    if (needsReview(speed, fresh, freshnessThreshold)) {
-      if (review.length < M_REVIEW) review.push(id);
-      continue;
-    }
-    fastFresh.push(id);
   }
-  // Trim the active tail once the final review size is known. Dropped
-  // items become overflow — same fate they'd have had under a static cap.
-  const cap = effectiveActiveCap(review.length);
-  if (active.length > cap) active.length = cap;
-  return { active, review, fastFresh };
+  // Phase 2: compute caps from slot budget.
+  const caps = computeBucketCaps(
+    initialCandidates.length,
+    speedupCandidates.length,
+    reviewCandidates.length,
+  );
+  // Phase 3: trim to caps.
+  return {
+    initialLearning: initialCandidates.slice(0, caps.initialCap),
+    speedup: speedupCandidates.slice(0, caps.speedupCap),
+    review: reviewCandidates.slice(0, caps.reviewCap),
+    fastFresh,
+  };
 }
 
 /**
@@ -584,30 +616,29 @@ function getItemFreshness(
 }
 
 /**
- * Pick the next item given pre-computed buckets and a 70/30 coin flip.
- * Returns null only if every bucket is empty (caller falls back to
- * lastSelected in that case).
+ * Pick the next item from a unified weighted pool across all buckets.
+ * Each item's selection weight = bucketMultiplier × baseWeight(item).
+ * Returns null only if every bucket is empty.
  */
-export function pickFromBuckets(
+export function pickFromPool(
   buckets: WorkingBuckets,
   getWeight: (id: string) => number,
-  coin: number,
   rand: number,
 ): string | null {
-  const preferActive = coin < ACTIVE_BUCKET_BIAS;
-  const order = preferActive
-    ? [buckets.active, buckets.review, buckets.fastFresh]
-    : [buckets.review, buckets.active, buckets.fastFresh];
-  let chosen: string[] | null = null;
-  for (const bucket of order) {
-    if (bucket.length > 0) {
-      chosen = bucket;
-      break;
+  const pool: string[] = [];
+  const weights: number[] = [];
+  const addBucket = (items: string[], multiplier: number) => {
+    for (const id of items) {
+      pool.push(id);
+      weights.push(multiplier * getWeight(id));
     }
-  }
-  if (chosen == null) return null;
-  const weights = chosen.map((id) => getWeight(id));
-  return selectWeighted(chosen, weights, rand);
+  };
+  addBucket(buckets.initialLearning, INITIAL_LEARNING_MULTIPLIER);
+  addBucket(buckets.speedup, SPEEDUP_MULTIPLIER);
+  addBucket(buckets.review, REVIEW_MULTIPLIER);
+  addBucket(buckets.fastFresh, FAST_FRESH_MULTIPLIER);
+  if (pool.length === 0) return null;
+  return selectWeighted(pool, weights, rand);
 }
 
 // ---------------------------------------------------------------------------
@@ -657,9 +688,9 @@ export function createAdaptiveSelector(
       lastSelected,
       cfg.freshnessThreshold,
     );
-    const picked = pickFromBuckets(buckets, getWeight, randomFn(), randomFn());
+    const picked = pickFromPool(buckets, getWeight, randomFn());
     // Belt-and-suspenders: the length===1 guard above already handles
-    // the only case where pickFromBuckets could return null (orderedItems
+    // the only case where pickFromPool could return null (orderedItems
     // was effectively [lastSelected]). This fallback keeps us robust if
     // bucket logic ever changes.
     const selected = picked ?? lastSelected ?? orderedItems[0];
