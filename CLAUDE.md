@@ -194,11 +194,10 @@ recent decisions in your area:
 - `decisions/` — one-time choices with rationale
 - `guides/` — architecture, coding style, design system, development process
 
-**After making a non-obvious decision**, write a note to the vault using the
-`vault-note` tool (path via `TRELLIS_ROOT` env var):
+**After making a non-obvious decision**, write a note to the vault:
 
 ```bash
-cd "$TRELLIS_ROOT" && deno task vault-note add <type> <title> [--area=X] [--body=text]
+trellis vault-note add <type> <title> [--area=X] [--body=text]
 ```
 
 Types: `decision`, `convention`, `debt`, `question`, `observation`, `session`
@@ -206,8 +205,20 @@ Types: `decision`, `convention`, `debt`, `question`, `observation`, `session`
 At session end, write a brief session log:
 
 ```bash
-cd "$TRELLIS_ROOT" && deno task vault-note add session "<summary>"
+trellis vault-note add session "<summary>"
 ```
+
+**Backlog management** — use `trellis backlog` for CRUD on backlog items:
+
+```bash
+trellis backlog list [--status=open,active] [--priority=3]
+trellis backlog add "<title>" [--type=feature|bug] [--priority=1-3] [--epic="..."] [--tags=x,y]
+trellis backlog update <file> status=done
+trellis backlog note <file> "<text>"
+trellis backlog show <file>
+```
+
+File lookup accepts exact filename, basename, unique prefix, or substring.
 
 The review checklist (`.claude/commands/review-checklist.md`) verifies
 conventions — use `/review` to run it.
@@ -236,6 +247,7 @@ port from the server's `Listening on` stderr output.
 **Versioning**: derived from git at build time — no manual bumps needed.
 
 **Backlogs**: each workstream has its own in the docs vault under `backlogs/`.
+Use `trellis backlog list` / `trellis backlog add` to manage them.
 
 ## GitHub API Access
 
