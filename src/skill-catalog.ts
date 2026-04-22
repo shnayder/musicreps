@@ -14,6 +14,7 @@ export const SKILL_DESCRIPTIONS: Record<string, string> = {
   fretboard: 'Name any fret instantly',
   ukulele: 'Name any fret instantly',
   speedTap: 'Instantly find every position of any note',
+  ukuleleSpeedTap: 'Instantly find every position of any note',
   noteSemitones: 'Convert between notes and semitone numbers instantly',
   intervalSemitones: 'Know the semitone size of any interval instantly',
   semitoneMath: 'Add and subtract semitones from any note',
@@ -55,6 +56,11 @@ export const SKILL_ABOUT_DESCRIPTIONS: Record<string, string> = {
     'every instance of a note on the neck. This lets you move between ' +
     'positions fluidly \u2014 jump to a higher octave, find a bass note, or ' +
     'play a chord wherever your hand happens to be.',
+  ukuleleSpeedTap:
+    'Speed Tap complements the fretboard learning skill, teaching you to find ' +
+    'every instance of a note on the neck. This lets you move between ' +
+    'positions fluidly \u2014 jump to a higher octave, find a different ' +
+    'voicing, or play a chord wherever your hand happens to be.',
   noteSemitones:
     'The 12 notes of the chromatic scale can each be numbered by their ' +
     'distance from C in semitones: C is 0, C\u266F is 1, D is 2, all the way ' +
@@ -131,7 +137,8 @@ export const SKILL_ABOUT_DESCRIPTIONS: Record<string, string> = {
 export const SKILL_NAMES: Record<string, string> = {
   fretboard: 'Guitar Fretboard',
   ukulele: 'Ukulele Fretboard',
-  speedTap: 'Speed Tap',
+  speedTap: 'Guitar Speed Tap',
+  ukuleleSpeedTap: 'Ukulele Speed Tap',
   noteSemitones: 'Note \u2194 Semitones',
   intervalSemitones: 'Interval \u2194 Semitones',
   semitoneMath: 'Semitone Math',
@@ -183,6 +190,15 @@ export const SKILL_BEFORE_AFTER: Record<
       `I always forget the high strings.`,
     ],
     after: () => `All the ${d('C')}\u2019s. Tap tap tap tap tap tap. Done.`,
+  },
+  ukuleleSpeedTap: {
+    before: () => [
+      `All the ${d('C')}\u2019s.`,
+      `Open ${d('C')} string, then\u2026`,
+      `somewhere on the ${d('E')} string?`,
+      `I always have to count frets.`,
+    ],
+    after: () => `All the ${d('C')}\u2019s. Tap tap tap tap. Done.`,
   },
   noteSemitones: {
     before: () => [
@@ -300,7 +316,7 @@ export const TRACKS: Track[] = [
   {
     id: 'ukulele',
     label: 'Ukulele',
-    skills: ['ukulele', 'ukuleleChordShapes'],
+    skills: ['ukulele', 'ukuleleSpeedTap', 'ukuleleChordShapes'],
   },
   {
     id: 'core',

@@ -78,7 +78,7 @@ src/
     {name}/
       logic.ts            # Pure skill logic: questions, answers, items, groups
       logic_test.ts        # Tests for skill logic
-      definition.ts        # Declarative skill definition (11 skills)
+      definition.ts        # Declarative skill definition (14 skills)
   ui/
     skill-screen.tsx       # Structural layout components (SkillScreen, QuizArea, etc.)
     buttons.tsx           # Answer button components (NoteButtons, NumberButtons, etc.)
@@ -105,7 +105,7 @@ Single-page app using Preact for UI components. Source files are ES modules
 bundled by esbuild (with automatic JSX transform) into a single IIFE `<script>`
 at build time. Key patterns:
 
-- **Declarative Skills** — All 11 skills use `SkillDefinition<Q>` (20-100 lines
+- **Declarative Skills** — All 14 skills use `SkillDefinition<Q>` (20-100 lines
   of data) interpreted by `GenericSkill`, which handles all hook composition,
   rendering, and keyboard input. Three answer variants: single (`answer`),
   sequential (`sequential`, e.g., chord spelling), and multi-tap (`multiTap`,
@@ -166,6 +166,8 @@ algorithm details, and step-by-step "adding a new quiz skill" checklist.
 | Scale Degrees        | 144 (12 keys x 6 degrees x 2 dirs) | Note or degree          | `D:5:fwd`, `C:7:rev`   |
 | Diatonic Chords      | 168 (12 keys x 7 degrees x 2 dirs) | Note or numeral         | `Bb:IV:fwd`, `C:D:rev` |
 | Chord Spelling       | ~132 (12 roots x chord types)      | Sequential notes        | `C:major`, `F#:dim`    |
+| Guitar Speed Tap     | 12 (chromatic notes)               | Multi-tap fretboard     | `C`, `F#`              |
+| Ukulele Speed Tap    | 12 (chromatic notes)               | Multi-tap fretboard     | `C`, `F#`              |
 | Guitar Chord Shapes  | 29 (maj, min, dom7, m7, sus)       | Multi-tap fretboard     | `C:major`, `D:sus4`    |
 | Ukulele Chord Shapes | 26 (maj, min, dom7, m7, sus)       | Multi-tap fretboard     | `C:major`, `A:m7`      |
 
@@ -194,11 +196,10 @@ recent decisions in your area:
 - `decisions/` — one-time choices with rationale
 - `guides/` — architecture, coding style, design system, development process
 
-**After making a non-obvious decision**, write a note to the vault using the
-`vault-note` tool (path via `TRELLIS_ROOT` env var):
+**After making a non-obvious decision**, write a note to the vault:
 
 ```bash
-cd "$TRELLIS_ROOT" && deno task vault-note add <type> <title> [--area=X] [--body=text]
+trellis vault-note add <type> <title> [--area=X] [--body=text]
 ```
 
 Types: `decision`, `convention`, `debt`, `question`, `observation`, `session`
@@ -206,8 +207,20 @@ Types: `decision`, `convention`, `debt`, `question`, `observation`, `session`
 At session end, write a brief session log:
 
 ```bash
-cd "$TRELLIS_ROOT" && deno task vault-note add session "<summary>"
+trellis vault-note add session "<summary>"
 ```
+
+**Backlog management** — use `trellis backlog` for CRUD on backlog items:
+
+```bash
+trellis backlog list [--status=open,active] [--priority=3]
+trellis backlog add "<title>" [--type=feature|bug] [--priority=1-3] [--epic="..."] [--tags=x,y]
+trellis backlog update <file> status=done
+trellis backlog note <file> "<text>"
+trellis backlog show <file>
+```
+
+File lookup accepts exact filename, basename, unique prefix, or substring.
 
 The review checklist (`.claude/commands/review-checklist.md`) verifies
 conventions — use `/review` to run it.
@@ -236,6 +249,7 @@ port from the server's `Listening on` stderr output.
 **Versioning**: derived from git at build time — no manual bumps needed.
 
 **Backlogs**: each workstream has its own in the docs vault under `backlogs/`.
+Use `trellis backlog list` / `trellis backlog add` to manage them.
 
 ## GitHub API Access
 
@@ -254,3 +268,6 @@ All PRs that change code (not just docs/plans) follow this sequence:
 1. Run `/review` until approved — don't wait for the user to ask.
 2. Push the branch.
 3. Create a PR with `gh pr create` (summary + test plan).
+
+**Changelog** — user-facing changes (new features, improvements, bug fixes) must
+be added to `CHANGELOG.md` under the `vNext` section before creating the PR.
