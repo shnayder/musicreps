@@ -15,7 +15,7 @@ import { KEY_SIGNATURES_DEF } from './skills/key-signatures/definition.ts';
 import { SCALE_DEGREES_DEF } from './skills/scale-degrees/definition.ts';
 import { DIATONIC_CHORDS_DEF } from './skills/diatonic-chords/definition.ts';
 import { CHORD_SPELLING_DEF } from './skills/chord-spelling/definition.ts';
-import { SPEED_TAP_DEF } from './skills/speed-tap/definition.tsx';
+import { createSpeedTapDef } from './skills/speed-tap/definition.tsx';
 import {
   GUITAR_CHORD_SHAPES_DEF,
   UKULELE_CHORD_SHAPES_DEF,
@@ -33,7 +33,8 @@ export const ALL_SKILL_DEFINITIONS: SkillDefinition<any>[] = [
   SCALE_DEGREES_DEF,
   DIATONIC_CHORDS_DEF,
   CHORD_SPELLING_DEF,
-  SPEED_TAP_DEF,
+  createSpeedTapDef(GUITAR),
+  createSpeedTapDef(UKULELE),
   GUITAR_CHORD_SHAPES_DEF,
   UKULELE_CHORD_SHAPES_DEF,
 ];

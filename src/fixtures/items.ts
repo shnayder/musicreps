@@ -12,6 +12,7 @@ export const defaultItems: Record<string, string> = {
   diatonicChords: 'C:IV:fwd',
   chordSpelling: 'C:major',
   speedTap: 'C',
+  ukuleleSpeedTap: 'C',
   guitarChordShapes: 'A:minor',
   ukuleleChordShapes: 'C:major',
   // Reverse direction for bidirectional modes

@@ -1,15 +1,15 @@
 // Pure logic for Speed Tap mode.
 // No DOM, no hooks — just data in, data out.
 // Items: 12 chromatic notes; user taps fretboard positions for each note.
+// Parameterized by instrument (guitar or ukulele).
 
-import type { NoteFilter as NoteFilterType } from '../../types.ts';
+import type { Instrument, NoteFilter as NoteFilterType } from '../../types.ts';
 import type { MultiTapEvalResult } from '../../declarative/types.ts';
 import {
   displayNote,
   NATURAL_NOTES,
   NOTES,
   pickRandomAccidental,
-  STRING_OFFSETS,
 } from '../../music-data.ts';
 
 // ---------------------------------------------------------------------------
@@ -26,30 +26,31 @@ export const ALL_ITEMS = NOTES.map((n) => n.name);
 // ---------------------------------------------------------------------------
 
 /**
- * Get the note name at a given fretboard position.
- * Uses standard guitar tuning offsets (STRING_OFFSETS).
+ * Get the note name at a given fretboard position for an instrument.
  *
- * @example getNoteAtPosition(0, 0) → "E" (high E string, open)
- * @example getNoteAtPosition(5, 3) → "G" (low E string, fret 3)
+ * @example getNoteAtPosition(inst, 0, 0) → "E" (guitar high E, open)
  */
-export function getNoteAtPosition(string: number, fret: number): string {
-  const offset = STRING_OFFSETS[string];
+export function getNoteAtPosition(
+  inst: Instrument,
+  string: number,
+  fret: number,
+): string {
+  const offset = inst.stringOffsets[string];
   return noteNames[(offset + fret) % 12];
 }
 
 /**
  * Get all fretboard positions (string + fret) where a given note appears.
- * Searches all 6 strings, frets 0–12.
- *
- * @example getPositionsForNote("C") → [{string:0,fret:8},{string:1,fret:1},...]
+ * Searches all strings, frets 0–12.
  */
 export function getPositionsForNote(
+  inst: Instrument,
   noteName: string,
 ): { string: number; fret: number }[] {
   const positions: { string: number; fret: number }[] = [];
-  for (let s = 0; s < 6; s++) {
+  for (let s = 0; s < inst.stringCount; s++) {
     for (let f = 0; f <= 12; f++) {
-      if (getNoteAtPosition(s, f) === noteName) {
+      if (getNoteAtPosition(inst, s, f) === noteName) {
         positions.push({ string: s, fret: f });
       }
     }
@@ -84,8 +85,8 @@ export type Question = {
   positions: { string: number; fret: number }[];
 };
 
-/** Parse an item ID (note name) into a Question. */
-export function parseItem(itemId: string): Question {
+/** Parse an item ID (note name) into a Question for a given instrument. */
+export function parseItem(inst: Instrument, itemId: string): Question {
   const noteData = NOTES.find((n) => n.name === itemId);
   const name = noteData
     ? displayNote(pickRandomAccidental(noteData.displayName))
@@ -93,7 +94,7 @@ export function parseItem(itemId: string): Question {
   return {
     note: itemId,
     displayName: name,
-    positions: getPositionsForNote(itemId),
+    positions: getPositionsForNote(inst, itemId),
   };
 }
 

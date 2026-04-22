@@ -74,6 +74,7 @@ describe('SKILL_PROGRESS_MANIFEST', () => {
       diatonicChords: 3, // chord groups
       chordSpelling: 7, // spelling groups (groups 0-6)
       speedTap: 2, // naturals, sharps/flats
+      ukuleleSpeedTap: 2, // naturals, sharps/flats
       guitarChordShapes: 5, // major, minor, dom7, m7, sus
       ukuleleChordShapes: 5, // major, minor, dom7, m7, sus
     };

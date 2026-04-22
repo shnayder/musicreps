@@ -136,6 +136,7 @@ const MODE_ICONS: Record<string, () => preact.JSX.Element> = {
   fretboard: Guitar,
   ukulele: Guitar,
   speedTap: Zap,
+  ukuleleSpeedTap: Zap,
   noteSemitones: Hash,
   intervalSemitones: Ruler,
   semitoneMath: Calculator,
