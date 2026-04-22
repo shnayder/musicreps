@@ -269,6 +269,5 @@ All PRs that change code (not just docs/plans) follow this sequence:
 2. Push the branch.
 3. Create a PR with `gh pr create` (summary + test plan).
 
-**Changelog** — user-facing changes (new features, improvements, bug fixes)
-must be added to `CHANGELOG.md` under the `vNext` section before creating
-the PR.
+**Changelog** — user-facing changes (new features, improvements, bug fixes) must
+be added to `CHANGELOG.md` under the `vNext` section before creating the PR.
