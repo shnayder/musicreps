@@ -87,6 +87,13 @@ describe('engineStart', () => {
     assert.equal(s.roundCorrect, 0);
     assert.equal(s.roundTimerExpired, false);
   });
+
+  it('rolls roundUseFlats from the injected rng', () => {
+    const flatRng = engineStart(initialEngineState(), () => 0.1);
+    assert.equal(flatRng.roundUseFlats, true);
+    const sharpRng = engineStart(initialEngineState(), () => 0.9);
+    assert.equal(sharpRng.roundUseFlats, false);
+  });
 });
 
 describe('engineNextQuestion', () => {
@@ -118,7 +125,7 @@ describe('engineNextQuestion', () => {
   it('clears all feedback fields', () => {
     const withFeedback = {
       ...engineStart(initialEngineState()),
-      feedbackText: 'Correct!',
+      feedbackText: 'Correct \u2014 C',
       feedbackClass: 'feedback correct',
       hintText: 'Tap anywhere',
     };
@@ -148,7 +155,7 @@ describe('engineSubmitAnswer', () => {
 
   it('sets correct feedback for correct answer', () => {
     const s = engineSubmitAnswer(active, true, 'C');
-    assert.equal(s.feedbackText, 'Correct!');
+    assert.equal(s.feedbackText, 'Correct \u2014 C');
     assert.equal(s.feedbackClass, 'feedback correct');
   });
 
@@ -289,9 +296,9 @@ describe('engineUpdateIdleMessage', () => {
     assert.equal(s.masteryText, '');
   });
 
-  it('mastered takes priority over needs review', () => {
+  it('review takes priority over mastered', () => {
     const s = engineUpdateIdleMessage(initialEngineState(), true, true);
-    assert.equal(s.masteryText, 'Looks like you\u2019ve got this!');
+    assert.equal(s.masteryText, 'Time to review?');
   });
 });
 
@@ -460,6 +467,13 @@ describe('engineContinueRound', () => {
   it('preserves session question count', () => {
     const s = engineContinueRound(roundComplete);
     assert.equal(s.questionCount, 1); // from the one question before round complete
+  });
+
+  it('rolls roundUseFlats from the injected rng', () => {
+    const flatRng = engineContinueRound(roundComplete, () => 0.1);
+    assert.equal(flatRng.roundUseFlats, true);
+    const sharpRng = engineContinueRound(roundComplete, () => 0.9);
+    assert.equal(sharpRng.roundUseFlats, false);
   });
 });
 

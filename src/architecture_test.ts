@@ -97,10 +97,10 @@ type Layer =
   | 'engine'
   | 'display'
   | 'fixtures'
-  | 'mode-logic'
+  | 'skill-logic'
   | 'hooks'
   | 'ui'
-  | 'mode-component'
+  | 'skill-component'
   | 'app'
   | 'build-time'
   | 'tool';
@@ -108,7 +108,7 @@ type Layer =
 const FOUNDATION = new Set([
   'src/types.ts',
   'src/music-data.ts',
-  'src/mode-catalog.ts',
+  'src/skill-catalog.ts',
   'src/adaptive.ts',
   'src/app-config.ts',
   'src/deadline.ts',
@@ -128,9 +128,10 @@ const ENGINE = new Set([
 
 const DISPLAY = new Set([
   'src/stats-display.ts',
-  'src/mode-ui-state.ts',
+  'src/skill-ui-state.ts',
   'src/quiz-fretboard-state.ts',
   'src/dev-panel.ts',
+  'src/export-data.ts',
 ]);
 
 const BUILD_TIME = new Set([
@@ -161,22 +162,22 @@ function classifyLayer(file: string): Layer {
   if (file === 'src/declarative/answer-utils.ts') return 'hooks';
   if (file === 'src/declarative/use-sequential-input.ts') return 'hooks';
   if (file === 'src/declarative/use-multi-tap-input.ts') return 'hooks';
-  if (file === 'src/declarative/generic-mode-hooks.ts') return 'hooks';
-  if (file === 'src/declarative/generic-mode.tsx') return 'ui';
+  if (file === 'src/declarative/generic-skill-hooks.ts') return 'hooks';
+  if (file === 'src/declarative/generic-skill.tsx') return 'ui';
   if (file === 'src/declarative/quiz-areas.tsx') return 'ui';
   if (file === 'src/declarative/practice-views.tsx') return 'ui';
-  if (file.match(/src\/modes\/[^/]+\/logic\.ts$/)) return 'mode-logic';
-  if (file.startsWith('src/modes/')) return 'mode-component';
-  if (file === 'src/mode-utils.ts') return 'mode-logic';
-  if (file === 'src/mode-definitions.ts') return 'mode-component';
-  if (file === 'src/mode-progress-manifest.ts') return 'mode-logic';
-  if (file === 'src/home-recommendations.ts') return 'mode-logic';
+  if (file.match(/src\/skills\/[^/]+\/logic\.ts$/)) return 'skill-logic';
+  if (file.startsWith('src/skills/')) return 'skill-component';
+  if (file === 'src/skill-utils.ts') return 'skill-logic';
+  if (file === 'src/skill-definitions.ts') return 'skill-component';
+  if (file === 'src/skill-progress-manifest.ts') return 'skill-logic';
+  if (file === 'src/home-recommendations.ts') return 'skill-logic';
   return 'app'; // fallback for unknown files
 }
 
-/** Extract mode name from a modes/ path, or null. */
-function modeName(file: string): string | null {
-  const m = file.match(/^src\/modes\/([^/]+)\//);
+/** Extract skill name from a skills/ path, or null. */
+function skillName(file: string): string | null {
+  const m = file.match(/^src\/skills\/([^/]+)\//);
   return m ? m[1] : null;
 }
 
@@ -196,14 +197,14 @@ describe('Architecture', () => {
     );
   });
 
-  it('modes do not import from other modes', () => {
+  it('skills do not import from other modes', () => {
     const violations: string[] = [];
     for (const [file, deps] of graph.edges) {
-      const srcMode = modeName(file);
-      if (!srcMode) continue;
+      const srcSkill = skillName(file);
+      if (!srcSkill) continue;
       for (const dep of deps) {
-        const depMode = modeName(dep);
-        if (depMode && depMode !== srcMode) {
+        const depSkill = skillName(dep);
+        if (depSkill && depSkill !== srcSkill) {
           violations.push(`${file} → ${dep}`);
         }
       }
@@ -211,18 +212,18 @@ describe('Architecture', () => {
     assert.deepEqual(
       violations,
       [],
-      `Cross-mode imports found:\n${
+      `Cross-skill imports found:\n${
         violations.map((v) => '  ' + v).join('\n')
       }`,
     );
   });
 
-  it('hooks do not import from modes', () => {
+  it('hooks do not import from skills', () => {
     const violations: string[] = [];
     for (const [file, deps] of graph.edges) {
       if (!file.startsWith('src/hooks/')) continue;
       for (const dep of deps) {
-        if (dep.startsWith('src/modes/')) {
+        if (dep.startsWith('src/skills/')) {
           violations.push(`${file} → ${dep}`);
         }
       }
@@ -230,16 +231,16 @@ describe('Architecture', () => {
     assert.deepEqual(
       violations,
       [],
-      formatViolations('hooks → modes', violations),
+      formatViolations('hooks → skills', violations),
     );
   });
 
-  it('ui components do not import from modes', () => {
+  it('ui components do not import from skills', () => {
     const violations: string[] = [];
     for (const [file, deps] of graph.edges) {
       if (!file.startsWith('src/ui/')) continue;
       for (const dep of deps) {
-        if (dep.startsWith('src/modes/')) {
+        if (dep.startsWith('src/skills/')) {
           violations.push(`${file} → ${dep}`);
         }
       }
@@ -247,7 +248,7 @@ describe('Architecture', () => {
     assert.deepEqual(
       violations,
       [],
-      formatViolations('ui → modes', violations),
+      formatViolations('ui → skills', violations),
     );
   });
 
@@ -350,7 +351,7 @@ describe('Architecture', () => {
       const layer = classifyLayer(file);
       // classifyLayer falls back to 'app' — check it's intentional
       if (
-        layer === 'app' && !APP.has(file) && !file.startsWith('src/modes/')
+        layer === 'app' && !APP.has(file) && !file.startsWith('src/skills/')
       ) {
         unclassified.push(file);
       }

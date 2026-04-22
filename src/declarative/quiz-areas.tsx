@@ -37,7 +37,7 @@ import {
   QuizSession,
   RoundCompleteActions,
   RoundCompleteInfo,
-} from '../ui/mode-screen.tsx';
+} from '../ui/skill-screen.tsx';
 import {
   FeedbackDisplay,
   KeyboardHint,
@@ -49,11 +49,12 @@ import { Text } from '../ui/text.tsx';
 import type {
   ButtonsDef,
   ComparisonStrategy,
-  ModeController,
-  ModeDefinition,
   SequentialEntryResult,
+  SkillController,
+  SkillDefinition,
 } from './types.ts';
 import type { MultiTapInputHandle } from './use-multi-tap-input.ts';
+import { displayNote } from '../music-data.ts';
 import { toButtonValue } from './answer-utils.ts';
 
 // ---------------------------------------------------------------------------
@@ -255,9 +256,9 @@ export function SequentialQuizArea<Q>(
     instruction,
     splitFlushRef,
   }: {
-    def: ModeDefinition<Q>;
+    def: SkillDefinition<Q>;
     engine: ReturnType<typeof useQuizEngine>;
-    ctrl: ModeController<Q>;
+    ctrl: SkillController<Q>;
     currentQ: Q | null;
     activeButtons: ButtonsDef;
     seq: {
@@ -333,7 +334,7 @@ export function MultiTapQuizArea(
   },
 ) {
   // Multi-tap modes render prompt text + interactive fretboard.
-  // The fretboard is rendered by GenericMode (not the controller) using
+  // The fretboard is rendered by GenericSkill (not the controller) using
   // shared multi-tap state from useMultiTapInput.
   return (
     <QuizStage
@@ -379,7 +380,7 @@ export function StandardQuizArea<Q>(
     instruction,
   }: {
     engine: ReturnType<typeof useQuizEngine>;
-    ctrl: ModeController<Q>;
+    ctrl: SkillController<Q>;
     currentQ: Q | null;
     activeButtons: ButtonsDef;
     handleSubmit: (input: string) => boolean;
@@ -396,6 +397,20 @@ export function StandardQuizArea<Q>(
     instruction?: string;
   },
 ) {
+  // Visible feedback text above buttons (non-fretboard single-answer modes).
+  // Fretboard modes have ctrl.renderPrompt and show feedback on the fretboard.
+  const showFeedbackText = engine.state.answered &&
+    engine.state.feedbackCorrect !== null && !ctrl.renderPrompt;
+  const isCorrect = engine.state.feedbackCorrect === true;
+  const displayAnswer = engine.state.feedbackDisplayAnswer ?? '';
+  // User input display: resolve from lastAnswerRef (same as button highlighting)
+  const userInputDisplay = lastAnswerRef.current
+    ? toButtonValue(
+      lastAnswerRef.current.comparison,
+      lastAnswerRef.current.normalizedInput,
+    )
+    : (engine.state.feedbackUserInput ?? '');
+
   return (
     <QuizStage
       prompt={
@@ -416,6 +431,32 @@ export function StandardQuizArea<Q>(
       }
       response={
         <>
+          {showFeedbackText
+            ? (
+              <div class='answer-feedback-text'>
+                {isCorrect
+                  ? (
+                    <span class='correct'>
+                      ✓ {displayNote(displayAnswer)}
+                    </span>
+                  )
+                  : (
+                    <>
+                      <span class='incorrect'>
+                        ✗ {displayNote(userInputDisplay)}
+                      </span>
+                      <span class='correct'>
+                        ✓ {displayNote(displayAnswer)}
+                      </span>
+                    </>
+                  )}
+              </div>
+            )
+            : !ctrl.renderPrompt && (
+              <div class='answer-feedback-text' style='visibility:hidden'>
+                &nbsp;
+              </div>
+            )}
           <ResponseButtons
             buttonsDef={activeButtons}
             onAnswer={handleSubmit}
@@ -463,9 +504,9 @@ export function StandardQuizArea<Q>(
 // ---------------------------------------------------------------------------
 
 export type QuizActiveViewProps<Q> = {
-  def: ModeDefinition<Q>;
+  def: SkillDefinition<Q>;
   engine: ReturnType<typeof useQuizEngine>;
-  ctrl: ModeController<Q>;
+  ctrl: SkillController<Q>;
   currentQ: Q | null;
   round: ReturnType<typeof useRoundSummary>;
   levelBars: LevelProgressEntry[];

@@ -1,10 +1,20 @@
 // SpeedCheck — standalone calibration component.
 // Owns the full calibration lifecycle: intro → trial loop → results.
-// BaselineInfo (progress tab inline display) lives in mode-screen.tsx.
+// BaselineInfo (progress tab inline display) lives in skill-screen.tsx.
 
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'preact/hooks';
 import { type ButtonFeedback, NoteButtons } from './buttons.tsx';
-import { pickCalibrationNote } from '../quiz-engine.ts';
+import {
+  CALIBRATION_MAX_FRET,
+  pickCalibrationFretPosition,
+  pickCalibrationNote,
+} from '../quiz-engine.ts';
 import { SpeedThresholdTable } from './speed-level-legend.tsx';
 import { computeMedian } from '../adaptive.ts';
 import type { MotorTaskType, SpeedCheckFixture } from '../types.ts';
@@ -12,7 +22,8 @@ import { ActionButton } from './action-button.tsx';
 import { Text } from './text.tsx';
 import { KeyboardHint } from './quiz-ui.tsx';
 import { isValidNoteInput, resolveNoteInput } from '../music-data.ts';
-import { ScreenHeader } from './mode-screen.tsx';
+import { InteractiveFretboard } from './interactive-fretboard.tsx';
+import { ScreenHeader } from './skill-screen.tsx';
 import {
   CenteredContent,
   LayoutFooter,
@@ -26,7 +37,7 @@ import {
 // Motor task configuration
 // ---------------------------------------------------------------------------
 
-export type MotorTaskConfig = {
+type BaseMotorTaskConfig = {
   taskType: MotorTaskType;
   introTitle: string;
   introText: string;
@@ -36,6 +47,18 @@ export type MotorTaskConfig = {
   checkAnswer: (input: string, expected: string) => boolean;
   label: string;
 };
+
+/** NoteButtons + text input. Answer is a note name. */
+export type TextMotorTaskConfig = BaseMotorTaskConfig & { variant: 'text' };
+
+/** InteractiveFretboard with a pulsing target. Answer is a "string-fret" key.
+ *  stringCount is required so guitar vs. ukulele can't be silently defaulted. */
+export type FretboardMotorTaskConfig = BaseMotorTaskConfig & {
+  variant: 'fretboard';
+  stringCount: number;
+};
+
+export type MotorTaskConfig = TextMotorTaskConfig | FretboardMotorTaskConfig;
 
 function noteAnswerMatches(input: string, expected: string): boolean {
   if (input === expected) return true;
@@ -54,11 +77,33 @@ export const NOTE_BUTTON_CONFIG: MotorTaskConfig = {
   generateAnswer: pickCalibrationNote,
   checkAnswer: noteAnswerMatches,
   label: 'note button entry',
+  variant: 'text',
 };
+
+/** Build a fretboard-tap calibration config for the given instrument. */
+export function makeFretboardTapConfig(stringCount: number): MotorTaskConfig {
+  return {
+    taskType: 'fretboard-tap',
+    introTitle: 'Measuring fret tap times',
+    introText:
+      'We\u2019ll highlight a fret \u2014 tap it as fast as you can. ' +
+      'This measures your fretboard tap speed so the app can set personalized ' +
+      'timing targets. 10 quick trials.',
+    // Fretboard variant doesn't use text prompt — the dot is the prompt.
+    trialPrompt: () => '',
+    generateAnswer: (prev, rng) =>
+      pickCalibrationFretPosition(prev, stringCount, rng),
+    checkAnswer: (input, expected) => input === expected,
+    label: 'fret tap',
+    variant: 'fretboard',
+    stringCount,
+  };
+}
 
 /** Set of task types that have a speed check config. */
 export const IMPLEMENTED_TASK_TYPES: ReadonlySet<MotorTaskType> = new Set([
   'note-button',
+  'fretboard-tap',
 ]);
 
 // ---------------------------------------------------------------------------
@@ -118,6 +163,7 @@ function useTrialLoop(
   });
   const [trialProgress, setTrialProgress] = useState('');
   const [promptText, setPromptText] = useState('');
+  const [currentTarget, setCurrentTarget] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<ButtonFeedback | null>(null);
   const feedbackTimerRef = useRef<number | null>(null);
   const onDoneRef = useRef(onDone);
@@ -142,6 +188,7 @@ function useTrialLoop(
     state.startTime = performance.now();
     setTrialProgress((state.trialIndex + 1) + ' / ' + TOTAL_TRIALS);
     setPromptText(config.trialPrompt(answer));
+    setCurrentTarget(answer);
     setFeedback(null);
   }, [config]);
 
@@ -175,6 +222,7 @@ function useTrialLoop(
     state.trialIndex++;
     state.targetNote = null;
     setPromptText('\u2713');
+    setCurrentTarget(null);
     setFeedback(null);
     if (state.trialIndex >= TOTAL_TRIALS) {
       state.active = false;
@@ -207,11 +255,13 @@ function useTrialLoop(
     trialRef,
     trialProgress,
     promptText,
+    currentTarget,
     feedback,
     handleTrialResponse,
     startTrials,
     setTrialProgress,
     setPromptText,
+    setCurrentTarget,
   };
 }
 
@@ -284,6 +334,39 @@ function SpeedCheckInput(
 }
 
 // ---------------------------------------------------------------------------
+// FretboardSpeedCheckTarget — fretboard-tap variant of the trial prompt.
+// Renders an InteractiveFretboard with the target fret highlighted; taps are
+// forwarded to the trial loop as "string-fret" position keys. Rendered in
+// the prompt slot so the 70/30 fretboard layout rule kicks in.
+// ---------------------------------------------------------------------------
+
+const EMPTY_POSITION_SET: ReadonlySet<string> = new Set<string>();
+
+function FretboardSpeedCheckTarget(
+  { stringCount, targetPosition, wrongTapPosition, onTap }: {
+    stringCount: number;
+    targetPosition: string | null;
+    wrongTapPosition: string | null;
+    onTap: (positionKey: string) => void;
+  },
+) {
+  // Show frets 0..CALIBRATION_MAX_FRET only — matches the region we sample
+  // targets from so the user's attention stays near the nut.
+  const fretCount = useMemo(() => CALIBRATION_MAX_FRET + 1, []);
+  return (
+    <InteractiveFretboard
+      onTap={onTap}
+      tappedPositions={EMPTY_POSITION_SET}
+      evaluated={null}
+      stringCount={stringCount}
+      fretCount={fretCount}
+      targetPosition={targetPosition}
+      wrongTapPosition={wrongTapPosition}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
 // SpeedCheckIntro — intro phase sub-component
 // ---------------------------------------------------------------------------
 
@@ -343,6 +426,11 @@ export function SpeedCheck(
     if (fixture?.trialProgress) trials.setTrialProgress(fixture.trialProgress);
     if (fixture?.promptAnswer) {
       trials.setPromptText(config.trialPrompt(fixture.promptAnswer));
+      // Fretboard variant: promptAnswer is a "string-fret" key; drive the
+      // pulsing target dot from it so fixtures render the same as live trials.
+      if (config.variant === 'fretboard') {
+        trials.setCurrentTarget(fixture.promptAnswer);
+      }
     }
   }, [fixture]);
 
@@ -395,6 +483,21 @@ export function SpeedCheck(
   }
 
   if (phase === 'running') {
+    const isFretboard = config.variant === 'fretboard';
+    // Fretboard variant: always render a prompt character (nbsp when empty)
+    // so the row's height is constant and the fretboard below doesn't jump
+    // when ✓/✗ feedback appears.
+    const promptContent = isFretboard
+      ? (trials.promptText || '\u00A0')
+      : trials.promptText;
+    const promptNode = (
+      <Text role='quiz-prompt' as='div' class='quiz-prompt'>
+        {promptContent}
+      </Text>
+    );
+    const wrongTap = trials.feedback?.correct === false
+      ? trials.feedback.userInput
+      : null;
     return (
       <ScreenLayout>
         <SpeedCheckHeader
@@ -402,26 +505,44 @@ export function SpeedCheck(
           onClose={onCancel}
         />
         <LayoutMain scrollable={false}>
-          <QuizStage
-            prompt={
-              <Text role='quiz-prompt' as='div' class='quiz-prompt'>
-                {trials.promptText}
-              </Text>
-            }
-            response={
-              <>
-                <NoteButtons
-                  onAnswer={trials.handleTrialResponse}
-                  feedback={trials.feedback}
-                />
-                <SpeedCheckInput
-                  onSubmit={trials.handleTrialResponse}
-                  wrongFlash={trials.feedback?.correct === false}
-                />
-                <KeyboardHint type='note' />
-              </>
-            }
-          />
+          {isFretboard
+            ? (
+              // Fretboard in the prompt slot so the existing 70/30 CSS
+              // rule (.quiz-stage:has(.quiz-stage-prompt svg.fretboard))
+              // gives the fretboard the majority of the vertical space.
+              <QuizStage
+                prompt={
+                  <>
+                    {promptNode}
+                    <FretboardSpeedCheckTarget
+                      stringCount={config.stringCount}
+                      targetPosition={trials.currentTarget}
+                      wrongTapPosition={wrongTap}
+                      onTap={trials.handleTrialResponse}
+                    />
+                  </>
+                }
+                response={null}
+              />
+            )
+            : (
+              <QuizStage
+                prompt={promptNode}
+                response={
+                  <>
+                    <NoteButtons
+                      onAnswer={trials.handleTrialResponse}
+                      feedback={trials.feedback}
+                    />
+                    <SpeedCheckInput
+                      onSubmit={trials.handleTrialResponse}
+                      wrongFlash={trials.feedback?.correct === false}
+                    />
+                    <KeyboardHint type='note' />
+                  </>
+                }
+              />
+            )}
         </LayoutMain>
       </ScreenLayout>
     );

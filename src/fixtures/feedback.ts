@@ -1,7 +1,7 @@
 // Leaf fixtures for FeedbackDisplay component states.
 
 export const feedbackCorrect = {
-  text: 'Correct!',
+  text: 'Correct \u2014 D#',
   className: 'feedback correct',
   correct: true as const,
   displayAnswer: 'D#',

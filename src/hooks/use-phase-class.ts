@@ -60,7 +60,7 @@ export function usePhaseClass(
       const selector = focusTargets[phase];
       if (selector) {
         requestAnimationFrame(() => {
-          if (!container.classList.contains('mode-active')) return;
+          if (!container.classList.contains('skill-active')) return;
           const el = container.querySelector(selector) as HTMLElement | null;
           if (el) el.focus();
         });

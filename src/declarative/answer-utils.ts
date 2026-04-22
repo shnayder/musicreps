@@ -7,12 +7,13 @@ import {
   INTERVALS,
   resolveNoteInput,
   spelledNoteMatchesSemitone,
+  spelledNoteToCanonical,
 } from '../music-data.ts';
 
 import type {
   AnswerSpec,
   ComparisonStrategy,
-  ModeDefinition,
+  SkillDefinition,
 } from './types.ts';
 
 // ---------------------------------------------------------------------------
@@ -20,7 +21,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 export function resolveAnswerSpec<Q>(
-  def: ModeDefinition<Q>,
+  def: SkillDefinition<Q>,
   q: Q,
 ): AnswerSpec<Q> {
   const spec = def.answer!;
@@ -56,7 +57,12 @@ export function toButtonValue(
   strategy: ComparisonStrategy,
   value: string,
 ): string {
-  if (strategy === 'note-enharmonic') return resolveNoteInput(value) ?? value;
+  if (strategy === 'note-enharmonic') {
+    // resolveNoteInput only knows single accidentals; fall back to
+    // spelledNoteToCanonical so doubles like "F##" highlight their
+    // enharmonic-natural button ("G").
+    return resolveNoteInput(value) ?? spelledNoteToCanonical(value);
+  }
   return value;
 }
 
@@ -68,7 +74,7 @@ export function defaultDisplayAnswer(
 }
 
 export function checkGenericAnswer<Q>(
-  def: ModeDefinition<Q>,
+  def: SkillDefinition<Q>,
   currentQRef: { current: Q | null },
   lastAnswerRef: {
     current: {
@@ -111,7 +117,7 @@ export function resolveGroupLabel(label: string | (() => string)): string {
 }
 
 export function getInputPlaceholder<Q>(
-  def: ModeDefinition<Q>,
+  def: SkillDefinition<Q>,
   currentQ: Q | null,
   isSequential: boolean,
 ): string | undefined {

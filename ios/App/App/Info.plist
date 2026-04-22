@@ -7,7 +7,9 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Music Reps</string>
+	<string>$(DISPLAY_NAME)</string>
+	<key>OTAReleaseBase</key>
+	<string>$(OTA_RELEASE_BASE)</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

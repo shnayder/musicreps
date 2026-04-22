@@ -20,7 +20,7 @@ import {
 
 /** Feedback state for highlighting buttons after an answer.
  *
- *  Both fields are normalized to canonical button values by GenericMode
+ *  Both fields are normalized to canonical button values by GenericSkill
  *  before reaching here. For note buttons, that means NOTE_NAMES form
  *  ("C", "C#", "D#", etc.). For other button types, values match the
  *  button's data value (numbers, intervals, numerals, etc.).

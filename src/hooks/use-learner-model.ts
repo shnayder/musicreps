@@ -1,5 +1,5 @@
 // useLearnerModel — Preact hook wrapping the adaptive selector, storage
-// adapter, and motor baseline. Provides the learner model for quiz modes.
+// adapter, and motor baseline. Provides the learner model for quiz skills.
 
 import { useEffect, useMemo, useRef } from 'preact/hooks';
 import type {
@@ -21,17 +21,17 @@ export type LearnerModel = {
   motorBaseline: number | null;
   /** Apply a new motor baseline (from calibration). Persists to storage. */
   applyBaseline: (baseline: number) => void;
-  /** Re-read baseline from storage (e.g., after another mode calibrated). */
+  /** Re-read baseline from storage (e.g., after another skill calibrated). */
   syncBaseline: () => void;
 };
 
 /**
- * Create and manage an adaptive learner model for a quiz mode.
+ * Create and manage an adaptive learner model for a quiz skill.
  *
  * @param namespace   Storage namespace for per-item stats (e.g., "guitar")
  * @param allItemIds  All possible item IDs — preloaded on mount
  * @param taskType    Motor task type for baseline storage key. Defaults to "note-button".
- * @param responseCountFn  Optional: expected response count per item (for multi-response modes)
+ * @param responseCountFn  Optional: expected response count per item (for multi-response skills)
  */
 export function useLearnerModel(
   namespace: string,

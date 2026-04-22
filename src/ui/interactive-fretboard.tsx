@@ -108,6 +108,14 @@ type InteractiveFretboardProps = {
   fretCount?: number;
   /** String indices to mark as muted (X above nut). Shown only after evaluation. */
   mutedStrings?: ReadonlySet<number>;
+  /** Optional "string-fret" key to visually highlight as a target prompt
+   *  (used by the fretboard speed check). Rendered with the same styling
+   *  as a tapped position. */
+  targetPosition?: string | null;
+  /** Optional "string-fret" key of a wrong tap to flash (used by the
+   *  fretboard speed check during the wrong-feedback window). Rendered
+   *  with an error-colored ring. */
+  wrongTapPosition?: string | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -170,6 +178,8 @@ export function InteractiveFretboard(
     stringCount = 6,
     fretCount = 13,
     mutedStrings,
+    targetPosition,
+    wrongTapPosition,
   }: InteractiveFretboardProps,
 ) {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -224,7 +234,7 @@ export function InteractiveFretboard(
         renderMuteMarkers(root, mutedStrings, stringCount);
       }
     } else {
-      // During collection: highlight tapped positions
+      // During collection: highlight tapped positions.
       const colorSel = readCSSColor(
         '--color-tap-selected',
         'hsl(210, 60%, 50%)',
@@ -232,8 +242,26 @@ export function InteractiveFretboard(
       for (const posKey of tappedPositions) {
         setCircleFill(root, posKey, colorSel);
       }
+      // Speed-check target prompt: fixed dot at the target fret, same
+      // styling as a tapped position.
+      if (targetPosition) setCircleFill(root, targetPosition, colorSel);
+      // Wrong-tap feedback: draw an error ring at the user's tap so it
+      // reads as "this was wrong" while the ✗ is showing.
+      if (wrongTapPosition) {
+        const colorBad = readCSSColor('--color-error', '#d32f2f');
+        const colorBadFill = readCSSColor('--color-error-bg-strong', '#f4c2c2');
+        setCircleRing(root, wrongTapPosition, colorBad, colorBadFill);
+      }
     }
-  }, [tappedPositions, evaluated, svgHTML, mutedStrings, stringCount]);
+  }, [
+    tappedPositions,
+    evaluated,
+    svgHTML,
+    mutedStrings,
+    stringCount,
+    targetPosition,
+    wrongTapPosition,
+  ]);
 
   return (
     <div class='interactive-fretboard'>

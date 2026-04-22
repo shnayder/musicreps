@@ -3,12 +3,12 @@
 
 import type { ItemStats } from '../types.ts';
 import {
-  type GroupItemProfile,
-  perGroupScenario,
+  type LevelItemProfile,
+  perLevelScenario,
 } from './heatmap-scenarios.ts';
-import { getGroups, getItemIdsForGroup } from '../modes/fretboard/logic.ts';
+import { getItemIdsForLevel, getLevels } from '../skills/fretboard/logic.ts';
 import { GUITAR } from '../music-data.ts';
-import { ALL_ITEMS as NOTE_SEMI_ITEMS } from '../modes/note-semitones/logic.ts';
+import { ALL_ITEMS as NOTE_SEMI_ITEMS } from '../skills/note-semitones/logic.ts';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -55,10 +55,10 @@ function seedAllAutomatic(
   return result;
 }
 
-const guitarGroups = getGroups(GUITAR);
+const guitarGroups = getLevels(GUITAR);
 const fbGroupIds = guitarGroups.map((g) => g.id);
-const fbItemIds = fbGroupIds.map((id) => getItemIdsForGroup(GUITAR, id));
-const unseen = (ids: string[]): GroupItemProfile => ({
+const fbItemIds = fbGroupIds.map((id) => getItemIdsForLevel(GUITAR, id));
+const unseen = (ids: string[]): LevelItemProfile => ({
   itemIds: ids,
   state: 'unseen',
 });
@@ -66,8 +66,8 @@ const unseen = (ids: string[]): GroupItemProfile => ({
 function fbState(
   name: string,
   expectedVerbs: string[],
-  groups: GroupItemProfile[],
-  enabledGroupIds: string[],
+  levels: LevelItemProfile[],
+  enabledLevelIds: string[],
 ): RecommendationState {
   return {
     name,
@@ -75,8 +75,8 @@ function fbState(
     namespace: 'fretboard',
     kind: 'multi-group',
     localStorageData: {
-      ...perGroupScenario('fretboard', groups),
-      fretboard_enabledGroups: JSON.stringify(enabledGroupIds),
+      ...perLevelScenario('fretboard', levels),
+      fretboard_enabledGroups: JSON.stringify(enabledLevelIds),
     },
   };
 }
@@ -110,7 +110,7 @@ export const FB_LEARNING = fbState(
   [fbGroupIds[0], fbGroupIds[1], fbGroupIds[2]],
 );
 
-/** First groups mastered + working on next ones. */
+/** First levels mastered + working on next ones. */
 export const FB_SOLID_LEARNING = fbState(
   'fb-solid-learning',
   ['Practice'],
@@ -124,7 +124,7 @@ export const FB_SOLID_LEARNING = fbState(
   [fbGroupIds[0], fbGroupIds[1], fbGroupIds[2], fbGroupIds[3]],
 );
 
-/** First groups mastered but stale → Review. */
+/** First levels mastered but stale → Review. */
 export const FB_NEEDS_REVIEW = fbState(
   'fb-needs-review',
   ['Review'],
@@ -137,8 +137,8 @@ export const FB_NEEDS_REVIEW = fbState(
   [fbGroupIds[0], fbGroupIds[1], fbGroupIds[2]],
 );
 
-/** Almost all groups automatic, last one mixed.
- *  Automatic groups with scheduled review get no rec.
+/** Almost all levels automatic, last one mixed.
+ *  Automatic levels with scheduled review get no rec.
  *  Only the last (mixed) group gets Practice. */
 export const FB_ALMOST_AUTOMATIC = fbState(
   'fb-almost-automatic',
@@ -154,7 +154,7 @@ export const FB_ALMOST_AUTOMATIC = fbState(
 );
 
 // ---------------------------------------------------------------------------
-// Note ↔ Semitones states (single-level, no groups)
+// Note ↔ Semitones states (single-level, no levels)
 // ---------------------------------------------------------------------------
 
 /** Items slow/working → Practice. */
@@ -163,23 +163,18 @@ export const NOTE_SEMI_LEARNING: RecommendationState = {
   expectedVerbs: ['Practice'],
   namespace: 'noteSemitones',
   kind: 'single-level',
-  localStorageData: perGroupScenario('noteSemitones', [
+  localStorageData: perLevelScenario('noteSemitones', [
     { itemIds: NOTE_SEMI_ITEMS, state: 'working' },
   ]),
 };
 
-/** Items were fast but are now stale.
- *  BUG: single-level logic doesn't distinguish stale from needs-review.
- *  checkNeedsReview requires ALL items speed >= 0.5 which mixed items don't
- *  meet, and pure stale items trigger checkAllAutomatic first.
- *  Currently produces "All items automatic! Practice something else" —
- *  should produce "Review" once single-level review detection is fixed. */
+/** Items were fast but are now stale → Review. */
 export const NOTE_SEMI_SOLID_STALE: RecommendationState = {
   name: 'noteSemitones-solid-stale',
-  expectedVerbs: ['All items automatic! Practice something else'],
+  expectedVerbs: ['Review'],
   namespace: 'noteSemitones',
   kind: 'single-level',
-  localStorageData: perGroupScenario('noteSemitones', [
+  localStorageData: perLevelScenario('noteSemitones', [
     { itemIds: NOTE_SEMI_ITEMS, state: 'stale' },
   ]),
 };

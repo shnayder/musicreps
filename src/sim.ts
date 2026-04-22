@@ -68,7 +68,6 @@ const cfgKeys = [
   'minTime',
   'maxResponseTime',
   'initialStability',
-  'maxStability',
   'stabilityGrowthMax',
   'stabilityDecayOnWrong',
   'freshnessThreshold',

@@ -1,12 +1,14 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  CALIBRATION_MAX_FRET,
   createAdaptiveKeyHandler,
   createNoteKeyHandler,
   createSolfegeKeyHandler,
   getCalibrationThresholds,
   noteNarrowingSet,
   numberNarrowingSet,
+  pickCalibrationFretPosition,
   pickCalibrationNote,
 } from './quiz-engine.ts';
 import { getUseSolfege, setUseSolfege } from './music-data.ts';
@@ -482,6 +484,50 @@ describe('pickCalibrationNote', () => {
         assert.notEqual(note, prev, `trial ${i}: got consecutive ${note}`);
       }
       prev = note;
+    }
+  });
+});
+
+// --- pickCalibrationFretPosition tests ---
+
+describe('pickCalibrationFretPosition', () => {
+  it('returns a key within string x fret bounds', () => {
+    const key = pickCalibrationFretPosition(null, 6, () => 0.5);
+    const [sStr, fStr] = key.split('-');
+    const s = Number(sStr);
+    const f = Number(fStr);
+    assert.ok(s >= 0 && s < 6, `string ${s} should be in [0, 6)`);
+    assert.ok(
+      f >= 0 && f <= CALIBRATION_MAX_FRET,
+      `fret ${f} should be in [0, ${CALIBRATION_MAX_FRET}]`,
+    );
+  });
+
+  it('respects a 4-string fretboard (ukulele)', () => {
+    for (let i = 0; i < 50; i++) {
+      const key = pickCalibrationFretPosition(null, 4);
+      const s = Number(key.split('-')[0]);
+      assert.ok(s >= 0 && s < 4, `string ${s} should be in [0, 4)`);
+    }
+  });
+
+  it('avoids repeating the previous position', () => {
+    // First roll hits prev; second roll picks a different cell.
+    let call = 0;
+    const rolls = [0, 0, 0.5, 0.5];
+    const rng = () => rolls[call++];
+    const key = pickCalibrationFretPosition('0-0', 6, rng);
+    assert.notEqual(key, '0-0');
+  });
+
+  it('never returns same position consecutively in 100 trials', () => {
+    let prev: string | null = null;
+    for (let i = 0; i < 100; i++) {
+      const key = pickCalibrationFretPosition(prev, 6);
+      if (prev !== null) {
+        assert.notEqual(key, prev, `trial ${i}: got consecutive ${key}`);
+      }
+      prev = key;
     }
   });
 });

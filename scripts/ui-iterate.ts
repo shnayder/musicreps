@@ -124,16 +124,16 @@ async function captureStates(
     await page.reload();
     await page.waitForLoadState('networkidle');
 
-    async function navigateToMode(modeId: string) {
+    async function navigateToSkill(skillId: string) {
       await page.goto(`${BASE_URL}/?fixtures`);
       await page.waitForLoadState('networkidle');
-      if (modeId === 'home') return;
-      await page.click(`[data-mode="${modeId}"]`);
-      await page.waitForSelector(`#mode-${modeId}.mode-active`);
+      if (skillId === 'home') return;
+      await page.click(`[data-skill="${skillId}"]`);
+      await page.waitForSelector(`#skill-${skillId}.skill-active`);
     }
 
-    async function applyFixture(modeId: string, fixture: FixtureDetail) {
-      const container = `#mode-${modeId}`;
+    async function applyFixture(skillId: string, fixture: FixtureDetail) {
+      const container = `#skill-${skillId}`;
       await page.evaluate((sel) => {
         const el = document.querySelector(sel);
         if (el) el.removeAttribute('data-fixture-applied');
@@ -156,19 +156,19 @@ async function captureStates(
 
     // Sort entries to minimize mode switches
     const sorted = [...entries].sort((a, b) => {
-      if (a.modeId !== b.modeId) return a.modeId < b.modeId ? -1 : 1;
+      if (a.skillId !== b.skillId) return a.skillId < b.skillId ? -1 : 1;
       // Within same mode: idle (no fixture) before fixture states
       if (!a.fixture && b.fixture) return -1;
       if (a.fixture && !b.fixture) return 1;
       return 0;
     });
 
-    let currentMode = '';
+    let currentSkill = '';
     let previousHadFixture = false;
     let previousHadLocalStorage = false;
 
     for (const entry of sorted) {
-      const needsReload = entry.modeId !== currentMode ||
+      const needsReload = entry.skillId !== currentSkill ||
         previousHadFixture || previousHadLocalStorage ||
         !!entry.localStorageData;
 
@@ -182,21 +182,30 @@ async function captureStates(
       }
 
       if (needsReload) {
-        if (entry.modeId !== currentMode) {
-          console.log(`Mode: ${entry.modeId}`);
+        if (entry.skillId !== currentSkill) {
+          console.log(`Skill: ${entry.skillId}`);
         }
-        await navigateToMode(entry.modeId);
-        currentMode = entry.modeId;
+        await navigateToSkill(entry.skillId);
+        currentSkill = entry.skillId;
       }
       if (entry.fixture) {
-        await applyFixture(entry.modeId, entry.fixture);
+        await applyFixture(entry.skillId, entry.fixture);
       }
 
       // Switch to progress tab after navigation
       if (entry.clickTab) {
-        const sel = `#mode-${entry.modeId} [data-tab="${entry.clickTab}"]`;
+        const sel = `#skill-${entry.skillId} [data-tab="${entry.clickTab}"]`;
         await page.click(sel);
         await page.waitForTimeout(200);
+      }
+
+      // Extra clicks (e.g. enter notes, open modal) scoped to mode container
+      if (entry.clickSelectors) {
+        for (const selector of entry.clickSelectors) {
+          const scoped = `#skill-${entry.skillId} ${selector}`;
+          await page.click(scoped);
+          await page.waitForTimeout(200);
+        }
       }
 
       const filePath = path.join(outDir, `${entry.name}.png`);

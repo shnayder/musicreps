@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 Interactive music training app — fretboard note identification, interval math,
-and more. Multiple quiz modes accessed from the home screen.
+and more. Multiple quiz skills accessed from the home screen.
 
 ## Quick Start
 
@@ -38,7 +38,7 @@ or approximations.
 
 **The HTML template lives in `src/build-template.ts`** — it assembles the HTML
 shell with empty container divs for each mode (derived from `TRACKS` in
-`mode-catalog.ts`). **Version is derived from git at build time** (see
+`skill-catalog.ts`). **Version is derived from git at build time** (see
 `getVersion()` in `main.ts`) — no manual bumps needed. `main.ts` handles both
 building (with `--build`) and dev serving. Preact renders all UI at runtime.
 
@@ -47,49 +47,49 @@ building (with `--build`) and dev serving. Preact renders all UI at runtime.
 ```
 main.ts                  # Build + dev server + moments generation (Deno)
 src/
-  app.ts                 # Entry point: registers Preact modes, starts navigation
-  build-template.ts      # HTML template: shell + empty mode containers
+  app.ts                 # Entry point: registers Preact skills, starts navigation
+  build-template.ts      # HTML template: shell + empty skill containers
   fretboard.ts           # SVG fretboard generation (shared by build + runtime)
   adaptive.ts            # Adaptive question selector
   music-data.ts          # Shared music theory data + input validators
-  mode-utils.ts          # Shared ID parsing/building, stats row helpers
+  skill-utils.ts          # Shared ID parsing/building, stats row helpers
   quiz-engine-state.ts   # Pure engine state transitions
   quiz-engine.ts         # Keyboard handlers, calibration utilities
   stats-display.ts       # Heatmap color functions, legend builder
   recommendations.ts     # Consolidate-before-expanding algorithm
   quiz-fretboard-state.ts  # Pure fretboard helpers (factory pattern)
-  mode-ui-state.ts       # Pure practice summary computation
-  navigation.ts          # Hamburger menu, mode switching
+  skill-ui-state.ts       # Pure practice summary computation
+  navigation.ts          # Hamburger menu, skill switching
   settings.ts            # Settings modal
   storage.ts             # localStorage abstraction (web + Capacitor)
   types.ts               # Shared type definitions
   styles.css             # Inlined CSS
   *_test.ts              # Tests (node:test)
   declarative/
-    types.ts             # ModeDefinition, ButtonsDef, ScopeDef, StatsDef, MultiTapDef
+    types.ts             # SkillDefinition, ButtonsDef, ScopeDef, StatsDef, MultiTapDef
     answer-utils.ts      # Pure answer-checking and input utilities
-    generic-mode.tsx     # GenericMode: top-level orchestrator
-    generic-mode-hooks.ts  # Internal hooks + builder functions
+    generic-skill.tsx     # GenericSkill: top-level orchestrator
+    generic-skill-hooks.ts  # Internal hooks + builder functions
     quiz-areas.tsx       # Quiz area components (active quiz UI)
     practice-views.tsx   # Idle/practice tab components
     use-sequential-input.ts  # Sequential (multi-note) collection hook
     use-multi-tap-input.ts   # Multi-tap (spatial set) collection hook
-  modes/
+  skills/
     {name}/
-      logic.ts            # Pure mode logic: questions, answers, items, groups
-      logic_test.ts        # Tests for mode logic
-      definition.ts        # Declarative mode definition (11 modes)
+      logic.ts            # Pure skill logic: questions, answers, items, groups
+      logic_test.ts        # Tests for skill logic
+      definition.ts        # Declarative skill definition (11 skills)
   ui/
-    mode-screen.tsx       # Structural layout components (ModeScreen, QuizArea, etc.)
+    skill-screen.tsx       # Structural layout components (SkillScreen, QuizArea, etc.)
     buttons.tsx           # Answer button components (NoteButtons, NumberButtons, etc.)
-    scope.tsx             # Scope control components (GroupToggles, NoteFilter, etc.)
+    scope.tsx             # Scope control components (LevelToggles, NoteFilter, etc.)
     stats.tsx             # Stats table/grid/legend components
   hooks/
     use-quiz-engine.ts    # Quiz engine lifecycle hook
     use-scope-state.ts    # Scope persistence hook
     use-learner-model.ts  # Adaptive selector + storage hook
-    use-group-scope.ts    # Group-based scope + recommendations (6 modes)
-    use-mode-lifecycle.ts # Navigation activate/deactivate registration
+    use-level-scope.ts    # Level-based scope + recommendations (6 modes)
+    use-skill-lifecycle.ts # Navigation activate/deactivate registration
     use-key-handler.ts    # Keyboard event hook
     use-phase-class.ts    # Phase-to-CSS-class sync hook
     use-round-summary.ts  # Round-complete derived state hook
@@ -105,19 +105,19 @@ Single-page app using Preact for UI components. Source files are ES modules
 bundled by esbuild (with automatic JSX transform) into a single IIFE `<script>`
 at build time. Key patterns:
 
-- **Declarative Modes** — All 11 modes use `ModeDefinition<Q>` (20-100 lines of
-  data) interpreted by `GenericMode`, which handles all hook composition,
+- **Declarative Skills** — All 11 skills use `SkillDefinition<Q>` (20-100 lines
+  of data) interpreted by `GenericSkill`, which handles all hook composition,
   rendering, and keyboard input. Three answer variants: single (`answer`),
   sequential (`sequential`, e.g., chord spelling), and multi-tap (`multiTap`,
-  e.g., Speed Tap). Modes needing custom rendering (e.g., fretboard SVG) provide
-  a `useController` hook.
+  e.g., Speed Tap). Skills needing custom rendering (e.g., fretboard SVG)
+  provide a `useController` hook.
 - **Shared Hooks** — `useQuizEngine` (engine lifecycle), `useLearnerModel`
-  (adaptive selector + storage), `useGroupScope` (group scope + recommendations
-  for 6 modes), `useModeLifecycle` (navigation activate/deactivate for all
+  (adaptive selector + storage), `useLevelScope` (level scope + recommendations
+  for 6 skills), `useSkillLifecycle` (navigation activate/deactivate for all
   modes), `useScopeState` (low-level scope persistence), `useKeyHandler`
-  (keyboard events). GenericMode composes these automatically.
-- **Shared UI Components** — `ModeScreen`, `QuizArea`, `PracticeCard`,
-  `StatsTable`/`StatsGrid`, `NoteButtons`, `GroupToggles`, etc.
+  (keyboard events). GenericSkill composes these automatically.
+- **Shared UI Components** — `SkillScreen`, `QuizArea`, `PracticeCard`,
+  `StatsTable`/`StatsGrid`, `NoteButtons`, `LevelToggles`, etc.
 - **Pure State Transitions** — `quiz-engine-state.ts` contains pure functions
   for engine state. The `useQuizEngine` hook wraps them with Preact reactivity.
 - **Adaptive Selector** — weighted random selection (unseen boost + EWMA).
@@ -132,7 +132,8 @@ at build time. Key patterns:
   defined as `--color-*` and `--heatmap-*` variables in `:root`. JS reads
   heatmap colors via `getComputedStyle` with hardcoded fallbacks for tests.
 - **Build System** — esbuild bundles `src/app.ts` (entry point) into a single
-  IIFE. `build-template.ts` assembles the HTML shell with empty mode containers.
+  IIFE. `build-template.ts` assembles the HTML shell with empty skill
+  containers.
 - **Function Length** — max 100 lines per function
   (`scripts/lint-function-length.ts`). Prefer small, clear, obviously correct
   functions that do one thing and can be tested independently. Extract helpers,
@@ -149,7 +150,7 @@ at build time. Key patterns:
   alongside feature work.
 
 See the architecture guide in the docs vault for module dependency graph,
-algorithm details, and step-by-step "adding a new quiz mode" checklist.
+algorithm details, and step-by-step "adding a new quiz skill" checklist.
 
 ## Quiz Modes
 
@@ -165,8 +166,8 @@ algorithm details, and step-by-step "adding a new quiz mode" checklist.
 | Scale Degrees        | 144 (12 keys x 6 degrees x 2 dirs) | Note or degree          | `D:5:fwd`, `C:7:rev`   |
 | Diatonic Chords      | 168 (12 keys x 7 degrees x 2 dirs) | Note or numeral         | `Bb:IV:fwd`, `C:D:rev` |
 | Chord Spelling       | ~132 (12 roots x chord types)      | Sequential notes        | `C:major`, `F#:dim`    |
-| Guitar Chord Shapes  | 15 (6 maj + 3 min + 6 dom7)        | Multi-tap fretboard     | `C:major`, `A:dom7`    |
-| Ukulele Chord Shapes | 13 (6 maj + 3 min + 4 dom7)        | Multi-tap fretboard     | `C:major`, `G:dom7`    |
+| Guitar Chord Shapes  | 29 (maj, min, dom7, m7, sus)       | Multi-tap fretboard     | `C:major`, `D:sus4`    |
+| Ukulele Chord Shapes | 26 (maj, min, dom7, m7, sus)       | Multi-tap fretboard     | `C:major`, `A:m7`      |
 
 Bidirectional modes track each direction as a separate item.
 

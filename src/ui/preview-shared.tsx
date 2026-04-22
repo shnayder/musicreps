@@ -105,16 +105,16 @@ export type GroupSel = {
 };
 
 // ---------------------------------------------------------------------------
-// PreviewModeScreen — forces phase class and layout for quiz state previews
+// PreviewSkillScreen — forces phase class and layout for quiz state previews
 // ---------------------------------------------------------------------------
 
-/** Wrapper that forces mode-screen visibility and constrains height for preview. */
-export function PreviewModeScreen(
+/** Wrapper that forces skill-screen visibility and constrains height for preview. */
+export function PreviewSkillScreen(
   { phase, children }: { phase: string; children: ComponentChildren },
 ) {
   return (
     <div
-      class={`mode-screen phase-${phase}`}
+      class={`skill-screen phase-${phase}`}
       style={{ display: 'block', minHeight: 0, margin: 0, padding: 0 }}
     >
       {children}

@@ -21,7 +21,7 @@ export function GroupProgressBar(
   const usedFlex = segments.reduce((sum, s) => sum + s.weight, 0);
   const spacerFlex = totalSlots - usedFlex;
   return (
-    <div class={'group-progress-bar' + (disabled ? ' skipped' : '')}>
+    <div class={'level-progress-bar' + (disabled ? ' skipped' : '')}>
       {segments.map((seg, i) =>
         seg.weight > 0
           ? (

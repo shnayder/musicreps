@@ -5,14 +5,7 @@
 
 // deno-lint-ignore-file no-explicit-any
 
-// Override via data-release-base on #home-screen for testing (e.g. "/release-staging")
-const DEFAULT_RELEASE_BASE = 'https://shnayder.github.io/musicreps/release';
 const CHECK_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
-
-function getReleaseBase(): string {
-  const el = document.getElementById('home-screen');
-  return el?.dataset.releaseBase || DEFAULT_RELEASE_BASE;
-}
 
 let lastCheckTime = 0;
 
@@ -110,6 +103,7 @@ export interface OTAState {
   version: string;
   path: string;
   attempts: number;
+  releaseBase: string;
 }
 
 /** Dependencies injected for testing. Production uses real implementations. */
@@ -165,12 +159,11 @@ export async function checkForUpdateCore(
 // Production wiring
 // ---------------------------------------------------------------------------
 
-function productionDeps(): UpdateDeps | null {
-  const plugin = getOTAPlugin();
-  const fs = getFilesystemPlugin();
-  if (!plugin || !fs) return null;
-
-  const base = getReleaseBase();
+function productionDeps(
+  plugin: any,
+  fs: any,
+  base: string,
+): UpdateDeps {
   return {
     fetchManifest: async () => {
       const resp = await fetch(`${base}/version.json`, { cache: 'no-store' });
@@ -208,13 +201,27 @@ async function checkForUpdate(): Promise<void> {
   if (now - lastCheckTime < CHECK_INTERVAL_MS) return;
   lastCheckTime = now;
 
-  const deps = productionDeps();
-  if (!deps) {
+  const plugin = getOTAPlugin();
+  const fs = getFilesystemPlugin();
+  if (!plugin || !fs) {
     console.log('[OTA] plugin not available, skipping');
     return;
   }
 
   try {
+    const state = await plugin.getState();
+    // Backwards compat: older native builds don't have releaseBase in their
+    // plist. Treat undefined (missing) as the legacy production default;
+    // treat explicit empty string (dev xcconfig) as "OTA disabled".
+    const releaseBase: string = state.releaseBase === undefined
+      ? 'https://shnayder.github.io/musicreps/release'
+      : state.releaseBase;
+    if (!releaseBase) {
+      console.log('[OTA] no release base configured, skipping (dev build)');
+      return;
+    }
+
+    const deps = productionDeps(plugin, fs, releaseBase);
     const result = await checkForUpdateCore(deps);
     const messages: Record<string, string> = {
       'fetch-failed': '[OTA] version.json fetch failed',

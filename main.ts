@@ -30,7 +30,15 @@ async function getVersion(): Promise<string> {
       // branch === 'HEAD' happens on detached-HEAD checkouts (e.g. tag builds).
       const envCount = Deno.env.get('BUILD_NUMBER');
       if (envCount) return `#${envCount}`;
-      return hash;
+      // Local builds: count main's commits (matches CI's GitHub API count).
+      // On detached HEAD (tag builds), main ref may differ from HEAD.
+      let localCount: string;
+      try {
+        localCount = await gitText('rev-list', '--count', 'main');
+      } catch {
+        localCount = await gitText('rev-list', '--count', 'HEAD');
+      }
+      return `#${localCount}`;
     }
     const suffix = branch.includes('/')
       ? branch.slice(branch.lastIndexOf('/') + 1)
@@ -426,6 +434,7 @@ if (import.meta.main) {
     }
     await Deno.writeTextFile(`${docsDir}/index.html`, html);
     await Deno.writeTextFile(`${docsDir}/sw.js`, SERVICE_WORKER);
+    await Deno.writeTextFile(`${docsDir}/bundled-version.txt`, version);
 
     // Static pages — rendered from static-pages/*.md into docs/*.html.
     // These URLs go in the app's Settings screen and the App/Play Store

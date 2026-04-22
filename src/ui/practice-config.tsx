@@ -6,7 +6,7 @@ import type { ComponentChildren } from 'preact';
 import type { SuggestionLine } from '../types.ts';
 import { SkillIcon } from './icons.tsx';
 import { Card, Stack } from './layout.tsx';
-import { ScreenHeader } from './mode-screen.tsx';
+import { ScreenHeader } from './skill-screen.tsx';
 import { Pill } from './pill.tsx';
 import { RepeatMark } from './repeat-mark.tsx';
 import { ProgressBarLabeled } from './scope.tsx';
@@ -22,8 +22,8 @@ export { ProgressBarLabeled };
 // ---------------------------------------------------------------------------
 
 export function SkillHeader(
-  { modeId, title, totalReps, onBack }: {
-    modeId?: string;
+  { skillId, title, totalReps, onBack }: {
+    skillId?: string;
     title: string;
     totalReps?: number;
     onBack?: () => void;
@@ -32,7 +32,7 @@ export function SkillHeader(
   return (
     <ScreenHeader
       title={title}
-      icon={modeId && <SkillIcon modeId={modeId} />}
+      icon={skillId && <SkillIcon skillId={skillId} />}
       onClose={onBack}
       closeAriaLabel='Back to home'
       right={totalReps != null
@@ -74,9 +74,9 @@ export function SuggestionLines(
 // ---------------------------------------------------------------------------
 
 export function LevelToggles(
-  { labels, groupIds, active, onToggle }: {
+  { labels, levelIds, active, onToggle }: {
     labels: string[];
-    groupIds: string[];
+    levelIds: string[];
     active: ReadonlySet<string>;
     onToggle: (id: string) => void;
   },
@@ -88,7 +88,7 @@ export function LevelToggles(
       </Text>
       <div class='level-toggles'>
         {labels.map((label, i) => {
-          const id = groupIds[i];
+          const id = levelIds[i];
           return (
             <button
               type='button'
@@ -172,6 +172,11 @@ export function LevelProgressCard(
             </span>
           )}
         </div>
+        {pill && (
+          <div class='level-progress-pill-row'>
+            <Pill variant='notice'>{pill}</Pill>
+          </div>
+        )}
         {statusLabel && (
           <span class='level-progress-status'>
             {statusColor && (
@@ -182,11 +187,6 @@ export function LevelProgressCard(
             )}
             {statusLabel}
           </span>
-        )}
-        {pill && (
-          <div class='level-progress-pill-row'>
-            <Pill variant='notice'>{pill}</Pill>
-          </div>
         )}
         <ProgressBarLabeled
           segments={colors.map((c) => ({ color: c, weight: 1 }))}

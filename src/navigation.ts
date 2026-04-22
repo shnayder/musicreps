@@ -1,9 +1,9 @@
-// Navigation: home screen and mode switching.
-// Persists last-used mode via storage abstraction (for future "Resume" feature).
+// Navigation: home screen and skill switching.
+// Persists last-used skill via storage abstraction (for future "Resume" feature).
 
 import { storage } from './storage.ts';
 
-type ModeController = {
+type SkillController = {
   init(): void;
   activate(): void;
   deactivate(): void;
@@ -12,66 +12,67 @@ type ModeController = {
 
 /** Set up global navigation listeners (back buttons, Escape key). */
 function initNavigationListeners(
-  getCurrentModeId: () => string | null,
+  getCurrentSkillId: () => string | null,
   navigateHome: () => void,
 ): void {
-  // Escape key navigates home when idle on a mode screen.
+  // Escape key navigates home when idle on a skill screen.
   document.addEventListener('keydown', (e) => {
-    const modeId = getCurrentModeId();
-    if (e.key !== 'Escape' || !modeId) return;
+    const skillId = getCurrentSkillId();
+    if (e.key !== 'Escape' || !skillId) return;
     if (document.querySelector('.settings-overlay.open')) return;
-    const modeScreen = document.getElementById('mode-' + modeId);
-    if (modeScreen && !modeScreen.classList.contains('phase-idle')) return;
+    const skillScreen = document.getElementById('skill-' + skillId);
+    if (skillScreen && !skillScreen.classList.contains('phase-idle')) return;
     navigateHome();
   });
 }
 
 export function createNavigation(): {
-  registerMode: (id: string, modeController: ModeController) => void;
-  switchTo: (modeId: string) => void;
+  registerSkill: (id: string, skillController: SkillController) => void;
+  switchTo: (skillId: string) => void;
   navigateHome: () => void;
   init: () => void;
 } {
-  const LAST_MODE_KEY = 'fretboard_lastMode';
-  const modes: Record<string, ModeController> = {};
-  let currentModeId: string | null = null;
+  // Legacy storage key — uses old "fretboard_lastMode" naming.
+  const LAST_SKILL_KEY = 'fretboard_lastMode';
+  const skills: Record<string, SkillController> = {};
+  let currentSkillId: string | null = null;
   const homeScreen = document.getElementById('home-screen');
 
-  function registerMode(id: string, modeController: ModeController): void {
-    modes[id] = modeController;
+  function registerSkill(id: string, skillController: SkillController): void {
+    skills[id] = skillController;
   }
 
   function navigateHome(): void {
-    const previousModeId = currentModeId;
-    if (currentModeId && modes[currentModeId]) {
-      modes[currentModeId].deactivate();
-      const currentScreen = document.getElementById('mode-' + currentModeId);
-      if (currentScreen) currentScreen.classList.remove('mode-active');
+    const previousSkillId = currentSkillId;
+    if (currentSkillId && skills[currentSkillId]) {
+      skills[currentSkillId].deactivate();
+      const currentScreen = document.getElementById('skill-' + currentSkillId);
+      if (currentScreen) currentScreen.classList.remove('skill-active');
     }
-    currentModeId = null;
+    currentSkillId = null;
     if (homeScreen) homeScreen.classList.remove('hidden');
     requestAnimationFrame(() => {
-      if (previousModeId && homeScreen) {
+      if (previousSkillId && homeScreen) {
         const btn = homeScreen.querySelector(
-          '.home-mode-btn[data-mode="' + previousModeId + '"]',
+          '.home-skill-btn[data-skill="' + previousSkillId + '"]',
         ) as HTMLElement | null;
         if (btn) btn.focus();
       }
     });
   }
 
-  function switchTo(modeId: string): void {
-    if (!modes[modeId]) return;
+  function switchTo(skillId: string): void {
+    if (!skills[skillId]) return;
     if (homeScreen) homeScreen.classList.add('hidden');
-    if (currentModeId && modes[currentModeId]) {
-      modes[currentModeId].deactivate();
-      const currentScreen = document.getElementById('mode-' + currentModeId);
-      if (currentScreen) currentScreen.classList.remove('mode-active');
+    if (currentSkillId && skills[currentSkillId]) {
+      skills[currentSkillId].deactivate();
+      const currentScreen = document.getElementById('skill-' + currentSkillId);
+      if (currentScreen) currentScreen.classList.remove('skill-active');
     }
-    currentModeId = modeId;
-    const newScreen = document.getElementById('mode-' + modeId);
-    if (newScreen) newScreen.classList.add('mode-active');
-    modes[modeId].activate();
+    currentSkillId = skillId;
+    const newScreen = document.getElementById('skill-' + skillId);
+    if (newScreen) newScreen.classList.add('skill-active');
+    skills[skillId].activate();
     requestAnimationFrame(() => {
       if (newScreen) {
         const target = newScreen.querySelector('.start-btn') as
@@ -80,14 +81,14 @@ export function createNavigation(): {
         if (target) target.focus();
       }
     });
-    storage.setItem(LAST_MODE_KEY, modeId);
+    storage.setItem(LAST_SKILL_KEY, skillId);
   }
 
   function init(): void {
-    initNavigationListeners(() => currentModeId, navigateHome);
-    for (const id of Object.keys(modes)) modes[id].init();
+    initNavigationListeners(() => currentSkillId, navigateHome);
+    for (const id of Object.keys(skills)) skills[id].init();
     navigateHome();
   }
 
-  return { registerMode, switchTo, navigateHome, init };
+  return { registerSkill, switchTo, navigateHome, init };
 }

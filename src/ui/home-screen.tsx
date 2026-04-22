@@ -4,16 +4,22 @@
 
 import type { ComponentChildren } from 'preact';
 import { useCallback, useMemo, useState } from 'preact/hooks';
-import { MODE_DESCRIPTIONS, MODE_NAMES, TRACKS } from '../mode-catalog.ts';
+import { SKILL_DESCRIPTIONS, SKILL_NAMES, TRACKS } from '../skill-catalog.ts';
 import { type DevPanelData, getDevPanelData } from '../dev-panel.ts';
 import { getGlobalEffort, toLocalDateString } from '../effort.ts';
 import { SkillIcon } from './icons.tsx';
 import { Pill } from './pill.tsx';
 import type { SettingsController } from '../types.ts';
 import { storage } from '../storage.ts';
+import {
+  buildExport,
+  detectBackend,
+  downloadExport,
+  exportFilename,
+} from '../export-data.ts';
 import type { AppConfig } from '../app-config.ts';
 import {
-  type ModeProgress,
+  type SkillProgress,
   useHomeProgress,
 } from '../hooks/use-home-progress.ts';
 import type { ProgressSegment } from '../stats-display.ts';
@@ -25,7 +31,7 @@ import {
   TabIcon,
   TabPanels,
   useTabsPrefix,
-} from './mode-screen.tsx';
+} from './skill-screen.tsx';
 import { GroupProgressBar } from './scope.tsx';
 import {
   LayoutFooter,
@@ -115,22 +121,30 @@ export function TrackPill(
 // ---------------------------------------------------------------------------
 
 export function SkillCardHeader(
-  { modeId, trackLabel }: {
-    modeId: string;
+  { skillId, trackLabel, progress }: {
+    skillId: string;
     trackLabel?: string;
+    progress?: SkillProgress;
   },
 ) {
-  const name = MODE_NAMES[modeId] || modeId;
-  const desc = MODE_DESCRIPTIONS[modeId] || '';
+  const name = SKILL_NAMES[skillId] || skillId;
+  const desc = SKILL_DESCRIPTIONS[skillId] || '';
   return (
-    <span class='skill-card-header'>
-      <SkillIcon modeId={modeId} />
-      <span class='skill-card-header-text'>
-        {trackLabel && <TrackPill label={trackLabel} />}
-        <Text role='heading-section' as='span'>{name}</Text>
-        <Text role='body-secondary' as='span'>{desc}</Text>
-      </span>
-    </span>
+    <Bar gap='group' class='skill-card-header'>
+      <SkillIcon skillId={skillId} />
+      <Stack gap='group' class='skill-card-content'>
+        <Stack gap='micro' class='skill-card-title-block'>
+          <Text role='heading-card' as='span'>{name}</Text>
+          {trackLabel && <TrackPill label={trackLabel} />}
+          {!trackLabel && desc && (
+            <Text role='body-secondary' as='span'>{desc}</Text>
+          )}
+        </Stack>
+        {progress && progress.segments.length > 0 && (
+          <GroupProgressBar segments={progress.segments} />
+        )}
+      </Stack>
+    </Bar>
   );
 }
 
@@ -148,33 +162,33 @@ export {
 // ---------------------------------------------------------------------------
 
 export function SkillCard(
-  { modeId, isStarred, onToggleStar, onSelectMode, progress }: {
-    modeId: string;
+  { skillId, isStarred, onToggleStar, onSelectSkill, progress }: {
+    skillId: string;
     isStarred: boolean;
-    onToggleStar: (modeId: string) => void;
-    onSelectMode: (modeId: string) => void;
-    progress?: ModeProgress;
+    onToggleStar: (skillId: string) => void;
+    onSelectSkill: (skillId: string) => void;
+    progress?: SkillProgress;
   },
 ) {
-  const name = MODE_NAMES[modeId] || modeId;
+  const name = SKILL_NAMES[skillId] || skillId;
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        onSelectMode(modeId);
+        onSelectSkill(skillId);
       }
     },
-    [modeId, onSelectMode],
+    [skillId, onSelectSkill],
   );
 
   return (
     <div
-      class='home-mode-btn skill-card'
-      data-mode={modeId}
+      class='home-skill-btn skill-card'
+      data-skill={skillId}
       role='button'
       tabIndex={0}
-      onClick={() => onSelectMode(modeId)}
+      onClick={() => onSelectSkill(skillId)}
       onKeyDown={handleKeyDown}
     >
       <button
@@ -184,17 +198,12 @@ export function SkillCard(
         aria-pressed={isStarred}
         onClick={(e) => {
           e.stopPropagation();
-          onToggleStar(modeId);
+          onToggleStar(skillId);
         }}
       >
         {isStarred ? '\u2605' : '\u2606'}
       </button>
-      <SkillCardHeader modeId={modeId} />
-      {progress && progress.segments.length > 0 && (
-        <div class='skill-card-progress'>
-          <GroupProgressBar segments={progress.segments} />
-        </div>
-      )}
+      <SkillCardHeader skillId={skillId} progress={progress} />
     </div>
   );
 }
@@ -205,43 +214,43 @@ export function SkillCard(
 
 function ActiveSkillCard(
   {
-    modeId,
+    skillId,
     trackLabel,
     onToggleStar,
-    onSelectMode,
+    onSelectSkill,
     progress,
     rec,
   }: {
-    modeId: string;
+    skillId: string;
     trackLabel: string;
-    onToggleStar: (modeId: string) => void;
-    onSelectMode: (modeId: string) => void;
-    progress?: ModeProgress;
+    onToggleStar: (skillId: string) => void;
+    onSelectSkill: (skillId: string) => void;
+    progress?: SkillProgress;
     rec?: { cueLabel: string; detail: string };
   },
 ) {
-  const name = MODE_NAMES[modeId] || modeId;
+  const name = SKILL_NAMES[skillId] || skillId;
   const hasRec = !!rec?.detail;
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        onSelectMode(modeId);
+        onSelectSkill(skillId);
       }
     },
-    [modeId, onSelectMode],
+    [skillId, onSelectSkill],
   );
 
   return (
     <div
-      class={`home-mode-btn skill-card active-skill-card${
+      class={`home-skill-btn skill-card active-skill-card${
         hasRec ? ' has-rec' : ''
       }`}
-      data-mode={modeId}
+      data-skill={skillId}
       role='button'
       tabIndex={0}
-      onClick={() => onSelectMode(modeId)}
+      onClick={() => onSelectSkill(skillId)}
       onKeyDown={handleKeyDown}
     >
       <div class='skill-card-body'>
@@ -252,16 +261,18 @@ function ActiveSkillCard(
           aria-pressed
           onClick={(e) => {
             e.stopPropagation();
-            onToggleStar(modeId);
+            onToggleStar(skillId);
           }}
         >
           {'\u2605'}
         </button>
-        <span class='skill-card-header'>
-          <SkillIcon modeId={modeId} />
-          <span class='skill-card-header-text'>
-            <Text role='heading-section' as='span'>{name}</Text>
-            <TrackPill label={trackLabel} />
+        <Bar gap='group' class='skill-card-header'>
+          <SkillIcon skillId={skillId} />
+          <Stack gap='group' class='skill-card-content'>
+            <Stack gap='micro' class='skill-card-title-block'>
+              <Text role='heading-card' as='span'>{name}</Text>
+              <TrackPill label={trackLabel} />
+            </Stack>
             {hasRec && (
               <span class='skill-rec-hint'>
                 <strong>{rec!.cueLabel}</strong>
@@ -271,20 +282,18 @@ function ActiveSkillCard(
                     : ` \u2014 ${rec!.detail}`)}
               </span>
             )}
-          </span>
-        </span>
-        {progress &&
-          (progress.segments.length > 0 ||
-            progress.activeGroupCount > 0) &&
-          (
-            <div class='skill-card-progress'>
-              <GroupProgressBar
-                segments={progress.segments.length > 0
-                  ? progress.segments
-                  : notStartedSegments(progress.activeGroupCount)}
-              />
-            </div>
-          )}
+            {progress &&
+              (progress.segments.length > 0 ||
+                progress.activeLevelCount > 0) &&
+              (
+                <GroupProgressBar
+                  segments={progress.segments.length > 0
+                    ? progress.segments
+                    : notStartedSegments(progress.activeLevelCount)}
+                />
+              )}
+          </Stack>
+        </Bar>
       </div>
     </div>
   );
@@ -303,11 +312,11 @@ function notStartedSegments(count: number): ProgressSegment[] {
 // ---------------------------------------------------------------------------
 
 function ActiveSkillsList(
-  { starred, onToggleStar, onSelectMode, progress, recommendations }: {
+  { starred, onToggleStar, onSelectSkill, progress, recommendations }: {
     starred: Set<string>;
-    onToggleStar: (modeId: string) => void;
-    onSelectMode: (modeId: string) => void;
-    progress: Map<string, ModeProgress>;
+    onToggleStar: (skillId: string) => void;
+    onSelectSkill: (skillId: string) => void;
+    progress: Map<string, SkillProgress>;
     recommendations: SkillRecommendation[];
   },
 ) {
@@ -322,14 +331,14 @@ function ActiveSkillsList(
     );
   }
 
-  // Build lookup: modeId → recommendation
+  // Build lookup: skillId → recommendation
   const recMap = new Map<string, SkillRecommendation>();
-  for (const rec of recommendations) recMap.set(rec.modeId, rec);
+  for (const rec of recommendations) recMap.set(rec.skillId, rec);
 
   // Partition: recommended skills (in rank order) first, then remaining
   // starred skills in definition order.
   type Entry = {
-    modeId: string;
+    skillId: string;
     trackId: string;
     trackLabel: string;
     rec?: SkillRecommendation;
@@ -337,15 +346,15 @@ function ActiveSkillsList(
   const recommended: Entry[] = [];
   const remaining: Entry[] = [];
 
-  const trackFor = (modeId: string) =>
-    TRACKS.find((t) => t.skills.includes(modeId));
+  const trackFor = (skillId: string) =>
+    TRACKS.find((t) => t.skills.includes(skillId));
 
   // Recommended skills in rank order
   for (const rec of recommendations) {
-    if (starred.has(rec.modeId)) {
-      const track = trackFor(rec.modeId);
+    if (starred.has(rec.skillId)) {
+      const track = trackFor(rec.skillId);
       recommended.push({
-        modeId: rec.modeId,
+        skillId: rec.skillId,
         trackId: track?.id || 'core',
         trackLabel: track?.label ?? '',
         rec,
@@ -355,9 +364,9 @@ function ActiveSkillsList(
 
   // Remaining starred skills in definition order
   for (const track of TRACKS) {
-    for (const modeId of track.skills) {
-      if (starred.has(modeId) && !recMap.has(modeId)) {
-        remaining.push({ modeId, trackId: track.id, trackLabel: track.label });
+    for (const skillId of track.skills) {
+      if (starred.has(skillId) && !recMap.has(skillId)) {
+        remaining.push({ skillId, trackId: track.id, trackLabel: track.label });
       }
     }
   }
@@ -377,14 +386,14 @@ function ActiveSkillsList(
           <strong>All Skills</strong> to keep going.
         </p>
       )}
-      {ordered.map(({ modeId, trackLabel, rec }) => (
+      {ordered.map(({ skillId, trackLabel, rec }) => (
         <ActiveSkillCard
-          key={modeId}
-          modeId={modeId}
+          key={skillId}
+          skillId={skillId}
           trackLabel={trackLabel}
           onToggleStar={onToggleStar}
-          onSelectMode={onSelectMode}
-          progress={progress.get(modeId)}
+          onSelectSkill={onSelectSkill}
+          progress={progress.get(skillId)}
           rec={rec?.detail
             ? { cueLabel: rec.cueLabel, detail: rec.detail }
             : undefined}
@@ -470,7 +479,7 @@ function SettingsAboutLegal(
               Support
             </a>
           )}
-          <span class='settings-meta'>Build #{version}</span>
+          <span class='settings-meta'>Build {version}</span>
         </div>
       </Section>
 
@@ -553,40 +562,62 @@ export function SettingsPanel(
 // DevPage — dev stats page (same conditional-render pattern as SettingsPage)
 // ---------------------------------------------------------------------------
 
-function DevPage({ onClose }: { onClose: () => void }) {
+function DevPage(
+  { version, onClose }: { version: string; onClose: () => void },
+) {
   const [data] = useState<DevPanelData>(getDevPanelData);
+
+  const handleExport = useCallback(() => {
+    const backend = detectBackend();
+    const now = new Date();
+    const payload = buildExport({ appVersion: version, backend, now });
+    downloadExport(payload, exportFilename(version, now));
+  }, [version]);
+
   return (
-    <Stack gap='component' class='settings-page'>
-      <div class='settings-page-header'>
-        <CloseButton ariaLabel='Close' onClick={onClose} />
-        <Text role='heading-page' as='h1' class='page-heading'>Dev</Text>
-      </div>
+    <ScreenLayout>
+      <LayoutMain>
+        <Stack gap='component' class='settings-page'>
+          <div class='settings-page-header'>
+            <CloseButton ariaLabel='Close' onClick={onClose} />
+            <Text role='heading-page' as='h1' class='page-heading'>Dev</Text>
+          </div>
 
-      <DevSection title='Global'>
-        <DevStatRow label='Total reps' value={data.totalReps} />
-        <DevStatRow label='Days active' value={data.daysActive} />
-      </DevSection>
+          <DevSection title='Global'>
+            <DevStatRow label='Total reps' value={data.totalReps} />
+            <DevStatRow label='Days active' value={data.daysActive} />
+          </DevSection>
 
-      <DevSection title='Per Mode'>
-        <DevTable
-          headers={['Mode', 'Reps', 'Items']}
-          rows={data.modeEfforts.map((m) => [
-            MODE_NAMES[m.id] || m.id,
-            String(m.totalReps),
-            `${m.itemsStarted}/${m.totalItems}`,
-          ])}
-        />
-      </DevSection>
+          <DevSection title='Per Mode'>
+            <DevTable
+              headers={['Mode', 'Reps', 'Items']}
+              rows={data.modeEfforts.map((m) => [
+                SKILL_NAMES[m.id] || m.id,
+                String(m.totalReps),
+                `${m.itemsStarted}/${m.totalItems}`,
+              ])}
+            />
+          </DevSection>
 
-      {data.recentDays.length > 0 && (
-        <DevSection title='Recent Days'>
-          <DevTable
-            headers={['Date', 'Reps']}
-            rows={data.recentDays.map((d) => [d.date, String(d.count)])}
-          />
-        </DevSection>
-      )}
-    </Stack>
+          {data.recentDays.length > 0 && (
+            <DevSection title='Recent Days'>
+              <DevTable
+                headers={['Date', 'Reps']}
+                rows={data.recentDays.map((d) => [d.date, String(d.count)])}
+              />
+            </DevSection>
+          )}
+
+          <DevSection title='Export'>
+            <div class='settings-link-list'>
+              <button type='button' class='text-link' onClick={handleExport}>
+                Export data
+              </button>
+            </div>
+          </DevSection>
+        </Stack>
+      </LayoutMain>
+    </ScreenLayout>
   );
 }
 
@@ -634,14 +665,14 @@ function DevTable(
 // ---------------------------------------------------------------------------
 
 function AllSkillsList(
-  { accordion, starred, onToggleExpand, onToggleStar, onSelectMode, progress }:
+  { accordion, starred, onToggleExpand, onToggleStar, onSelectSkill, progress }:
     {
       accordion: Record<string, boolean>;
       starred: Set<string>;
       onToggleExpand: (trackId: string) => void;
-      onToggleStar: (modeId: string) => void;
-      onSelectMode: (modeId: string) => void;
-      progress: Map<string, ModeProgress>;
+      onToggleStar: (skillId: string) => void;
+      onSelectSkill: (skillId: string) => void;
+      progress: Map<string, SkillProgress>;
     },
 ) {
   return (
@@ -657,14 +688,14 @@ function AllSkillsList(
           isExpanded={accordion[track.id] !== false}
           onToggle={() => onToggleExpand(track.id)}
         >
-          {track.skills.map((modeId) => (
+          {track.skills.map((skillId) => (
             <SkillCard
-              key={modeId}
-              modeId={modeId}
-              isStarred={starred.has(modeId)}
+              key={skillId}
+              skillId={skillId}
+              isStarred={starred.has(skillId)}
               onToggleStar={onToggleStar}
-              onSelectMode={onSelectMode}
-              progress={progress.get(modeId)}
+              onSelectSkill={onSelectSkill}
+              progress={progress.get(skillId)}
             />
           ))}
         </TrackSection>
@@ -819,22 +850,22 @@ function useHomeTabs(
     version,
     useSolfege,
     setUseSolfege,
-    onSelectMode,
+    onSelectSkill,
     onToggleStar,
     onToggleExpand,
     onOpenDev,
   }: {
     starred: Set<string>;
     accordion: Record<string, boolean>;
-    progress: Map<string, ModeProgress>;
+    progress: Map<string, SkillProgress>;
     recommendations: SkillRecommendation[];
     settings: SettingsController;
     appConfig: AppConfig;
     version: string;
     useSolfege: boolean;
     setUseSolfege: (v: boolean) => void;
-    onSelectMode: (modeId: string) => void;
-    onToggleStar: (modeId: string) => void;
+    onSelectSkill: (skillId: string) => void;
+    onToggleStar: (skillId: string) => void;
     onToggleExpand: (trackId: string) => void;
     onOpenDev?: () => void;
   },
@@ -848,7 +879,7 @@ function useHomeTabs(
           <ActiveSkillsList
             starred={starred}
             onToggleStar={onToggleStar}
-            onSelectMode={onSelectMode}
+            onSelectSkill={onSelectSkill}
             progress={progress}
             recommendations={recommendations}
           />
@@ -865,7 +896,7 @@ function useHomeTabs(
             starred={starred}
             onToggleExpand={onToggleExpand}
             onToggleStar={onToggleStar}
-            onSelectMode={onSelectMode}
+            onSelectSkill={onSelectSkill}
             progress={progress}
           />
         </>
@@ -898,8 +929,8 @@ function useHomeTabs(
 // ---------------------------------------------------------------------------
 
 export function HomeScreen(
-  { onSelectMode, settings, appConfig, showDevLink, version }: {
-    onSelectMode: (modeId: string) => void;
+  { onSelectSkill, settings, appConfig, showDevLink, version }: {
+    onSelectSkill: (skillId: string) => void;
     settings: SettingsController;
     appConfig: AppConfig;
     showDevLink?: boolean;
@@ -917,10 +948,10 @@ export function HomeScreen(
   const globalEffort = useMemo(getGlobalEffort, [progress]);
   const prefix = useTabsPrefix();
 
-  const handleToggleStar = useCallback((modeId: string) => {
+  const handleToggleStar = useCallback((skillId: string) => {
     setStarred((prev) => {
       const next = new Set(prev);
-      next.has(modeId) ? next.delete(modeId) : next.add(modeId);
+      next.has(skillId) ? next.delete(skillId) : next.add(skillId);
       saveStarredSkills(next);
       return next;
     });
@@ -949,14 +980,14 @@ export function HomeScreen(
     version,
     useSolfege,
     setUseSolfege,
-    onSelectMode,
+    onSelectSkill,
     onToggleStar: handleToggleStar,
     onToggleExpand: handleToggleExpand,
     onOpenDev: showDevLink ? () => setShowDev(true) : undefined,
   });
 
   if (showDev) {
-    return <DevPage onClose={() => setShowDev(false)} />;
+    return <DevPage version={version} onClose={() => setShowDev(false)} />;
   }
 
   return (
@@ -980,7 +1011,7 @@ export function HomeScreen(
           activeTab={tab}
           onTabSwitch={handleChangeTab}
           prefix={prefix}
-          class='mode-nav'
+          class='skill-nav'
         />
       </LayoutFooter>
     </ScreenLayout>

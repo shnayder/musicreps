@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import { strict as assert } from 'node:assert';
 import {
-  ACTIVE_BUCKET_BIAS,
+  computeBucketCaps,
   computeBuckets,
   computeEwma,
   computeFreshness,
@@ -14,13 +14,14 @@ import {
   createMemoryStorage,
   DEFAULT_CONFIG,
   deriveScaledConfig,
-  effectiveActiveCap,
-  M_REVIEW,
-  N_ACTIVE,
-  N_ACTIVE_EXPANDED,
-  needsActiveLearning,
+  INITIAL_COST,
+  MAX_INITIAL,
+  needsInitialLearning,
   needsReview,
+  needsSpeedup,
+  pickFromPool,
   selectWeighted,
+  TOTAL_SLOTS,
   updateStability,
 } from './adaptive.ts';
 
@@ -333,9 +334,10 @@ describe('updateStability', () => {
     );
   });
 
-  it('self-correction is capped at maxStability', () => {
+  it('self-correction grows beyond old 14-day cap', () => {
     const newS = updateStability(4, 1000, 720, cfg);
-    assert.equal(newS, cfg.maxStability);
+    // 720h elapsed × 1.5 = 1080h (~45 days) — no cap
+    assert.equal(newS, 720 * 1.5);
   });
 
   it('does NOT self-correct for medium speed answers', () => {
@@ -355,9 +357,16 @@ describe('updateStability', () => {
     );
   });
 
-  it('caps stability at maxStability even from normal growth', () => {
+  it('normal growth is uncapped', () => {
     const newS = updateStability(300, 2000, 300, cfg);
-    assert.equal(newS, cfg.maxStability);
+    // freshness at review: 2^(-300/300) = 0.5
+    // growthFactor = 1 + 0.9 × (1 - 0.5) = 1.45
+    // 300 × 1.45 = 435
+    assert.ok(newS > 336, `stability (${newS}) should exceed old 14-day cap`);
+    assert.ok(
+      Math.abs(newS - 435) < 1,
+      `stability (${newS}) should be ~435`,
+    );
   });
 });
 
@@ -422,16 +431,36 @@ describe('selectWeighted', () => {
 // Working-set bucket predicates & computeBuckets
 // ---------------------------------------------------------------------------
 
-describe('needsActiveLearning', () => {
+describe('needsInitialLearning', () => {
   it('returns true for unseen items', () => {
-    assert.equal(needsActiveLearning(null), true);
+    assert.equal(needsInitialLearning(null), true);
   });
-  it('returns true for slow items', () => {
-    assert.equal(needsActiveLearning(0.5), true);
+  it('returns true for items below Solid', () => {
+    assert.equal(needsInitialLearning(0.5), true);
+    assert.equal(needsInitialLearning(0.69), true);
   });
-  it('returns false for items at the Automatic threshold', () => {
-    assert.equal(needsActiveLearning(0.9), false);
-    assert.equal(needsActiveLearning(1.0), false);
+  it('returns false for items at or above Solid', () => {
+    assert.equal(needsInitialLearning(0.7), false);
+    assert.equal(needsInitialLearning(0.9), false);
+    assert.equal(needsInitialLearning(1.0), false);
+  });
+});
+
+describe('needsSpeedup', () => {
+  it('returns false for unseen items', () => {
+    assert.equal(needsSpeedup(null), false);
+  });
+  it('returns false for items below Solid', () => {
+    assert.equal(needsSpeedup(0.5), false);
+  });
+  it('returns true for items between Solid and Automatic', () => {
+    assert.equal(needsSpeedup(0.7), true);
+    assert.equal(needsSpeedup(0.8), true);
+    assert.equal(needsSpeedup(0.89), true);
+  });
+  it('returns false for items at or above Automatic', () => {
+    assert.equal(needsSpeedup(0.9), false);
+    assert.equal(needsSpeedup(1.0), false);
   });
 });
 
@@ -449,85 +478,120 @@ describe('needsReview', () => {
   });
 });
 
+describe('computeBucketCaps', () => {
+  it('new skill: 5 initial, nothing else', () => {
+    const caps = computeBucketCaps(5, 0, 0);
+    assert.equal(caps.initialCap, 5);
+    assert.equal(caps.speedupCap, 0);
+    assert.equal(caps.reviewCap, 0);
+  });
+
+  it('early progress: 2 initial, 8 speedup, 0 review', () => {
+    const caps = computeBucketCaps(2, 8, 0);
+    assert.equal(caps.initialCap, 2);
+    assert.equal(caps.reviewCap, 0);
+    // remaining = 19. Review surplus redistributes to speedup, clamped to avail.
+    assert.equal(caps.speedupCap, 8);
+  });
+
+  it('review only: 0 initial, 0 speedup, 12 review', () => {
+    const caps = computeBucketCaps(0, 0, 12);
+    assert.equal(caps.initialCap, 0);
+    assert.equal(caps.speedupCap, 0);
+    assert.equal(caps.reviewCap, 12);
+  });
+
+  it('full house: caps at budget', () => {
+    const caps = computeBucketCaps(5, 10, 8);
+    assert.equal(caps.initialCap, 5);
+    // remaining = 25 - 15 = 10. Split 5/5.
+    assert.equal(caps.speedupCap, 5);
+    assert.equal(caps.reviewCap, 5);
+  });
+
+  it('max initial is MAX_INITIAL', () => {
+    const caps = computeBucketCaps(10, 0, 0);
+    assert.equal(caps.initialCap, MAX_INITIAL);
+  });
+
+  it('total slots used never exceeds TOTAL_SLOTS', () => {
+    const caps = computeBucketCaps(5, 20, 20);
+    const used = caps.initialCap * INITIAL_COST + caps.speedupCap +
+      caps.reviewCap;
+    assert.ok(used <= TOTAL_SLOTS, `used ${used} > ${TOTAL_SLOTS}`);
+  });
+});
+
 describe('computeBuckets', () => {
   const freshAll = () => 1;
   const unseen = () => null;
 
-  it('puts all unseen items into active, capped at the expanded cap when review is empty', () => {
-    const items = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
+  it('puts unseen items into initialLearning', () => {
+    const items = ['a', 'b', 'c', 'd', 'e'];
     const b = computeBuckets(items, unseen, freshAll, null);
-    // Review is empty → active cap expands to N_ACTIVE_EXPANDED (7).
-    assert.deepEqual(b.active, ['a', 'b', 'c', 'd', 'e', 'f', 'g']);
+    assert.deepEqual(b.initialLearning, items);
+    assert.deepEqual(b.speedup, []);
     assert.deepEqual(b.review, []);
     assert.deepEqual(b.fastFresh, []);
-    assert.equal(b.active.length, N_ACTIVE_EXPANDED);
   });
 
-  it('omits overflow items — fastFresh never receives them', () => {
-    const items = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+  it('caps initialLearning at MAX_INITIAL', () => {
+    const items = Array.from({ length: 8 }, (_, i) => `i${i}`);
     const b = computeBuckets(items, unseen, freshAll, null);
-    // With review empty the active cap is 7, so h and i overflow.
-    assert.equal(b.active.length, N_ACTIVE_EXPANDED);
-    assert.ok(!b.active.includes('h'));
-    assert.ok(!b.active.includes('i'));
-    assert.ok(!b.fastFresh.includes('h'));
-    assert.ok(!b.fastFresh.includes('i'));
-    assert.ok(!b.review.includes('h'));
-    assert.ok(!b.review.includes('i'));
+    assert.equal(b.initialLearning.length, MAX_INITIAL);
   });
 
   it('skips excludeId from all buckets', () => {
     const items = ['a', 'b', 'c'];
     const b = computeBuckets(items, unseen, freshAll, 'b');
-    assert.deepEqual(b.active, ['a', 'c']);
+    assert.ok(!b.initialLearning.includes('b'));
+    assert.ok(!b.speedup.includes('b'));
     assert.ok(!b.review.includes('b'));
     assert.ok(!b.fastFresh.includes('b'));
   });
 
-  it('partitions mixed stats correctly', () => {
-    // a: slow (active), b: fast+fresh (fastFresh), c: fast+stale (review),
-    // d: unseen (active)
+  it('partitions into all four buckets correctly', () => {
+    // a: slow (initial), b: solid (speedup), c: fast+stale (review),
+    // d: fast+fresh (fastFresh), e: unseen (initial)
     const speed = (id: string) => {
       if (id === 'a') return 0.4;
-      if (id === 'b') return 0.95;
+      if (id === 'b') return 0.8;
       if (id === 'c') return 0.95;
+      if (id === 'd') return 0.95;
       return null;
     };
     const fresh = (id: string) => {
-      if (id === 'b') return 0.9;
       if (id === 'c') return 0.2;
-      return 1;
+      return 0.9;
     };
-    const b = computeBuckets(['a', 'b', 'c', 'd'], speed, fresh, null);
-    assert.deepEqual(b.active, ['a', 'd']);
+    const b = computeBuckets(['a', 'b', 'c', 'd', 'e'], speed, fresh, null);
+    assert.deepEqual(b.initialLearning, ['a', 'e']);
+    assert.deepEqual(b.speedup, ['b']);
     assert.deepEqual(b.review, ['c']);
-    assert.deepEqual(b.fastFresh, ['b']);
+    assert.deepEqual(b.fastFresh, ['d']);
   });
 
   it('no item appears in more than one bucket', () => {
     const items = Array.from({ length: 30 }, (_, i) => `i${i}`);
     const b = computeBuckets(items, unseen, freshAll, null);
     const seen = new Set<string>();
-    for (const id of [...b.active, ...b.review, ...b.fastFresh]) {
+    for (
+      const id of [
+        ...b.initialLearning,
+        ...b.speedup,
+        ...b.review,
+        ...b.fastFresh,
+      ]
+    ) {
       assert.ok(!seen.has(id), `duplicate ${id}`);
       seen.add(id);
     }
   });
 
-  it('caps review bucket at M_REVIEW', () => {
-    // Construct 12 fast-stale items
-    const items = Array.from({ length: 12 }, (_, i) => `i${i}`);
-    const speed = () => 0.95;
-    const fresh = () => 0.1;
-    const b = computeBuckets(items, speed, fresh, null);
-    assert.equal(b.review.length, M_REVIEW);
-    assert.deepEqual(b.review, items.slice(0, M_REVIEW));
-  });
-
   it('preserves input order within each bucket', () => {
     const items = ['z', 'y', 'x', 'w', 'v'];
     const b = computeBuckets(items, unseen, freshAll, null);
-    assert.deepEqual(b.active, items);
+    assert.deepEqual(b.initialLearning, items);
   });
 
   it('fastFresh holds only items that are actually fast and fresh', () => {
@@ -536,107 +600,93 @@ describe('computeBuckets', () => {
     const fresh = () => 0.9;
     const b = computeBuckets(items, speed, fresh, null);
     assert.deepEqual(b.fastFresh, ['a', 'b']);
-    assert.deepEqual(b.active, []);
+    assert.deepEqual(b.initialLearning, []);
+    assert.deepEqual(b.speedup, []);
     assert.deepEqual(b.review, []);
   });
 
-  // Dynamic active cap based on review bucket size. See effectiveActiveCap.
+  it('redistributes slots when one bucket is empty', () => {
+    // 2 initial (6 slots) + 0 speedup + 12 review
+    // remaining = 19, all goes to review, capped at 12
+    const slowIds = ['s0', 's1'];
+    const staleIds = Array.from({ length: 12 }, (_, i) => `r${i}`);
+    const items = [...slowIds, ...staleIds];
+    const speed = (id: string) => (slowIds.includes(id) ? 0.4 : 0.95);
+    const fresh = (id: string) => (slowIds.includes(id) ? 1 : 0.1);
+    const b = computeBuckets(items, speed, fresh, null);
+    assert.equal(b.initialLearning.length, 2);
+    assert.equal(b.speedup.length, 0);
+    assert.equal(b.review.length, 12);
+  });
 
-  it('active cap expands to 7 when review is empty', () => {
-    // 9 unseen items, zero review → active fills to 7, last 2 overflow.
-    const items = Array.from({ length: 9 }, (_, i) => `u${i}`);
+  it('overflow items are omitted from all buckets', () => {
+    // More initial candidates than MAX_INITIAL → extras are overflow.
+    const items = Array.from({ length: 8 }, (_, i) => `i${i}`);
     const b = computeBuckets(items, unseen, freshAll, null);
-    assert.equal(b.active.length, N_ACTIVE_EXPANDED);
-    assert.equal(b.review.length, 0);
-  });
-
-  it('active cap is 6 when review has 1–3 items', () => {
-    // 8 unseen/slow + 2 fast-stale → review has 2, active cap is 6.
-    // Exercises the tail-trim: single pass fills active to 7, then
-    // final review.length=2 trims active back to 6 (s6 becomes overflow).
-    const slowIds = ['s0', 's1', 's2', 's3', 's4', 's5', 's6', 's7'];
-    const staleIds = ['r0', 'r1'];
-    const items = [...slowIds, ...staleIds];
-    const speed = (id: string) => (slowIds.includes(id) ? 0.4 : 0.95);
-    const fresh = (id: string) => (slowIds.includes(id) ? 1 : 0.1);
-    const b = computeBuckets(items, speed, fresh, null);
-    assert.equal(b.review.length, 2);
-    assert.equal(b.active.length, N_ACTIVE + 1);
-    assert.deepEqual(b.active, slowIds.slice(0, 6));
-    // s6 and s7 are overflow, not in any bucket.
-    for (const id of ['s6', 's7']) {
-      assert.ok(!b.active.includes(id));
-      assert.ok(!b.review.includes(id));
-      assert.ok(!b.fastFresh.includes(id));
-    }
-  });
-
-  it('active cap is 6 when review has exactly 1 item', () => {
-    // Band boundary: review=1 should still land in the 6-cap band.
-    const slowIds = ['s0', 's1', 's2', 's3', 's4', 's5', 's6'];
-    const staleIds = ['r0'];
-    const items = [...slowIds, ...staleIds];
-    const speed = (id: string) => (slowIds.includes(id) ? 0.4 : 0.95);
-    const fresh = (id: string) => (slowIds.includes(id) ? 1 : 0.1);
-    const b = computeBuckets(items, speed, fresh, null);
-    assert.equal(b.review.length, 1);
-    assert.equal(b.active.length, N_ACTIVE + 1);
-  });
-
-  it('active cap is still 6 when review has exactly 3 items', () => {
-    const slowIds = ['s0', 's1', 's2', 's3', 's4', 's5', 's6'];
-    const staleIds = ['r0', 'r1', 'r2'];
-    const items = [...slowIds, ...staleIds];
-    const speed = (id: string) => (slowIds.includes(id) ? 0.4 : 0.95);
-    const fresh = (id: string) => (slowIds.includes(id) ? 1 : 0.1);
-    const b = computeBuckets(items, speed, fresh, null);
-    assert.equal(b.review.length, 3);
-    assert.equal(b.active.length, N_ACTIVE + 1);
-  });
-
-  it('active cap stays at 5 when review has ≥4 items', () => {
-    const slowIds = ['s0', 's1', 's2', 's3', 's4', 's5', 's6'];
-    const staleIds = ['r0', 'r1', 'r2', 'r3'];
-    const items = [...slowIds, ...staleIds];
-    const speed = (id: string) => (slowIds.includes(id) ? 0.4 : 0.95);
-    const fresh = (id: string) => (slowIds.includes(id) ? 1 : 0.1);
-    const b = computeBuckets(items, speed, fresh, null);
-    assert.equal(b.review.length, 4);
-    assert.equal(b.active.length, N_ACTIVE);
-    assert.deepEqual(b.active, slowIds.slice(0, 5));
-  });
-
-  it('dropped active items become overflow, not fastFresh', () => {
-    // 8 slow items + 4 stale → active trims from 7 down to 5; s5, s6, s7
-    // and the untouched-overflow s7 must not land in fastFresh or review.
-    const slowIds = ['s0', 's1', 's2', 's3', 's4', 's5', 's6', 's7'];
-    const staleIds = ['r0', 'r1', 'r2', 'r3'];
-    const items = [...slowIds, ...staleIds];
-    const speed = (id: string) => (slowIds.includes(id) ? 0.4 : 0.95);
-    const fresh = (id: string) => (slowIds.includes(id) ? 1 : 0.1);
-    const b = computeBuckets(items, speed, fresh, null);
-    assert.equal(b.active.length, N_ACTIVE);
-    for (const id of ['s5', 's6', 's7']) {
-      assert.ok(!b.active.includes(id));
+    assert.equal(b.initialLearning.length, MAX_INITIAL);
+    for (let i = MAX_INITIAL; i < 8; i++) {
+      const id = `i${i}`;
+      assert.ok(!b.initialLearning.includes(id));
+      assert.ok(!b.speedup.includes(id));
       assert.ok(!b.review.includes(id));
       assert.ok(!b.fastFresh.includes(id));
     }
   });
 });
 
-describe('effectiveActiveCap', () => {
-  it('returns 7 when review is empty', () => {
-    assert.equal(effectiveActiveCap(0), N_ACTIVE_EXPANDED);
+describe('pickFromPool', () => {
+  it('picks from initialLearning with highest priority', () => {
+    const buckets = {
+      initialLearning: ['a'],
+      speedup: ['b'],
+      review: ['c'],
+      fastFresh: ['d'],
+    };
+    // With equal base weights, initial gets 3×, speedup 1×, review 1.5×,
+    // fresh 0.3×. So 'a' has the highest weight.
+    const getWeight = () => 1;
+    // rand=0 always picks the first item with weight.
+    const result = pickFromPool(buckets, getWeight, 0);
+    assert.equal(result, 'a');
   });
-  it('returns 6 for 1–3 review items', () => {
-    assert.equal(effectiveActiveCap(1), N_ACTIVE + 1);
-    assert.equal(effectiveActiveCap(2), N_ACTIVE + 1);
-    assert.equal(effectiveActiveCap(3), N_ACTIVE + 1);
+
+  it('returns null for all-empty buckets', () => {
+    const buckets = {
+      initialLearning: [],
+      speedup: [],
+      review: [],
+      fastFresh: [],
+    };
+    assert.equal(pickFromPool(buckets, () => 1, 0.5), null);
   });
-  it('returns 5 for 4+ review items', () => {
-    assert.equal(effectiveActiveCap(4), N_ACTIVE);
-    assert.equal(effectiveActiveCap(10), N_ACTIVE);
-    assert.equal(effectiveActiveCap(100), N_ACTIVE);
+
+  it('falls back to fastFresh when other buckets empty', () => {
+    const buckets = {
+      initialLearning: [],
+      speedup: [],
+      review: [],
+      fastFresh: ['x'],
+    };
+    assert.equal(pickFromPool(buckets, () => 1, 0.5), 'x');
+  });
+
+  it('distributes across buckets by multiplied weight', () => {
+    const buckets = {
+      initialLearning: ['a'],
+      speedup: ['b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'],
+      review: [],
+      fastFresh: [],
+    };
+    // a: 3×1=3, each speedup: 1×1=1. Total = 13.
+    // a gets 3/13 ≈ 23% of draws.
+    const getWeight = () => 1;
+    let aCount = 0;
+    const N = 1000;
+    for (let i = 0; i < N; i++) {
+      if (pickFromPool(buckets, getWeight, i / N) === 'a') aCount++;
+    }
+    // Should be roughly 230 ± 50.
+    assert.ok(aCount > 150 && aCount < 350, `a picked ${aCount}/${N} times`);
   });
 });
 
@@ -769,32 +819,24 @@ describe('createAdaptiveSelector', () => {
     );
   });
 
-  it('working set: only draws from first N_ACTIVE_EXPANDED items when all unseen and review empty', () => {
+  it('working set: only draws from first MAX_INITIAL items when all unseen', () => {
     const storage = createMemoryStorage();
-    // Deterministic RNG: first call picks bucket (use 0 to prefer active),
-    // second call picks within the bucket.
     let callCount = 0;
     const selector = createAdaptiveSelector(
       storage,
       DEFAULT_CONFIG,
-      () => {
-        const r = (callCount++ % 5) / 5; // 0, 0.2, 0.4, 0.6, 0.8
-        // The first call per selectNext is the coin flip; we want it
-        // below ACTIVE_BUCKET_BIAS (0.7), which 0..0.6 are.
-        return r;
-      },
+      () => (callCount++ % 5) / 5,
     );
     const items = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'];
     const seen = new Set<string>();
     for (let i = 0; i < 30; i++) {
-      const pick = selector.selectNext(items);
-      seen.add(pick);
-      // Don't record a response — keep them all unseen. Review is empty,
-      // so the active cap expands to N_ACTIVE_EXPANDED (7). With the
-      // last-selected excluded each trial, picks come from the first 8
-      // positions (7 active + 1 excluded-last).
+      seen.add(selector.selectNext(items));
+      // Don't record responses — keep them all unseen.
+      // initialLearning capped at MAX_INITIAL (5). With the
+      // last-selected excluded each trial, picks come from the first 6
+      // positions (5 initial + 1 excluded-last).
     }
-    const earlyItems = items.slice(0, N_ACTIVE_EXPANDED + 1);
+    const earlyItems = items.slice(0, MAX_INITIAL + 1);
     for (const id of seen) {
       assert.ok(
         earlyItems.includes(id),
@@ -807,27 +849,24 @@ describe('createAdaptiveSelector', () => {
     );
   });
 
-  it('working set: falls through to review when active is empty', () => {
+  it('working set: draws from review when initialLearning is empty', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(
       storage,
       DEFAULT_CONFIG,
-      () => 0.5, // below ACTIVE_BUCKET_BIAS → prefers active
+      () => 0.5,
     );
-    // Make all items fast but stale → review bucket populated, active empty.
-    // Record a fast response, then age the lastCorrectAt to force low freshness.
+    // Make all items fast but stale → review bucket populated.
     const items = ['a', 'b', 'c'];
     for (const id of items) {
       selector.recordResponse(id, 500); // fast
       const stats = storage.getStats(id)!;
-      // Force staleness: set lastCorrectAt far in the past.
       storage.saveStats(id, {
         ...stats,
         lastCorrectAt: Date.now() - 100 * 3600 * 1000, // 100 hours ago
         stability: 1, // 1-hour half-life → freshness ~0
       });
     }
-    // Prefer active (coin < 0.7) but active should be empty → picks review.
     const pick = selector.selectNext(items);
     assert.ok(items.includes(pick));
     // Verify bucket membership explicitly.
@@ -837,12 +876,8 @@ describe('createAdaptiveSelector', () => {
       (id) => selector.getFreshness(id),
       null,
     );
-    assert.equal(buckets.active.length, 0);
+    assert.equal(buckets.initialLearning.length, 0);
     assert.ok(buckets.review.length > 0);
-  });
-
-  it('ACTIVE_BUCKET_BIAS is 0.7', () => {
-    assert.equal(ACTIVE_BUCKET_BIAS, 0.7);
   });
 
   it('distributes selections across unseen items, not just the first few', () => {
@@ -1188,7 +1223,7 @@ describe('createAdaptiveSelector', () => {
     assert.equal(result.seen, 10);
   });
 
-  it('getGroupRecommendations ranks groups by work (working + unseen)', () => {
+  it('getLevelStats preserves input order', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
@@ -1199,31 +1234,31 @@ describe('createAdaptiveSelector', () => {
     // Group '1': no items answered (all unseen)
     // (no recordResponse calls)
 
-    const recs = selector.getGroupRecommendations(
+    const recs = selector.getLevelStats(
       ['0', '1'],
       (id) => [`${id}-0`, `${id}-1`],
     );
 
     assert.equal(recs.length, 2);
-    // Group '1' should be first (more unseen items = more work)
-    assert.equal(recs[0].groupId, '1');
-    assert.equal(recs[0].unseenCount, 2);
+    // Preserves input order: '0' first, '1' second.
+    assert.equal(recs[0].levelId, '0');
+    assert.equal(recs[0].unseenCount, 0);
     assert.equal(recs[0].workingCount, 0);
-    assert.equal(recs[0].automaticCount, 0);
-    assert.equal(recs[1].groupId, '0');
-    assert.equal(recs[1].unseenCount, 0);
+    assert.equal(recs[0].automaticCount, 2); // fast + just answered = automatic
+    assert.equal(recs[1].levelId, '1');
+    assert.equal(recs[1].unseenCount, 2);
     assert.equal(recs[1].workingCount, 0);
-    assert.equal(recs[1].automaticCount, 2); // fast + just answered = automatic
+    assert.equal(recs[1].automaticCount, 0);
   });
 
-  it('getGroupRecommendations separates unseen from working items', () => {
+  it('getLevelStats separates unseen from working items', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
     // Group '0': item 0-0 answered fast and recently → automatic, item 0-1 unseen
     selector.recordResponse('0-0', 1200);
 
-    const recs = selector.getGroupRecommendations(
+    const recs = selector.getLevelStats(
       ['0'],
       (id) => [`${id}-0`, `${id}-1`],
     );
@@ -1233,7 +1268,7 @@ describe('createAdaptiveSelector', () => {
     assert.equal(recs[0].workingCount, 0);
   });
 
-  it('getGroupRecommendations counts working items (seen but not automatic)', () => {
+  it('getLevelStats counts working items (seen but not automatic)', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
@@ -1248,7 +1283,7 @@ describe('createAdaptiveSelector', () => {
       lastCorrectAt: Date.now() - 100 * 3600000,
     });
 
-    const recs = selector.getGroupRecommendations(
+    const recs = selector.getLevelStats(
       ['0'],
       (id) => [`${id}-0`, `${id}-1`],
     );
@@ -1258,14 +1293,14 @@ describe('createAdaptiveSelector', () => {
     assert.equal(recs[0].automaticCount, 0);
   });
 
-  it('getGroupRecommendations classifies slow-but-recent items as working', () => {
+  it('getLevelStats classifies slow-but-recent items as working', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
 
     // Slow answer (3500ms) just now → speedScore ≈ 0.38 < 0.9 → working, not automatic
     selector.recordResponse('0-0', 3500);
 
-    const recs = selector.getGroupRecommendations(
+    const recs = selector.getLevelStats(
       ['0'],
       (id) => [`${id}-0`],
     );
@@ -1274,20 +1309,18 @@ describe('createAdaptiveSelector', () => {
     assert.equal(recs[0].automaticCount, 0);
   });
 
-  it('getGroupRecommendations breaks ties deterministically by groupId order', () => {
+  it('getLevelStats preserves input order regardless of work counts', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
-    // Three groups with identical work counts (all unseen, 1 item each).
-    // Without tie-breaking, order could be arbitrary. With tie-breaking,
-    // equal-work groups sort by groupId lexicographically.
-    const recs = selector.getGroupRecommendations(
+    // Three groups with identical work counts, non-alphabetical input order.
+    // Output preserves input order — no sorting applied.
+    const recs = selector.getLevelStats(
       ['g5', 'g2', 'g8'],
       (id) => [`${id}-0`],
     );
-    // All have work=1 (1 unseen). Tie-break → sorted by groupId: g2, g5, g8.
-    assert.equal(recs[0].groupId, 'g2');
-    assert.equal(recs[1].groupId, 'g5');
-    assert.equal(recs[2].groupId, 'g8');
+    assert.equal(recs[0].levelId, 'g5');
+    assert.equal(recs[1].levelId, 'g2');
+    assert.equal(recs[2].levelId, 'g8');
   });
 
   it('updateConfig changes config used by selector', () => {

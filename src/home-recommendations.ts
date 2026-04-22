@@ -5,7 +5,7 @@ import {
   computeRecommendations,
   type RecommendationSelector,
 } from './recommendations.ts';
-import type { ModeProgressEntry } from './mode-progress-manifest.ts';
+import type { SkillProgressEntry } from './skill-progress-manifest.ts';
 import type { StorageAdapter } from './types.ts';
 import { createAdaptiveSelector, deriveScaledConfig } from './adaptive.ts';
 
@@ -21,7 +21,7 @@ export type SkillRecommendationType =
   | 'automatic';
 
 export type SkillRecommendation = {
-  modeId: string;
+  skillId: string;
   type: SkillRecommendationType;
   /** Higher = more urgent within the same type. */
   urgency: number;
@@ -35,94 +35,100 @@ export type SkillRecommendation = {
 // Per-skill classification
 // ---------------------------------------------------------------------------
 
-/** Build the "not-started" result for a mode. */
-function notStarted(modeId: string): SkillRecommendation {
-  return { modeId, type: 'not-started', urgency: 0, cueLabel: '', detail: '' };
+/** Build the "not-started" result for a skill. */
+function notStarted(skillId: string): SkillRecommendation {
+  return { skillId, type: 'not-started', urgency: 0, cueLabel: '', detail: '' };
 }
 
-/** Format group labels from an array of group IDs and a label map. */
-function groupLabelText(
-  groupIds: string[],
+/** Format level labels from an array of level IDs and a label map. */
+function levelLabelText(
+  levelIds: string[],
   labelMap: Map<string, string>,
 ): string {
-  return groupIds.map((id) => labelMap.get(id) ?? id).join(', ');
+  return levelIds.map((id) => labelMap.get(id) ?? id).join(', ');
 }
 
 /**
  * Classify a single skill's recommendation state.
- * Uses the same computeRecommendations pipeline as in-mode display.
+ * Uses the same computeRecommendations pipeline as in-skill display.
  */
 export function computeSkillRecommendation(
-  entry: ModeProgressEntry,
+  entry: SkillProgressEntry,
   storage: StorageAdapter,
   motorBaseline: number | null,
-  skippedGroups: ReadonlySet<string>,
+  skippedLevels: ReadonlySet<string>,
   config: { maxWorkItems?: number },
 ): SkillRecommendation {
   const cfg = motorBaseline !== null
     ? deriveScaledConfig(motorBaseline)
     : undefined;
-  const selector = createAdaptiveSelector(storage, cfg);
+  const selector = createAdaptiveSelector(
+    storage,
+    cfg,
+    Math.random,
+    entry.getResponseCount ?? null,
+  );
 
-  // Build active group IDs (all minus skipped).
-  const allGroupIds: string[] = entry.groups
-    .filter((g) => !skippedGroups.has(g.id))
+  // Build active level IDs (all minus skipped).
+  const allLevelIds: string[] = entry.levels
+    .filter((g) => !skippedLevels.has(g.id))
     .map((g) => g.id);
-  if (allGroupIds.length === 0) return notStarted(entry.modeId);
+  if (allLevelIds.length === 0) return notStarted(entry.skillId);
 
-  // O(1) lookups by group ID.
-  const groupById = new Map(entry.groups.map((g) => [g.id, g]));
-  const getItemIds = (id: string) => groupById.get(id)?.getItemIds() ?? [];
+  // O(1) lookups by level ID.
+  const levelById = new Map(entry.levels.map((g) => [g.id, g]));
+  const getItemIds = (id: string) => levelById.get(id)?.getItemIds() ?? [];
 
   // Check if any items have been seen at all.
-  const allItemIds = allGroupIds.flatMap(getItemIds);
+  const allItemIds = allLevelIds.flatMap(getItemIds);
   const { seen } = selector.getLevelSpeed(allItemIds);
-  if (seen === 0) return notStarted(entry.modeId);
+  if (seen === 0) return notStarted(entry.skillId);
 
   // Preserve definition order for unstarted tie-breaking.
-  const idOrder = new Map(entry.groups.map((g, i) => [g.id, i]));
+  const idOrder = new Map(entry.levels.map((g, i) => [g.id, i]));
   const result = computeRecommendations(
     selector as RecommendationSelector,
-    allGroupIds,
+    allLevelIds,
     getItemIds,
     config,
     {
       sortUnstarted: (a, b) =>
-        (idOrder.get(a.groupId) ?? 0) - (idOrder.get(b.groupId) ?? 0),
+        (idOrder.get(a.levelId) ?? 0) - (idOrder.get(b.levelId) ?? 0),
     },
   );
 
   return classifySkill(entry, result);
 }
 
-/** Classify a skill based on its first levelRec type. */
+/** Classify a skill based on its levelRec types. */
 function classifySkill(
-  entry: ModeProgressEntry,
+  entry: SkillProgressEntry,
   result: ReturnType<typeof computeRecommendations>,
 ): SkillRecommendation {
-  const modeId = entry.modeId;
-  const singleGroup = entry.groups.length <= 1;
+  const skillId = entry.skillId;
+  const singleLevel = entry.levels.length <= 1;
   const resolve = (v: string | (() => string)) =>
     typeof v === 'function' ? v() : v;
   const labelMap = new Map(
-    entry.groups.map((g) => [g.id, resolve(g.longLabel ?? g.label)]),
+    entry.levels.map((g) => [g.id, resolve(g.longLabel ?? g.label)]),
   );
 
   if (result.levelRecs.length === 0) {
-    return { modeId, type: 'automatic', urgency: 0, cueLabel: '', detail: '' };
+    return { skillId, type: 'automatic', urgency: 0, cueLabel: '', detail: '' };
   }
 
-  const firstType = result.levelRecs[0].type;
+  // Review and practice are a single tier (interleaved by level order),
+  // so check for any review recs rather than just the first rec type.
+  const reviewIds = result.levelRecs
+    .filter((r) => r.type === 'review')
+    .map((r) => r.levelId);
 
-  if (firstType === 'review') {
-    const reviewIds = result.levelRecs
-      .filter((r) => r.type === 'review')
-      .map((r) => r.groupId);
-    const detail = singleGroup
+  if (reviewIds.length > 0) {
+    const detail = singleLevel
       ? 'Review'
-      : `Review ${groupLabelText(reviewIds, labelMap)}`;
+      : `Review ${levelLabelText(reviewIds, labelMap)}`;
     return {
-      modeId,
+      skillId,
       type: 'review',
       urgency: reviewIds.length,
       cueLabel: 'Review',
@@ -130,15 +136,17 @@ function classifySkill(
     };
   }
 
+  const firstType = result.levelRecs[0].type;
+
   if (firstType === 'practice' || firstType === 'automate') {
     const practiceIds = result.levelRecs
       .filter((r) => r.type === 'practice' || r.type === 'automate')
-      .map((r) => r.groupId);
-    const detail = singleGroup
+      .map((r) => r.levelId);
+    const detail = singleLevel
       ? 'Practice'
-      : `Practice ${groupLabelText(practiceIds, labelMap)}`;
+      : `Practice ${levelLabelText(practiceIds, labelMap)}`;
     return {
-      modeId,
+      skillId,
       type: 'practice',
       urgency: practiceIds.length,
       cueLabel: 'Practice',
@@ -148,13 +156,13 @@ function classifySkill(
 
   if (firstType === 'expand') {
     const expandId = result.expandIndex;
-    const detail = singleGroup
+    const detail = singleLevel
       ? 'Start'
       : `Start ${
         expandId ? (labelMap.get(expandId) ?? expandId) : 'next level'
       }`;
     return {
-      modeId,
+      skillId,
       type: 'start',
       urgency: 0,
       cueLabel: 'Start',
@@ -162,7 +170,7 @@ function classifySkill(
     };
   }
 
-  return { modeId, type: 'automatic', urgency: 0, cueLabel: '', detail: '' };
+  return { skillId, type: 'automatic', urgency: 0, cueLabel: '', detail: '' };
 }
 
 // ---------------------------------------------------------------------------
@@ -183,7 +191,7 @@ const TYPE_PRIORITY: Record<SkillRecommendationType, number> = {
  * Within a tier, higher urgency wins. "not-started" and "automatic" are
  * excluded unless cold-start applies.
  *
- * @param definitionOrder Mode IDs in definition order, used for cold-start
+ * @param definitionOrder Skill IDs in definition order, used for cold-start
  *   tie-breaking when all skills are not-started.
  */
 export function rankSkillRecommendations(
@@ -210,8 +218,8 @@ export function rankSkillRecommendations(
   // some not-started) — avoids a misleading "all done" message.
   const notStarted = recommendations.filter((r) => r.type === 'not-started');
   if (notStarted.length > 0) {
-    for (const modeId of definitionOrder) {
-      const rec = notStarted.find((r) => r.modeId === modeId);
+    for (const skillId of definitionOrder) {
+      const rec = notStarted.find((r) => r.skillId === skillId);
       if (rec) {
         return [{
           ...rec,

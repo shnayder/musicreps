@@ -9,9 +9,9 @@
 //
 // This is a diagnostic aid for understanding which items the selector
 // actually draws from on a given trial — no random draws are simulated.
-// Overflow items (items that don't fit within the dynamic active cap —
-// see `effectiveActiveCap` — or the review cap) are the key thing to
-// notice: they are never drawn, even though they've been started.
+// Overflow items (items that don't fit within the slot budget) are the
+// key thing to notice: they are never drawn, even though they've been
+// started.
 //
 // Usage:
 //   deno task item-selection         # generate report
@@ -26,10 +26,9 @@ import { fileURLToPath } from 'url';
 import {
   computeBuckets,
   DEFAULT_CONFIG,
-  effectiveActiveCap,
-  M_REVIEW,
-  N_ACTIVE,
-  N_ACTIVE_EXPANDED,
+  INITIAL_COST,
+  MAX_INITIAL,
+  TOTAL_SLOTS,
 } from '../src/adaptive.ts';
 import { getSpeedFreshnessColor } from '../src/stats-display.ts';
 
@@ -62,7 +61,8 @@ type Scenario = {
 //
 // Speed reference:
 //   null       — unseen
-//   < 0.9      — active-learning bucket (still learning)
+//   < 0.7      — initial-learning bucket (still learning)
+//   0.7–0.9    — speedup bucket (solid but not yet automatic)
 //   >= 0.9     — fast: then fresh-or-review depending on freshness
 // Freshness reference:
 //   >= 0.5     — fresh
@@ -70,7 +70,7 @@ type Scenario = {
 //
 // Levels are modeled on a 15-item "fret range" level (e.g. guitar fretboard
 // frets 0–4 × 3 strings). Real levels are larger; 15 is enough to trigger
-// the N_ACTIVE=5 / M_REVIEW=10 caps.
+// the slot budget caps.
 
 const SCENARIOS: Scenario[] = [
   {
@@ -93,10 +93,8 @@ const SCENARIOS: Scenario[] = [
 
   {
     name: '8 items started, none fast',
-    description:
-      'User has touched 8 items; all still below the Automatic line. ' +
-      'Review is empty so the active cap expands to 7 — only item 8 ' +
-      'is overflow this trial.',
+    description: 'User has touched 8 items; all still below the Solid line. ' +
+      'Initial learning capped at ' + MAX_INITIAL + ' — items 6–8 overflow.',
     items: [
       { speed: 0.4, freshness: 0.9 },
       { speed: 0.55, freshness: 0.9 },
@@ -112,10 +110,8 @@ const SCENARIOS: Scenario[] = [
 
   {
     name: '10 items started, none fast',
-    description:
-      '10 items below the Automatic line, nothing to review. Active ' +
-      'caps at ' + N_ACTIVE_EXPANDED + ' — items 8, 9, 10 overflow. ' +
-      'Still drills only the first 7 until one graduates.',
+    description: '10 items below the Solid line, nothing to review. Initial ' +
+      'learning caps at ' + MAX_INITIAL + ' — items 6–10 overflow.',
     items: [
       { speed: 0.4, freshness: 0.9 },
       { speed: 0.55, freshness: 0.9 },
@@ -134,9 +130,8 @@ const SCENARIOS: Scenario[] = [
   {
     name: 'Half mastered, half still learning',
     description:
-      '7 items fast-and-fresh, 5 still in active learning, 3 unseen. ' +
-      'Active bucket fills from the 5 slow + overflow-trigger on any ' +
-      'unseen — here there are exactly 5 slow so no overflow yet.',
+      '7 items fast-and-fresh, 5 still learning (3 slow + 2 solid), 3 unseen. ' +
+      'Initial learning gets the slow + unseen items; solid ones go to speedup.',
     items: [
       { speed: 0.95, freshness: 0.9 },
       { speed: 0.95, freshness: 0.9 },
@@ -183,9 +178,8 @@ const SCENARIOS: Scenario[] = [
 
   {
     name: 'Massively stale (review cap hit)',
-    description: '12 items stale — review is capped at ' + M_REVIEW +
-      ', so 2 overflow. No active bucket, so review + fastFresh are ' +
-      'the only draws.',
+    description: '12 items stale — review capped by slot budget. ' +
+      'No initial learning, so review + fastFresh are the only draws.',
     items: [
       { speed: 0.95, freshness: 0.2 },
       { speed: 0.92, freshness: 0.15 },
@@ -216,9 +210,8 @@ const SCENARIOS: Scenario[] = [
 
   {
     name: 'Both caps full',
-    description: '7 unseen/slow items + 12 stale items. Active caps at ' +
-      N_ACTIVE +
-      ' (2 overflow), review caps at ' + M_REVIEW + ' (2 overflow). ' +
+    description: '7 slow items + 12 stale items. Initial learning caps at ' +
+      MAX_INITIAL + ', review capped by slot budget. ' +
       'Overflow items are invisible to the selector this trial.',
     items: [
       { speed: 0.3, freshness: 0.9 },
@@ -248,7 +241,12 @@ const SCENARIOS: Scenario[] = [
 // Bucketing
 // ---------------------------------------------------------------------------
 
-type Category = 'active' | 'review' | 'fastFresh' | 'overflow';
+type Category =
+  | 'initialLearning'
+  | 'speedup'
+  | 'review'
+  | 'fastFresh'
+  | 'overflow';
 
 type Classified = {
   id: string;
@@ -272,13 +270,15 @@ function classifyScenario(scenario: Scenario): Classified[] {
     null,
     DEFAULT_CONFIG.freshnessThreshold,
   );
-  const activeSet = new Set(buckets.active);
+  const initialSet = new Set(buckets.initialLearning);
+  const speedupSet = new Set(buckets.speedup);
   const reviewSet = new Set(buckets.review);
   const fastFreshSet = new Set(buckets.fastFresh);
 
   return ids.map((id, i): Classified => {
     let category: Category = 'overflow';
-    if (activeSet.has(id)) category = 'active';
+    if (initialSet.has(id)) category = 'initialLearning';
+    else if (speedupSet.has(id)) category = 'speedup';
     else if (reviewSet.has(id)) category = 'review';
     else if (fastFreshSet.has(id)) category = 'fastFresh';
     return { id, index: i, item: scenario.items[i], category };
@@ -312,7 +312,8 @@ function dotsRow(items: Classified[]): string {
 
 function renderScenarioRow(scenario: Scenario): string {
   const classified = classifyScenario(scenario);
-  const active = classified.filter((c) => c.category === 'active');
+  const initial = classified.filter((c) => c.category === 'initialLearning');
+  const speedup = classified.filter((c) => c.category === 'speedup');
   const review = classified.filter((c) => c.category === 'review');
   const fastFresh = classified.filter((c) => c.category === 'fastFresh');
   const overflow = classified.filter((c) => c.category === 'overflow');
@@ -323,12 +324,15 @@ function renderScenarioRow(scenario: Scenario): string {
         <div class="scenario-desc">${escapeHtml(scenario.description)}</div>
       </td>
       <td class="dots all">${dotsRow(classified)}</td>
-      <td class="dots">${dotsRow(active)}<div class="cap">${active.length}/${
-    effectiveActiveCap(review.length)
-  }</div></td>
+      <td class="dots">${
+    dotsRow(initial)
+  }<div class="cap">${initial.length}/${MAX_INITIAL}</div></td>
+      <td class="dots">${
+    dotsRow(speedup)
+  }<div class="cap">${speedup.length}</div></td>
       <td class="dots">${
     dotsRow(review)
-  }<div class="cap">${review.length}/${M_REVIEW}</div></td>
+  }<div class="cap">${review.length}</div></td>
       <td class="dots">${dotsRow(fastFresh)}</td>
       <td class="dots overflow">${dotsRow(overflow)}</td>
     </tr>
@@ -412,10 +416,11 @@ function renderReport(): string {
   <h1>Item Selection — bucket classification per scenario</h1>
   <div class="subtitle">
     Each scenario feeds its items through <code>computeBuckets</code>
-    (<code>N_ACTIVE=${N_ACTIVE}</code>..<code>${N_ACTIVE_EXPANDED}</code>
-    dynamic, <code>M_REVIEW=${M_REVIEW}</code>,
+    (<code>MAX_INITIAL=${MAX_INITIAL}</code>,
+    <code>TOTAL_SLOTS=${TOTAL_SLOTS}</code>,
+    <code>INITIAL_COST=${INITIAL_COST}</code>,
     <code>freshnessThreshold=${DEFAULT_CONFIG.freshnessThreshold}</code>).
-    Active cap expands when review is empty (→ 7) or small (→ 6).
+    Slot budget: initial items cost ${INITIAL_COST} slots each, others cost 1.
     Hover a dot for speed / freshness / category. Numbers inside dots are
     the item's position in learning order.
   </div>
@@ -448,7 +453,8 @@ function renderReport(): string {
       <tr>
         <th>Scenario</th>
         <th>Items (learning order)</th>
-        <th>Active</th>
+        <th>Initial Learning</th>
+        <th>Speedup</th>
         <th>Review</th>
         <th>Fast &amp; fresh</th>
         <th>On deck / overflow</th>

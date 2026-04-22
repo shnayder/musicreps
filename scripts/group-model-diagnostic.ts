@@ -1318,7 +1318,6 @@ function generateReviewHTML(
   <span>speedTarget=${cfg.speedTarget}ms</span>
   <span>alpha=${cfg.ewmaAlpha}</span>
   <span>initialStab=${cfg.initialStability}h</span>
-  <span>maxStab=${cfg.maxStability}h</span>
   <span>freshnessThreshold=${cfg.freshnessThreshold}</span>
 </div>
 

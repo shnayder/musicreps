@@ -5,9 +5,9 @@
 
 import { useCallback, useRef, useState } from 'preact/hooks';
 import type {
-  ModeDefinition,
   MultiTapDef,
   MultiTapEvalResult,
+  SkillDefinition,
 } from './types.ts';
 
 // ---------------------------------------------------------------------------
@@ -75,7 +75,7 @@ export type MultiTapInputHandle = {
 };
 
 export function useMultiTapInput<Q>(
-  def: ModeDefinition<Q>,
+  def: SkillDefinition<Q>,
   currentQRef: { current: Q | null },
   submitRef: { current: (input: string) => void },
 ): MultiTapInputHandle {

@@ -21,7 +21,14 @@ function htmlHash(): Promise<string> {
 }
 
 function makeState(overrides: Partial<OTAState> = {}): OTAState {
-  return { status: 'none', version: '', path: '', attempts: 0, ...overrides };
+  return {
+    status: 'none',
+    version: '',
+    path: '',
+    attempts: 0,
+    releaseBase: '',
+    ...overrides,
+  };
 }
 
 async function makeManifest(
