@@ -30,30 +30,52 @@ done
 REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
 
 # --- Poll CI ---
-echo "Polling CI for branch $BRANCH..."
+# Get the HEAD sha so we only look at runs for the current commit.
+HEAD_SHA=$(git rev-parse HEAD)
+echo "Polling CI for branch $BRANCH (${HEAD_SHA:0:8})..."
 for i in $(seq 1 $MAX_ATTEMPTS); do
-  RUN_JSON=$(gh run list --branch "$BRANCH" --limit 1 \
-    --json databaseId,status,conclusion,url \
-    --jq '.[0] // empty')
-  if [ -z "$RUN_JSON" ]; then
-    echo "  Attempt $i: no runs found, waiting ${INTERVAL}s..."
+  # Fetch ALL runs for this branch+commit (not just the latest one).
+  # Multiple runs can exist for the same commit (different workflows,
+  # retries, re-triggers). We need to wait for all of them and report
+  # the worst conclusion.
+  RUNS_JSON=$(gh run list --branch "$BRANCH" --commit "$HEAD_SHA" \
+    --json databaseId,status,conclusion,workflowName \
+    --jq '.')
+  RUN_COUNT=$(echo "$RUNS_JSON" | jq 'length')
+  if [ "$RUN_COUNT" -eq 0 ]; then
+    echo "  Attempt $i: no runs found for ${HEAD_SHA:0:8}, waiting ${INTERVAL}s..."
     sleep $INTERVAL
     continue
   fi
-  STATUS=$(echo "$RUN_JSON" | jq -r '.status')
-  if [ "$STATUS" = "completed" ]; then
-    CONCLUSION=$(echo "$RUN_JSON" | jq -r '.conclusion')
-    RUN_ID=$(echo "$RUN_JSON" | jq -r '.databaseId')
-    echo "CI: $CONCLUSION (run $RUN_ID)"
-    if [ "$CONCLUSION" != "success" ]; then
-      echo ""
-      echo "--- Failed step logs ---"
-      gh run view "$RUN_ID" --log-failed 2>&1 | tail -40
-    fi
-    break
+  # Check if any runs are still in progress
+  PENDING=$(echo "$RUNS_JSON" | jq '[.[] | select(.status != "completed")] | length')
+  if [ "$PENDING" -gt 0 ]; then
+    STATUSES=$(echo "$RUNS_JSON" | jq -r '[.[] | select(.status != "completed") | .status] | unique | join(", ")')
+    echo "  Attempt $i: $PENDING of $RUN_COUNT runs still $STATUSES, waiting ${INTERVAL}s..."
+    sleep $INTERVAL
+    continue
   fi
-  echo "  Attempt $i: run still $STATUS, waiting ${INTERVAL}s..."
-  sleep $INTERVAL
+  # All runs completed. Find the worst conclusion (failure > cancelled > success).
+  FAILED_RUN=$(echo "$RUNS_JSON" | jq -r '[.[] | select(.conclusion != "success" and .conclusion != "skipped")] | first // empty')
+  if [ -n "$FAILED_RUN" ]; then
+    CONCLUSION=$(echo "$FAILED_RUN" | jq -r '.conclusion')
+    RUN_ID=$(echo "$FAILED_RUN" | jq -r '.databaseId')
+    WORKFLOW=$(echo "$FAILED_RUN" | jq -r '.workflowName')
+    echo "CI: $CONCLUSION (run $RUN_ID, $WORKFLOW)"
+    echo ""
+    echo "--- Failed step logs ---"
+    gh run view "$RUN_ID" --log-failed 2>&1 | tail -40
+  else
+    # All succeeded (or were skipped). Report the first non-skipped run.
+    SUCCESS_RUN=$(echo "$RUNS_JSON" | jq -r '[.[] | select(.conclusion == "success")] | first // empty')
+    if [ -n "$SUCCESS_RUN" ]; then
+      RUN_ID=$(echo "$SUCCESS_RUN" | jq -r '.databaseId')
+      echo "CI: success (run $RUN_ID)"
+    else
+      echo "CI: skipped (all $RUN_COUNT runs skipped)"
+    fi
+  fi
+  break
 done
 
 # --- Merge status (if PR given) ---
