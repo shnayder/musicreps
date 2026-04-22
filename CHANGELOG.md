@@ -1,5 +1,12 @@
 # Changelog
 
+## vNext
+
+### New Features
+
+- **Ukulele Speed Tap** — find every position of any note on the ukulele
+  fretboard, parallel to the existing guitar Speed Tap skill
+
 ## v1.1 (build 4) — 2026-04-22
 
 ### New Features
