@@ -78,7 +78,7 @@ src/
     {name}/
       logic.ts            # Pure skill logic: questions, answers, items, groups
       logic_test.ts        # Tests for skill logic
-      definition.ts        # Declarative skill definition (11 skills)
+      definition.ts        # Declarative skill definition (14 skills)
   ui/
     skill-screen.tsx       # Structural layout components (SkillScreen, QuizArea, etc.)
     buttons.tsx           # Answer button components (NoteButtons, NumberButtons, etc.)
@@ -105,7 +105,7 @@ Single-page app using Preact for UI components. Source files are ES modules
 bundled by esbuild (with automatic JSX transform) into a single IIFE `<script>`
 at build time. Key patterns:
 
-- **Declarative Skills** — All 11 skills use `SkillDefinition<Q>` (20-100 lines
+- **Declarative Skills** — All 14 skills use `SkillDefinition<Q>` (20-100 lines
   of data) interpreted by `GenericSkill`, which handles all hook composition,
   rendering, and keyboard input. Three answer variants: single (`answer`),
   sequential (`sequential`, e.g., chord spelling), and multi-tap (`multiTap`,
@@ -166,6 +166,8 @@ algorithm details, and step-by-step "adding a new quiz skill" checklist.
 | Scale Degrees        | 144 (12 keys x 6 degrees x 2 dirs) | Note or degree          | `D:5:fwd`, `C:7:rev`   |
 | Diatonic Chords      | 168 (12 keys x 7 degrees x 2 dirs) | Note or numeral         | `Bb:IV:fwd`, `C:D:rev` |
 | Chord Spelling       | ~132 (12 roots x chord types)      | Sequential notes        | `C:major`, `F#:dim`    |
+| Guitar Speed Tap     | 12 (chromatic notes)               | Multi-tap fretboard     | `C`, `F#`              |
+| Ukulele Speed Tap    | 12 (chromatic notes)               | Multi-tap fretboard     | `C`, `F#`              |
 | Guitar Chord Shapes  | 29 (maj, min, dom7, m7, sus)       | Multi-tap fretboard     | `C:major`, `D:sus4`    |
 | Ukulele Chord Shapes | 26 (maj, min, dom7, m7, sus)       | Multi-tap fretboard     | `C:major`, `A:m7`      |
 
@@ -266,3 +268,7 @@ All PRs that change code (not just docs/plans) follow this sequence:
 1. Run `/review` until approved — don't wait for the user to ask.
 2. Push the branch.
 3. Create a PR with `gh pr create` (summary + test plan).
+
+**Changelog** — user-facing changes (new features, improvements, bug fixes)
+must be added to `CHANGELOG.md` under the `vNext` section before creating
+the PR.
