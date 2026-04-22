@@ -49,7 +49,7 @@ export function getPositionsForNote(
 ): { string: number; fret: number }[] {
   const positions: { string: number; fret: number }[] = [];
   for (let s = 0; s < inst.stringCount; s++) {
-    for (let f = 0; f <= 12; f++) {
+    for (let f = 0; f < inst.fretCount; f++) {
       if (getNoteAtPosition(inst, s, f) === noteName) {
         positions.push({ string: s, fret: f });
       }

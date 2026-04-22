@@ -68,9 +68,10 @@ function useSpeedTapController(): SkillController<Question> {
 // ---------------------------------------------------------------------------
 
 export function createSpeedTapDef(
+  instrument: 'guitar' | 'ukulele',
   inst: Instrument,
 ): SkillDefinition<Question> {
-  const isGuitar = inst.stringCount === 6;
+  const isGuitar = instrument === 'guitar';
   const id = isGuitar ? 'speedTap' : 'ukuleleSpeedTap';
 
   return {

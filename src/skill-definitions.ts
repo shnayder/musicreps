@@ -33,8 +33,8 @@ export const ALL_SKILL_DEFINITIONS: SkillDefinition<any>[] = [
   SCALE_DEGREES_DEF,
   DIATONIC_CHORDS_DEF,
   CHORD_SPELLING_DEF,
-  createSpeedTapDef(GUITAR),
-  createSpeedTapDef(UKULELE),
+  createSpeedTapDef('guitar', GUITAR),
+  createSpeedTapDef('ukulele', UKULELE),
   GUITAR_CHORD_SHAPES_DEF,
   UKULELE_CHORD_SHAPES_DEF,
 ];
