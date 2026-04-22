@@ -559,6 +559,8 @@ export function PracticeTab(
     progressBaseline,
     description,
     startLabel,
+    limitMessage,
+    limitReached,
   }: {
     onStart: () => void;
     statsContent: ComponentChildren;
@@ -586,6 +588,10 @@ export function PracticeTab(
     description?: string;
     /** Custom label for the start button (e.g. "Practice (32 items)"). */
     startLabel?: string;
+    /** When set, shown near the start button as a limit warning/message. */
+    limitMessage?: string;
+    /** When true, replaces the start button with the limit message. */
+    limitReached?: boolean;
   },
 ) {
   const prefix = useTabsPrefix();
@@ -680,14 +686,37 @@ export function PracticeTab(
       <LayoutFooter>
         {activeTab === 'practice' && (
           <div class='practice-zone-action'>
-            <StartButton
-              onStart={onStart}
-              disabled={scopeValid === false}
-              validationMessage={scopeValid === false
-                ? validationMessage
-                : undefined}
-              label={startLabel}
-            />
+            {limitReached
+              ? (
+                <div class='limit-reached-action'>
+                  <ActionButton
+                    variant='primary'
+                    onClick={onStart}
+                  >
+                    Unlock Unlimited
+                  </ActionButton>
+                  <div class='limit-reached-msg'>
+                    {limitMessage || 'Daily limit reached'}
+                  </div>
+                </div>
+              )
+              : (
+                <>
+                  <StartButton
+                    onStart={onStart}
+                    disabled={scopeValid === false}
+                    validationMessage={scopeValid === false
+                      ? validationMessage
+                      : undefined}
+                    label={startLabel}
+                  />
+                  {limitMessage && (
+                    <div class='limit-approaching-msg'>
+                      {limitMessage}
+                    </div>
+                  )}
+                </>
+              )}
           </div>
         )}
         <TabBar

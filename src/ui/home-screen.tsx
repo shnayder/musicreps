@@ -18,6 +18,7 @@ import {
   exportFilename,
 } from '../export-data.ts';
 import type { AppConfig } from '../app-config.ts';
+import { getEntitlementStatus } from '../entitlement.ts';
 import {
   type ModeProgress,
   useHomeProgress,
@@ -608,6 +609,10 @@ function DevPage(
             </DevSection>
           )}
 
+          <DevSection title='Entitlement'>
+            <DevEntitlementOverride />
+          </DevSection>
+
           <DevSection title='Export'>
             <div class='settings-link-list'>
               <button type='button' class='text-link' onClick={handleExport}>
@@ -633,6 +638,51 @@ function DevStatRow({ label, value }: { label: string; value: number }) {
       <span>{label}</span>
       <span>{value}</span>
     </div>
+  );
+}
+
+function DevEntitlementOverride() {
+  const current = storage.getItem('premium_override') ?? 'auto';
+  const [value, setValue] = useState(current);
+  const options = ['auto', 'free', 'premium'] as const;
+  return (
+    <Stack gap='group'>
+      <div class='dev-stat-row'>
+        <span>Override</span>
+        <span>
+          {options.map((opt) => (
+            <button
+              key={opt}
+              type='button'
+              class={`text-link${value === opt ? ' active' : ''}`}
+              style={`margin-left:8px;${
+                value === opt ? 'font-weight:700' : ''
+              }`}
+              onClick={() => {
+                if (opt === 'auto') storage.removeItem('premium_override');
+                else storage.setItem('premium_override', opt);
+                setValue(opt);
+              }}
+            >
+              {opt}
+            </button>
+          ))}
+        </span>
+      </div>
+      <div class='dev-stat-row'>
+        <span>Daily reps</span>
+        <button
+          type='button'
+          class='text-link'
+          onClick={() => {
+            storage.removeItem('effort_daily');
+            globalThis.location?.reload();
+          }}
+        >
+          Reset
+        </button>
+      </div>
+    </Stack>
   );
 }
 
@@ -737,12 +787,21 @@ function HomeHeader(
       </div>
     );
   }
+  const ent = getEntitlementStatus();
+  const isFree = ent.tier === 'free';
+  const limitPct = isFree ? ent.repsUsed / ent.repsLimit : 0;
+  const todayCls = 'home-stat' +
+    (isFree && limitPct >= 1 ? ' home-stat--limit' : '') +
+    (isFree && limitPct >= 0.8 && limitPct < 1 ? ' home-stat--warn' : '');
+  const todayLabel = isFree
+    ? `${repsToday.toLocaleString()} / ${ent.repsLimit}`
+    : repsToday.toLocaleString();
   return (
     <div class='home-header'>
       <Bar gap='group' class='home-stats-bar'>
-        <span class='home-stat'>
+        <span class={todayCls}>
           <Text role='metric-header' as='span'>
-            {repsToday.toLocaleString()}
+            {todayLabel}
           </Text>
           {' today'}
         </span>

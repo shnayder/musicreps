@@ -19,6 +19,7 @@ const PHASE_CLASSES = [
   'phase-idle',
   'phase-active',
   'phase-round-complete',
+  'phase-limit-reached',
   'phase-calibration',
 ];
 
@@ -50,6 +51,8 @@ export function usePhaseClass(
       ? 'phase-idle'
       : phase === 'round-complete'
       ? 'phase-round-complete'
+      : phase === 'limit-reached'
+      ? 'phase-limit-reached'
       : phase === 'calibration'
       ? 'phase-calibration'
       : 'phase-active';

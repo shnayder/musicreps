@@ -117,6 +117,7 @@ const FOUNDATION = new Set([
   'src/scope-lock.ts',
   'src/speed-levels.ts',
   'src/effort.ts',
+  'src/entitlement.ts',
   'src/storage.ts',
   'src/updater.ts',
 ]);

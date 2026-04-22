@@ -29,6 +29,7 @@ import { RepeatMark } from '../ui/repeat-mark.tsx';
 
 import type { ModeController, ModeDefinition } from './types.ts';
 import { resolveGroupLabel } from './answer-utils.ts';
+import { getEntitlementStatus } from '../entitlement.ts';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -256,9 +257,21 @@ export function IdlePracticeView<Q>(
     ? groupScopeResult.enabledItems.length
     : null;
 
+  const entStatus = getEntitlementStatus();
+  const limitReached = entStatus.tier === 'free' && entStatus.limitReached;
+  const limitMessage = entStatus.tier === 'free'
+    ? entStatus.limitReached
+      ? `Daily limit reached — come back tomorrow or upgrade`
+      : entStatus.repsLimit - entStatus.repsUsed <= 20
+      ? `${entStatus.repsLimit - entStatus.repsUsed} free reps remaining today`
+      : undefined
+    : undefined;
+
   return (
     <PracticeTab
       onStart={engine.start}
+      limitReached={limitReached}
+      limitMessage={limitMessage}
       progressSegments={progressSegments}
       progressKind={hasGroups ? 'multi-level' : 'single-level'}
       progressBaseline={learner.motorBaseline}

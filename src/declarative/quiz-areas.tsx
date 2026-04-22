@@ -45,6 +45,8 @@ import {
 } from '../ui/quiz-ui.tsx';
 import { InteractiveFretboard } from '../ui/interactive-fretboard.tsx';
 import { Text } from '../ui/text.tsx';
+import { PaywallScreen } from '../ui/paywall.tsx';
+import { refreshEntitlement } from '../entitlement.ts';
 
 import type {
   ButtonsDef,
@@ -583,6 +585,17 @@ export function QuizActiveView<Q>(
           />
         </LayoutFooter>
       </ScreenLayout>
+    );
+  }
+
+  if (phase === 'limit-reached') {
+    return (
+      <PaywallScreen
+        onDismiss={engine.stop}
+        onUnlocked={() => {
+          refreshEntitlement().then(() => engine.continueQuiz());
+        }}
+      />
     );
   }
 

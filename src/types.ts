@@ -218,7 +218,8 @@ export type MotorTaskType =
 export type EnginePhase =
   | 'idle'
   | 'active'
-  | 'round-complete';
+  | 'round-complete'
+  | 'limit-reached';
 
 export type EngineState = {
   phase: EnginePhase;

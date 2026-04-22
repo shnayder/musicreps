@@ -6,6 +6,7 @@ import type { AdaptiveSelector, EngineState } from '../types.ts';
 import { incrementDailyReps } from '../effort.ts';
 import {
   engineContinueRound,
+  engineLimitReached,
   engineNextQuestion,
   engineStart,
   engineStop,
@@ -14,6 +15,7 @@ import {
   engineUpdateMasteryAfterAnswer,
   engineUpdateProgress,
 } from '../quiz-engine-state.ts';
+import { isLimitReached } from '../entitlement.ts';
 import { effectiveRoundMs, LAST_QUESTION_CAP_MS } from './use-round-timer.ts';
 import { HINT_CONTINUE, IS_TOUCH_PRIMARY } from './use-round-transitions.ts';
 import type { RoundTimerHandle } from './use-round-timer.ts';
@@ -146,6 +148,10 @@ export function useEngineActions(
   );
 
   const start = useCallback(() => {
+    if (isLimitReached()) {
+      setState(engineLimitReached);
+      return;
+    }
     configRef.current.onStart?.();
     setState((prev) => {
       const next = engineStart(prev);
@@ -161,6 +167,10 @@ export function useEngineActions(
   }, []);
 
   const continueQuiz = useCallback(() => {
+    if (isLimitReached()) {
+      setState(engineLimitReached);
+      return;
+    }
     setState(engineContinueRound);
     timer.startRoundTimer();
     setTimeout(() => nextQuestionRef.current(), 0);

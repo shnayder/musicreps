@@ -17,6 +17,7 @@ import { BrandStrip } from './ui/brand-strip.tsx';
 import { cleanupLegacyKeys, HomeScreen } from './ui/home-screen.tsx';
 import { APP_CONFIG } from './app-config.ts';
 import { registerModeForEffort } from './effort.ts';
+import { initEntitlement, refreshEntitlement } from './entitlement.ts';
 import { initStorage, migrateFromLocalStorage } from './storage.ts';
 import { Preferences } from '@capacitor/preferences';
 import { reportHealthy, scheduleUpdateCheck } from './updater.ts';
@@ -87,6 +88,19 @@ async function boot() {
   // is fully populated before any storage.getItem calls.
   loadNotationPreference();
   cleanupLegacyKeys();
+
+  // Entitlement: daily rep limit on native, free on web.
+  // ?limit=N URL param overrides the default limit for testing.
+  const limitParam = new URLSearchParams(globalThis.location?.search ?? '')
+    .get('limit');
+  const limitOverride = limitParam ? parseInt(limitParam, 10) : null;
+  initEntitlement(
+    isNativeApp,
+    Number.isFinite(limitOverride) ? limitOverride : null,
+  );
+  if (isNativeApp) {
+    refreshEntitlement();
+  }
 
   const nav = createNavigation();
 

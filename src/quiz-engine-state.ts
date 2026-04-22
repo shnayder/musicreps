@@ -231,6 +231,23 @@ export function engineUpdateProgress(
   return { ...state, masteredCount, totalEnabledCount };
 }
 
+/** Transition: daily rep limit reached (shown at round boundary). */
+export function engineLimitReached(state: EngineState): EngineState {
+  return {
+    ...state,
+    phase: 'limit-reached',
+    answered: false,
+    answersEnabled: false,
+    currentItemId: null,
+    feedbackText: '',
+    feedbackClass: 'feedback',
+    feedbackCorrect: null,
+    feedbackDisplayAnswer: null,
+    feedbackUserInput: null,
+    hintText: '',
+  };
+}
+
 /** Route a keydown event to an action descriptor. Pure -- no DOM. */
 export function engineRouteKey(
   state: EngineState,
@@ -240,6 +257,9 @@ export function engineRouteKey(
   if (key === 'Escape') return { action: 'stop' };
   if (state.phase === 'round-complete') {
     if (key === ' ' || key === 'Enter') return { action: 'continue' };
+    return { action: 'ignore' };
+  }
+  if (state.phase === 'limit-reached') {
     return { action: 'ignore' };
   }
   if (state.phase !== 'active') return { action: 'ignore' };

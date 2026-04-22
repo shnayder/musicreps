@@ -18,13 +18,13 @@ platform-specific work.
 
 ## Strategy Decisions
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| Gate mechanism | Daily rep limit (200 free/day) | Correlates with value; generous enough for real practice |
-| Pricing | ~$4/month, ~$25/year, ~$45 lifetime | Niche training tool pricing; lifetime avoids subscription fatigue |
-| Web | Always free | Web drives discovery |
-| "Support the dev" | No | <2% conversion typical; soft paywall is more honest and effective |
-| When to show paywall | At round boundaries (start or end) | User finishes their 60s round uninterrupted; limit checked before next round starts |
+| Decision             | Choice                              | Rationale                                                                           |
+| -------------------- | ----------------------------------- | ----------------------------------------------------------------------------------- |
+| Gate mechanism       | Daily rep limit (200 free/day)      | Correlates with value; generous enough for real practice                            |
+| Pricing              | ~$4/month, ~$25/year, ~$45 lifetime | Niche training tool pricing; lifetime avoids subscription fatigue                   |
+| Web                  | Always free                         | Web drives discovery                                                                |
+| "Support the dev"    | No                                  | <2% conversion typical; soft paywall is more honest and effective                   |
+| When to show paywall | At round boundaries (start or end)  | User finishes their 60s round uninterrupted; limit checked before next round starts |
 
 ## Architecture
 
@@ -82,11 +82,11 @@ RevenueCat import uses dynamic import with string concatenation (same pattern as
 Dev override: `premium_override` storage key, settable from dev panel.
 
 **URL parameter for limit override:** `?limit=N` overrides the daily cap for
-testing. `?limit=5` lets you hit the paywall after 5 reps instead of 200.
-Parsed once at boot in `app.ts`, passed to `initEntitlement()`. Only active
-when `premium_override` is set to `'free'` or on native — ignored on web in
-normal mode (since web has no paywall). This avoids the slow cycle of answering
-200 questions just to test the limit flow.
+testing. `?limit=5` lets you hit the paywall after 5 reps instead of 200. Parsed
+once at boot in `app.ts`, passed to `initEntitlement()`. Only active when
+`premium_override` is set to `'free'` or on native — ignored on web in normal
+mode (since web has no paywall). This avoids the slow cycle of answering 200
+questions just to test the limit flow.
 
 **New file: `src/entitlement_test.ts`**
 
@@ -99,6 +99,7 @@ Three cases: web (always premium), native-premium (unlimited), native-free
 **Modify: `src/types.ts`**
 
 Add `'limit-reached'` to `EnginePhase` union:
+
 ```typescript
 export type EnginePhase =
   | 'idle'
@@ -110,6 +111,7 @@ export type EnginePhase =
 **Modify: `src/quiz-engine-state.ts`**
 
 Add pure transition function:
+
 ```typescript
 export function engineLimitReached(state: EngineState): EngineState {
   return { ...state, phase: 'limit-reached' };
@@ -123,8 +125,8 @@ export function engineLimitReached(state: EngineState): EngineState {
    `'active'`. This prevents starting a round you can't finish.
 
 2. **On "Keep Going" (`engine.continueQuiz()`)** — after a round completes, if
-   the limit has been reached during that round, transition to
-   `'limit-reached'` instead of starting the next round.
+   the limit has been reached during that round, transition to `'limit-reached'`
+   instead of starting the next round.
 
 `processSubmitAnswer()` is **not** modified — reps are counted as before via
 `incrementDailyReps()`, but the limit check does not interrupt mid-round.
@@ -142,11 +144,13 @@ every location. Key files: `generic-mode.tsx`, `use-phase-class.ts`,
 
 `PaywallScreen` component, rendered when phase is `'limit-reached'`. Uses
 existing layout components:
+
 - `CenteredContent` for vertical centering
 - `ActionButton` with primary/secondary variants
 - Existing CSS variables (`--color-overlay-surface`, `--brand-600`)
 
 Content:
+
 - Daily progress: "200/200 reps today"
 - Encouragement: "Nice work! You've hit your daily free limit."
 - Subscription options (fetched from RevenueCat `Purchases.getOfferings()`)
@@ -160,11 +164,17 @@ On successful purchase: calls `refreshEntitlement()`, then
 **Modify: `src/declarative/generic-mode.tsx`**
 
 Add phase branch alongside the existing `round-complete` check:
+
 ```tsx
 if (phase === 'limit-reached') {
-  return <PaywallScreen onDismiss={engine.stop} onUnlocked={() => {
-    refreshEntitlement().then(() => engine.continueQuiz());
-  }} />;
+  return (
+    <PaywallScreen
+      onDismiss={engine.stop}
+      onUnlocked={() => {
+        refreshEntitlement().then(() => engine.continueQuiz());
+      }}
+    />
+  );
 }
 ```
 
@@ -174,25 +184,29 @@ The paywall screen is the gate, but several other surfaces need to reflect the
 free tier and daily progress:
 
 **Home screen "reps today" stat** (`src/ui/home-screen.tsx`):
+
 - Show "X / 200 reps today" (or just "X reps today" for premium)
 - When limit approached (e.g. >80%), change color/icon to warn
 - When limit reached, show as maxed out (e.g. red/orange)
 - **Tappable** — tapping opens the paywall/upgrade UI directly from home
 
 **Skill practice tabs** (idle phase, before starting a round):
-- When limit reached: replace "Practice" button with "Upgrade" or
-  "Unlock Unlimited" that opens the paywall
+
+- When limit reached: replace "Practice" button with "Upgrade" or "Unlock
+  Unlimited" that opens the paywall
 - Show a brief message: "Daily limit reached — come back tomorrow or upgrade"
 - When limit is close (e.g. <20 reps remaining): show remaining count near the
   start button as a gentle heads-up
 
 **About text** (skill about tab or app-level about):
+
 - Mention the free tier: "Free: 200 reps/day. Upgrade for unlimited practice."
 - Keep it factual, not pushy
 
 **Modify: `src/styles.css`**
 
 Add styles for:
+
 - `.phase-limit-reached` visibility (mirrors `.phase-round-complete`)
 - Paywall card layout, subscription option buttons, progress indicator
 - Limit-warning color states for the home screen reps stat
@@ -203,6 +217,7 @@ Add styles for:
 **Modify: `src/app.ts`**
 
 After `initStorage()`, add:
+
 ```typescript
 initEntitlement(isNativeApp);
 if (isNativeApp) {
@@ -224,6 +239,7 @@ Verify compatibility with Capacitor 8.1.0 before starting.
 **Modify: `src/ui/home-screen.tsx`**
 
 Add subscription section to settings panel (only on native):
+
 - Current tier display: "Premium" or "Free (X/200 reps today)"
 - "Manage Subscription" button → opens RevenueCat management URL or paywall
 - "Restore Purchases" link
@@ -240,19 +256,19 @@ Add subscription section to settings panel (only on native):
 
 ## Files Summary
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `src/entitlement.ts` | **New** | Entitlement checking + RevenueCat wrapper |
-| `src/entitlement_test.ts` | **New** | Unit tests for entitlement logic |
-| `src/ui/paywall.tsx` | **New** | Paywall screen component |
-| `src/types.ts` | Modify | Add `'limit-reached'` to `EnginePhase` |
-| `src/quiz-engine-state.ts` | Modify | Add `engineLimitReached` transition |
-| `src/hooks/use-engine-actions.ts` | Modify | Limit check at round start + continue |
-| `src/declarative/generic-mode.tsx` | Modify | Render `PaywallScreen` for new phase |
-| `src/app.ts` | Modify | Init entitlement + RevenueCat SDK on boot |
-| `src/styles.css` | Modify | Paywall + limit-aware styles |
-| `src/ui/home-screen.tsx` | Modify | Reps stat, subscription settings |
-| `package.json` | Modify | Add RevenueCat dependency |
+| File                               | Action  | Purpose                                   |
+| ---------------------------------- | ------- | ----------------------------------------- |
+| `src/entitlement.ts`               | **New** | Entitlement checking + RevenueCat wrapper |
+| `src/entitlement_test.ts`          | **New** | Unit tests for entitlement logic          |
+| `src/ui/paywall.tsx`               | **New** | Paywall screen component                  |
+| `src/types.ts`                     | Modify  | Add `'limit-reached'` to `EnginePhase`    |
+| `src/quiz-engine-state.ts`         | Modify  | Add `engineLimitReached` transition       |
+| `src/hooks/use-engine-actions.ts`  | Modify  | Limit check at round start + continue     |
+| `src/declarative/generic-mode.tsx` | Modify  | Render `PaywallScreen` for new phase      |
+| `src/app.ts`                       | Modify  | Init entitlement + RevenueCat SDK on boot |
+| `src/styles.css`                   | Modify  | Paywall + limit-aware styles              |
+| `src/ui/home-screen.tsx`           | Modify  | Reps stat, subscription settings          |
+| `package.json`                     | Modify  | Add RevenueCat dependency                 |
 
 ## Testing
 
@@ -266,16 +282,16 @@ without requiring a real credit card.
 A `premium_override` storage key, togglable from the existing DevPage
 (`src/ui/home-screen.tsx`). Three states:
 
-| Value | Behavior |
-|-------|----------|
-| `'premium'` | Force premium — never hit paywall (default for dev) |
-| `'free'` | Force free tier — always enforce daily limit, even on web |
-| unset | Normal behavior (web=free, native=check RevenueCat) |
+| Value       | Behavior                                                  |
+| ----------- | --------------------------------------------------------- |
+| `'premium'` | Force premium — never hit paywall (default for dev)       |
+| `'free'`    | Force free tier — always enforce daily limit, even on web |
+| unset       | Normal behavior (web=free, native=check RevenueCat)       |
 
 **Why `'free'` on web matters:** This lets you test the entire paywall flow
 (limit counter → paywall screen → dismiss) in the browser with `deno task dev`,
-without needing a native build. The paywall's "Subscribe" buttons won't work
-(no store), but layout/flow/dismiss logic can be fully exercised.
+without needing a native build. The paywall's "Subscribe" buttons won't work (no
+store), but layout/flow/dismiss logic can be fully exercised.
 
 Add to DevPage: a 3-way toggle for "Entitlement override" and a "Reset daily
 reps" button that clears today's count from `effort_daily`. This gives you a
@@ -296,6 +312,7 @@ RevenueCat's dashboard shows sandbox vs production transactions separately.
 
 **RevenueCat also supports a "Promotional" entitlement** — you can grant premium
 to any app user ID from the dashboard without any purchase. Useful for:
+
 - Granting access to beta testers
 - Testing the "already premium" flow on a fresh install
 - Debugging entitlement refresh issues
@@ -319,33 +336,35 @@ dashboard.
 ### Mechanism 4: Automated Tests (CI)
 
 `src/entitlement_test.ts` covers the pure logic:
+
 - Web platform → always returns premium (no paywall on web, ever)
 - Native + premium entitlement → unlimited reps
-- Native + free tier → correct limit math (199 reps = not reached, 200 = reached)
+- Native + free tier → correct limit math (199 reps = not reached, 200 =
+  reached)
 - Custom limit via URL param → overrides default (e.g. `?limit=5`)
 - Daily reset → new day resets counter to 0
 - Dev override → forces the expected tier regardless of platform
 
-No RevenueCat SDK in tests — the entitlement module separates pure logic
-(limit checking) from SDK calls (purchase/restore). Tests inject a mock
+No RevenueCat SDK in tests — the entitlement module separates pure logic (limit
+checking) from SDK calls (purchase/restore). Tests inject a mock
 `DailyRepsStore` (same pattern as `effort_test.ts`).
 
 ### Test Matrix
 
-| Scenario | How to test | Where |
-|----------|-------------|-------|
-| Paywall never shows on web | `deno task dev`, answer 200+ questions | Browser |
-| Paywall shows at limit | Override `'free'` + `?limit=5`, do a round | Browser |
-| Paywall layout/styling | Override `'free'` + `?limit=5`, do a round | Browser |
-| "Done for today" dismiss | Hit limit, tap dismiss, verify home screen | Browser |
-| Subscribe flow (UI) | iOS simulator + StoreKit sandbox | Xcode |
-| Subscribe flow (real) | TestFlight + sandbox account | Device |
-| Restore purchases | Sandbox purchase on device A, restore on device B | Devices |
-| Premium → no limit | RevenueCat dashboard grant, verify unlimited | Device |
-| Offline premium | Purchase, airplane mode, relaunch, verify unlimited | Device |
-| Daily reset | Use `?limit=5`, hit limit day 1, verify 0/200 on day 2 | Any |
-| Round boundary | Hit limit mid-round, verify round finishes | Browser |
-| Existing user upgrade | Use app (free), purchase mid-session, continue | Device |
+| Scenario                   | How to test                                            | Where   |
+| -------------------------- | ------------------------------------------------------ | ------- |
+| Paywall never shows on web | `deno task dev`, answer 200+ questions                 | Browser |
+| Paywall shows at limit     | Override `'free'` + `?limit=5`, do a round             | Browser |
+| Paywall layout/styling     | Override `'free'` + `?limit=5`, do a round             | Browser |
+| "Done for today" dismiss   | Hit limit, tap dismiss, verify home screen             | Browser |
+| Subscribe flow (UI)        | iOS simulator + StoreKit sandbox                       | Xcode   |
+| Subscribe flow (real)      | TestFlight + sandbox account                           | Device  |
+| Restore purchases          | Sandbox purchase on device A, restore on device B      | Devices |
+| Premium → no limit         | RevenueCat dashboard grant, verify unlimited           | Device  |
+| Offline premium            | Purchase, airplane mode, relaunch, verify unlimited    | Device  |
+| Daily reset                | Use `?limit=5`, hit limit day 1, verify 0/200 on day 2 | Any     |
+| Round boundary             | Hit limit mid-round, verify round finishes             | Browser |
+| Existing user upgrade      | Use app (free), purchase mid-session, continue         | Device  |
 
 ### Developing Without Hitting the Paywall
 
@@ -365,7 +384,8 @@ Three options depending on context:
 3. `deno task ok` — full suite passes
 4. `deno task dev` — web: no paywall ever (even with 200+ reps)
 5. `deno task dev` — override `'free'` + `?limit=5`: paywall at round boundary
-6. `deno task dev` — override `'free'` + `?limit=5`: practice tab shows "Upgrade"
+6. `deno task dev` — override `'free'` + `?limit=5`: practice tab shows
+   "Upgrade"
 7. `deno task dev` — home screen reps stat is tappable, changes color near limit
 8. iOS simulator — StoreKit sandbox purchase completes, entitlement grants
 9. TestFlight build — external tester can install and hit paywall
