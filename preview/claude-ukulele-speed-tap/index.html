@@ -2890,11 +2890,12 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="fd843d ukulele-speed-tap"></div>
+  <div class="home-screen" id="home-screen" data-version="8eae77 ukulele-speed-tap"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
   <div class="skill-screen phase-idle" id="skill-ukulele"></div>
+  <div class="skill-screen phase-idle" id="skill-ukuleleSpeedTap"></div>
   <div class="skill-screen phase-idle" id="skill-ukuleleChordShapes"></div>
   <div class="skill-screen phase-idle" id="skill-noteSemitones"></div>
   <div class="skill-screen phase-idle" id="skill-intervalSemitones"></div>
@@ -5036,6 +5037,7 @@ body.native-sim #app {
     fretboard: "Name any fret instantly",
     ukulele: "Name any fret instantly",
     speedTap: "Instantly find every position of any note",
+    ukuleleSpeedTap: "Instantly find every position of any note",
     noteSemitones: "Convert between notes and semitone numbers instantly",
     intervalSemitones: "Know the semitone size of any interval instantly",
     semitoneMath: "Add and subtract semitones from any note",
@@ -5051,6 +5053,7 @@ body.native-sim #app {
     fretboard: "You can get far on guitar without knowing note names \u2014 shapes, tab, and fret numbers go a long way. Knowing the notes unlocks the next level: finding your bearings when someone calls a key at a jam, building chord voicings anywhere on the neck, moving a riff to a new position, or understanding what makes that chord you stumbled on actually work. A musician who knows their instrument can do things that someone who memorized patterns can\u2019t. This skill builds instant recall for every note on every fret.",
     ukulele: "You can get far on ukulele without knowing note names \u2014 shapes, tab, and fret numbers go a long way. Knowing the notes unlocks the next level: finding your bearings when someone calls a key at a jam, building chord voicings anywhere on the neck, moving a riff to a new position, or understanding what makes that chord you stumbled on actually work. A musician who knows their instrument can do things that someone who memorized patterns can\u2019t. This skill builds instant recall for every note on every fret.",
     speedTap: "Speed Tap complements the fretboard learning skill, teaching you to find every instance of a note on the neck. This lets you move between positions fluidly \u2014 jump to a higher octave, find a bass note, or play a chord wherever your hand happens to be.",
+    ukuleleSpeedTap: "Speed Tap complements the fretboard learning skill, teaching you to find every instance of a note on the neck. This lets you move between positions fluidly \u2014 jump to a higher octave, find a different voicing, or play a chord wherever your hand happens to be.",
     noteSemitones: "The 12 notes of the chromatic scale can each be numbered by their distance from C in semitones: C is 0, C\u266F is 1, D is 2, all the way up to B at 11. This mapping is the foundation of all interval and transposition math. For example, to find a perfect 5th above E: E is 4, a fifth is 7 semitones, 4 + 7 = 11, and 11 is B. When you know these numbers cold, that whole chain becomes instant \u2014 and so does every skill that builds on it, from interval math to chord spelling.",
     intervalSemitones: "Intervals are a core building block of music, and each interval corresponds to a number of semitones. A major 3rd is 4 semitones, a perfect 5th is 7, and so on. Making this mapping automatic makes transposition and chord building much easier. When you can convert instantly in both directions, you stop translating and start thinking in intervals directly.",
     semitoneMath: "Adding and subtracting semitones from notes is the fundamental arithmetic of music. It\u2019s how you build chords (a major triad is root, +4, +3), navigate the fretboard (each fret is one semitone), apply scale formulas, and transpose. This skill makes that arithmetic automatic, so you can work through any of these without counting note by note.",
@@ -5065,7 +5068,8 @@ body.native-sim #app {
   var SKILL_NAMES = {
     fretboard: "Guitar Fretboard",
     ukulele: "Ukulele Fretboard",
-    speedTap: "Speed Tap",
+    speedTap: "Guitar Speed Tap",
+    ukuleleSpeedTap: "Ukulele Speed Tap",
     noteSemitones: "Note \u2194 Semitones",
     intervalSemitones: "Interval \u2194 Semitones",
     semitoneMath: "Semitone Math",
@@ -5104,6 +5108,15 @@ body.native-sim #app {
         `I always forget the high strings.`
       ],
       after: () => `All the ${d3("C")}\u2019s. Tap tap tap tap tap tap. Done.`
+    },
+    ukuleleSpeedTap: {
+      before: () => [
+        `All the ${d3("C")}\u2019s.`,
+        `Open ${d3("C")} string, then\u2026`,
+        `somewhere on the ${d3("E")} string?`,
+        `I always have to count frets.`
+      ],
+      after: () => `All the ${d3("C")}\u2019s. Tap tap tap tap. Done.`
     },
     noteSemitones: {
       before: () => [
@@ -5199,7 +5212,7 @@ body.native-sim #app {
     {
       id: "ukulele",
       label: "Ukulele",
-      skills: ["ukulele", "ukuleleChordShapes"]
+      skills: ["ukulele", "ukuleleSpeedTap", "ukuleleChordShapes"]
     },
     {
       id: "core",
@@ -5893,6 +5906,7 @@ body.native-sim #app {
     fretboard: Guitar,
     ukulele: Guitar,
     speedTap: Zap,
+    ukuleleSpeedTap: Zap,
     noteSemitones: Hash,
     intervalSemitones: Ruler,
     semitoneMath: Calculator,
@@ -7780,28 +7794,28 @@ body.native-sim #app {
   // src/skills/speed-tap/logic.ts
   var noteNames = NOTES.map((n2) => n2.name);
   var ALL_ITEMS9 = NOTES.map((n2) => n2.name);
-  function getNoteAtPosition(string, fret) {
-    const offset = STRING_OFFSETS[string];
+  function getNoteAtPosition(inst, string, fret) {
+    const offset = inst.stringOffsets[string];
     return noteNames[(offset + fret) % 12];
   }
-  function getPositionsForNote(noteName) {
+  function getPositionsForNote(inst, noteName) {
     const positions = [];
-    for (let s3 = 0; s3 < 6; s3++) {
+    for (let s3 = 0; s3 < inst.stringCount; s3++) {
       for (let f4 = 0; f4 <= 12; f4++) {
-        if (getNoteAtPosition(s3, f4) === noteName) {
+        if (getNoteAtPosition(inst, s3, f4) === noteName) {
           positions.push({ string: s3, fret: f4 });
         }
       }
     }
     return positions;
   }
-  function parseItem2(itemId2) {
+  function parseItem2(inst, itemId2) {
     const noteData = NOTES.find((n2) => n2.name === itemId2);
     const name = noteData ? displayNote(pickRandomAccidental(noteData.displayName)) : displayNote(itemId2);
     return {
       note: itemId2,
       displayName: name,
-      positions: getPositionsForNote(itemId2)
+      positions: getPositionsForNote(inst, itemId2)
     };
   }
   function positionKey(pos) {
@@ -7870,39 +7884,44 @@ body.native-sim #app {
     );
     return { renderStats };
   }
-  var SPEED_TAP_DEF = {
-    id: "speedTap",
-    name: "Speed Tap",
-    namespace: "speedTap",
-    motorTaskType: "fretboard-tap",
-    description: SKILL_DESCRIPTIONS.speedTap,
-    aboutDescription: SKILL_ABOUT_DESCRIPTIONS.speedTap,
-    beforeAfter: SKILL_BEFORE_AFTER.speedTap,
-    itemNoun: "notes",
-    allItems: ALL_ITEMS9,
-    getQuestion: parseItem2,
-    getPromptText: (q4) => q4.displayName,
-    quizInstruction: "Tap all note positions",
-    multiTap: {
-      getTargets: (q4) => q4.positions.map(positionKey),
-      evaluate: evaluate2
-    },
-    getExpectedResponseCount: (itemId2) => getPositionsForNote(itemId2).length,
-    buttons: { kind: "none" },
-    scope: {
-      kind: "levels",
-      levels: NOTE_LEVELS,
-      getItemIdsForLevel: getItemIdsForLevel8,
-      allLevelIds: ALL_LEVEL_IDS7,
-      // Legacy storage key — uses old "enabledGroups" naming.
-      storageKey: "speedTap_enabledGroups",
-      scopeLabel: "Notes",
-      defaultEnabled: [ALL_LEVEL_IDS7[0]],
-      formatLabel: formatGroupLabel
-    },
-    stats: { kind: "none" },
-    useController: () => useSpeedTapController()
-  };
+  function createSpeedTapDef(inst) {
+    const isGuitar = inst.stringCount === 6;
+    const id = isGuitar ? "speedTap" : "ukuleleSpeedTap";
+    return {
+      id,
+      name: isGuitar ? "Guitar Speed Tap" : "Ukulele Speed Tap",
+      namespace: id,
+      motorTaskType: "fretboard-tap",
+      description: SKILL_DESCRIPTIONS[id],
+      aboutDescription: SKILL_ABOUT_DESCRIPTIONS[id],
+      beforeAfter: SKILL_BEFORE_AFTER[id],
+      itemNoun: "notes",
+      allItems: ALL_ITEMS9,
+      getQuestion: (itemId2) => parseItem2(inst, itemId2),
+      getPromptText: (q4) => q4.displayName,
+      quizInstruction: "Tap all note positions",
+      multiTap: {
+        getTargets: (q4) => q4.positions.map(positionKey),
+        evaluate: evaluate2,
+        stringCount: inst.stringCount
+      },
+      getExpectedResponseCount: (itemId2) => getPositionsForNote(inst, itemId2).length,
+      buttons: { kind: "none" },
+      scope: {
+        kind: "levels",
+        levels: NOTE_LEVELS,
+        getItemIdsForLevel: getItemIdsForLevel8,
+        allLevelIds: ALL_LEVEL_IDS7,
+        // Legacy storage key — uses old "enabledGroups" naming.
+        storageKey: id + "_enabledGroups",
+        scopeLabel: "Notes",
+        defaultEnabled: [ALL_LEVEL_IDS7[0]],
+        formatLabel: formatGroupLabel
+      },
+      stats: { kind: "none" },
+      useController: () => useSpeedTapController()
+    };
+  }
 
   // src/skills/chord-shapes/voicings.ts
   var GUITAR_VOICINGS = [
@@ -8259,7 +8278,8 @@ body.native-sim #app {
     SCALE_DEGREES_DEF,
     DIATONIC_CHORDS_DEF,
     CHORD_SPELLING_DEF,
-    SPEED_TAP_DEF,
+    createSpeedTapDef(GUITAR),
+    createSpeedTapDef(UKULELE),
     GUITAR_CHORD_SHAPES_DEF,
     UKULELE_CHORD_SHAPES_DEF
   ];
