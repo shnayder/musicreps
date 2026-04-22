@@ -20,7 +20,7 @@
 - **Fretboard accidentals** — randomize sharp/flat spelling each round to ensure you learn both.
 - **Speed check polish** — fixed target dot, reserved prompt space, wrong-tap
   ring indicator
-- **Visual refinements** — The app is prettier now. 
+- **Visual refinements** — The app is prettier now.
 
 ### Bug Fixes
 
