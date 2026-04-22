@@ -2890,7 +2890,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="8eae77 ukulele-speed-tap"></div>
+  <div class="home-screen" id="home-screen" data-version="66adc8 ukulele-speed-tap"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -7801,7 +7801,7 @@ body.native-sim #app {
   function getPositionsForNote(inst, noteName) {
     const positions = [];
     for (let s3 = 0; s3 < inst.stringCount; s3++) {
-      for (let f4 = 0; f4 <= 12; f4++) {
+      for (let f4 = 0; f4 < inst.fretCount; f4++) {
         if (getNoteAtPosition(inst, s3, f4) === noteName) {
           positions.push({ string: s3, fret: f4 });
         }
@@ -7884,8 +7884,8 @@ body.native-sim #app {
     );
     return { renderStats };
   }
-  function createSpeedTapDef(inst) {
-    const isGuitar = inst.stringCount === 6;
+  function createSpeedTapDef(instrument, inst) {
+    const isGuitar = instrument === "guitar";
     const id = isGuitar ? "speedTap" : "ukuleleSpeedTap";
     return {
       id,
@@ -8278,8 +8278,8 @@ body.native-sim #app {
     SCALE_DEGREES_DEF,
     DIATONIC_CHORDS_DEF,
     CHORD_SPELLING_DEF,
-    createSpeedTapDef(GUITAR),
-    createSpeedTapDef(UKULELE),
+    createSpeedTapDef("guitar", GUITAR),
+    createSpeedTapDef("ukulele", UKULELE),
     GUITAR_CHORD_SHAPES_DEF,
     UKULELE_CHORD_SHAPES_DEF
   ];
