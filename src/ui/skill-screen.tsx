@@ -11,7 +11,7 @@ import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
 import type { ProgressSegment } from '../stats-display.ts';
 import type { MotorTaskType } from '../types.ts';
 import type { SkillEffortSnapshot } from '../effort.ts';
-import { EffortStatsLine } from './effort-stats.tsx';
+import { MetricCard, MetricsBar } from './metric-card.tsx';
 import { ProgressBarLabeled } from './scope.tsx';
 import type { ProgressBarKind } from './speed-level-legend.tsx';
 
@@ -641,13 +641,6 @@ export function PracticeTab(
         <Stack gap='region'>
           {(hasProgressBar || effortStats) && (
             <Section heading='Overall' gap='group'>
-              {effortStats && (
-                <EffortStatsLine
-                  repsToday={effortStats.repsToday}
-                  totalReps={effortStats.totalReps}
-                  daysActive={effortStats.daysActive}
-                />
-              )}
               {hasProgressBar && (
                 <ProgressBarLabeled
                   label='Progress'
@@ -655,6 +648,18 @@ export function PracticeTab(
                   kind={progressKind}
                   baseline={progressBaseline}
                 />
+              )}
+              {effortStats && (
+                <MetricsBar>
+                  <MetricCard
+                    value={effortStats.totalReps.toLocaleString()}
+                    label='total reps'
+                  />
+                  <MetricCard
+                    value={effortStats.daysActive.toLocaleString()}
+                    label={effortStats.daysActive === 1 ? 'day' : 'days'}
+                  />
+                </MetricsBar>
               )}
             </Section>
           )}

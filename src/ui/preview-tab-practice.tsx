@@ -30,6 +30,7 @@ import {
 } from './practice-config.tsx';
 import { type GroupSel, PreviewGrid, Section } from './preview-shared.tsx';
 import { EffortStatsLine } from './effort-stats.tsx';
+import { MetricCard, MetricsBar } from './metric-card.tsx';
 import { Text } from './text.tsx';
 import { SKILL_ABOUT_DESCRIPTIONS } from '../skill-catalog.ts';
 import {
@@ -178,6 +179,21 @@ function Phase1Components(
         </Section>
         <Section title='EffortStatsLine — empty' tabId={tabId}>
           <EffortStatsLine repsToday={0} totalReps={0} daysActive={0} />
+        </Section>
+      </PreviewGrid>
+
+      <PreviewGrid>
+        <Section title='MetricsBar — reps + days' tabId={tabId}>
+          <MetricsBar>
+            <MetricCard value='1,265' label='total reps' />
+            <MetricCard value='12' label='days' />
+          </MetricsBar>
+        </Section>
+        <Section title='MetricsBar — day 1' tabId={tabId}>
+          <MetricsBar>
+            <MetricCard value='5' label='total reps' />
+            <MetricCard value='1' label='day' />
+          </MetricsBar>
         </Section>
       </PreviewGrid>
 
