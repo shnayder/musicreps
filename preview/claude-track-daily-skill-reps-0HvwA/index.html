@@ -429,6 +429,14 @@
   --type-metric-effort-leading: var(--leading-none);
   --type-metric-effort-color: var(--color-tertiary);
 
+  /* Body-level metric — used in MetricCard (Progress tab Overall section).
+     Same color as metric-header so card values and the header rep count
+     read as the same kind of stat. */
+  --type-metric-card-size: var(--text-xl);
+  --type-metric-card-weight: var(--font-bold);
+  --type-metric-card-leading: var(--leading-none);
+  --type-metric-card-color: var(--color-tertiary);
+
   /* Headline metric — used in screen headers (home stats bar, quiz round
      counter). Matches heading-page weight/size so metric numbers carry the
      same visual weight as page titles, keeping headers consistent across
@@ -743,12 +751,6 @@ body {
   gap: var(--gap-related);
   padding: var(--gap-group) var(--pad-component);
   text-align: center;
-}
-.metric-card-value {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  line-height: var(--leading-none);
-  color: var(--color-text);
 }
 .metric-card-label {
   font-size: var(--type-status-size);
@@ -2192,6 +2194,13 @@ button {
   color: var(--type-metric-effort-color);
   font-variant-numeric: tabular-nums;
 }
+.text-metric-card {
+  font-size: var(--type-metric-card-size);
+  font-weight: var(--type-metric-card-weight);
+  line-height: var(--type-metric-card-leading);
+  color: var(--type-metric-card-color);
+  font-variant-numeric: tabular-nums;
+}
 .text-metric-header {
   font-size: var(--type-metric-header-size);
   font-weight: var(--type-metric-header-weight);
@@ -2918,7 +2927,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="f17b90 track-daily-skill-reps-0HvwA"></div>
+  <div class="home-screen" id="home-screen" data-version="23fed1 track-daily-skill-reps-0HvwA"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -8691,7 +8700,7 @@ body.native-sim #app {
   // src/ui/metric-card.tsx
   function MetricCard({ value, label }) {
     return /* @__PURE__ */ u2("div", { class: "card metric-card", children: [
-      /* @__PURE__ */ u2("span", { class: "metric-card-value", children: value }),
+      /* @__PURE__ */ u2(Text, { role: "metric-card", as: "span", children: value }),
       /* @__PURE__ */ u2("span", { class: "metric-card-label", children: label })
     ] });
   }
