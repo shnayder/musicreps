@@ -10,6 +10,8 @@ import { Bar, Section, Stack } from './layout.tsx';
 import { LayoutFooter, LayoutMain } from './screen-layout.tsx';
 import type { ProgressSegment } from '../stats-display.ts';
 import type { MotorTaskType } from '../types.ts';
+import type { SkillEffortSnapshot } from '../effort.ts';
+import { EffortStatsLine } from './effort-stats.tsx';
 import { ProgressBarLabeled } from './scope.tsx';
 import type { ProgressBarKind } from './speed-level-legend.tsx';
 
@@ -557,6 +559,7 @@ export function PracticeTab(
     progressSegments,
     progressKind,
     progressBaseline,
+    effortStats,
     description,
     startLabel,
   }: {
@@ -582,6 +585,8 @@ export function PracticeTab(
     progressKind?: ProgressBarKind;
     /** Motor baseline in ms (null = default). Used in legend modal. */
     progressBaseline?: number | null;
+    /** Today / total / days stats shown in the Progress tab's Overall section. */
+    effortStats?: SkillEffortSnapshot;
     /** Short skill description shown in the practice tab summary. */
     description?: string;
     /** Custom label for the start button (e.g. "Practice (32 items)"). */
@@ -634,14 +639,23 @@ export function PracticeTab(
       label: <TabIcon icon='progress' text='Progress' />,
       content: (
         <Stack gap='region'>
-          {hasProgressBar && (
+          {(hasProgressBar || effortStats) && (
             <Section heading='Overall' gap='group'>
-              <ProgressBarLabeled
-                label='Progress'
-                segments={segs}
-                kind={progressKind}
-                baseline={progressBaseline}
-              />
+              {effortStats && (
+                <EffortStatsLine
+                  repsToday={effortStats.repsToday}
+                  totalReps={effortStats.totalReps}
+                  daysActive={effortStats.daysActive}
+                />
+              )}
+              {hasProgressBar && (
+                <ProgressBarLabeled
+                  label='Progress'
+                  segments={segs}
+                  kind={progressKind}
+                  baseline={progressBaseline}
+                />
+              )}
             </Section>
           )}
           {progressExtra}

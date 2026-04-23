@@ -198,7 +198,7 @@ function IdleBasicComponents(
         <SkillHeader
           skillId='semitoneMath'
           title='Semitone Math'
-          totalReps={42}
+          repsToday={42}
           onBack={() => {}}
         />
       </Section>
@@ -240,7 +240,7 @@ function IdleComposedComponents(
           <SkillHeader
             skillId='semitoneMath'
             title='Demo Mode'
-            totalReps={0}
+            repsToday={0}
             onBack={() => {}}
           />
           <Tabs

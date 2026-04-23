@@ -22,10 +22,12 @@ export { ProgressBarLabeled };
 // ---------------------------------------------------------------------------
 
 export function SkillHeader(
-  { skillId, title, totalReps, onBack }: {
+  { skillId, title, repsToday, onBack }: {
     skillId?: string;
     title: string;
-    totalReps?: number;
+    /** Today's reps for this skill. Shown at the top-right next to a rep
+     *  mark; total-ever now lives in the Progress tab's Overall section. */
+    repsToday?: number;
     onBack?: () => void;
   },
 ) {
@@ -35,10 +37,10 @@ export function SkillHeader(
       icon={skillId && <SkillIcon skillId={skillId} />}
       onClose={onBack}
       closeAriaLabel='Back to home'
-      right={totalReps != null
+      right={repsToday != null
         ? (
           <Text role='metric-header' as='span' class='skill-header-reps'>
-            {totalReps.toLocaleString()}
+            {repsToday.toLocaleString()}
             <RepeatMark size={18} class='skill-header-reps-icon' />
           </Text>
         )

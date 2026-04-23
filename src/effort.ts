@@ -65,11 +65,27 @@ export function computeSkillEffort(
   };
 }
 
+/** Snapshot rendered in the skill header + progress tab "Overall" section.
+ *  `totalReps` derives from per-item sampleCount (stable across the
+ *  introduction of per-skill daily tracking); `repsToday` and `daysActive`
+ *  read from the per-skill daily counter introduced alongside this type. */
+export type SkillEffortSnapshot = {
+  repsToday: number;
+  totalReps: number;
+  daysActive: number;
+};
+
 // ---------------------------------------------------------------------------
 // Daily rep counter
 // ---------------------------------------------------------------------------
 
 const DAILY_KEY = 'effort_daily';
+
+/** Per-skill daily reps key. One key per skill id keeps writes small and
+ *  matches the existing `effort_daily` naming pattern. */
+export function skillDailyRepsKey(skillId: string): string {
+  return `effort_daily_${skillId}`;
+}
 
 export type DailyReps = Record<string, number>;
 
@@ -86,6 +102,15 @@ export function localDailyRepsStore(): DailyRepsStore {
   return {
     read: () => storage.getItem(DAILY_KEY),
     write: (json) => storage.setItem(DAILY_KEY, json),
+  };
+}
+
+/** Per-skill daily reps store backed by the storage abstraction. */
+export function localSkillDailyRepsStore(skillId: string): DailyRepsStore {
+  const key = skillDailyRepsKey(skillId);
+  return {
+    read: () => storage.getItem(key),
+    write: (json) => storage.setItem(key, json),
   };
 }
 
@@ -120,6 +145,14 @@ export function getDailyReps(
   return parseDailyReps(store.read());
 }
 
+/** Read per-skill daily reps. */
+export function getSkillDailyReps(
+  skillId: string,
+  store: DailyRepsStore = localSkillDailyRepsStore(skillId),
+): DailyReps {
+  return parseDailyReps(store.read());
+}
+
 function saveDailyReps(
   data: DailyReps,
   store: DailyRepsStore,
@@ -136,15 +169,29 @@ export function toLocalDateString(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-/** Increment today's rep count. */
+/** Increment today's rep count in a single daily store. */
+function bumpDailyStore(store: DailyRepsStore, today: string): void {
+  const data = parseDailyReps(store.read());
+  data[today] = (data[today] || 0) + 1;
+  saveDailyReps(data, store);
+}
+
+/** Increment today's rep count. Always bumps the global `effort_daily`
+ *  counter used by the home tabs. If `skillId` (or a per-skill `skillStore`
+ *  for testing) is provided, also bumps `effort_daily_<skillId>`. */
 export function incrementDailyReps(
   store: DailyRepsStore = localDailyRepsStore(),
   now: Date = new Date(),
+  skillId?: string,
+  skillStore?: DailyRepsStore,
 ): void {
   const today = toLocalDateString(now);
-  const data = getDailyReps(store);
-  data[today] = (data[today] || 0) + 1;
-  saveDailyReps(data, store);
+  bumpDailyStore(store, today);
+  if (skillId || skillStore) {
+    const s = skillStore ??
+      (skillId ? localSkillDailyRepsStore(skillId) : null);
+    if (s) bumpDailyStore(s, today);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -187,4 +234,45 @@ export function getSkillEffort(modeId: string): SkillEffort | null {
   const mode = getRegisteredSkills().find((m) => m.id === modeId);
   if (!mode) return null;
   return computeSkillEffort(mode, createStorageAdapter(mode.namespace));
+}
+
+// ---------------------------------------------------------------------------
+// Snapshot: per-skill today / total / days, for skill header + progress tab
+// ---------------------------------------------------------------------------
+
+/** Pure: derive the per-skill snapshot from raw inputs. `daysActive` counts
+ *  dates with > 0 reps in the per-skill daily record. */
+export function computeSkillEffortSnapshot(
+  totalReps: number,
+  skillDailyReps: DailyReps,
+  now: Date = new Date(),
+): SkillEffortSnapshot {
+  const today = toLocalDateString(now);
+  let daysActive = 0;
+  for (const key of Object.keys(skillDailyReps)) {
+    if (skillDailyReps[key] > 0) daysActive++;
+  }
+  return {
+    repsToday: skillDailyReps[today] ?? 0,
+    totalReps,
+    daysActive,
+  };
+}
+
+/** Convenience: compute the snapshot for a skill given its namespace + items.
+ *  Reads from the live storage abstraction. Keep the component call sites
+ *  in lockstep by routing them all through this helper. */
+export function getSkillEffortSnapshot(
+  skillId: string,
+  namespace: string,
+  allItems: readonly string[],
+  now: Date = new Date(),
+): SkillEffortSnapshot {
+  const info: SkillInfo = { id: skillId, namespace, allItems: [...allItems] };
+  const { totalReps } = computeSkillEffort(
+    info,
+    createStorageAdapter(namespace),
+  );
+  const daily = getSkillDailyReps(skillId);
+  return computeSkillEffortSnapshot(totalReps, daily, now);
 }

@@ -15,6 +15,11 @@ import type { SkillHandle } from '../types.ts';
 
 import { useLearnerModel } from '../hooks/use-learner-model.ts';
 import { useLevelScope } from '../hooks/use-level-scope.ts';
+import {
+  computeSkillEffortSnapshot,
+  getSkillDailyReps,
+  type SkillEffortSnapshot,
+} from '../effort.ts';
 
 import { LayoutHeader, ScreenLayout } from '../ui/screen-layout.tsx';
 import { SkillHeader } from '../ui/practice-config.tsx';
@@ -74,14 +79,18 @@ function GenericSkillBody<Q>(
   const skipped = levelScopeResult?.skippedLevels;
   const progressColors = useProgressColors(def, learner, phase, skipped);
   const levelBars = useLevelBars(def, learner, phase, levelScopeResult);
-  const totalReps = useMemo(() => {
-    let sum = 0;
+  // selector.version bumps inside recordResponse before incrementDailyReps
+  // writes, and phase covers round transitions — both storage reads pick up
+  // fresh values on every re-render triggered by an answer or state change.
+  const effortStats: SkillEffortSnapshot = useMemo(() => {
+    let totalReps = 0;
     for (const id of def.allItems) {
       const s = learner.selector.getStats(id);
-      if (s) sum += s.sampleCount;
+      if (s) totalReps += s.sampleCount;
     }
-    return sum;
-  }, [def.allItems, learner.selector, learner.selector.version, phase]);
+    const daily = getSkillDailyReps(def.id);
+    return computeSkillEffortSnapshot(totalReps, daily);
+  }, [def.id, def.allItems, learner.selector, learner.selector.version, phase]);
 
   if (isIdle) {
     return (
@@ -90,7 +99,7 @@ function GenericSkillBody<Q>(
           <SkillHeader
             skillId={def.id}
             title={def.name}
-            totalReps={totalReps}
+            repsToday={effortStats.repsToday}
             onBack={navigateHome}
           />
         </LayoutHeader>
@@ -102,6 +111,7 @@ function GenericSkillBody<Q>(
           levelScopeResult={levelScopeResult}
           ps={ps}
           progressSegments={progressColors}
+          effortStats={effortStats}
           onCalibrate={sc.hasSpeedCheck
             ? () => sc.setSpeedCheck('active')
             : undefined}

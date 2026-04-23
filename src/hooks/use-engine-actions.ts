@@ -55,7 +55,7 @@ function processSubmitAnswer(
     responseTime,
     result.correct,
   );
-  incrementDailyReps();
+  incrementDailyReps(undefined, undefined, configRef.current.skillId);
 
   setState((prev) => {
     let next = engineSubmitAnswer(

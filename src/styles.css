@@ -783,13 +783,13 @@ body.native-app .brand-strip {
 .brand-strip-tagline {
   margin: var(--gap-related) 0 0;
 }
-/* --- Stats bar (home header) --- */
-.home-stats-bar {
+/* --- Effort stats bar ("N today · N total · N day(s)") --- */
+.effort-stats-bar {
   justify-content: center;
   font-size: var(--type-status-size);
   color: var(--type-status-color);
 }
-.home-stat-sep {
+.effort-stat-sep {
   color: var(--color-text-muted);
 }
 /* --- Tabs --- */
