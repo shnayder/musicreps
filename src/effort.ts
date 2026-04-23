@@ -176,22 +176,28 @@ function bumpDailyStore(store: DailyRepsStore, today: string): void {
   saveDailyReps(data, store);
 }
 
+export type IncrementDailyRepsOpts = {
+  /** Override the global daily reps store (for testing). */
+  store?: DailyRepsStore;
+  /** Clock override. Defaults to `new Date()`. */
+  now?: Date;
+  /** If set, also bump `effort_daily_<skillId>`. */
+  skillId?: string;
+  /** Override the per-skill daily reps store (for testing). */
+  skillStore?: DailyRepsStore;
+};
+
 /** Increment today's rep count. Always bumps the global `effort_daily`
  *  counter used by the home tabs. If `skillId` (or a per-skill `skillStore`
  *  for testing) is provided, also bumps `effort_daily_<skillId>`. */
-export function incrementDailyReps(
-  store: DailyRepsStore = localDailyRepsStore(),
-  now: Date = new Date(),
-  skillId?: string,
-  skillStore?: DailyRepsStore,
-): void {
+export function incrementDailyReps(opts: IncrementDailyRepsOpts = {}): void {
+  const store = opts.store ?? localDailyRepsStore();
+  const now = opts.now ?? new Date();
   const today = toLocalDateString(now);
   bumpDailyStore(store, today);
-  if (skillId || skillStore) {
-    const s = skillStore ??
-      (skillId ? localSkillDailyRepsStore(skillId) : null);
-    if (s) bumpDailyStore(s, today);
-  }
+  const skillStore = opts.skillStore ??
+    (opts.skillId ? localSkillDailyRepsStore(opts.skillId) : null);
+  if (skillStore) bumpDailyStore(skillStore, today);
 }
 
 // ---------------------------------------------------------------------------

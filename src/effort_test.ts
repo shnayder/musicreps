@@ -187,21 +187,21 @@ describe('incrementDailyReps', () => {
   it('creates first entry', () => {
     const store = memoryDailyStore();
     // Use local-time constructor so the expected date is stable across TZs
-    incrementDailyReps(store, new Date(2024, 2, 15, 12, 0, 0));
+    incrementDailyReps({ store, now: new Date(2024, 2, 15, 12, 0, 0) });
     const data = JSON.parse(store.read()!);
     assert.equal(data['2024-03-15'], 1);
   });
 
   it('increments existing day', () => {
     const store = memoryDailyStore('{"2024-03-15":5}');
-    incrementDailyReps(store, new Date(2024, 2, 15, 12, 0, 0));
+    incrementDailyReps({ store, now: new Date(2024, 2, 15, 12, 0, 0) });
     const data = JSON.parse(store.read()!);
     assert.equal(data['2024-03-15'], 6);
   });
 
   it('adds new day without affecting others', () => {
     const store = memoryDailyStore('{"2024-03-15":5}');
-    incrementDailyReps(store, new Date(2024, 2, 16, 12, 0, 0));
+    incrementDailyReps({ store, now: new Date(2024, 2, 16, 12, 0, 0) });
     const data = JSON.parse(store.read()!);
     assert.equal(data['2024-03-15'], 5);
     assert.equal(data['2024-03-16'], 1);
@@ -210,12 +210,12 @@ describe('incrementDailyReps', () => {
   it('also bumps per-skill store when skillStore is provided', () => {
     const global = memoryDailyStore();
     const perSkill = memoryDailyStore();
-    incrementDailyReps(
-      global,
-      new Date(2024, 2, 15, 12, 0, 0),
-      'fretboard',
-      perSkill,
-    );
+    incrementDailyReps({
+      store: global,
+      now: new Date(2024, 2, 15, 12, 0, 0),
+      skillId: 'fretboard',
+      skillStore: perSkill,
+    });
     assert.equal(JSON.parse(global.read()!)['2024-03-15'], 1);
     assert.equal(JSON.parse(perSkill.read()!)['2024-03-15'], 1);
   });
@@ -223,7 +223,7 @@ describe('incrementDailyReps', () => {
   it('leaves per-skill key untouched when skillId omitted', () => {
     const global = memoryDailyStore();
     const perSkill = memoryDailyStore();
-    incrementDailyReps(global, new Date(2024, 2, 15, 12, 0, 0));
+    incrementDailyReps({ store: global, now: new Date(2024, 2, 15, 12, 0, 0) });
     assert.equal(JSON.parse(global.read()!)['2024-03-15'], 1);
     assert.equal(perSkill.read(), null);
   });
