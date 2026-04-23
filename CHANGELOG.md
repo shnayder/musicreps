@@ -7,8 +7,8 @@
 - **Ukulele Speed Tap** — find every position of any note on the ukulele
   fretboard, parallel to the existing guitar Speed Tap skill
 - **Per-skill daily reps** — each skill's header now shows today's reps for
-  that skill, and the Progress tab's Overall section shows
-  "N today / N total / N days" in the same format as the home tabs
+  that skill, and the Progress tab's Overall section shows total reps and
+  days practiced as side-by-side stat cards
 
 ## v1.1 (build 4) — 2026-04-22
 

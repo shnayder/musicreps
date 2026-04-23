@@ -29,7 +29,9 @@ export function EffortStatsLine(
       </span>
       <span class='effort-stat-sep' aria-hidden='true'>&middot;</span>
       <span class='effort-stat'>
-        <Text role='metric-header' as='span'>{daysActive}</Text>
+        <Text role='metric-header' as='span'>
+          {daysActive.toLocaleString()}
+        </Text>
         {daysActive === 1 ? ' day' : ' days'}
       </span>
     </Bar>

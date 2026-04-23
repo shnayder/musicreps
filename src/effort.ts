@@ -264,21 +264,3 @@ export function computeSkillEffortSnapshot(
     daysActive,
   };
 }
-
-/** Convenience: compute the snapshot for a skill given its namespace + items.
- *  Reads from the live storage abstraction. Keep the component call sites
- *  in lockstep by routing them all through this helper. */
-export function getSkillEffortSnapshot(
-  skillId: string,
-  namespace: string,
-  allItems: readonly string[],
-  now: Date = new Date(),
-): SkillEffortSnapshot {
-  const info: SkillInfo = { id: skillId, namespace, allItems: [...allItems] };
-  const { totalReps } = computeSkillEffort(
-    info,
-    createStorageAdapter(namespace),
-  );
-  const daily = getSkillDailyReps(skillId);
-  return computeSkillEffortSnapshot(totalReps, daily, now);
-}
