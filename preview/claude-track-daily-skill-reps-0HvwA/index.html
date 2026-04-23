@@ -735,6 +735,34 @@ body {
   border-left: 3px solid var(--color-notice);
 }
 
+/* --- MetricCard: body-level stat display (large value, label below) --- */
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-related);
+  padding: var(--gap-group) var(--pad-component);
+  text-align: center;
+}
+.metric-card-value {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  line-height: var(--leading-none);
+  color: var(--color-text);
+}
+.metric-card-label {
+  font-size: var(--type-status-size);
+  color: var(--type-status-color);
+}
+.metrics-bar {
+  display: flex;
+  gap: var(--gap-group);
+}
+.metrics-bar > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 /* --- Section: heading + content with consistent gap --- */
 .section-block {
   display: flex;
@@ -2890,7 +2918,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="fd30af track-daily-skill-reps-0HvwA"></div>
+  <div class="home-screen" id="home-screen" data-version="77266c track-daily-skill-reps-0HvwA"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -8660,24 +8688,15 @@ body.native-sim #app {
     return /* @__PURE__ */ u2("div", { class: cls, children });
   }
 
-  // src/ui/effort-stats.tsx
-  function EffortStatsLine({ repsToday, totalReps, daysActive }) {
-    return /* @__PURE__ */ u2(Bar, { gap: "group", class: "effort-stats-bar", children: [
-      /* @__PURE__ */ u2("span", { class: "effort-stat", children: [
-        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: repsToday.toLocaleString() }),
-        " today"
-      ] }),
-      /* @__PURE__ */ u2("span", { class: "effort-stat-sep", "aria-hidden": "true", children: "\xB7" }),
-      /* @__PURE__ */ u2("span", { class: "effort-stat", children: [
-        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: totalReps.toLocaleString() }),
-        " total"
-      ] }),
-      /* @__PURE__ */ u2("span", { class: "effort-stat-sep", "aria-hidden": "true", children: "\xB7" }),
-      /* @__PURE__ */ u2("span", { class: "effort-stat", children: [
-        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: daysActive }),
-        daysActive === 1 ? " day" : " days"
-      ] })
+  // src/ui/metric-card.tsx
+  function MetricCard({ value, label }) {
+    return /* @__PURE__ */ u2("div", { class: "card metric-card", children: [
+      /* @__PURE__ */ u2("span", { class: "metric-card-value", children: value }),
+      /* @__PURE__ */ u2("span", { class: "metric-card-label", children: label })
     ] });
+  }
+  function MetricsBar({ children }) {
+    return /* @__PURE__ */ u2("div", { class: "metrics-bar", children });
   }
 
   // node_modules/.deno/preact@10.28.4/node_modules/preact/compat/dist/compat.module.js
@@ -9352,14 +9371,6 @@ body.native-sim #app {
         label: /* @__PURE__ */ u2(TabIcon, { icon: "progress", text: "Progress" }),
         content: /* @__PURE__ */ u2(Stack, { gap: "region", children: [
           (hasProgressBar || effortStats) && /* @__PURE__ */ u2(Section, { heading: "Overall", gap: "group", children: [
-            effortStats && /* @__PURE__ */ u2(
-              EffortStatsLine,
-              {
-                repsToday: effortStats.repsToday,
-                totalReps: effortStats.totalReps,
-                daysActive: effortStats.daysActive
-              }
-            ),
             hasProgressBar && /* @__PURE__ */ u2(
               ProgressBarLabeled,
               {
@@ -9368,7 +9379,23 @@ body.native-sim #app {
                 kind: progressKind,
                 baseline: progressBaseline
               }
-            )
+            ),
+            effortStats && /* @__PURE__ */ u2(MetricsBar, { children: [
+              /* @__PURE__ */ u2(
+                MetricCard,
+                {
+                  value: effortStats.totalReps.toLocaleString(),
+                  label: "total reps"
+                }
+              ),
+              /* @__PURE__ */ u2(
+                MetricCard,
+                {
+                  value: effortStats.daysActive.toLocaleString(),
+                  label: effortStats.daysActive === 1 ? "day" : "days"
+                }
+              )
+            ] })
           ] }),
           progressExtra,
           statsHeading && /* @__PURE__ */ u2(Section, { heading: statsHeading, gap: "group", children: /* @__PURE__ */ u2("div", { class: "stats-container", children: statsContent }) }),
@@ -9413,6 +9440,26 @@ body.native-sim #app {
             class: "skill-nav"
           }
         )
+      ] })
+    ] });
+  }
+
+  // src/ui/effort-stats.tsx
+  function EffortStatsLine({ repsToday, totalReps, daysActive }) {
+    return /* @__PURE__ */ u2(Bar, { gap: "group", class: "effort-stats-bar", children: [
+      /* @__PURE__ */ u2("span", { class: "effort-stat", children: [
+        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: repsToday.toLocaleString() }),
+        " today"
+      ] }),
+      /* @__PURE__ */ u2("span", { class: "effort-stat-sep", "aria-hidden": "true", children: "\xB7" }),
+      /* @__PURE__ */ u2("span", { class: "effort-stat", children: [
+        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: totalReps.toLocaleString() }),
+        " total"
+      ] }),
+      /* @__PURE__ */ u2("span", { class: "effort-stat-sep", "aria-hidden": "true", children: "\xB7" }),
+      /* @__PURE__ */ u2("span", { class: "effort-stat", children: [
+        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: daysActive }),
+        daysActive === 1 ? " day" : " days"
       ] })
     ] });
   }
