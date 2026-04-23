@@ -429,6 +429,14 @@
   --type-metric-effort-leading: var(--leading-none);
   --type-metric-effort-color: var(--color-tertiary);
 
+  /* Body-level metric — used in MetricCard (Progress tab Overall section).
+     Same color as metric-header so card values and the header rep count
+     read as the same kind of stat. */
+  --type-metric-card-size: var(--text-xl);
+  --type-metric-card-weight: var(--font-bold);
+  --type-metric-card-leading: var(--leading-none);
+  --type-metric-card-color: var(--color-tertiary);
+
   /* Headline metric — used in screen headers (home stats bar, quiz round
      counter). Matches heading-page weight/size so metric numbers carry the
      same visual weight as page titles, keeping headers consistent across
@@ -735,6 +743,28 @@ body {
   border-left: 3px solid var(--color-notice);
 }
 
+/* --- MetricCard: body-level stat display (large value, label below) --- */
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-related);
+  padding: var(--gap-group) var(--pad-component);
+  text-align: center;
+}
+.metric-card-label {
+  font-size: var(--type-status-size);
+  color: var(--type-status-color);
+}
+.metrics-bar {
+  display: flex;
+  gap: var(--gap-group);
+}
+.metrics-bar > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 /* --- Section: heading + content with consistent gap --- */
 .section-block {
   display: flex;
@@ -811,13 +841,13 @@ body.native-app .brand-strip {
 .brand-strip-tagline {
   margin: var(--gap-related) 0 0;
 }
-/* --- Stats bar (home header) --- */
-.home-stats-bar {
+/* --- Effort stats bar ("N today · N total · N day(s)") --- */
+.effort-stats-bar {
   justify-content: center;
   font-size: var(--type-status-size);
   color: var(--type-status-color);
 }
-.home-stat-sep {
+.effort-stat-sep {
   color: var(--color-text-muted);
 }
 /* --- Tabs --- */
@@ -2164,6 +2194,13 @@ button {
   color: var(--type-metric-effort-color);
   font-variant-numeric: tabular-nums;
 }
+.text-metric-card {
+  font-size: var(--type-metric-card-size);
+  font-weight: var(--type-metric-card-weight);
+  line-height: var(--type-metric-card-leading);
+  color: var(--type-metric-card-color);
+  font-variant-numeric: tabular-nums;
+}
 .text-metric-header {
   font-size: var(--type-metric-header-size);
   font-weight: var(--type-metric-header-weight);
@@ -2890,7 +2927,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1520"></div>
+  <div class="home-screen" id="home-screen" data-version="#1526"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -5734,11 +5771,21 @@ body.native-sim #app {
     };
   }
   var DAILY_KEY = "effort_daily";
+  function skillDailyRepsKey(skillId) {
+    return `effort_daily_${skillId}`;
+  }
   var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   function localDailyRepsStore() {
     return {
       read: () => storage.getItem(DAILY_KEY),
       write: (json) => storage.setItem(DAILY_KEY, json)
+    };
+  }
+  function localSkillDailyRepsStore(skillId) {
+    const key = skillDailyRepsKey(skillId);
+    return {
+      read: () => storage.getItem(key),
+      write: (json) => storage.setItem(key, json)
     };
   }
   function parseDailyReps(raw) {
@@ -5764,6 +5811,9 @@ body.native-sim #app {
   function getDailyReps(store = localDailyRepsStore()) {
     return parseDailyReps(store.read());
   }
+  function getSkillDailyReps(skillId, store = localSkillDailyRepsStore(skillId)) {
+    return parseDailyReps(store.read());
+  }
   function saveDailyReps(data, store) {
     store.write(JSON.stringify(data));
   }
@@ -5773,11 +5823,18 @@ body.native-sim #app {
     const d4 = String(date.getDate()).padStart(2, "0");
     return `${y3}-${m3}-${d4}`;
   }
-  function incrementDailyReps(store = localDailyRepsStore(), now = /* @__PURE__ */ new Date()) {
-    const today = toLocalDateString(now);
-    const data = getDailyReps(store);
+  function bumpDailyStore(store, today) {
+    const data = parseDailyReps(store.read());
     data[today] = (data[today] || 0) + 1;
     saveDailyReps(data, store);
+  }
+  function incrementDailyReps(opts = {}) {
+    const store = opts.store ?? localDailyRepsStore();
+    const now = opts.now ?? /* @__PURE__ */ new Date();
+    const today = toLocalDateString(now);
+    bumpDailyStore(store, today);
+    const skillStore = opts.skillStore ?? (opts.skillId ? localSkillDailyRepsStore(opts.skillId) : null);
+    if (skillStore) bumpDailyStore(skillStore, today);
   }
   function computeGlobalEffort(skillEfforts, dailyReps) {
     const dates = Object.keys(dailyReps).filter((d4) => dailyReps[d4] > 0);
@@ -5795,6 +5852,18 @@ body.native-sim #app {
       (m3) => computeSkillEffort(m3, createStorageAdapter(m3.namespace))
     );
     return computeGlobalEffort(skillEfforts, getDailyReps());
+  }
+  function computeSkillEffortSnapshot(totalReps, skillDailyReps, now = /* @__PURE__ */ new Date()) {
+    const today = toLocalDateString(now);
+    let daysActive = 0;
+    for (const key of Object.keys(skillDailyReps)) {
+      if (skillDailyReps[key] > 0) daysActive++;
+    }
+    return {
+      repsToday: skillDailyReps[today] ?? 0,
+      totalReps,
+      daysActive
+    };
   }
 
   // src/dev-panel.ts
@@ -8628,6 +8697,17 @@ body.native-sim #app {
     return /* @__PURE__ */ u2("div", { class: cls, children });
   }
 
+  // src/ui/metric-card.tsx
+  function MetricCard({ value, label }) {
+    return /* @__PURE__ */ u2("div", { class: "card metric-card", children: [
+      /* @__PURE__ */ u2(Text, { role: "metric-card", as: "span", children: value }),
+      /* @__PURE__ */ u2("span", { class: "metric-card-label", children: label })
+    ] });
+  }
+  function MetricsBar({ children }) {
+    return /* @__PURE__ */ u2("div", { class: "metrics-bar", children });
+  }
+
   // node_modules/.deno/preact@10.28.4/node_modules/preact/compat/dist/compat.module.js
   function g3(n2, t3) {
     for (var e3 in t3) n2[e3] = t3[e3];
@@ -9261,6 +9341,7 @@ body.native-sim #app {
     progressSegments,
     progressKind,
     progressBaseline,
+    effortStats,
     description,
     startLabel
   }) {
@@ -9298,15 +9379,33 @@ body.native-sim #app {
         id: "progress",
         label: /* @__PURE__ */ u2(TabIcon, { icon: "progress", text: "Progress" }),
         content: /* @__PURE__ */ u2(Stack, { gap: "region", children: [
-          hasProgressBar && /* @__PURE__ */ u2(Section, { heading: "Overall", gap: "group", children: /* @__PURE__ */ u2(
-            ProgressBarLabeled,
-            {
-              label: "Progress",
-              segments: segs,
-              kind: progressKind,
-              baseline: progressBaseline
-            }
-          ) }),
+          (hasProgressBar || effortStats) && /* @__PURE__ */ u2(Section, { heading: "Overall", gap: "group", children: [
+            hasProgressBar && /* @__PURE__ */ u2(
+              ProgressBarLabeled,
+              {
+                label: "Progress",
+                segments: segs,
+                kind: progressKind,
+                baseline: progressBaseline
+              }
+            ),
+            effortStats && /* @__PURE__ */ u2(MetricsBar, { children: [
+              /* @__PURE__ */ u2(
+                MetricCard,
+                {
+                  value: effortStats.totalReps.toLocaleString(),
+                  label: "total reps"
+                }
+              ),
+              /* @__PURE__ */ u2(
+                MetricCard,
+                {
+                  value: effortStats.daysActive.toLocaleString(),
+                  label: effortStats.daysActive === 1 ? "day" : "days"
+                }
+              )
+            ] })
+          ] }),
           progressExtra,
           statsHeading && /* @__PURE__ */ u2(Section, { heading: statsHeading, gap: "group", children: /* @__PURE__ */ u2("div", { class: "stats-container", children: statsContent }) }),
           !statsHeading && /* @__PURE__ */ u2("div", { class: "stats-container", children: statsContent }),
@@ -9350,6 +9449,26 @@ body.native-sim #app {
             class: "skill-nav"
           }
         )
+      ] })
+    ] });
+  }
+
+  // src/ui/effort-stats.tsx
+  function EffortStatsLine({ repsToday, totalReps, daysActive }) {
+    return /* @__PURE__ */ u2(Bar, { gap: "group", class: "effort-stats-bar", children: [
+      /* @__PURE__ */ u2("span", { class: "effort-stat", children: [
+        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: repsToday.toLocaleString() }),
+        " today"
+      ] }),
+      /* @__PURE__ */ u2("span", { class: "effort-stat-sep", "aria-hidden": "true", children: "\xB7" }),
+      /* @__PURE__ */ u2("span", { class: "effort-stat", children: [
+        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: totalReps.toLocaleString() }),
+        " total"
+      ] }),
+      /* @__PURE__ */ u2("span", { class: "effort-stat-sep", "aria-hidden": "true", children: "\xB7" }),
+      /* @__PURE__ */ u2("span", { class: "effort-stat", children: [
+        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: daysActive.toLocaleString() }),
+        daysActive === 1 ? " day" : " days"
       ] })
     ] });
   }
@@ -9862,22 +9981,14 @@ Build: ${version}
     if (pageTitle) {
       return /* @__PURE__ */ u2("div", { class: "home-header", children: /* @__PURE__ */ u2(Text, { role: "heading-page", as: "h1", class: "page-heading", children: pageTitle }) });
     }
-    return /* @__PURE__ */ u2("div", { class: "home-header", children: /* @__PURE__ */ u2(Bar, { gap: "group", class: "home-stats-bar", children: [
-      /* @__PURE__ */ u2("span", { class: "home-stat", children: [
-        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: repsToday.toLocaleString() }),
-        " today"
-      ] }),
-      /* @__PURE__ */ u2("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
-      /* @__PURE__ */ u2("span", { class: "home-stat", children: [
-        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: totalReps.toLocaleString() }),
-        " total"
-      ] }),
-      /* @__PURE__ */ u2("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
-      /* @__PURE__ */ u2("span", { class: "home-stat", children: [
-        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: daysActive }),
-        daysActive === 1 ? " day" : " days"
-      ] })
-    ] }) });
+    return /* @__PURE__ */ u2("div", { class: "home-header", children: /* @__PURE__ */ u2(
+      EffortStatsLine,
+      {
+        repsToday,
+        totalReps,
+        daysActive
+      }
+    ) });
   }
   function HomeAboutTab() {
     return /* @__PURE__ */ u2(Stack, { gap: "component", class: "settings-page", children: [
@@ -10765,7 +10876,7 @@ Build: ${version}
   }
 
   // src/ui/practice-config.tsx
-  function SkillHeader({ skillId, title, totalReps, onBack }) {
+  function SkillHeader({ skillId, title, repsToday, onBack }) {
     return /* @__PURE__ */ u2(
       ScreenHeader,
       {
@@ -10773,8 +10884,8 @@ Build: ${version}
         icon: skillId && /* @__PURE__ */ u2(SkillIcon, { skillId }),
         onClose: onBack,
         closeAriaLabel: "Back to home",
-        right: totalReps != null ? /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", class: "skill-header-reps", children: [
-          totalReps.toLocaleString(),
+        right: repsToday != null ? /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", class: "skill-header-reps", children: [
+          repsToday.toLocaleString(),
           /* @__PURE__ */ u2(RepeatMark, { size: 18, class: "skill-header-reps-icon" })
         ] }) : void 0
       }
@@ -12503,6 +12614,7 @@ Build: ${version}
     levelScopeResult,
     ps,
     progressSegments,
+    effortStats,
     onCalibrate
   }) {
     const hasGroups = def.scope.kind === "levels" && levelScopeResult;
@@ -12515,6 +12627,7 @@ Build: ${version}
         progressSegments,
         progressKind: hasGroups ? "multi-level" : "single-level",
         progressBaseline: learner.motorBaseline,
+        effortStats,
         description: def.description,
         scopeValid: !levelScopeResult || levelScopeResult.enabledLevels.size > 0,
         validationMessage: "Select at least one level",
@@ -12955,7 +13068,7 @@ Build: ${version}
       responseTime,
       result.correct
     );
-    incrementDailyReps();
+    incrementDailyReps({ skillId: configRef.current.skillId });
     setState((prev) => {
       let next = engineSubmitAnswer(
         prev,
@@ -13449,6 +13562,7 @@ Build: ${version}
   }
   function buildGenericEngineConfig(def, getEnabledItemsRef, getPracticingLabelRef, currentQRef, lastAnswerRef, ctrlRef, isSequential, isMultiTap, seqInput, hasHandleKey) {
     return {
+      skillId: def.id,
       getEnabledItems: () => getEnabledItemsRef.current(),
       getPracticingLabel: () => getPracticingLabelRef.current(),
       checkAnswer: (itemId2, input) => checkGenericAnswer(
@@ -13607,14 +13721,15 @@ Build: ${version}
     const skipped = levelScopeResult?.skippedLevels;
     const progressColors = useProgressColors(def, learner, phase, skipped);
     const levelBars = useLevelBars(def, learner, phase, levelScopeResult);
-    const totalReps = T2(() => {
-      let sum = 0;
+    const effortStats = T2(() => {
+      let totalReps = 0;
       for (const id of def.allItems) {
         const s3 = learner.selector.getStats(id);
-        if (s3) sum += s3.sampleCount;
+        if (s3) totalReps += s3.sampleCount;
       }
-      return sum;
-    }, [def.allItems, learner.selector, learner.selector.version, phase]);
+      const daily = getSkillDailyReps(def.id);
+      return computeSkillEffortSnapshot(totalReps, daily);
+    }, [def.id, def.allItems, learner.selector, learner.selector.version, phase]);
     if (isIdle) {
       return /* @__PURE__ */ u2(ScreenLayout, { children: [
         /* @__PURE__ */ u2(LayoutHeader, { children: /* @__PURE__ */ u2(
@@ -13622,7 +13737,7 @@ Build: ${version}
           {
             skillId: def.id,
             title: def.name,
-            totalReps,
+            repsToday: effortStats.repsToday,
             onBack: navigateHome
           }
         ) }),
@@ -13636,6 +13751,7 @@ Build: ${version}
             levelScopeResult,
             ps,
             progressSegments: progressColors,
+            effortStats,
             onCalibrate: sc.hasSpeedCheck ? () => sc.setSpeedCheck("active") : void 0
           }
         )
