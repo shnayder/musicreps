@@ -40,6 +40,7 @@ import {
   ScreenLayout,
 } from './screen-layout.tsx';
 import { Bar, Section, Stack } from './layout.tsx';
+import { EffortStatsLine } from './effort-stats.tsx';
 import { Text } from './text.tsx';
 
 // ---------------------------------------------------------------------------
@@ -739,26 +740,11 @@ function HomeHeader(
   }
   return (
     <div class='home-header'>
-      <Bar gap='group' class='home-stats-bar'>
-        <span class='home-stat'>
-          <Text role='metric-header' as='span'>
-            {repsToday.toLocaleString()}
-          </Text>
-          {' today'}
-        </span>
-        <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
-        <span class='home-stat'>
-          <Text role='metric-header' as='span'>
-            {totalReps.toLocaleString()}
-          </Text>
-          {' total'}
-        </span>
-        <span class='home-stat-sep' aria-hidden='true'>&middot;</span>
-        <span class='home-stat'>
-          <Text role='metric-header' as='span'>{daysActive}</Text>
-          {daysActive === 1 ? ' day' : ' days'}
-        </span>
-      </Bar>
+      <EffortStatsLine
+        repsToday={repsToday}
+        totalReps={totalReps}
+        daysActive={daysActive}
+      />
     </div>
   );
 }

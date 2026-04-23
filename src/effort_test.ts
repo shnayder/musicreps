@@ -7,12 +7,15 @@ import { createMemoryStorage } from './adaptive.ts';
 import {
   computeGlobalEffort,
   computeSkillEffort,
+  computeSkillEffortSnapshot,
+  type DailyReps,
   type DailyRepsStore,
   getGlobalEffort,
   getSkillEffort,
   incrementDailyReps,
   parseDailyReps,
   registerSkillForEffort,
+  skillDailyRepsKey,
   type SkillInfo,
   toLocalDateString,
 } from './effort.ts';
@@ -184,24 +187,104 @@ describe('incrementDailyReps', () => {
   it('creates first entry', () => {
     const store = memoryDailyStore();
     // Use local-time constructor so the expected date is stable across TZs
-    incrementDailyReps(store, new Date(2024, 2, 15, 12, 0, 0));
+    incrementDailyReps({ store, now: new Date(2024, 2, 15, 12, 0, 0) });
     const data = JSON.parse(store.read()!);
     assert.equal(data['2024-03-15'], 1);
   });
 
   it('increments existing day', () => {
     const store = memoryDailyStore('{"2024-03-15":5}');
-    incrementDailyReps(store, new Date(2024, 2, 15, 12, 0, 0));
+    incrementDailyReps({ store, now: new Date(2024, 2, 15, 12, 0, 0) });
     const data = JSON.parse(store.read()!);
     assert.equal(data['2024-03-15'], 6);
   });
 
   it('adds new day without affecting others', () => {
     const store = memoryDailyStore('{"2024-03-15":5}');
-    incrementDailyReps(store, new Date(2024, 2, 16, 12, 0, 0));
+    incrementDailyReps({ store, now: new Date(2024, 2, 16, 12, 0, 0) });
     const data = JSON.parse(store.read()!);
     assert.equal(data['2024-03-15'], 5);
     assert.equal(data['2024-03-16'], 1);
+  });
+
+  it('also bumps per-skill store when skillStore is provided', () => {
+    const global = memoryDailyStore();
+    const perSkill = memoryDailyStore();
+    incrementDailyReps({
+      store: global,
+      now: new Date(2024, 2, 15, 12, 0, 0),
+      skillId: 'fretboard',
+      skillStore: perSkill,
+    });
+    assert.equal(JSON.parse(global.read()!)['2024-03-15'], 1);
+    assert.equal(JSON.parse(perSkill.read()!)['2024-03-15'], 1);
+  });
+
+  it('leaves per-skill key untouched when skillId omitted', () => {
+    const global = memoryDailyStore();
+    const perSkill = memoryDailyStore();
+    incrementDailyReps({ store: global, now: new Date(2024, 2, 15, 12, 0, 0) });
+    assert.equal(JSON.parse(global.read()!)['2024-03-15'], 1);
+    assert.equal(perSkill.read(), null);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// skillDailyRepsKey
+// ---------------------------------------------------------------------------
+
+describe('skillDailyRepsKey', () => {
+  it('prefixes the skill id', () => {
+    assert.equal(skillDailyRepsKey('fretboard'), 'effort_daily_fretboard');
+    assert.equal(
+      skillDailyRepsKey('intervalMath'),
+      'effort_daily_intervalMath',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// computeSkillEffortSnapshot
+// ---------------------------------------------------------------------------
+
+describe('computeSkillEffortSnapshot', () => {
+  const now = new Date(2024, 2, 15, 12, 0, 0); // 2024-03-15
+
+  it('returns zeros for empty daily', () => {
+    const snap = computeSkillEffortSnapshot(0, {}, now);
+    assert.equal(snap.repsToday, 0);
+    assert.equal(snap.totalReps, 0);
+    assert.equal(snap.daysActive, 0);
+  });
+
+  it('returns today reps, passthrough total, counted days', () => {
+    const daily: DailyReps = {
+      '2024-03-13': 5,
+      '2024-03-14': 8,
+      '2024-03-15': 12,
+    };
+    const snap = computeSkillEffortSnapshot(123, daily, now);
+    assert.equal(snap.repsToday, 12);
+    assert.equal(snap.totalReps, 123);
+    assert.equal(snap.daysActive, 3);
+  });
+
+  it('ignores zero-rep days in daysActive', () => {
+    const daily: DailyReps = {
+      '2024-03-13': 5,
+      '2024-03-14': 0,
+      '2024-03-15': 3,
+    };
+    const snap = computeSkillEffortSnapshot(8, daily, now);
+    assert.equal(snap.daysActive, 2);
+    assert.equal(snap.repsToday, 3);
+  });
+
+  it('reports zero today when today is absent', () => {
+    const daily: DailyReps = { '2024-03-14': 5 };
+    const snap = computeSkillEffortSnapshot(5, daily, now);
+    assert.equal(snap.repsToday, 0);
+    assert.equal(snap.daysActive, 1);
   });
 });
 

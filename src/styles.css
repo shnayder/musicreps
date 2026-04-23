@@ -401,6 +401,14 @@
   --type-metric-effort-leading: var(--leading-none);
   --type-metric-effort-color: var(--color-tertiary);
 
+  /* Body-level metric — used in MetricCard (Progress tab Overall section).
+     Same color as metric-header so card values and the header rep count
+     read as the same kind of stat. */
+  --type-metric-card-size: var(--text-xl);
+  --type-metric-card-weight: var(--font-bold);
+  --type-metric-card-leading: var(--leading-none);
+  --type-metric-card-color: var(--color-tertiary);
+
   /* Headline metric — used in screen headers (home stats bar, quiz round
      counter). Matches heading-page weight/size so metric numbers carry the
      same visual weight as page titles, keeping headers consistent across
@@ -707,6 +715,28 @@ body {
   border-left: 3px solid var(--color-notice);
 }
 
+/* --- MetricCard: body-level stat display (large value, label below) --- */
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-related);
+  padding: var(--gap-group) var(--pad-component);
+  text-align: center;
+}
+.metric-card-label {
+  font-size: var(--type-status-size);
+  color: var(--type-status-color);
+}
+.metrics-bar {
+  display: flex;
+  gap: var(--gap-group);
+}
+.metrics-bar > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 /* --- Section: heading + content with consistent gap --- */
 .section-block {
   display: flex;
@@ -783,13 +813,13 @@ body.native-app .brand-strip {
 .brand-strip-tagline {
   margin: var(--gap-related) 0 0;
 }
-/* --- Stats bar (home header) --- */
-.home-stats-bar {
+/* --- Effort stats bar ("N today · N total · N day(s)") --- */
+.effort-stats-bar {
   justify-content: center;
   font-size: var(--type-status-size);
   color: var(--type-status-color);
 }
-.home-stat-sep {
+.effort-stat-sep {
   color: var(--color-text-muted);
 }
 /* --- Tabs --- */
@@ -2134,6 +2164,13 @@ button {
   font-weight: var(--type-metric-effort-weight);
   line-height: var(--type-metric-effort-leading);
   color: var(--type-metric-effort-color);
+  font-variant-numeric: tabular-nums;
+}
+.text-metric-card {
+  font-size: var(--type-metric-card-size);
+  font-weight: var(--type-metric-card-weight);
+  line-height: var(--type-metric-card-leading);
+  color: var(--type-metric-card-color);
   font-variant-numeric: tabular-nums;
 }
 .text-metric-header {

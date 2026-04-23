@@ -180,6 +180,7 @@ function buildGenericEngineConfig<Q>(
   hasHandleKey: boolean,
 ): QuizEngineConfig {
   return {
+    skillId: def.id,
     getEnabledItems: () => getEnabledItemsRef.current(),
     getPracticingLabel: () => getPracticingLabelRef.current(),
     checkAnswer: (itemId, input) =>

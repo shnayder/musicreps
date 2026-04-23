@@ -18,6 +18,10 @@ export type QuizEngineConfig = {
     ctx: { submitAnswer: (input: string) => void },
   ) => boolean | void;
   getPracticingLabel?: () => string;
+  /** Skill id used to partition the per-skill daily rep counter. When set,
+   *  each answer bumps `effort_daily_<skillId>` in addition to the global
+   *  `effort_daily` counter. */
+  skillId?: string;
 };
 
 export type QuizEngineHandle = {
