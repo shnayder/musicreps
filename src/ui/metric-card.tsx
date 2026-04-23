@@ -3,6 +3,7 @@
 // MetricsBar arranges cards side-by-side with equal widths.
 
 import type { ComponentChildren } from 'preact';
+import { Text } from './text.tsx';
 
 export function MetricCard(
   { value, label }: {
@@ -12,7 +13,7 @@ export function MetricCard(
 ) {
   return (
     <div class='card metric-card'>
-      <span class='metric-card-value'>{value}</span>
+      <Text role='metric-card' as='span'>{value}</Text>
       <span class='metric-card-label'>{label}</span>
     </div>
   );

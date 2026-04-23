@@ -31,6 +31,7 @@ export type TextRole =
   | 'metric-info'
   | 'metric-effort'
   | 'metric-header'
+  | 'metric-card'
   // Status
   | 'status'
   // Control (small)
