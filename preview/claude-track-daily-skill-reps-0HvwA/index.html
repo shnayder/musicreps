@@ -2918,7 +2918,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="77266c track-daily-skill-reps-0HvwA"></div>
+  <div class="home-screen" id="home-screen" data-version="f17b90 track-daily-skill-reps-0HvwA"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -5819,13 +5819,13 @@ body.native-sim #app {
     data[today] = (data[today] || 0) + 1;
     saveDailyReps(data, store);
   }
-  function incrementDailyReps(store = localDailyRepsStore(), now = /* @__PURE__ */ new Date(), skillId, skillStore) {
+  function incrementDailyReps(opts = {}) {
+    const store = opts.store ?? localDailyRepsStore();
+    const now = opts.now ?? /* @__PURE__ */ new Date();
     const today = toLocalDateString(now);
     bumpDailyStore(store, today);
-    if (skillId || skillStore) {
-      const s3 = skillStore ?? (skillId ? localSkillDailyRepsStore(skillId) : null);
-      if (s3) bumpDailyStore(s3, today);
-    }
+    const skillStore = opts.skillStore ?? (opts.skillId ? localSkillDailyRepsStore(opts.skillId) : null);
+    if (skillStore) bumpDailyStore(skillStore, today);
   }
   function computeGlobalEffort(skillEfforts, dailyReps) {
     const dates = Object.keys(dailyReps).filter((d4) => dailyReps[d4] > 0);
@@ -13059,7 +13059,7 @@ Build: ${version}
       responseTime,
       result.correct
     );
-    incrementDailyReps(void 0, void 0, configRef.current.skillId);
+    incrementDailyReps({ skillId: configRef.current.skillId });
     setState((prev) => {
       let next = engineSubmitAnswer(
         prev,
