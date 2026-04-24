@@ -1,1 +1,1 @@
-eb8ec8 fix-xcconfig-url-truncation
+8ec060 fix-xcconfig-url-truncation

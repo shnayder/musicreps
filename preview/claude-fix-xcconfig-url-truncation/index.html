@@ -2977,7 +2977,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="eb8ec8 fix-xcconfig-url-truncation"></div>
+  <div class="home-screen" id="home-screen" data-version="8ec060 fix-xcconfig-url-truncation"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -10375,7 +10375,13 @@ Build: ${version}
         "update-registered": "[OTA] update registered, will apply on next restart"
       };
       console.log(messages[result] || `[OTA] ${result}`);
-      if (result === "update-registered") updateRegisteredCallback?.();
+      if (result === "update-registered") {
+        try {
+          updateRegisteredCallback?.();
+        } catch (err) {
+          console.error("[OTA] update registered callback failed:", err);
+        }
+      }
     } catch (err) {
       console.error("[OTA] update check failed:", err);
     }
@@ -10464,10 +10470,15 @@ Build: ${version}
           }
           const first = focusable[0];
           const last = focusable[focusable.length - 1];
-          if (e3.shiftKey && document.activeElement === first) {
+          const active = document.activeElement;
+          const inList = Array.from(focusable).includes(active);
+          if (!inList) {
+            e3.preventDefault();
+            (e3.shiftKey ? last : first).focus();
+          } else if (e3.shiftKey && active === first) {
             e3.preventDefault();
             last.focus();
-          } else if (!e3.shiftKey && document.activeElement === last) {
+          } else if (!e3.shiftKey && active === last) {
             e3.preventDefault();
             first.focus();
           }
