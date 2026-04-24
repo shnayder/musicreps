@@ -282,6 +282,7 @@
      bypassing all stacking contexts. These tokens are for
      elements within the normal layout flow. */
   --z-raised: 1;
+  --z-overlay: 50;
   --z-modal: 100;
 
   /* Font weights */
@@ -2789,7 +2790,55 @@ button:where(.progress-bar-tappable) {
 }
 
 /* ==========================================================================
-   19. REDUCED MOTION
+   19. SLIDE OVERLAY
+   ========================================================================== */
+.slide-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  z-index: var(--z-overlay);
+}
+.slide-overlay-surface {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: var(--z-overlay);
+  box-shadow: var(--shadow-lg);
+  transition: transform var(--duration-slow) ease-out;
+}
+.slide-overlay-surface[data-origin='top'] {
+  top: 0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+.slide-overlay-surface[data-origin='bottom'] {
+  bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.slide-overlay-surface[data-state='entering'][data-origin='top'],
+.slide-overlay-surface[data-state='exiting'][data-origin='top'] {
+  transform: translateY(-100%);
+}
+.slide-overlay-surface[data-state='entering'][data-origin='bottom'],
+.slide-overlay-surface[data-state='exiting'][data-origin='bottom'] {
+  transform: translateY(100%);
+}
+.slide-overlay-surface[data-state='open'] {
+  transform: translateY(0);
+}
+/* --- Update banner --- */
+.update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-group);
+  padding: var(--pad-component);
+  padding-top: calc(env(safe-area-inset-top, 0px) + var(--pad-component));
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+}
+
+/* ==========================================================================
+   20. REDUCED MOTION
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -20,6 +20,7 @@ import { registerSkillForEffort } from './effort.ts';
 import { initStorage, migrateFromLocalStorage } from './storage.ts';
 import { Preferences } from '@capacitor/preferences';
 import { reportHealthy, scheduleUpdateCheck } from './updater.ts';
+import { UpdateBanner } from './ui/update-banner.tsx';
 
 // Declarative skill definitions + GenericSkill
 import { GenericSkill } from './declarative/generic-skill.tsx';
@@ -151,7 +152,15 @@ async function boot() {
   // OTA updates: mark this boot as healthy, schedule background checks
   if (isNativeApp) {
     reportHealthy();
-    scheduleUpdateCheck();
+    const bannerRoot = document.createElement('div');
+    document.body.appendChild(bannerRoot);
+    const renderBanner = (visible: boolean) => {
+      render(
+        h(UpdateBanner, { visible, onDismiss: () => renderBanner(false) }),
+        bannerRoot,
+      );
+    };
+    scheduleUpdateCheck(() => renderBanner(true));
   }
 }
 
