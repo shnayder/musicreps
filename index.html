@@ -2928,7 +2928,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1528"></div>
+  <div class="home-screen" id="home-screen" data-version="#1533"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -5549,11 +5549,8 @@ body.native-sim #app {
     return results;
   }
   function checkAllItemsAutomatic(getSpeedScore, items) {
-    for (const id of items) {
-      const speed = getSpeedScore(id);
-      if (speed === null || speed < 0.9) return false;
-    }
-    return items.length > 0;
+    if (items.length === 0) return false;
+    return computeLevelPercentile(getSpeedScore, items, 0.1).level >= 0.9;
   }
   function checkItemsNeedReview(storage2, getSpeedScore, getFreshness, cfg, items) {
     if (items.length === 0) return false;
@@ -12520,7 +12517,10 @@ Build: ${version}
       return { verb: "Review", levels: [] };
     }
     if (selector.checkAllAutomatic(allItems2)) {
-      return { verb: "All items automatic! Practice something else", levels: [] };
+      return {
+        verb: "Practice another skill \u2014 this one is automatic",
+        levels: []
+      };
     }
     return { verb: "Practice", levels: [] };
   }
