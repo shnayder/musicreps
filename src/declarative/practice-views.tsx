@@ -48,7 +48,10 @@ export function singleLevelSuggestion(
     return { verb: 'Review', levels: [] };
   }
   if (selector.checkAllAutomatic(allItems)) {
-    return { verb: 'All items automatic! Practice something else', levels: [] };
+    return {
+      verb: 'Practice another skill — this one is automatic',
+      levels: [],
+    };
   }
   return { verb: 'Practice', levels: [] };
 }
