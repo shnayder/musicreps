@@ -239,7 +239,13 @@ async function checkForUpdate(): Promise<void> {
         '[OTA] update registered, will apply on next restart',
     };
     console.log(messages[result] || `[OTA] ${result}`);
-    if (result === 'update-registered') updateRegisteredCallback?.();
+    if (result === 'update-registered') {
+      try {
+        updateRegisteredCallback?.();
+      } catch (err) {
+        console.error('[OTA] update registered callback failed:', err);
+      }
+    }
   } catch (err) {
     console.error('[OTA] update check failed:', err);
   }
