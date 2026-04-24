@@ -1300,6 +1300,7 @@ body.native-app .brand-strip {
 .tab-panel.active {
   display: block;
   padding-top: var(--pad-component);
+  padding-bottom: var(--pad-component);
 }
 
 /* --- About tab --- */

@@ -10,6 +10,12 @@
   that skill, and the Progress tab's Overall section shows total reps and
   days practiced as side-by-side stat cards
 
+### Bug fixes
+
+- **Skill tab spacing** — added breathing room below tab panel content so the
+  last line (e.g. "Start practicing on the … tab below" on the Info tab) no
+  longer sits flush against the bottom tab bar
+
 ## v1.1 (build 4) — 2026-04-22
 
 ### New Features
