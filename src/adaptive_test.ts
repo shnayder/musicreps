@@ -1089,6 +1089,28 @@ describe('createAdaptiveSelector', () => {
     assert.equal(selector.checkAllAutomatic(ids), false);
   });
 
+  it('checkAllAutomatic passes at exact straggler limit', () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // 24 items: 22 fast, 2 slow. floor(24 * 0.1) = 2 → exactly at limit.
+    const ids = Array.from({ length: 24 }, (_, i) => `i${i}`);
+    for (let i = 0; i < 22; i++) selector.recordResponse(ids[i], 1200);
+    for (let i = 22; i < 24; i++) selector.recordResponse(ids[i], 3000);
+
+    assert.equal(selector.checkAllAutomatic(ids), true);
+  });
+
+  it('checkAllAutomatic fails one past straggler limit', () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // 24 items: 21 fast, 3 slow. floor(24 * 0.1) = 2 → 3 > 2 → false.
+    const ids = Array.from({ length: 24 }, (_, i) => `i${i}`);
+    for (let i = 0; i < 21; i++) selector.recordResponse(ids[i], 1200);
+    for (let i = 21; i < 24; i++) selector.recordResponse(ids[i], 3000);
+
+    assert.equal(selector.checkAllAutomatic(ids), false);
+  });
+
   it('checkNeedsReview returns true when all items were fast but freshness decayed', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
