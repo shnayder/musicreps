@@ -310,6 +310,7 @@
      bypassing all stacking contexts. These tokens are for
      elements within the normal layout flow. */
   --z-raised: 1;
+  --z-overlay: 50;
   --z-modal: 100;
 
   /* Font weights */
@@ -2817,7 +2818,55 @@ button:where(.progress-bar-tappable) {
 }
 
 /* ==========================================================================
-   19. REDUCED MOTION
+   19. SLIDE OVERLAY
+   ========================================================================== */
+.slide-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  z-index: var(--z-overlay);
+}
+.slide-overlay-surface {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: var(--z-overlay);
+  box-shadow: var(--shadow-lg);
+  transition: transform var(--duration-slow) ease-out;
+}
+.slide-overlay-surface[data-origin='top'] {
+  top: 0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+.slide-overlay-surface[data-origin='bottom'] {
+  bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.slide-overlay-surface[data-state='entering'][data-origin='top'],
+.slide-overlay-surface[data-state='exiting'][data-origin='top'] {
+  transform: translateY(-100%);
+}
+.slide-overlay-surface[data-state='entering'][data-origin='bottom'],
+.slide-overlay-surface[data-state='exiting'][data-origin='bottom'] {
+  transform: translateY(100%);
+}
+.slide-overlay-surface[data-state='open'] {
+  transform: translateY(0);
+}
+/* --- Update banner --- */
+.update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-group);
+  padding: var(--pad-component);
+  padding-top: calc(env(safe-area-inset-top, 0px) + var(--pad-component));
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+}
+
+/* ==========================================================================
+   20. REDUCED MOTION
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -2928,7 +2977,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1533"></div>
+  <div class="home-screen" id="home-screen" data-version="#1538"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -10215,6 +10264,7 @@ Build: ${version}
   // src/updater.ts
   var CHECK_INTERVAL_MS = 60 * 60 * 1e3;
   var lastCheckTime = 0;
+  var updateRegisteredCallback = null;
   function getOTAPlugin() {
     return globalThis.Capacitor?.Plugins?.OTAUpdate;
   }
@@ -10325,6 +10375,13 @@ Build: ${version}
         "update-registered": "[OTA] update registered, will apply on next restart"
       };
       console.log(messages[result] || `[OTA] ${result}`);
+      if (result === "update-registered") {
+        try {
+          updateRegisteredCallback?.();
+        } catch (err) {
+          console.error("[OTA] update registered callback failed:", err);
+        }
+      }
     } catch (err) {
       console.error("[OTA] update check failed:", err);
     }
@@ -10338,7 +10395,8 @@ Build: ${version}
       console.error("[OTA] reportHealthy failed:", err);
     }
   }
-  function scheduleUpdateCheck() {
+  function scheduleUpdateCheck(onUpdateRegistered) {
+    updateRegisteredCallback = onUpdateRegistered ?? null;
     setTimeout(() => checkForUpdate(), 5e3);
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "visible") {
@@ -10349,6 +10407,145 @@ Build: ${version}
       lastCheckTime = 0;
       return checkForUpdate();
     };
+  }
+
+  // src/ui/slide-overlay.tsx
+  function useSlideAnimation(open) {
+    const [state, setState] = d2("entering");
+    const [mounted, setMounted] = d2(false);
+    const surfaceRef = A2(null);
+    y2(() => {
+      if (open) {
+        setMounted(true);
+        setState("entering");
+      } else if (mounted) {
+        setState("exiting");
+      }
+    }, [open, mounted]);
+    y2(() => {
+      if (state !== "entering") return;
+      const id = requestAnimationFrame(() => setState("open"));
+      return () => cancelAnimationFrame(id);
+    }, [state]);
+    y2(() => {
+      if (state !== "exiting") return;
+      const el = surfaceRef.current;
+      const unmount = () => setMounted(false);
+      if (!el) {
+        unmount();
+        return;
+      }
+      const done = (e3) => {
+        if (e3.target !== el) return;
+        unmount();
+      };
+      el.addEventListener("transitionend", done);
+      const fallback = setTimeout(unmount, 350);
+      return () => {
+        el.removeEventListener("transitionend", done);
+        clearTimeout(fallback);
+      };
+    }, [state]);
+    return { mounted, state, surfaceRef };
+  }
+  function useOverlayModal(mounted, onClose, focusRef, fallbackRef) {
+    const previouslyFocusedRef = A2(null);
+    y2(() => {
+      if (!mounted) return;
+      const handler = (e3) => {
+        if (e3.key === "Escape") {
+          e3.stopImmediatePropagation();
+          onClose();
+          return;
+        }
+        if (e3.key === "Tab") {
+          const surface = fallbackRef?.current;
+          if (!surface) return;
+          const focusable = surface.querySelectorAll(
+            'button,a,[tabindex]:not([tabindex="-1"]),input,select,textarea'
+          );
+          if (focusable.length === 0) {
+            e3.preventDefault();
+            return;
+          }
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          const active = document.activeElement;
+          const inList = Array.from(focusable).includes(active);
+          if (!inList) {
+            e3.preventDefault();
+            (e3.shiftKey ? last : first).focus();
+          } else if (e3.shiftKey && active === first) {
+            e3.preventDefault();
+            last.focus();
+          } else if (!e3.shiftKey && active === last) {
+            e3.preventDefault();
+            first.focus();
+          }
+        }
+      };
+      document.addEventListener("keydown", handler);
+      return () => document.removeEventListener("keydown", handler);
+    }, [mounted, onClose]);
+    y2(() => {
+      if (!mounted) return;
+      previouslyFocusedRef.current = document.activeElement;
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      const app = document.getElementById("app");
+      app?.setAttribute("inert", "");
+      queueMicrotask(() => {
+        (focusRef?.current ?? fallbackRef?.current)?.focus();
+      });
+      return () => {
+        document.body.style.overflow = prevOverflow;
+        app?.removeAttribute("inert");
+        previouslyFocusedRef.current?.focus?.();
+      };
+    }, [mounted]);
+  }
+  function SlideOverlay({ open, onClose, origin = "top", ariaLabel, focusRef, children }) {
+    const { mounted, state, surfaceRef } = useSlideAnimation(open);
+    useOverlayModal(mounted, onClose, focusRef, surfaceRef);
+    const handleBackdrop = q2(
+      (e3) => {
+        if (e3.target === e3.currentTarget) onClose();
+      },
+      [onClose]
+    );
+    if (!mounted) return null;
+    return $2(
+      /* @__PURE__ */ u2("div", { class: "slide-overlay-backdrop", onClick: handleBackdrop, children: /* @__PURE__ */ u2(
+        "div",
+        {
+          ref: surfaceRef,
+          class: "slide-overlay-surface",
+          "data-origin": origin,
+          "data-state": state,
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": ariaLabel,
+          "aria-description": "Press Escape to dismiss",
+          tabIndex: -1,
+          children
+        }
+      ) }),
+      document.body
+    );
+  }
+
+  // src/ui/update-banner.tsx
+  function UpdateBanner({ visible, onDismiss }) {
+    return /* @__PURE__ */ u2(
+      SlideOverlay,
+      {
+        open: visible,
+        onClose: onDismiss,
+        origin: "top",
+        ariaLabel: "Update available",
+        children: /* @__PURE__ */ u2("div", { class: "update-banner", children: /* @__PURE__ */ u2("span", { children: "Update available \u2014 restart to apply" }) })
+      }
+    );
   }
 
   // src/hooks/use-learner-model.ts
@@ -13954,7 +14151,15 @@ Build: ${version}
     }
     if (isNativeApp) {
       reportHealthy();
-      scheduleUpdateCheck();
+      const bannerRoot = document.createElement("div");
+      document.body.appendChild(bannerRoot);
+      const renderBanner = (visible) => {
+        J(
+          _(UpdateBanner, { visible, onDismiss: () => renderBanner(false) }),
+          bannerRoot
+        );
+      };
+      scheduleUpdateCheck(() => renderBanner(true));
     }
   }
   boot().catch((err) => {

@@ -1,1 +1,0 @@
-8ec060 fix-xcconfig-url-truncation
