@@ -429,6 +429,14 @@
   --type-metric-effort-leading: var(--leading-none);
   --type-metric-effort-color: var(--color-tertiary);
 
+  /* Body-level metric — used in MetricCard (Progress tab Overall section).
+     Same color as metric-header so card values and the header rep count
+     read as the same kind of stat. */
+  --type-metric-card-size: var(--text-xl);
+  --type-metric-card-weight: var(--font-bold);
+  --type-metric-card-leading: var(--leading-none);
+  --type-metric-card-color: var(--color-tertiary);
+
   /* Headline metric — used in screen headers (home stats bar, quiz round
      counter). Matches heading-page weight/size so metric numbers carry the
      same visual weight as page titles, keeping headers consistent across
@@ -735,6 +743,28 @@ body {
   border-left: 3px solid var(--color-notice);
 }
 
+/* --- MetricCard: body-level stat display (large value, label below) --- */
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-related);
+  padding: var(--gap-group) var(--pad-component);
+  text-align: center;
+}
+.metric-card-label {
+  font-size: var(--type-status-size);
+  color: var(--type-status-color);
+}
+.metrics-bar {
+  display: flex;
+  gap: var(--gap-group);
+}
+.metrics-bar > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 /* --- Section: heading + content with consistent gap --- */
 .section-block {
   display: flex;
@@ -811,13 +841,13 @@ body.native-app .brand-strip {
 .brand-strip-tagline {
   margin: var(--gap-related) 0 0;
 }
-/* --- Stats bar (home header) --- */
-.home-stats-bar {
+/* --- Effort stats bar ("N today · N total · N day(s)") --- */
+.effort-stats-bar {
   justify-content: center;
   font-size: var(--type-status-size);
   color: var(--type-status-color);
 }
-.home-stat-sep {
+.effort-stat-sep {
   color: var(--color-text-muted);
 }
 /* --- Tabs --- */
@@ -1076,6 +1106,7 @@ body.native-app .brand-strip {
   position: relative;
 }
 .skill-card-content {
+  flex: 1;
   min-width: 0;
 }
 .skill-card-title-block > .pill {
@@ -1297,6 +1328,7 @@ body.native-app .brand-strip {
 .tab-panel.active {
   display: block;
   padding-top: var(--pad-component);
+  padding-bottom: var(--pad-component);
 }
 
 /* --- About tab --- */
@@ -2163,6 +2195,13 @@ button {
   color: var(--type-metric-effort-color);
   font-variant-numeric: tabular-nums;
 }
+.text-metric-card {
+  font-size: var(--type-metric-card-size);
+  font-weight: var(--type-metric-card-weight);
+  line-height: var(--type-metric-card-leading);
+  color: var(--type-metric-card-color);
+  font-variant-numeric: tabular-nums;
+}
 .text-metric-header {
   font-size: var(--type-metric-header-size);
   font-weight: var(--type-metric-header-weight);
@@ -2889,11 +2928,12 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1504"></div>
+  <div class="home-screen" id="home-screen" data-version="#1533"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
   <div class="skill-screen phase-idle" id="skill-ukulele"></div>
+  <div class="skill-screen phase-idle" id="skill-ukuleleSpeedTap"></div>
   <div class="skill-screen phase-idle" id="skill-ukuleleChordShapes"></div>
   <div class="skill-screen phase-idle" id="skill-noteSemitones"></div>
   <div class="skill-screen phase-idle" id="skill-intervalSemitones"></div>
@@ -5035,6 +5075,7 @@ body.native-sim #app {
     fretboard: "Name any fret instantly",
     ukulele: "Name any fret instantly",
     speedTap: "Instantly find every position of any note",
+    ukuleleSpeedTap: "Instantly find every position of any note",
     noteSemitones: "Convert between notes and semitone numbers instantly",
     intervalSemitones: "Know the semitone size of any interval instantly",
     semitoneMath: "Add and subtract semitones from any note",
@@ -5050,6 +5091,7 @@ body.native-sim #app {
     fretboard: "You can get far on guitar without knowing note names \u2014 shapes, tab, and fret numbers go a long way. Knowing the notes unlocks the next level: finding your bearings when someone calls a key at a jam, building chord voicings anywhere on the neck, moving a riff to a new position, or understanding what makes that chord you stumbled on actually work. A musician who knows their instrument can do things that someone who memorized patterns can\u2019t. This skill builds instant recall for every note on every fret.",
     ukulele: "You can get far on ukulele without knowing note names \u2014 shapes, tab, and fret numbers go a long way. Knowing the notes unlocks the next level: finding your bearings when someone calls a key at a jam, building chord voicings anywhere on the neck, moving a riff to a new position, or understanding what makes that chord you stumbled on actually work. A musician who knows their instrument can do things that someone who memorized patterns can\u2019t. This skill builds instant recall for every note on every fret.",
     speedTap: "Speed Tap complements the fretboard learning skill, teaching you to find every instance of a note on the neck. This lets you move between positions fluidly \u2014 jump to a higher octave, find a bass note, or play a chord wherever your hand happens to be.",
+    ukuleleSpeedTap: "Speed Tap complements the fretboard learning skill, teaching you to find every instance of a note on the neck. This lets you move between positions fluidly \u2014 jump to a higher octave, find a different voicing, or play a chord wherever your hand happens to be.",
     noteSemitones: "The 12 notes of the chromatic scale can each be numbered by their distance from C in semitones: C is 0, C\u266F is 1, D is 2, all the way up to B at 11. This mapping is the foundation of all interval and transposition math. For example, to find a perfect 5th above E: E is 4, a fifth is 7 semitones, 4 + 7 = 11, and 11 is B. When you know these numbers cold, that whole chain becomes instant \u2014 and so does every skill that builds on it, from interval math to chord spelling.",
     intervalSemitones: "Intervals are a core building block of music, and each interval corresponds to a number of semitones. A major 3rd is 4 semitones, a perfect 5th is 7, and so on. Making this mapping automatic makes transposition and chord building much easier. When you can convert instantly in both directions, you stop translating and start thinking in intervals directly.",
     semitoneMath: "Adding and subtracting semitones from notes is the fundamental arithmetic of music. It\u2019s how you build chords (a major triad is root, +4, +3), navigate the fretboard (each fret is one semitone), apply scale formulas, and transpose. This skill makes that arithmetic automatic, so you can work through any of these without counting note by note.",
@@ -5064,7 +5106,8 @@ body.native-sim #app {
   var SKILL_NAMES = {
     fretboard: "Guitar Fretboard",
     ukulele: "Ukulele Fretboard",
-    speedTap: "Speed Tap",
+    speedTap: "Guitar Speed Tap",
+    ukuleleSpeedTap: "Ukulele Speed Tap",
     noteSemitones: "Note \u2194 Semitones",
     intervalSemitones: "Interval \u2194 Semitones",
     semitoneMath: "Semitone Math",
@@ -5103,6 +5146,15 @@ body.native-sim #app {
         `I always forget the high strings.`
       ],
       after: () => `All the ${d3("C")}\u2019s. Tap tap tap tap tap tap. Done.`
+    },
+    ukuleleSpeedTap: {
+      before: () => [
+        `All the ${d3("C")}\u2019s.`,
+        `Open ${d3("C")} string, then\u2026`,
+        `somewhere on the ${d3("E")} string?`,
+        `I always have to count frets.`
+      ],
+      after: () => `All the ${d3("C")}\u2019s. Tap tap tap tap. Done.`
     },
     noteSemitones: {
       before: () => [
@@ -5198,7 +5250,7 @@ body.native-sim #app {
     {
       id: "ukulele",
       label: "Ukulele",
-      skills: ["ukulele", "ukuleleChordShapes"]
+      skills: ["ukulele", "ukuleleSpeedTap", "ukuleleChordShapes"]
     },
     {
       id: "core",
@@ -5497,11 +5549,8 @@ body.native-sim #app {
     return results;
   }
   function checkAllItemsAutomatic(getSpeedScore, items) {
-    for (const id of items) {
-      const speed = getSpeedScore(id);
-      if (speed === null || speed < 0.9) return false;
-    }
-    return items.length > 0;
+    if (items.length === 0) return false;
+    return computeLevelPercentile(getSpeedScore, items, 0.1).level >= 0.9;
   }
   function checkItemsNeedReview(storage2, getSpeedScore, getFreshness, cfg, items) {
     if (items.length === 0) return false;
@@ -5720,11 +5769,21 @@ body.native-sim #app {
     };
   }
   var DAILY_KEY = "effort_daily";
+  function skillDailyRepsKey(skillId) {
+    return `effort_daily_${skillId}`;
+  }
   var DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   function localDailyRepsStore() {
     return {
       read: () => storage.getItem(DAILY_KEY),
       write: (json) => storage.setItem(DAILY_KEY, json)
+    };
+  }
+  function localSkillDailyRepsStore(skillId) {
+    const key = skillDailyRepsKey(skillId);
+    return {
+      read: () => storage.getItem(key),
+      write: (json) => storage.setItem(key, json)
     };
   }
   function parseDailyReps(raw) {
@@ -5750,6 +5809,9 @@ body.native-sim #app {
   function getDailyReps(store = localDailyRepsStore()) {
     return parseDailyReps(store.read());
   }
+  function getSkillDailyReps(skillId, store = localSkillDailyRepsStore(skillId)) {
+    return parseDailyReps(store.read());
+  }
   function saveDailyReps(data, store) {
     store.write(JSON.stringify(data));
   }
@@ -5759,11 +5821,18 @@ body.native-sim #app {
     const d4 = String(date.getDate()).padStart(2, "0");
     return `${y3}-${m3}-${d4}`;
   }
-  function incrementDailyReps(store = localDailyRepsStore(), now = /* @__PURE__ */ new Date()) {
-    const today = toLocalDateString(now);
-    const data = getDailyReps(store);
+  function bumpDailyStore(store, today) {
+    const data = parseDailyReps(store.read());
     data[today] = (data[today] || 0) + 1;
     saveDailyReps(data, store);
+  }
+  function incrementDailyReps(opts = {}) {
+    const store = opts.store ?? localDailyRepsStore();
+    const now = opts.now ?? /* @__PURE__ */ new Date();
+    const today = toLocalDateString(now);
+    bumpDailyStore(store, today);
+    const skillStore = opts.skillStore ?? (opts.skillId ? localSkillDailyRepsStore(opts.skillId) : null);
+    if (skillStore) bumpDailyStore(skillStore, today);
   }
   function computeGlobalEffort(skillEfforts, dailyReps) {
     const dates = Object.keys(dailyReps).filter((d4) => dailyReps[d4] > 0);
@@ -5781,6 +5850,18 @@ body.native-sim #app {
       (m3) => computeSkillEffort(m3, createStorageAdapter(m3.namespace))
     );
     return computeGlobalEffort(skillEfforts, getDailyReps());
+  }
+  function computeSkillEffortSnapshot(totalReps, skillDailyReps, now = /* @__PURE__ */ new Date()) {
+    const today = toLocalDateString(now);
+    let daysActive = 0;
+    for (const key of Object.keys(skillDailyReps)) {
+      if (skillDailyReps[key] > 0) daysActive++;
+    }
+    return {
+      repsToday: skillDailyReps[today] ?? 0,
+      totalReps,
+      daysActive
+    };
   }
 
   // src/dev-panel.ts
@@ -5892,6 +5973,7 @@ body.native-sim #app {
     fretboard: Guitar,
     ukulele: Guitar,
     speedTap: Zap,
+    ukuleleSpeedTap: Zap,
     noteSemitones: Hash,
     intervalSemitones: Ruler,
     semitoneMath: Calculator,
@@ -7779,28 +7861,28 @@ body.native-sim #app {
   // src/skills/speed-tap/logic.ts
   var noteNames = NOTES.map((n2) => n2.name);
   var ALL_ITEMS9 = NOTES.map((n2) => n2.name);
-  function getNoteAtPosition(string, fret) {
-    const offset = STRING_OFFSETS[string];
+  function getNoteAtPosition(inst, string, fret) {
+    const offset = inst.stringOffsets[string];
     return noteNames[(offset + fret) % 12];
   }
-  function getPositionsForNote(noteName) {
+  function getPositionsForNote(inst, noteName) {
     const positions = [];
-    for (let s3 = 0; s3 < 6; s3++) {
-      for (let f4 = 0; f4 <= 12; f4++) {
-        if (getNoteAtPosition(s3, f4) === noteName) {
+    for (let s3 = 0; s3 < inst.stringCount; s3++) {
+      for (let f4 = 0; f4 < inst.fretCount; f4++) {
+        if (getNoteAtPosition(inst, s3, f4) === noteName) {
           positions.push({ string: s3, fret: f4 });
         }
       }
     }
     return positions;
   }
-  function parseItem2(itemId2) {
+  function parseItem2(inst, itemId2) {
     const noteData = NOTES.find((n2) => n2.name === itemId2);
     const name = noteData ? displayNote(pickRandomAccidental(noteData.displayName)) : displayNote(itemId2);
     return {
       note: itemId2,
       displayName: name,
-      positions: getPositionsForNote(itemId2)
+      positions: getPositionsForNote(inst, itemId2)
     };
   }
   function positionKey(pos) {
@@ -7869,39 +7951,44 @@ body.native-sim #app {
     );
     return { renderStats };
   }
-  var SPEED_TAP_DEF = {
-    id: "speedTap",
-    name: "Speed Tap",
-    namespace: "speedTap",
-    motorTaskType: "fretboard-tap",
-    description: SKILL_DESCRIPTIONS.speedTap,
-    aboutDescription: SKILL_ABOUT_DESCRIPTIONS.speedTap,
-    beforeAfter: SKILL_BEFORE_AFTER.speedTap,
-    itemNoun: "notes",
-    allItems: ALL_ITEMS9,
-    getQuestion: parseItem2,
-    getPromptText: (q4) => q4.displayName,
-    quizInstruction: "Tap all note positions",
-    multiTap: {
-      getTargets: (q4) => q4.positions.map(positionKey),
-      evaluate: evaluate2
-    },
-    getExpectedResponseCount: (itemId2) => getPositionsForNote(itemId2).length,
-    buttons: { kind: "none" },
-    scope: {
-      kind: "levels",
-      levels: NOTE_LEVELS,
-      getItemIdsForLevel: getItemIdsForLevel8,
-      allLevelIds: ALL_LEVEL_IDS7,
-      // Legacy storage key — uses old "enabledGroups" naming.
-      storageKey: "speedTap_enabledGroups",
-      scopeLabel: "Notes",
-      defaultEnabled: [ALL_LEVEL_IDS7[0]],
-      formatLabel: formatGroupLabel
-    },
-    stats: { kind: "none" },
-    useController: () => useSpeedTapController()
-  };
+  function createSpeedTapDef(instrument, inst) {
+    const isGuitar = instrument === "guitar";
+    const id = isGuitar ? "speedTap" : "ukuleleSpeedTap";
+    return {
+      id,
+      name: isGuitar ? "Guitar Speed Tap" : "Ukulele Speed Tap",
+      namespace: id,
+      motorTaskType: "fretboard-tap",
+      description: SKILL_DESCRIPTIONS[id],
+      aboutDescription: SKILL_ABOUT_DESCRIPTIONS[id],
+      beforeAfter: SKILL_BEFORE_AFTER[id],
+      itemNoun: "notes",
+      allItems: ALL_ITEMS9,
+      getQuestion: (itemId2) => parseItem2(inst, itemId2),
+      getPromptText: (q4) => q4.displayName,
+      quizInstruction: "Tap all note positions",
+      multiTap: {
+        getTargets: (q4) => q4.positions.map(positionKey),
+        evaluate: evaluate2,
+        stringCount: inst.stringCount
+      },
+      getExpectedResponseCount: (itemId2) => getPositionsForNote(inst, itemId2).length,
+      buttons: { kind: "none" },
+      scope: {
+        kind: "levels",
+        levels: NOTE_LEVELS,
+        getItemIdsForLevel: getItemIdsForLevel8,
+        allLevelIds: ALL_LEVEL_IDS7,
+        // Legacy storage key — uses old "enabledGroups" naming.
+        storageKey: id + "_enabledGroups",
+        scopeLabel: "Notes",
+        defaultEnabled: [ALL_LEVEL_IDS7[0]],
+        formatLabel: formatGroupLabel
+      },
+      stats: { kind: "none" },
+      useController: () => useSpeedTapController()
+    };
+  }
 
   // src/skills/chord-shapes/voicings.ts
   var GUITAR_VOICINGS = [
@@ -8258,7 +8345,8 @@ body.native-sim #app {
     SCALE_DEGREES_DEF,
     DIATONIC_CHORDS_DEF,
     CHORD_SPELLING_DEF,
-    SPEED_TAP_DEF,
+    createSpeedTapDef("guitar", GUITAR),
+    createSpeedTapDef("ukulele", UKULELE),
     GUITAR_CHORD_SHAPES_DEF,
     UKULELE_CHORD_SHAPES_DEF
   ];
@@ -8605,6 +8693,17 @@ body.native-sim #app {
   function CenteredContent({ children, class: extra }) {
     const cls = "centered-content" + (extra ? " " + extra : "");
     return /* @__PURE__ */ u2("div", { class: cls, children });
+  }
+
+  // src/ui/metric-card.tsx
+  function MetricCard({ value, label }) {
+    return /* @__PURE__ */ u2("div", { class: "card metric-card", children: [
+      /* @__PURE__ */ u2(Text, { role: "metric-card", as: "span", children: value }),
+      /* @__PURE__ */ u2("span", { class: "metric-card-label", children: label })
+    ] });
+  }
+  function MetricsBar({ children }) {
+    return /* @__PURE__ */ u2("div", { class: "metrics-bar", children });
   }
 
   // node_modules/.deno/preact@10.28.4/node_modules/preact/compat/dist/compat.module.js
@@ -9240,6 +9339,7 @@ body.native-sim #app {
     progressSegments,
     progressKind,
     progressBaseline,
+    effortStats,
     description,
     startLabel
   }) {
@@ -9277,15 +9377,33 @@ body.native-sim #app {
         id: "progress",
         label: /* @__PURE__ */ u2(TabIcon, { icon: "progress", text: "Progress" }),
         content: /* @__PURE__ */ u2(Stack, { gap: "region", children: [
-          hasProgressBar && /* @__PURE__ */ u2(Section, { heading: "Overall", gap: "group", children: /* @__PURE__ */ u2(
-            ProgressBarLabeled,
-            {
-              label: "Progress",
-              segments: segs,
-              kind: progressKind,
-              baseline: progressBaseline
-            }
-          ) }),
+          (hasProgressBar || effortStats) && /* @__PURE__ */ u2(Section, { heading: "Overall", gap: "group", children: [
+            hasProgressBar && /* @__PURE__ */ u2(
+              ProgressBarLabeled,
+              {
+                label: "Progress",
+                segments: segs,
+                kind: progressKind,
+                baseline: progressBaseline
+              }
+            ),
+            effortStats && /* @__PURE__ */ u2(MetricsBar, { children: [
+              /* @__PURE__ */ u2(
+                MetricCard,
+                {
+                  value: effortStats.totalReps.toLocaleString(),
+                  label: "total reps"
+                }
+              ),
+              /* @__PURE__ */ u2(
+                MetricCard,
+                {
+                  value: effortStats.daysActive.toLocaleString(),
+                  label: effortStats.daysActive === 1 ? "day" : "days"
+                }
+              )
+            ] })
+          ] }),
           progressExtra,
           statsHeading && /* @__PURE__ */ u2(Section, { heading: statsHeading, gap: "group", children: /* @__PURE__ */ u2("div", { class: "stats-container", children: statsContent }) }),
           !statsHeading && /* @__PURE__ */ u2("div", { class: "stats-container", children: statsContent }),
@@ -9329,6 +9447,26 @@ body.native-sim #app {
             class: "skill-nav"
           }
         )
+      ] })
+    ] });
+  }
+
+  // src/ui/effort-stats.tsx
+  function EffortStatsLine({ repsToday, totalReps, daysActive }) {
+    return /* @__PURE__ */ u2(Bar, { gap: "group", class: "effort-stats-bar", children: [
+      /* @__PURE__ */ u2("span", { class: "effort-stat", children: [
+        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: repsToday.toLocaleString() }),
+        " today"
+      ] }),
+      /* @__PURE__ */ u2("span", { class: "effort-stat-sep", "aria-hidden": "true", children: "\xB7" }),
+      /* @__PURE__ */ u2("span", { class: "effort-stat", children: [
+        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: totalReps.toLocaleString() }),
+        " total"
+      ] }),
+      /* @__PURE__ */ u2("span", { class: "effort-stat-sep", "aria-hidden": "true", children: "\xB7" }),
+      /* @__PURE__ */ u2("span", { class: "effort-stat", children: [
+        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: daysActive.toLocaleString() }),
+        daysActive === 1 ? " day" : " days"
       ] })
     ] });
   }
@@ -9841,22 +9979,14 @@ Build: ${version}
     if (pageTitle) {
       return /* @__PURE__ */ u2("div", { class: "home-header", children: /* @__PURE__ */ u2(Text, { role: "heading-page", as: "h1", class: "page-heading", children: pageTitle }) });
     }
-    return /* @__PURE__ */ u2("div", { class: "home-header", children: /* @__PURE__ */ u2(Bar, { gap: "group", class: "home-stats-bar", children: [
-      /* @__PURE__ */ u2("span", { class: "home-stat", children: [
-        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: repsToday.toLocaleString() }),
-        " today"
-      ] }),
-      /* @__PURE__ */ u2("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
-      /* @__PURE__ */ u2("span", { class: "home-stat", children: [
-        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: totalReps.toLocaleString() }),
-        " total"
-      ] }),
-      /* @__PURE__ */ u2("span", { class: "home-stat-sep", "aria-hidden": "true", children: "\xB7" }),
-      /* @__PURE__ */ u2("span", { class: "home-stat", children: [
-        /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", children: daysActive }),
-        daysActive === 1 ? " day" : " days"
-      ] })
-    ] }) });
+    return /* @__PURE__ */ u2("div", { class: "home-header", children: /* @__PURE__ */ u2(
+      EffortStatsLine,
+      {
+        repsToday,
+        totalReps,
+        daysActive
+      }
+    ) });
   }
   function HomeAboutTab() {
     return /* @__PURE__ */ u2(Stack, { gap: "component", class: "settings-page", children: [
@@ -10744,7 +10874,7 @@ Build: ${version}
   }
 
   // src/ui/practice-config.tsx
-  function SkillHeader({ skillId, title, totalReps, onBack }) {
+  function SkillHeader({ skillId, title, repsToday, onBack }) {
     return /* @__PURE__ */ u2(
       ScreenHeader,
       {
@@ -10752,8 +10882,8 @@ Build: ${version}
         icon: skillId && /* @__PURE__ */ u2(SkillIcon, { skillId }),
         onClose: onBack,
         closeAriaLabel: "Back to home",
-        right: totalReps != null ? /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", class: "skill-header-reps", children: [
-          totalReps.toLocaleString(),
+        right: repsToday != null ? /* @__PURE__ */ u2(Text, { role: "metric-header", as: "span", class: "skill-header-reps", children: [
+          repsToday.toLocaleString(),
           /* @__PURE__ */ u2(RepeatMark, { size: 18, class: "skill-header-reps-icon" })
         ] }) : void 0
       }
@@ -12387,7 +12517,10 @@ Build: ${version}
       return { verb: "Review", levels: [] };
     }
     if (selector.checkAllAutomatic(allItems2)) {
-      return { verb: "All items automatic! Practice something else", levels: [] };
+      return {
+        verb: "Practice another skill \u2014 this one is automatic",
+        levels: []
+      };
     }
     return { verb: "Practice", levels: [] };
   }
@@ -12482,6 +12615,7 @@ Build: ${version}
     levelScopeResult,
     ps,
     progressSegments,
+    effortStats,
     onCalibrate
   }) {
     const hasGroups = def.scope.kind === "levels" && levelScopeResult;
@@ -12494,6 +12628,7 @@ Build: ${version}
         progressSegments,
         progressKind: hasGroups ? "multi-level" : "single-level",
         progressBaseline: learner.motorBaseline,
+        effortStats,
         description: def.description,
         scopeValid: !levelScopeResult || levelScopeResult.enabledLevels.size > 0,
         validationMessage: "Select at least one level",
@@ -12934,7 +13069,7 @@ Build: ${version}
       responseTime,
       result.correct
     );
-    incrementDailyReps();
+    incrementDailyReps({ skillId: configRef.current.skillId });
     setState((prev) => {
       let next = engineSubmitAnswer(
         prev,
@@ -13428,6 +13563,7 @@ Build: ${version}
   }
   function buildGenericEngineConfig(def, getEnabledItemsRef, getPracticingLabelRef, currentQRef, lastAnswerRef, ctrlRef, isSequential, isMultiTap, seqInput, hasHandleKey) {
     return {
+      skillId: def.id,
       getEnabledItems: () => getEnabledItemsRef.current(),
       getPracticingLabel: () => getPracticingLabelRef.current(),
       checkAnswer: (itemId2, input) => checkGenericAnswer(
@@ -13586,14 +13722,15 @@ Build: ${version}
     const skipped = levelScopeResult?.skippedLevels;
     const progressColors = useProgressColors(def, learner, phase, skipped);
     const levelBars = useLevelBars(def, learner, phase, levelScopeResult);
-    const totalReps = T2(() => {
-      let sum = 0;
+    const effortStats = T2(() => {
+      let totalReps = 0;
       for (const id of def.allItems) {
         const s3 = learner.selector.getStats(id);
-        if (s3) sum += s3.sampleCount;
+        if (s3) totalReps += s3.sampleCount;
       }
-      return sum;
-    }, [def.allItems, learner.selector, learner.selector.version, phase]);
+      const daily = getSkillDailyReps(def.id);
+      return computeSkillEffortSnapshot(totalReps, daily);
+    }, [def.id, def.allItems, learner.selector, learner.selector.version, phase]);
     if (isIdle) {
       return /* @__PURE__ */ u2(ScreenLayout, { children: [
         /* @__PURE__ */ u2(LayoutHeader, { children: /* @__PURE__ */ u2(
@@ -13601,7 +13738,7 @@ Build: ${version}
           {
             skillId: def.id,
             title: def.name,
-            totalReps,
+            repsToday: effortStats.repsToday,
             onBack: navigateHome
           }
         ) }),
@@ -13615,6 +13752,7 @@ Build: ${version}
             levelScopeResult,
             ps,
             progressSegments: progressColors,
+            effortStats,
             onCalibrate: sc.hasSpeedCheck ? () => sc.setSpeedCheck("active") : void 0
           }
         )
