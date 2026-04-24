@@ -179,10 +179,10 @@ export const NOTE_SEMI_SOLID_STALE: RecommendationState = {
   ]),
 };
 
-/** All items automatic and fresh → All items automatic. */
+/** All items automatic and fresh → suggest a different skill. */
 export const NOTE_SEMI_AUTOMATIC: RecommendationState = {
   name: 'noteSemitones-automatic',
-  expectedVerbs: ['All items automatic! Practice something else'],
+  expectedVerbs: ['Practice another skill — this one is automatic'],
   namespace: 'noteSemitones',
   kind: 'single-level',
   localStorageData: seedAllAutomatic('noteSemitones', NOTE_SEMI_ITEMS),

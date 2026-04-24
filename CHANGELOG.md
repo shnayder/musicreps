@@ -10,6 +10,13 @@
   that skill, and the Progress tab's Overall section shows total reps and
   days practiced as side-by-side stat cards
 
+### Improvements
+
+- **Relaxed "all automatic" threshold** — the Practice tab no longer nags you
+  to keep practicing when one or two items are still catching up. Tolerates
+  roughly 10% stragglers, matching the home-screen recommendation logic, and
+  rephrases the suggestion to `Practice another skill — this one is automatic`
+
 ## v1.1 (build 4) — 2026-04-22
 
 ### New Features

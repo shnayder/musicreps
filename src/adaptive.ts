@@ -524,17 +524,26 @@ export function computeLevelStats(
 }
 
 /**
- * Check if all items have speed score ≥ 0.9 (automatic).
+ * Check if essentially all items are automatic (speed score ≥ 0.9).
+ * Allows up to `floor(items.length * 0.1)` stragglers to match the P10-based
+ * tolerance used by the home-screen recommendation pipeline — so one slow
+ * item doesn't block the "this skill is done" verdict on a 24-item skill.
  */
 export function checkAllItemsAutomatic(
   getSpeedScore: (id: string) => number | null,
   items: string[],
 ): boolean {
+  if (items.length === 0) return false;
+  const maxStragglers = Math.floor(items.length * 0.1);
+  let stragglers = 0;
   for (const id of items) {
     const speed = getSpeedScore(id);
-    if (speed === null || speed < 0.9) return false;
+    if (speed === null || speed < 0.9) {
+      stragglers++;
+      if (stragglers > maxStragglers) return false;
+    }
   }
-  return items.length > 0;
+  return true;
 }
 
 /**

@@ -1066,6 +1066,29 @@ describe('createAdaptiveSelector', () => {
     );
   });
 
+  it('checkAllAutomatic tolerates ~10% stragglers in larger item sets', () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // 24 items: 23 fast (1200ms → speed ≈ 0.93), 1 slow (3000ms → speed = 0.5).
+    // floor(24 * 0.1) = 2 stragglers allowed, so 1 slow item still passes.
+    const ids = Array.from({ length: 24 }, (_, i) => `i${i}`);
+    for (let i = 0; i < 23; i++) selector.recordResponse(ids[i], 1200);
+    selector.recordResponse(ids[23], 3000);
+
+    assert.equal(selector.checkAllAutomatic(ids), true);
+  });
+
+  it('checkAllAutomatic still fails when stragglers exceed tolerance', () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // 10 items: 7 fast, 3 slow. floor(10 * 0.1) = 1, so 3 > 1 → false.
+    const ids = Array.from({ length: 10 }, (_, i) => `i${i}`);
+    for (let i = 0; i < 7; i++) selector.recordResponse(ids[i], 1200);
+    for (let i = 7; i < 10; i++) selector.recordResponse(ids[i], 3000);
+
+    assert.equal(selector.checkAllAutomatic(ids), false);
+  });
+
   it('checkNeedsReview returns true when all items were fast but freshness decayed', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);
