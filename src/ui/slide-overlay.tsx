@@ -27,7 +27,7 @@ function useSlideAnimation(open: boolean) {
     } else if (mounted) {
       setState('exiting');
     }
-  }, [open]);
+  }, [open, mounted]);
 
   // Trigger enter animation on next frame after mount
   useEffect(() => {
@@ -40,13 +40,18 @@ function useSlideAnimation(open: boolean) {
   useEffect(() => {
     if (state !== 'exiting') return;
     const el = surfaceRef.current;
-    const done = () => setMounted(false);
+    const unmount = () => setMounted(false);
     if (!el) {
-      done();
+      unmount();
       return;
     }
-    el.addEventListener('transitionend', done, { once: true });
-    const fallback = setTimeout(done, 350);
+    // Guard against bubbled transitionend from children
+    const done = (e: TransitionEvent) => {
+      if (e.target !== el) return;
+      unmount();
+    };
+    el.addEventListener('transitionend', done);
+    const fallback = setTimeout(unmount, 350);
     return () => {
       el.removeEventListener('transitionend', done);
       clearTimeout(fallback);
@@ -68,7 +73,11 @@ function useOverlayModal(
   useEffect(() => {
     if (!mounted) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        e.stopImmediatePropagation();
+        onClose();
+        return;
+      }
       // Trap Tab within the overlay surface. Find all focusable elements
       // inside; if none, just prevent Tab from leaving entirely.
       if (e.key === 'Tab') {
