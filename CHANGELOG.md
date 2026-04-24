@@ -12,6 +12,8 @@
 
 ### Improvements
 
+- **Update-available banner** — the app now shows a slide-in notification when
+  a new OTA update has been downloaded and will apply on next restart
 - **Relaxed "all automatic" threshold** — the Practice tab no longer nags you
   to keep practicing when one or two items are still catching up. Uses the
   same P10 speed percentile as the home-screen recommendation logic, and
@@ -19,6 +21,9 @@
 
 ### Bug fixes
 
+- **OTA updates broken on release/staging builds** — xcconfig files treated
+  `//` in URLs as comments, silently truncating the OTA release base URL.
+  Escaped with `$(/)$(/)` so the full URL reaches the native plugin
 - **Skill tab spacing** — added breathing room below tab panel content so the
   last line (e.g. "Start practicing on the … tab below" on the Info tab) no
   longer sits flush against the bottom tab bar
