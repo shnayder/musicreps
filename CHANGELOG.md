@@ -13,8 +13,8 @@
 ### Improvements
 
 - **Relaxed "all automatic" threshold** — the Practice tab no longer nags you
-  to keep practicing when one or two items are still catching up. Tolerates
-  roughly 10% stragglers, matching the home-screen recommendation logic, and
+  to keep practicing when one or two items are still catching up. Uses the
+  same P10 speed percentile as the home-screen recommendation logic, and
   rephrases the suggestion to `Practice another skill — this one is automatic`
 
 ## v1.1 (build 4) — 2026-04-22
