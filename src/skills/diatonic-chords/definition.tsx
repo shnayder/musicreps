@@ -68,6 +68,7 @@ function useModalChordsController(
                   type='button'
                   class={'stats-mode-tab' +
                     (m.id === effectiveTab ? ' active' : '')}
+                  aria-pressed={m.id === effectiveTab}
                   onClick={() => setActiveTab(m.id)}
                 >
                   {m.label}
@@ -129,6 +130,15 @@ export const DIATONIC_CHORDS_DEF: SkillDefinition<Question> = {
       comparison: 'note-quality',
       getDisplayAnswer: (q) =>
         displayNote(q.rootNote) + ' ' + qualityDisplayLabel(q.chord.quality),
+      normalizeInput: (input) => {
+        // Normalize keyboard input: "Eb major" → "Eb:major", "Eb dim" → "Eb:diminished"
+        let s = input.replace(
+          /\s+(major|minor|diminished|dim)$/i,
+          (_, q) => ':' + q.toLowerCase(),
+        );
+        if (s.endsWith(':dim')) s = s.slice(0, -4) + ':diminished';
+        return s;
+      },
     },
     rev: {
       getExpectedValue: (q) => String(q.degree),
@@ -137,17 +147,26 @@ export const DIATONIC_CHORDS_DEF: SkillDefinition<Question> = {
         ordinalLabel(q.degree) + ' \u2014 ' + q.chord.numeral,
     },
   },
-  validateInput: (q, input) =>
-    q.dir === 'fwd'
-      ? input.includes(':')
-        ? isValidNoteInput(input.split(':')[0])
-        : isValidNoteInput(input)
-      : /^[2-7]$/.test(input),
+  validateInput: (q, input) => {
+    if (q.dir === 'rev') return /^[2-7]$/.test(input);
+    // Forward: require "note:quality" format (buttons always produce this).
+    // Also accept "note quality" (space-separated) for keyboard input.
+    const normalized = input.replace(
+      /\s+(major|minor|diminished|dim)$/i,
+      (m) => ':' + m.trim().toLowerCase(),
+    );
+    if (!normalized.includes(':')) return false;
+    const [note, quality] = normalized.split(':');
+    return isValidNoteInput(note) &&
+      ['major', 'minor', 'diminished', 'dim'].includes(quality);
+  },
+  // Normalize "Eb major" → "Eb:major", "Eb dim" → "Eb:diminished"
+  // (Buttons submit "note:quality" directly; this handles keyboard input.)
   getDirection: (q) => q.dir,
   getUseFlats: (q) => rootUsesFlats(q.keyRoot),
 
   inputPlaceholder: (q) =>
-    q.dir === 'fwd' ? 'e.g. Eb major' : 'Degree (2\u20137)',
+    q.dir === 'fwd' ? 'e.g. Eb:major' : 'Degree (2\u20137)',
   buttons: {
     kind: 'bidirectional',
     fwd: { kind: 'split-note-quality' },

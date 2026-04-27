@@ -74,6 +74,7 @@ export function toButtonValue(
   if (strategy === 'note-quality') {
     const [note, quality] = value.split(':');
     const canonical = resolveNoteInput(note) ?? spelledNoteToCanonical(note);
+    if (!quality) return canonical;
     return canonical + ':' + quality;
   }
   return value;
