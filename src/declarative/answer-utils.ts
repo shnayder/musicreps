@@ -50,6 +50,14 @@ export function checkCorrectness(
       const iv = INTERVALS.find((i) => i.abbrev === expected);
       return iv ? intervalMatchesInput(iv, input) : false;
     }
+    case 'note-quality': {
+      const [expectedNote, expectedQuality] = expected.split(':');
+      const [inputNote, inputQuality] = input.split(':');
+      if (!inputNote || !inputQuality) return false;
+      const resolved = resolveNoteInput(inputNote) ?? inputNote;
+      return spelledNoteMatchesSemitone(expectedNote, resolved) &&
+        inputQuality === expectedQuality;
+    }
   }
 }
 
@@ -63,6 +71,12 @@ export function toButtonValue(
     // enharmonic-natural button ("G").
     return resolveNoteInput(value) ?? spelledNoteToCanonical(value);
   }
+  if (strategy === 'note-quality') {
+    const [note, quality] = value.split(':');
+    const canonical = resolveNoteInput(note) ?? spelledNoteToCanonical(note);
+    if (!quality) return canonical;
+    return canonical + ':' + quality;
+  }
   return value;
 }
 
@@ -70,7 +84,17 @@ export function defaultDisplayAnswer(
   strategy: ComparisonStrategy,
   expected: string,
 ): string {
-  return strategy === 'note-enharmonic' ? displayNote(expected) : expected;
+  if (strategy === 'note-enharmonic') return displayNote(expected);
+  if (strategy === 'note-quality') {
+    const [note, quality] = expected.split(':');
+    const label = quality === 'major'
+      ? 'Major'
+      : quality === 'minor'
+      ? 'Minor'
+      : 'Dim';
+    return displayNote(note) + ' ' + label;
+  }
+  return expected;
 }
 
 export function checkGenericAnswer<Q>(

@@ -38,6 +38,7 @@ export type NumeralButtonsDef = { kind: 'numeral' };
 export type IntervalButtonsDef = { kind: 'interval' };
 export type SplitKeysigButtonsDef = { kind: 'split-keysig' };
 export type SplitNoteButtonsDef = { kind: 'split-note' };
+export type SplitNoteQualityButtonsDef = { kind: 'split-note-quality' };
 export type NoButtonsDef = { kind: 'none' };
 
 /** Which tap/click buttons to show. Keyboard input goes through a text field. */
@@ -49,6 +50,7 @@ export type ButtonsDef =
   | IntervalButtonsDef
   | SplitKeysigButtonsDef
   | SplitNoteButtonsDef
+  | SplitNoteQualityButtonsDef
   | NoButtonsDef;
 
 // ---------------------------------------------------------------------------
@@ -124,7 +126,8 @@ export type ComparisonStrategy =
   | 'exact' // string ===
   | 'integer' // parseInt() ===
   | 'note-enharmonic' // spelledNoteMatchesSemitone (any enharmonic ok)
-  | 'interval'; // intervalMatchesInput (primary + alt abbrevs)
+  | 'interval' // intervalMatchesInput (primary + alt abbrevs)
+  | 'note-quality'; // "note:quality" compound — enharmonic note + exact quality
 
 /** Declarative answer spec: what the correct answer is and how to check it. */
 export type AnswerSpec<Q> = {

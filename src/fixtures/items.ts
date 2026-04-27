@@ -9,7 +9,7 @@ export const defaultItems: Record<string, string> = {
   intervalMath: 'C+m3',
   keySignatures: 'D:fwd',
   scaleDegrees: 'C:3:fwd',
-  diatonicChords: 'C:IV:fwd',
+  diatonicChords: 'major:C:4:fwd',
   chordSpelling: 'C:major',
   speedTap: 'C',
   ukuleleSpeedTap: 'C',
@@ -20,5 +20,5 @@ export const defaultItems: Record<string, string> = {
   intervalSemitones_rev: 'P4:rev',
   keySignatures_rev: 'D:rev',
   scaleDegrees_rev: 'C:3:rev',
-  diatonicChords_rev: 'C:IV:rev',
+  diatonicChords_rev: 'major:C:4:rev',
 };
