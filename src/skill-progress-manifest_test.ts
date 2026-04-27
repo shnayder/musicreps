@@ -71,7 +71,7 @@ describe('SKILL_PROGRESS_MANIFEST', () => {
       intervalMath: 5, // distance groups
       keySignatures: 4, // 2 major + 2 minor key groups
       scaleDegrees: 3, // degree groups
-      diatonicChords: 3, // chord groups
+      diatonicChords: 6, // musical modes
       chordSpelling: 7, // spelling groups (groups 0-6)
       speedTap: 2, // naturals, sharps/flats
       ukuleleSpeedTap: 2, // naturals, sharps/flats

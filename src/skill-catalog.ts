@@ -21,7 +21,7 @@ export const SKILL_DESCRIPTIONS: Record<string, string> = {
   intervalMath: 'Move up and down by any interval from any note',
   keySignatures: 'Instantly know the sharps and flats in any key',
   scaleDegrees: 'Know every scale degree in every key',
-  diatonicChords: 'Know every chord in every key',
+  diatonicChords: 'Know every chord in every key and mode',
   chordSpelling: 'Instantly spell the notes in any chord',
   guitarChordShapes: 'Tap chord fingerings from memory',
   ukuleleChordShapes: 'Tap chord fingerings from memory',
@@ -106,13 +106,11 @@ export const SKILL_ABOUT_DESCRIPTIONS: Record<string, string> = {
     'the 6th\u201D and know the note instantly in whatever key you\u2019re ' +
     'in, without counting up from the root.',
   diatonicChords:
-    'Every major key has seven chords built on its scale degrees \u2014 the ' +
-    'I is major, the ii is minor, the V is major, and so on. This is the ' +
-    'framework behind chord progressions: a I\u2013V\u2013vi\u2013IV in any ' +
-    'key is the same pattern, just different notes. When you know the ' +
-    'diatonic chords for every key, you can follow a chart written in Roman ' +
-    'numerals, predict what chords fit in a song, and transpose progressions ' +
-    'between keys without working them out from scratch.',
+    'Every key and mode has seven chords built on its scale degrees. Major, ' +
+    'minor, dorian, mixolydian \u2014 each mode gives the same degrees ' +
+    'different qualities. When you know these patterns, you can follow a ' +
+    'chart in any mode, predict what chords fit in a song, and transpose ' +
+    'progressions between keys without working them out from scratch.',
   chordSpelling:
     'Chord spelling is knowing the actual notes in a chord \u2014 Dm7 is D, ' +
     'F, A, C. Whether you\u2019re voicing chords on an instrument, arranging ' +
@@ -262,11 +260,11 @@ export const SKILL_BEFORE_AFTER: Record<
   },
   diatonicChords: {
     before: () => [
-      `IV in ${d('G')} major.`,
-      `${d('G')}, ${d('A')}, ${d('B')}, ${d('C')}. So ${d('C')}.`,
-      'And the IV is always major in a major key? I think so.',
+      `4th in ${d('G')} dorian.`,
+      `Dorian is like minor but with a major IV\u2026`,
+      `So the 4th degree is ${d('C')}\u2026 and it\u2019s major.`,
     ],
-    after: () => `IV in ${d('G')}. ${d('C')} major.`,
+    after: () => `4th in ${d('G')} dorian. ${d('C')} Major.`,
   },
   chordSpelling: {
     before: () => [

@@ -2520,6 +2520,40 @@ button {
   box-sizing: border-box;
 }
 
+/* --- Stats mode tabs (modal diatonic chords) --- */
+.stats-mode-tabs {
+  display: flex;
+  gap: var(--space-1);
+  justify-content: center;
+  margin-bottom: var(--space-2);
+}
+.stats-mode-tab {
+  font-size: var(--type-control-size);
+  line-height: var(--type-control-leading);
+  color: var(--type-control-color);
+  background: none;
+  border: none;
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: color var(--duration-base) ease;
+}
+.stats-mode-tab:hover {
+  color: var(--color-text);
+}
+.stats-mode-tab:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+.stats-mode-tab:active {
+  opacity: 0.8;
+}
+.stats-mode-tab.active {
+  color: var(--color-brand-text);
+  font-weight: var(--font-semibold);
+  background: var(--color-brand-bg);
+}
+
 /* --- Stats grids (math modes) --- */
 .stats-grid-wrapper {
   overflow-x: auto;

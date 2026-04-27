@@ -9,6 +9,12 @@
 - **Per-skill daily reps** — each skill's header now shows today's reps for
   that skill, and the Progress tab's Overall section shows total reps and
   days practiced as side-by-side stat cards
+- **Modal diatonic chords** — the Diatonic Chords skill now covers 6 musical
+  modes (major, minor, dorian, mixolydian, lydian, phrygian). Forward answers
+  require root + quality via two-tap input; reverse answers use degree numbers
+  with the roman numeral shown as educational reinforcement. Stats display
+  uses per-mode tabs. Note: existing diatonic chords progress is reset due to
+  the item format change.
 
 ### Improvements
 
