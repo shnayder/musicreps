@@ -2962,7 +2962,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="126dee diatonic-chords-review"></div>
+  <div class="home-screen" id="home-screen" data-version="522740 diatonic-chords-review"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -7843,6 +7843,7 @@ body.native-sim #app {
             {
               type: "button",
               class: "stats-mode-tab" + (m3.id === effectiveTab ? " active" : ""),
+              "aria-pressed": m3.id === effectiveTab,
               onClick: () => setActiveTab(m3.id),
               children: m3.label
             },
@@ -7885,7 +7886,15 @@ body.native-sim #app {
       fwd: {
         getExpectedValue: (q4) => q4.rootNote + ":" + q4.chord.quality,
         comparison: "note-quality",
-        getDisplayAnswer: (q4) => displayNote(q4.rootNote) + " " + qualityDisplayLabel(q4.chord.quality)
+        getDisplayAnswer: (q4) => displayNote(q4.rootNote) + " " + qualityDisplayLabel(q4.chord.quality),
+        normalizeInput: (input) => {
+          let s3 = input.replace(
+            /\s+(major|minor|diminished|dim)$/i,
+            (_3, q4) => ":" + q4.toLowerCase()
+          );
+          if (s3.endsWith(":dim")) s3 = s3.slice(0, -4) + ":diminished";
+          return s3;
+        }
       },
       rev: {
         getExpectedValue: (q4) => String(q4.degree),
@@ -7893,10 +7902,21 @@ body.native-sim #app {
         getDisplayAnswer: (q4) => ordinalLabel(q4.degree) + " \u2014 " + q4.chord.numeral
       }
     },
-    validateInput: (q4, input) => q4.dir === "fwd" ? input.includes(":") ? isValidNoteInput(input.split(":")[0]) : isValidNoteInput(input) : /^[2-7]$/.test(input),
+    validateInput: (q4, input) => {
+      if (q4.dir === "rev") return /^[2-7]$/.test(input);
+      const normalized = input.replace(
+        /\s+(major|minor|diminished|dim)$/i,
+        (m3) => ":" + m3.trim().toLowerCase()
+      );
+      if (!normalized.includes(":")) return false;
+      const [note, quality] = normalized.split(":");
+      return isValidNoteInput(note) && ["major", "minor", "diminished", "dim"].includes(quality);
+    },
+    // Normalize "Eb major" → "Eb:major", "Eb dim" → "Eb:diminished"
+    // (Buttons submit "note:quality" directly; this handles keyboard input.)
     getDirection: (q4) => q4.dir,
     getUseFlats: (q4) => rootUsesFlats(q4.keyRoot),
-    inputPlaceholder: (q4) => q4.dir === "fwd" ? "e.g. Eb major" : "Degree (2\u20137)",
+    inputPlaceholder: (q4) => q4.dir === "fwd" ? "e.g. Eb:major" : "Degree (2\u20137)",
     buttons: {
       kind: "bidirectional",
       fwd: { kind: "split-note-quality" },
@@ -12204,6 +12224,7 @@ Build: ${version}
     if (strategy === "note-quality") {
       const [note, quality] = value.split(":");
       const canonical = resolveNoteInput(note) ?? spelledNoteToCanonical(note);
+      if (!quality) return canonical;
       return canonical + ":" + quality;
     }
     return value;
