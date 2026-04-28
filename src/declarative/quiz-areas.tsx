@@ -22,6 +22,7 @@ import {
   type SplitButtonsFlushRef,
   SplitKeysigButtons,
   SplitNoteButtons,
+  SplitNoteQualityButtons,
 } from '../ui/buttons.tsx';
 import { SequentialSlots } from '../ui/sequential-slots.tsx';
 import {
@@ -231,6 +232,14 @@ export function ResponseButtons(
       return (
         <SplitKeysigButtons
           onAnswer={onAnswer}
+          feedback={feedback}
+        />
+      );
+    case 'split-note-quality':
+      return (
+        <SplitNoteQualityButtons
+          onAnswer={onAnswer}
+          useFlats={useFlats}
           feedback={feedback}
         />
       );

@@ -361,6 +361,57 @@ export function findScaleDegree(keyRoot: string, noteName: string) {
 }
 
 // ---------------------------------------------------------------------------
+// Musical modes — scale step patterns and degree-note computation
+// ---------------------------------------------------------------------------
+
+/** Semitone offsets from root for each mode. */
+export const MODAL_SCALE_STEPS: Record<string, readonly number[]> = {
+  major: MAJOR_SCALE_STEPS,
+  minor: [0, 2, 3, 5, 7, 8, 10],
+  dorian: [0, 2, 3, 5, 7, 9, 10],
+  phrygian: [0, 1, 3, 5, 7, 8, 10],
+  lydian: [0, 2, 4, 6, 7, 9, 11],
+  mixolydian: [0, 2, 4, 5, 7, 9, 10],
+};
+
+/** Mode metadata in display order. */
+export const MUSICAL_MODES = [
+  { id: 'major', label: 'Major' },
+  { id: 'minor', label: 'Minor' },
+  { id: 'dorian', label: 'Dorian' },
+  { id: 'mixolydian', label: 'Mixolydian' },
+  { id: 'lydian', label: 'Lydian' },
+  { id: 'phrygian', label: 'Phrygian' },
+] as const;
+
+/**
+ * Get the note name for a scale degree in any mode.
+ * Same letter-stepping arithmetic as getScaleDegreeNote but using
+ * mode-specific semitone offsets.
+ */
+export function getModalScaleDegreeNote(
+  keyRoot: string,
+  degree: number,
+  modeId: string,
+): string {
+  const steps = MODAL_SCALE_STEPS[modeId];
+  const root = parseSpelledNote(keyRoot);
+  const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
+  const rootSemitone =
+    (((NATURAL_SEMITONES[root.letter] + root.accidental) % 12) + 12) % 12;
+
+  const targetLetterIdx = (rootLetterIdx + degree - 1) % 7;
+  const targetLetter = LETTER_NAMES[targetLetterIdx];
+  const targetSemitone = (rootSemitone + steps[degree - 1]) % 12;
+  const naturalSemitone = NATURAL_SEMITONES[targetLetter];
+
+  let acc = (targetSemitone - naturalSemitone + 12) % 12;
+  if (acc > 6) acc -= 12;
+
+  return spelledNoteName(targetLetter, acc);
+}
+
+// ---------------------------------------------------------------------------
 // Key signatures
 // ---------------------------------------------------------------------------
 
@@ -519,6 +570,78 @@ export const DEGREE_LABELS: [string, string][] = [
   ['6', '6th'],
   ['7', '7th'],
 ];
+
+export const ORDINAL_LABELS = [
+  '1st',
+  '2nd',
+  '3rd',
+  '4th',
+  '5th',
+  '6th',
+  '7th',
+];
+
+// ---------------------------------------------------------------------------
+// Modal diatonic chords — chord qualities per mode
+// ---------------------------------------------------------------------------
+// Numerals use the parallel-major convention (bVII, bIII, #iv°, etc.)
+
+const DC = (
+  d: number,
+  n: string,
+  q: 'major' | 'minor' | 'diminished',
+  ql: string,
+): DiatonicChord => ({ degree: d, numeral: n, quality: q, qualityLabel: ql });
+
+/** Diatonic triads for each of the 6 supported modes. */
+export const MODAL_DIATONIC_CHORDS: Record<string, DiatonicChord[]> = {
+  major: DIATONIC_CHORDS,
+  minor: [
+    DC(1, 'i', 'minor', 'm'),
+    DC(2, 'ii\u00B0', 'diminished', 'dim'),
+    DC(3, '\u266DIII', 'major', ''),
+    DC(4, 'iv', 'minor', 'm'),
+    DC(5, 'v', 'minor', 'm'),
+    DC(6, '\u266DVI', 'major', ''),
+    DC(7, '\u266DVII', 'major', ''),
+  ],
+  dorian: [
+    DC(1, 'i', 'minor', 'm'),
+    DC(2, 'ii', 'minor', 'm'),
+    DC(3, '\u266DIII', 'major', ''),
+    DC(4, 'IV', 'major', ''),
+    DC(5, 'v', 'minor', 'm'),
+    DC(6, 'vi\u00B0', 'diminished', 'dim'),
+    DC(7, '\u266DVII', 'major', ''),
+  ],
+  phrygian: [
+    DC(1, 'i', 'minor', 'm'),
+    DC(2, '\u266DII', 'major', ''),
+    DC(3, '\u266DIII', 'major', ''),
+    DC(4, 'iv', 'minor', 'm'),
+    DC(5, 'v\u00B0', 'diminished', 'dim'),
+    DC(6, '\u266DVI', 'major', ''),
+    DC(7, '\u266Dvii', 'minor', 'm'),
+  ],
+  lydian: [
+    DC(1, 'I', 'major', ''),
+    DC(2, 'II', 'major', ''),
+    DC(3, 'iii', 'minor', 'm'),
+    DC(4, '#iv\u00B0', 'diminished', 'dim'),
+    DC(5, 'V', 'major', ''),
+    DC(6, 'vi', 'minor', 'm'),
+    DC(7, 'vii', 'minor', 'm'),
+  ],
+  mixolydian: [
+    DC(1, 'I', 'major', ''),
+    DC(2, 'ii', 'minor', 'm'),
+    DC(3, 'iii\u00B0', 'diminished', 'dim'),
+    DC(4, 'IV', 'major', ''),
+    DC(5, 'v', 'minor', 'm'),
+    DC(6, 'vi', 'minor', 'm'),
+    DC(7, '\u266DVII', 'major', ''),
+  ],
+};
 
 // ---------------------------------------------------------------------------
 // Chord types and spelling

@@ -13,7 +13,7 @@ import { SEMITONE_MATH_DEF } from './skills/semitone-math/definition.ts';
 import { INTERVAL_MATH_DEF } from './skills/interval-math/definition.ts';
 import { KEY_SIGNATURES_DEF } from './skills/key-signatures/definition.ts';
 import { SCALE_DEGREES_DEF } from './skills/scale-degrees/definition.ts';
-import { DIATONIC_CHORDS_DEF } from './skills/diatonic-chords/definition.ts';
+import { DIATONIC_CHORDS_DEF } from './skills/diatonic-chords/definition.tsx';
 import { CHORD_SPELLING_DEF } from './skills/chord-spelling/definition.ts';
 import { createSpeedTapDef } from './skills/speed-tap/definition.tsx';
 import {

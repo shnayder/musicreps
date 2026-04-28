@@ -154,22 +154,22 @@ algorithm details, and step-by-step "adding a new quiz skill" checklist.
 
 ## Quiz Modes
 
-| Mode                 | Items                              | Answer type             | Item ID format         |
-| -------------------- | ---------------------------------- | ----------------------- | ---------------------- |
-| Guitar Fretboard     | 78 (6 strings x 13 frets)          | Note name               | `0-5` (string-fret)    |
-| Ukulele Fretboard    | 52 (4 strings x 13 frets)          | Note name               | `0-3` (string-fret)    |
-| Note ↔ Semitones     | 24 (12 notes x 2 dirs)             | Note or number 0-11     | `C:fwd`, `C:rev`       |
-| Interval ↔ Semitones | 24 (12 intervals x 2 dirs)         | Interval or number 1-12 | `m2:fwd`, `m2:rev`     |
-| Semitone Math        | 264 (12 notes x 11 x 2 dirs)       | Note name               | `C+3`, `C-3`           |
-| Interval Math        | 264 (12 notes x 11 x 2 dirs)       | Note name               | `C+m3`, `C-P4`         |
-| Key Signatures       | 48 (24 keys x 2 dirs)              | Sig label or note       | `D:fwd`, `Am:rev`      |
-| Scale Degrees        | 144 (12 keys x 6 degrees x 2 dirs) | Note or degree          | `D:5:fwd`, `C:7:rev`   |
-| Diatonic Chords      | 168 (12 keys x 7 degrees x 2 dirs) | Note or numeral         | `Bb:IV:fwd`, `C:D:rev` |
-| Chord Spelling       | ~132 (12 roots x chord types)      | Sequential notes        | `C:major`, `F#:dim`    |
-| Guitar Speed Tap     | 12 (chromatic notes)               | Multi-tap fretboard     | `C`, `F#`              |
-| Ukulele Speed Tap    | 12 (chromatic notes)               | Multi-tap fretboard     | `C`, `F#`              |
-| Guitar Chord Shapes  | 29 (maj, min, dom7, m7, sus)       | Multi-tap fretboard     | `C:major`, `D:sus4`    |
-| Ukulele Chord Shapes | 26 (maj, min, dom7, m7, sus)       | Multi-tap fretboard     | `C:major`, `A:m7`      |
+| Mode                 | Items                              | Answer type             | Item ID format       |
+| -------------------- | ---------------------------------- | ----------------------- | -------------------- |
+| Guitar Fretboard     | 78 (6 strings x 13 frets)          | Note name               | `0-5` (string-fret)  |
+| Ukulele Fretboard    | 52 (4 strings x 13 frets)          | Note name               | `0-3` (string-fret)  |
+| Note ↔ Semitones     | 24 (12 notes x 2 dirs)             | Note or number 0-11     | `C:fwd`, `C:rev`     |
+| Interval ↔ Semitones | 24 (12 intervals x 2 dirs)         | Interval or number 1-12 | `m2:fwd`, `m2:rev`   |
+| Semitone Math        | 264 (12 notes x 11 x 2 dirs)       | Note name               | `C+3`, `C-3`         |
+| Interval Math        | 264 (12 notes x 11 x 2 dirs)       | Note name               | `C+m3`, `C-P4`       |
+| Key Signatures       | 48 (24 keys x 2 dirs)              | Sig label or note       | `D:fwd`, `Am:rev`    |
+| Scale Degrees        | 144 (12 keys x 6 degrees x 2 dirs) | Note or degree          | `D:5:fwd`, `C:7:rev` |
+| Diatonic Chords      | 864 (6 modes x 12 keys x 6 x 2)    | Note+quality or degree  | `major:C:4:fwd`      |
+| Chord Spelling       | ~132 (12 roots x chord types)      | Sequential notes        | `C:major`, `F#:dim`  |
+| Guitar Speed Tap     | 12 (chromatic notes)               | Multi-tap fretboard     | `C`, `F#`            |
+| Ukulele Speed Tap    | 12 (chromatic notes)               | Multi-tap fretboard     | `C`, `F#`            |
+| Guitar Chord Shapes  | 29 (maj, min, dom7, m7, sus)       | Multi-tap fretboard     | `C:major`, `D:sus4`  |
+| Ukulele Chord Shapes | 26 (maj, min, dom7, m7, sus)       | Multi-tap fretboard     | `C:major`, `A:m7`    |
 
 Bidirectional modes track each direction as a separate item.
 

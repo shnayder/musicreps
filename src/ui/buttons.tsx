@@ -442,6 +442,69 @@ export function SplitKeysigButtons(
 }
 
 // ---------------------------------------------------------------------------
+// SplitNoteQualityButtons — note + chord quality (modal diatonic chords)
+// ---------------------------------------------------------------------------
+
+const QUALITY_ITEMS: SplitButtonItem[] = [
+  { label: 'Major', value: 'major' },
+  { label: 'Minor', value: 'minor' },
+  { label: 'Dim', value: 'diminished' },
+];
+const combineNoteQuality = (note: string, quality: string) =>
+  note + ':' + quality;
+
+function parseNoteQuality(
+  val: string,
+): { primary: string; secondary: string } {
+  const idx = val.indexOf(':');
+  if (idx < 0) return { primary: val, secondary: '' };
+  return { primary: val.slice(0, idx), secondary: val.slice(idx + 1) };
+}
+
+export function SplitNoteQualityButtons(
+  { onAnswer, useFlats, feedback }: {
+    onAnswer?: (val: string) => void;
+    useFlats?: boolean;
+    feedback?: ButtonFeedback | null;
+  },
+) {
+  const noteItems: SplitButtonItem[] = NOTES.map((n) => ({
+    value: n.name,
+    label: useFlats !== undefined
+      ? displayNote(pickAccidentalName(n.displayName, useFlats))
+      : displayNote(n.name),
+  }));
+
+  let primaryFb: ButtonFeedback | null = null;
+  let secondaryFb: ButtonFeedback | null = null;
+  if (feedback) {
+    const parsed = parseNoteQuality(feedback.userInput);
+    const correct = parseNoteQuality(feedback.displayAnswer);
+    primaryFb = {
+      correct: parsed.primary === correct.primary,
+      userInput: parsed.primary,
+      displayAnswer: correct.primary,
+    };
+    secondaryFb = {
+      correct: parsed.secondary === correct.secondary,
+      userInput: parsed.secondary,
+      displayAnswer: correct.secondary,
+    };
+  }
+  return (
+    <SplitButtons
+      primaryItems={noteItems}
+      secondaryItems={QUALITY_ITEMS}
+      combine={combineNoteQuality}
+      answered={!!feedback}
+      onAnswer={onAnswer ?? (() => {})}
+      primaryFeedback={primaryFb}
+      secondaryFeedback={secondaryFb}
+    />
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Scale degree buttons
 // ---------------------------------------------------------------------------
 

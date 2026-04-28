@@ -77,6 +77,44 @@ describe('checkCorrectness — interval', () => {
   });
 });
 
+describe('checkCorrectness — note-quality', () => {
+  it('matches exact compound answer', () => {
+    assert.equal(
+      checkCorrectness('note-quality', 'Eb:major', 'Eb:major'),
+      true,
+    );
+  });
+
+  it('matches enharmonic note with same quality', () => {
+    assert.equal(
+      checkCorrectness('note-quality', 'Eb:major', 'D#:major'),
+      true,
+    );
+  });
+
+  it('rejects wrong quality', () => {
+    assert.equal(
+      checkCorrectness('note-quality', 'Eb:major', 'Eb:minor'),
+      false,
+    );
+  });
+
+  it('rejects wrong note', () => {
+    assert.equal(
+      checkCorrectness('note-quality', 'Eb:major', 'E:major'),
+      false,
+    );
+  });
+
+  it('rejects missing quality', () => {
+    assert.equal(checkCorrectness('note-quality', 'Eb:major', 'Eb'), false);
+  });
+
+  it('rejects missing note', () => {
+    assert.equal(checkCorrectness('note-quality', 'Eb:major', ':major'), false);
+  });
+});
+
 // ---------------------------------------------------------------------------
 // toButtonValue
 // ---------------------------------------------------------------------------
@@ -110,5 +148,13 @@ describe('toButtonValue', () => {
 
   it('interval passes through unchanged', () => {
     assert.equal(toButtonValue('interval', 'P5'), 'P5');
+  });
+
+  it('note-quality resolves note to canonical and keeps quality', () => {
+    assert.equal(toButtonValue('note-quality', 'Eb:major'), 'D#:major');
+  });
+
+  it('note-quality keeps natural note unchanged', () => {
+    assert.equal(toButtonValue('note-quality', 'F:minor'), 'F:minor');
   });
 });
