@@ -2549,6 +2549,40 @@ button {
   box-sizing: border-box;
 }
 
+/* --- Stats mode tabs (modal diatonic chords) --- */
+.stats-mode-tabs {
+  display: flex;
+  gap: var(--space-1);
+  justify-content: center;
+  margin-bottom: var(--space-2);
+}
+.stats-mode-tab {
+  font-size: var(--type-control-size);
+  line-height: var(--type-control-leading);
+  color: var(--type-control-color);
+  background: none;
+  border: none;
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: color var(--duration-base) ease;
+}
+.stats-mode-tab:hover {
+  color: var(--color-text);
+}
+.stats-mode-tab:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+.stats-mode-tab:active {
+  opacity: 0.8;
+}
+.stats-mode-tab.active {
+  color: var(--color-brand-text);
+  font-weight: var(--font-semibold);
+  background: var(--color-brand-bg);
+}
+
 /* --- Stats grids (math modes) --- */
 .stats-grid-wrapper {
   overflow-x: auto;
@@ -2977,7 +3011,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1538"></div>
+  <div class="home-screen" id="home-screen" data-version="#1541"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -4104,16 +4138,6 @@ body.native-sim #app {
   function isValidKeysigInput(input) {
     return getValidKeysigInputs().has(input);
   }
-  var VALID_NUMERAL_INPUTS;
-  function getValidNumeralInputs() {
-    if (!VALID_NUMERAL_INPUTS) {
-      VALID_NUMERAL_INPUTS = new Set(DIATONIC_CHORDS.map((c3) => c3.numeral));
-    }
-    return VALID_NUMERAL_INPUTS;
-  }
-  function isValidNumeralInput(input) {
-    return getValidNumeralInputs().has(input);
-  }
   function intervalMatchesInput(interval, input) {
     if (input === interval.abbrev) return true;
     if (interval.altAbbrevs && interval.altAbbrevs.includes(input)) return true;
@@ -4195,6 +4219,35 @@ body.native-sim #app {
     const targetLetterIdx = (rootLetterIdx + degree - 1) % 7;
     const targetLetter = LETTER_NAMES[targetLetterIdx];
     const targetSemitone = (rootSemitone + MAJOR_SCALE_STEPS[degree - 1]) % 12;
+    const naturalSemitone = NATURAL_SEMITONES[targetLetter];
+    let acc = (targetSemitone - naturalSemitone + 12) % 12;
+    if (acc > 6) acc -= 12;
+    return spelledNoteName(targetLetter, acc);
+  }
+  var MODAL_SCALE_STEPS = {
+    major: MAJOR_SCALE_STEPS,
+    minor: [0, 2, 3, 5, 7, 8, 10],
+    dorian: [0, 2, 3, 5, 7, 9, 10],
+    phrygian: [0, 1, 3, 5, 7, 8, 10],
+    lydian: [0, 2, 4, 6, 7, 9, 11],
+    mixolydian: [0, 2, 4, 5, 7, 9, 10]
+  };
+  var MUSICAL_MODES = [
+    { id: "major", label: "Major" },
+    { id: "minor", label: "Minor" },
+    { id: "dorian", label: "Dorian" },
+    { id: "mixolydian", label: "Mixolydian" },
+    { id: "lydian", label: "Lydian" },
+    { id: "phrygian", label: "Phrygian" }
+  ];
+  function getModalScaleDegreeNote(keyRoot, degree, modeId) {
+    const steps = MODAL_SCALE_STEPS[modeId];
+    const root = parseSpelledNote(keyRoot);
+    const rootLetterIdx = LETTER_NAMES.indexOf(root.letter);
+    const rootSemitone = ((NATURAL_SEMITONES[root.letter] + root.accidental) % 12 + 12) % 12;
+    const targetLetterIdx = (rootLetterIdx + degree - 1) % 7;
+    const targetLetter = LETTER_NAMES[targetLetterIdx];
+    const targetSemitone = (rootSemitone + steps[degree - 1]) % 12;
     const naturalSemitone = NATURAL_SEMITONES[targetLetter];
     let acc = (targetSemitone - naturalSemitone + 12) % 12;
     if (acc > 6) acc -= 12;
@@ -4318,6 +4371,64 @@ body.native-sim #app {
     ["6", "6th"],
     ["7", "7th"]
   ];
+  var ORDINAL_LABELS = [
+    "1st",
+    "2nd",
+    "3rd",
+    "4th",
+    "5th",
+    "6th",
+    "7th"
+  ];
+  var DC = (d4, n2, q4, ql) => ({ degree: d4, numeral: n2, quality: q4, qualityLabel: ql });
+  var MODAL_DIATONIC_CHORDS = {
+    major: DIATONIC_CHORDS,
+    minor: [
+      DC(1, "i", "minor", "m"),
+      DC(2, "ii\xB0", "diminished", "dim"),
+      DC(3, "\u266DIII", "major", ""),
+      DC(4, "iv", "minor", "m"),
+      DC(5, "v", "minor", "m"),
+      DC(6, "\u266DVI", "major", ""),
+      DC(7, "\u266DVII", "major", "")
+    ],
+    dorian: [
+      DC(1, "i", "minor", "m"),
+      DC(2, "ii", "minor", "m"),
+      DC(3, "\u266DIII", "major", ""),
+      DC(4, "IV", "major", ""),
+      DC(5, "v", "minor", "m"),
+      DC(6, "vi\xB0", "diminished", "dim"),
+      DC(7, "\u266DVII", "major", "")
+    ],
+    phrygian: [
+      DC(1, "i", "minor", "m"),
+      DC(2, "\u266DII", "major", ""),
+      DC(3, "\u266DIII", "major", ""),
+      DC(4, "iv", "minor", "m"),
+      DC(5, "v\xB0", "diminished", "dim"),
+      DC(6, "\u266DVI", "major", ""),
+      DC(7, "\u266Dvii", "minor", "m")
+    ],
+    lydian: [
+      DC(1, "I", "major", ""),
+      DC(2, "II", "major", ""),
+      DC(3, "iii", "minor", "m"),
+      DC(4, "#iv\xB0", "diminished", "dim"),
+      DC(5, "V", "major", ""),
+      DC(6, "vi", "minor", "m"),
+      DC(7, "vii", "minor", "m")
+    ],
+    mixolydian: [
+      DC(1, "I", "major", ""),
+      DC(2, "ii", "minor", "m"),
+      DC(3, "iii\xB0", "diminished", "dim"),
+      DC(4, "IV", "major", ""),
+      DC(5, "v", "minor", "m"),
+      DC(6, "vi", "minor", "m"),
+      DC(7, "\u266DVII", "major", "")
+    ]
+  };
   var DEGREE_LETTER_OFFSETS = {
     R: 0,
     "2": 1,
@@ -5131,7 +5242,7 @@ body.native-sim #app {
     intervalMath: "Move up and down by any interval from any note",
     keySignatures: "Instantly know the sharps and flats in any key",
     scaleDegrees: "Know every scale degree in every key",
-    diatonicChords: "Know every chord in every key",
+    diatonicChords: "Know every chord in every key and mode",
     chordSpelling: "Instantly spell the notes in any chord",
     guitarChordShapes: "Tap chord fingerings from memory",
     ukuleleChordShapes: "Tap chord fingerings from memory"
@@ -5147,7 +5258,7 @@ body.native-sim #app {
     intervalMath: "Interval Math is the named-interval version of Semitone Math. Instead of \u201CC + 4 semitones,\u201D you work with \u201CC up a major 3rd\u201D \u2014 the way musicians actually talk. This is what you\u2019re doing when you harmonize a melody, find a chord tone, or figure out what note is a tritone away from where you are. Making it automatic means you can think in musical terms without an intermediate translation step.",
     keySignatures: "Key signatures tell you which notes are sharped or flatted in a key \u2014 they\u2019re the first thing you see on a piece of sheet music. Automatically going from \u201C2 sharps\u201D to \u201CD maj/B min\u201D lets you start playing without pausing to decode the key, identify the scale and likely chords, and follow along when someone says \u201Clet\u2019s play in E\u266D.\u201D This skill drills both directions: key to signature and signature to key.",
     scaleDegrees: "Scale degrees are how musicians reference notes within a key \u2014 \u201Cthe 5th of B\u266D\u201D or \u201Cplay the 3rd.\u201D They show up everywhere: in chord charts, in Nashville numbering, in conversations about harmony. When this mapping is automatic, you can hear \u201Cgo to the 6th\u201D and know the note instantly in whatever key you\u2019re in, without counting up from the root.",
-    diatonicChords: "Every major key has seven chords built on its scale degrees \u2014 the I is major, the ii is minor, the V is major, and so on. This is the framework behind chord progressions: a I\u2013V\u2013vi\u2013IV in any key is the same pattern, just different notes. When you know the diatonic chords for every key, you can follow a chart written in Roman numerals, predict what chords fit in a song, and transpose progressions between keys without working them out from scratch.",
+    diatonicChords: "Every key and mode has seven chords built on its scale degrees. Major, minor, dorian, mixolydian \u2014 each mode gives the same degrees different qualities. When you know these patterns, you can follow a chart in any mode, predict what chords fit in a song, and transpose progressions between keys without working them out from scratch.",
     chordSpelling: "Chord spelling is knowing the actual notes in a chord \u2014 Dm7 is D, F, A, C. Whether you\u2019re voicing chords on an instrument, arranging for other players, or analyzing a song, you need to go from a chord symbol to its notes. Most musicians work this out by stacking intervals each time. This skill makes it automatic: see the chord, know the notes. Builds on Interval Math.",
     guitarChordShapes: "This skill builds instant recall for common chord voicings on the guitar. Automate the shapes so you can focus on moving your fingers, not remembering where they\u2019re supposed to go.",
     ukuleleChordShapes: "This skill builds instant recall for common chord voicings on the ukulele. Automate the shapes so you can focus on moving your fingers, not remembering where they\u2019re supposed to go."
@@ -5258,11 +5369,11 @@ body.native-sim #app {
     },
     diatonicChords: {
       before: () => [
-        `IV in ${d3("G")} major.`,
-        `${d3("G")}, ${d3("A")}, ${d3("B")}, ${d3("C")}. So ${d3("C")}.`,
-        "And the IV is always major in a major key? I think so."
+        `4th in ${d3("G")} dorian.`,
+        `Dorian is like minor but with a major IV\u2026`,
+        `So the 4th degree is ${d3("C")}\u2026 and it\u2019s major.`
       ],
-      after: () => `IV in ${d3("G")}. ${d3("C")} major.`
+      after: () => `4th in ${d3("G")} dorian. ${d3("C")} Major.`
     },
     chordSpelling: {
       before: () => [
@@ -7616,37 +7727,102 @@ body.native-sim #app {
     }
   };
 
+  // src/ui/stats.tsx
+  function StatsTable({ selector, rows, fwdHeader, revHeader, fwd2Header, rev2Header }) {
+    if (!rows || rows.length === 0) return null;
+    const hasPair = !!(fwd2Header && rev2Header);
+    return /* @__PURE__ */ u2("table", { class: "stats-table", children: [
+      /* @__PURE__ */ u2("thead", { children: /* @__PURE__ */ u2("tr", { children: [
+        /* @__PURE__ */ u2("th", { children: rows[0]._colHeader }),
+        /* @__PURE__ */ u2("th", { children: "#" }),
+        /* @__PURE__ */ u2("th", { children: fwdHeader }),
+        /* @__PURE__ */ u2("th", { children: revHeader }),
+        hasPair && /* @__PURE__ */ u2("th", { children: fwd2Header }),
+        hasPair && /* @__PURE__ */ u2("th", { children: rev2Header })
+      ] }) }),
+      /* @__PURE__ */ u2("tbody", { children: rows.map((row) => {
+        const fwdColor = getStatsCellColor(selector, row.fwdItemId);
+        const revColor = getStatsCellColor(selector, row.revItemId);
+        return /* @__PURE__ */ u2("tr", { children: [
+          /* @__PURE__ */ u2("td", { children: row.label }),
+          /* @__PURE__ */ u2("td", { children: row.sublabel }),
+          /* @__PURE__ */ u2("td", { class: "stats-cell", style: { background: fwdColor } }),
+          /* @__PURE__ */ u2("td", { class: "stats-cell", style: { background: revColor } }),
+          hasPair && /* @__PURE__ */ u2(
+            "td",
+            {
+              class: "stats-cell",
+              style: {
+                background: getStatsCellColor(
+                  selector,
+                  row.fwd2ItemId ?? ""
+                )
+              }
+            }
+          ),
+          hasPair && /* @__PURE__ */ u2(
+            "td",
+            {
+              class: "stats-cell",
+              style: {
+                background: getStatsCellColor(
+                  selector,
+                  row.rev2ItemId ?? ""
+                )
+              }
+            }
+          )
+        ] }, row.fwdItemId);
+      }) })
+    ] });
+  }
+  function StatsGrid({ selector, colLabels, getItemId, notes }) {
+    const noteList = notes || NOTES;
+    return /* @__PURE__ */ u2("table", { class: "stats-grid", children: [
+      /* @__PURE__ */ u2("thead", { children: /* @__PURE__ */ u2("tr", { children: [
+        /* @__PURE__ */ u2("th", {}),
+        colLabels.map((c3) => /* @__PURE__ */ u2("th", { children: c3 }, c3))
+      ] }) }),
+      /* @__PURE__ */ u2("tbody", { children: noteList.map((note) => /* @__PURE__ */ u2("tr", { children: [
+        /* @__PURE__ */ u2("td", { class: "stats-grid-row-label", children: displayNote(note.name || note.displayName) }),
+        colLabels.map((_3, i3) => {
+          const itemId2 = getItemId(note.name, i3);
+          const color = Array.isArray(itemId2) ? getStatsCellColorMerged(selector, itemId2) : getStatsCellColor(selector, itemId2);
+          const light = heatmapNeedsLightText(color);
+          return /* @__PURE__ */ u2(
+            "td",
+            {
+              class: "stats-cell",
+              style: {
+                background: color,
+                color: light ? "white" : void 0
+              }
+            },
+            i3
+          );
+        })
+      ] }, note.name)) })
+    ] });
+  }
+  function StatsLegend() {
+    const html = buildStatsLegend();
+    return /* @__PURE__ */ u2("div", { dangerouslySetInnerHTML: { __html: html } });
+  }
+
   // src/skills/diatonic-chords/logic.ts
-  var CHORD_LEVELS = [
-    {
-      id: "primary",
-      degrees: [1, 4, 5],
-      label: "I IV V",
-      longLabel: "Primary chords (I, IV, V)"
-    },
-    {
-      id: "secondary",
-      degrees: [2, 6],
-      label: "ii vi",
-      longLabel: "Secondary chords (ii, vi)"
-    },
-    {
-      id: "tertiary",
-      degrees: [3, 7],
-      label: "iii vii\xB0",
-      // \u00B0 = ° (degree sign)
-      longLabel: "Tertiary chords (iii, vii\xB0)"
-    }
-  ];
-  function getItemIdsForLevel6(levelId) {
-    const group = CHORD_LEVELS.find((g4) => g4.id === levelId);
-    if (!group) return [];
+  var ACTIVE_DEGREES2 = [2, 3, 4, 5, 6, 7];
+  var MODE_LEVELS = MUSICAL_MODES.map((m3) => ({
+    id: m3.id,
+    label: m3.label,
+    longLabel: m3.label + (m3.id === "major" ? " (Ionian)" : "")
+  }));
+  var ALL_LEVEL_IDS5 = MODE_LEVELS.map((l3) => l3.id);
+  function getItemIdsForLevel6(modeId) {
     const items = [];
-    const sortedDegrees = [...group.degrees].sort((a3, b2) => a3 - b2);
-    for (const d4 of sortedDegrees) {
+    for (const d4 of ACTIVE_DEGREES2) {
       for (const dir of ["fwd", "rev"]) {
         for (const key of MAJOR_KEYS) {
-          items.push(key.root + ":" + d4 + ":" + dir);
+          items.push(modeId + ":" + key.root + ":" + d4 + ":" + dir);
         }
       }
     }
@@ -7654,96 +7830,162 @@ body.native-sim #app {
   }
   var ALL_ITEMS7 = (() => {
     const items = [];
-    for (let d4 = 1; d4 <= 7; d4++) {
-      for (const dir of ["fwd", "rev"]) {
-        for (const key of MAJOR_KEYS) {
-          items.push(key.root + ":" + d4 + ":" + dir);
+    for (const mode of MUSICAL_MODES) {
+      for (const d4 of ACTIVE_DEGREES2) {
+        for (const dir of ["fwd", "rev"]) {
+          for (const key of MAJOR_KEYS) {
+            items.push(mode.id + ":" + key.root + ":" + d4 + ":" + dir);
+          }
         }
       }
     }
     return shuffleByItemHash(items);
   })();
-  var ALL_LEVEL_IDS5 = CHORD_LEVELS.map((g4) => g4.id);
   var GRID_NOTES2 = MAJOR_KEYS.map((k3) => ({
     name: k3.root,
     displayName: k3.root
   }));
   function getQuestion8(itemId2) {
     const parts = itemId2.split(":");
-    const keyRoot = parts[0];
-    const degree = parseInt(parts[1]);
-    const dir = parts[2];
-    const chord = DIATONIC_CHORDS[degree - 1];
-    const rootNote = getScaleDegreeNote(keyRoot, degree);
-    return { keyRoot, degree, chord, dir, rootNote };
+    const mode = parts[0];
+    const keyRoot = parts[1];
+    const degree = parseInt(parts[2]);
+    const dir = parts[3];
+    const chord = MODAL_DIATONIC_CHORDS[mode][degree - 1];
+    const rootNote = getModalScaleDegreeNote(keyRoot, degree, mode);
+    return { mode, keyRoot, degree, chord, dir, rootNote };
   }
-  function normalizeNumeralInput(input) {
-    const num = parseInt(input, 10);
-    if (num >= 1 && num <= 7) return ROMAN_NUMERALS[num - 1];
-    if (input === "vii") return "vii\xB0";
-    return input;
+  function ordinalLabel(degree) {
+    return ORDINAL_LABELS[degree - 1];
   }
-  function getGridItemId4(keyRoot, colIdx) {
-    const d4 = colIdx + 1;
-    return [keyRoot + ":" + d4 + ":fwd", keyRoot + ":" + d4 + ":rev"];
+  function modeLabel(modeId) {
+    return MUSICAL_MODES.find((m3) => m3.id === modeId)?.label ?? modeId;
+  }
+  function getGridColLabels(modeId) {
+    return ACTIVE_DEGREES2.map(
+      (d4) => MODAL_DIATONIC_CHORDS[modeId][d4 - 1].numeral
+    );
+  }
+  function getGridItemId4(modeId, keyRoot, colIdx) {
+    const d4 = ACTIVE_DEGREES2[colIdx];
+    return [
+      modeId + ":" + keyRoot + ":" + d4 + ":fwd",
+      modeId + ":" + keyRoot + ":" + d4 + ":rev"
+    ];
   }
 
-  // src/skills/diatonic-chords/definition.ts
+  // src/skills/diatonic-chords/definition.tsx
+  function useModalChordsController(enabledLevels) {
+    const enabledModes = T2(
+      () => MUSICAL_MODES.filter((m3) => enabledLevels.has(m3.id)),
+      [enabledLevels]
+    );
+    const [activeTab, setActiveTab] = d2(enabledModes[0]?.id ?? "major");
+    const effectiveTab = enabledLevels.has(activeTab) ? activeTab : enabledModes[0]?.id ?? "major";
+    const renderStats = q2(
+      (selector) => {
+        const colLabels = getGridColLabels(effectiveTab);
+        const getItemId = (keyRoot, colIdx) => getGridItemId4(effectiveTab, keyRoot, colIdx);
+        return /* @__PURE__ */ u2("div", { children: [
+          enabledModes.length > 1 && /* @__PURE__ */ u2("div", { class: "stats-mode-tabs", children: enabledModes.map((m3) => /* @__PURE__ */ u2(
+            "button",
+            {
+              type: "button",
+              class: "stats-mode-tab" + (m3.id === effectiveTab ? " active" : ""),
+              "aria-pressed": m3.id === effectiveTab,
+              onClick: () => setActiveTab(m3.id),
+              children: m3.label
+            },
+            m3.id
+          )) }),
+          /* @__PURE__ */ u2(
+            StatsGrid,
+            {
+              selector,
+              colLabels,
+              getItemId,
+              notes: GRID_NOTES2
+            }
+          )
+        ] });
+      },
+      [effectiveTab, enabledModes]
+    );
+    return { renderStats };
+  }
+  function qualityDisplayLabel(quality) {
+    if (quality === "major") return "Major";
+    if (quality === "minor") return "Minor";
+    return "Dim";
+  }
   var DIATONIC_CHORDS_DEF = {
     id: "diatonicChords",
     name: "Diatonic Chords",
-    namespace: "diatonicChords",
+    namespace: "modalChords",
     description: SKILL_DESCRIPTIONS.diatonicChords,
     aboutDescription: SKILL_ABOUT_DESCRIPTIONS.diatonicChords,
     beforeAfter: SKILL_BEFORE_AFTER.diatonicChords,
-    itemNoun: "items",
+    itemNoun: "chords",
     allItems: ALL_ITEMS7,
     getQuestion: getQuestion8,
-    getPromptText: (q4) => q4.dir === "fwd" ? q4.chord.numeral + " in " + displayNote(q4.keyRoot) + " major" : displayNote(q4.rootNote) + q4.chord.qualityLabel + " in " + displayNote(q4.keyRoot) + " major",
-    quizInstruction: (q4) => q4.dir === "fwd" ? "What chord root?" : "What numeral?",
+    getPromptText: (q4) => q4.dir === "fwd" ? ordinalLabel(q4.degree) + " in " + displayNote(q4.keyRoot) + " " + modeLabel(q4.mode) : displayNote(q4.rootNote) + q4.chord.qualityLabel + " in " + displayNote(q4.keyRoot) + " " + modeLabel(q4.mode),
+    quizInstruction: (q4) => q4.dir === "fwd" ? "What chord?" : "What degree?",
     answer: {
       kind: "bidirectional",
       fwd: {
-        getExpectedValue: (q4) => q4.rootNote,
-        comparison: "note-enharmonic",
-        getDisplayAnswer: (q4) => displayNote(q4.rootNote) + " " + q4.chord.quality
+        getExpectedValue: (q4) => q4.rootNote + ":" + q4.chord.quality,
+        comparison: "note-quality",
+        getDisplayAnswer: (q4) => displayNote(q4.rootNote) + " " + qualityDisplayLabel(q4.chord.quality),
+        normalizeInput: (input) => {
+          let s3 = input.replace(
+            /\s+(major|minor|diminished|dim)$/i,
+            (_3, q4) => ":" + q4.toLowerCase()
+          );
+          if (s3.endsWith(":dim")) s3 = s3.slice(0, -4) + ":diminished";
+          return s3;
+        }
       },
       rev: {
-        getExpectedValue: (q4) => q4.chord.numeral,
-        comparison: "exact",
-        normalizeInput: normalizeNumeralInput
+        getExpectedValue: (q4) => String(q4.degree),
+        comparison: "integer",
+        getDisplayAnswer: (q4) => ordinalLabel(q4.degree) + " \u2014 " + q4.chord.numeral
       }
     },
-    validateInput: (q4, input) => q4.dir === "fwd" ? isValidNoteInput(input) : isValidNumeralInput(input) || /^[1-7]$/.test(input) || input === "vii",
+    validateInput: (q4, input) => {
+      if (q4.dir === "rev") return /^[2-7]$/.test(input);
+      const normalized = input.replace(
+        /\s+(major|minor|diminished|dim)$/i,
+        (m3) => ":" + m3.trim().toLowerCase()
+      );
+      if (!normalized.includes(":")) return false;
+      const [note, quality] = normalized.split(":");
+      return isValidNoteInput(note) && ["major", "minor", "diminished", "dim"].includes(quality);
+    },
+    // Normalize "Eb major" → "Eb:major", "Eb dim" → "Eb:diminished"
+    // (Buttons submit "note:quality" directly; this handles keyboard input.)
     getDirection: (q4) => q4.dir,
     getUseFlats: (q4) => rootUsesFlats(q4.keyRoot),
-    inputPlaceholder: (q4) => q4.dir === "fwd" ? "Note name" : "Numeral (e.g. IV)",
+    inputPlaceholder: (q4) => q4.dir === "fwd" ? "e.g. Eb:major" : "Degree (2\u20137)",
     buttons: {
       kind: "bidirectional",
-      fwd: { kind: "note" },
-      rev: { kind: "numeral" }
+      fwd: { kind: "split-note-quality" },
+      rev: { kind: "degree" }
     },
     scope: {
       kind: "levels",
-      levels: CHORD_LEVELS,
+      levels: MODE_LEVELS,
       getItemIdsForLevel: getItemIdsForLevel6,
       allLevelIds: ALL_LEVEL_IDS5,
-      // Legacy storage key — uses old "enabledGroups" naming.
-      storageKey: "diatonicChords_enabledGroups",
-      scopeLabel: "Chords",
+      storageKey: "modalChords_enabledModes",
+      scopeLabel: "Modes",
       defaultEnabled: [ALL_LEVEL_IDS5[0]],
       formatLabel: (levels) => {
-        if (levels.size === CHORD_LEVELS.length) return "all chords";
-        const numerals = CHORD_LEVELS.filter((g4) => levels.has(g4.id)).flatMap((g4) => g4.degrees).sort((a3, b2) => a3 - b2).map((d4) => ROMAN_NUMERALS[d4 - 1]);
-        return numerals.join(", ") + " chords";
+        if (levels.size === MODE_LEVELS.length) return "all modes";
+        return MODE_LEVELS.filter((l3) => levels.has(l3.id)).map((l3) => l3.label).join(", ");
       }
     },
-    stats: {
-      kind: "grid",
-      colLabels: ROMAN_NUMERALS,
-      getItemId: getGridItemId4,
-      notes: GRID_NOTES2
-    }
+    stats: { kind: "none" },
+    useController: useModalChordsController
   };
 
   // src/skills/chord-spelling/logic.ts
@@ -11469,6 +11711,52 @@ Build: ${version}
       }
     );
   }
+  var QUALITY_ITEMS = [
+    { label: "Major", value: "major" },
+    { label: "Minor", value: "minor" },
+    { label: "Dim", value: "diminished" }
+  ];
+  var combineNoteQuality = (note, quality) => note + ":" + quality;
+  function parseNoteQuality(val) {
+    const idx = val.indexOf(":");
+    if (idx < 0) return { primary: val, secondary: "" };
+    return { primary: val.slice(0, idx), secondary: val.slice(idx + 1) };
+  }
+  function SplitNoteQualityButtons({ onAnswer, useFlats, feedback }) {
+    const noteItems = NOTES.map((n2) => ({
+      value: n2.name,
+      label: useFlats !== void 0 ? displayNote(pickAccidentalName(n2.displayName, useFlats)) : displayNote(n2.name)
+    }));
+    let primaryFb = null;
+    let secondaryFb = null;
+    if (feedback) {
+      const parsed = parseNoteQuality(feedback.userInput);
+      const correct = parseNoteQuality(feedback.displayAnswer);
+      primaryFb = {
+        correct: parsed.primary === correct.primary,
+        userInput: parsed.primary,
+        displayAnswer: correct.primary
+      };
+      secondaryFb = {
+        correct: parsed.secondary === correct.secondary,
+        userInput: parsed.secondary,
+        displayAnswer: correct.secondary
+      };
+    }
+    return /* @__PURE__ */ u2(
+      SplitButtons,
+      {
+        primaryItems: noteItems,
+        secondaryItems: QUALITY_ITEMS,
+        combine: combineNoteQuality,
+        answered: !!feedback,
+        onAnswer: onAnswer ?? (() => {
+        }),
+        primaryFeedback: primaryFb,
+        secondaryFeedback: secondaryFb
+      }
+    );
+  }
   function DegreeButtons({ onAnswer, feedback }) {
     return /* @__PURE__ */ u2("div", { class: "answer-grid", children: DEGREE_LABELS.map(([val, label]) => {
       let btnCls = "answer-btn";
@@ -12117,16 +12405,35 @@ Build: ${version}
         const iv = INTERVALS.find((i3) => i3.abbrev === expected);
         return iv ? intervalMatchesInput(iv, input) : false;
       }
+      case "note-quality": {
+        const [expectedNote, expectedQuality] = expected.split(":");
+        const [inputNote, inputQuality] = input.split(":");
+        if (!inputNote || !inputQuality) return false;
+        const resolved = resolveNoteInput(inputNote) ?? inputNote;
+        return spelledNoteMatchesSemitone(expectedNote, resolved) && inputQuality === expectedQuality;
+      }
     }
   }
   function toButtonValue(strategy, value) {
     if (strategy === "note-enharmonic") {
       return resolveNoteInput(value) ?? spelledNoteToCanonical(value);
     }
+    if (strategy === "note-quality") {
+      const [note, quality] = value.split(":");
+      const canonical = resolveNoteInput(note) ?? spelledNoteToCanonical(note);
+      if (!quality) return canonical;
+      return canonical + ":" + quality;
+    }
     return value;
   }
   function defaultDisplayAnswer(strategy, expected) {
-    return strategy === "note-enharmonic" ? displayNote(expected) : expected;
+    if (strategy === "note-enharmonic") return displayNote(expected);
+    if (strategy === "note-quality") {
+      const [note, quality] = expected.split(":");
+      const label = quality === "major" ? "Major" : quality === "minor" ? "Minor" : "Dim";
+      return displayNote(note) + " " + label;
+    }
+    return expected;
   }
   function checkGenericAnswer(def, currentQRef, lastAnswerRef, isSequential, isMultiTap, _itemId, input) {
     if (isSequential || isMultiTap) {
@@ -12349,6 +12656,15 @@ Build: ${version}
           SplitKeysigButtons,
           {
             onAnswer,
+            feedback
+          }
+        );
+      case "split-note-quality":
+        return /* @__PURE__ */ u2(
+          SplitNoteQualityButtons,
+          {
+            onAnswer,
+            useFlats,
             feedback
           }
         );
@@ -12622,88 +12938,6 @@ Build: ${version}
         }
       ) })
     ] });
-  }
-
-  // src/ui/stats.tsx
-  function StatsTable({ selector, rows, fwdHeader, revHeader, fwd2Header, rev2Header }) {
-    if (!rows || rows.length === 0) return null;
-    const hasPair = !!(fwd2Header && rev2Header);
-    return /* @__PURE__ */ u2("table", { class: "stats-table", children: [
-      /* @__PURE__ */ u2("thead", { children: /* @__PURE__ */ u2("tr", { children: [
-        /* @__PURE__ */ u2("th", { children: rows[0]._colHeader }),
-        /* @__PURE__ */ u2("th", { children: "#" }),
-        /* @__PURE__ */ u2("th", { children: fwdHeader }),
-        /* @__PURE__ */ u2("th", { children: revHeader }),
-        hasPair && /* @__PURE__ */ u2("th", { children: fwd2Header }),
-        hasPair && /* @__PURE__ */ u2("th", { children: rev2Header })
-      ] }) }),
-      /* @__PURE__ */ u2("tbody", { children: rows.map((row) => {
-        const fwdColor = getStatsCellColor(selector, row.fwdItemId);
-        const revColor = getStatsCellColor(selector, row.revItemId);
-        return /* @__PURE__ */ u2("tr", { children: [
-          /* @__PURE__ */ u2("td", { children: row.label }),
-          /* @__PURE__ */ u2("td", { children: row.sublabel }),
-          /* @__PURE__ */ u2("td", { class: "stats-cell", style: { background: fwdColor } }),
-          /* @__PURE__ */ u2("td", { class: "stats-cell", style: { background: revColor } }),
-          hasPair && /* @__PURE__ */ u2(
-            "td",
-            {
-              class: "stats-cell",
-              style: {
-                background: getStatsCellColor(
-                  selector,
-                  row.fwd2ItemId ?? ""
-                )
-              }
-            }
-          ),
-          hasPair && /* @__PURE__ */ u2(
-            "td",
-            {
-              class: "stats-cell",
-              style: {
-                background: getStatsCellColor(
-                  selector,
-                  row.rev2ItemId ?? ""
-                )
-              }
-            }
-          )
-        ] }, row.fwdItemId);
-      }) })
-    ] });
-  }
-  function StatsGrid({ selector, colLabels, getItemId, notes }) {
-    const noteList = notes || NOTES;
-    return /* @__PURE__ */ u2("table", { class: "stats-grid", children: [
-      /* @__PURE__ */ u2("thead", { children: /* @__PURE__ */ u2("tr", { children: [
-        /* @__PURE__ */ u2("th", {}),
-        colLabels.map((c3) => /* @__PURE__ */ u2("th", { children: c3 }, c3))
-      ] }) }),
-      /* @__PURE__ */ u2("tbody", { children: noteList.map((note) => /* @__PURE__ */ u2("tr", { children: [
-        /* @__PURE__ */ u2("td", { class: "stats-grid-row-label", children: displayNote(note.name || note.displayName) }),
-        colLabels.map((_3, i3) => {
-          const itemId2 = getItemId(note.name, i3);
-          const color = Array.isArray(itemId2) ? getStatsCellColorMerged(selector, itemId2) : getStatsCellColor(selector, itemId2);
-          const light = heatmapNeedsLightText(color);
-          return /* @__PURE__ */ u2(
-            "td",
-            {
-              class: "stats-cell",
-              style: {
-                background: color,
-                color: light ? "white" : void 0
-              }
-            },
-            i3
-          );
-        })
-      ] }, note.name)) })
-    ] });
-  }
-  function StatsLegend() {
-    const html = buildStatsLegend();
-    return /* @__PURE__ */ u2("div", { dangerouslySetInnerHTML: { __html: html } });
   }
 
   // src/declarative/practice-views.tsx
