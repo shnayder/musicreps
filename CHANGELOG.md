@@ -27,6 +27,12 @@
 
 ### Bug fixes
 
+- **Two-tap timing for Key Signatures and Diatonic Chords** — forward-direction
+  items in these skills require two button taps (number + ♯/♭ or note +
+  quality), but the learner model was scoring them against single-tap timing
+  thresholds, making them appear artificially slow and triggering unnecessary
+  reviews. Response counts are now scaled correctly (with a special case for
+  C major / A minor in Key Signatures, which auto-submit in one tap)
 - **OTA updates broken on release/staging builds** — xcconfig files treated
   `//` in URLs as comments, silently truncating the OTA release base URL.
   Escaped with `$(/)$(/)` so the full URL reaches the native plugin
