@@ -92,13 +92,26 @@ async function bundleJS(entry = './src/app.ts'): Promise<string> {
 // ---------------------------------------------------------------------------
 
 async function fontFaceCSS(): Promise<string> {
-  const [gabaritoBytes, jakartaBytes] = await Promise.all([
+  const [gabaritoBytes, jakartaBytes, accidentalsBytes] = await Promise.all([
     Deno.readFile(resolve('./src/Gabarito-latin.woff2')),
     Deno.readFile(resolve('./src/PlusJakartaSans-latin.woff2')),
+    Deno.readFile(resolve('./src/DejaVuSans-accidentals.woff2')),
   ]);
   const gabaritoB64 = btoa(String.fromCharCode(...gabaritoBytes));
   const jakartaB64 = btoa(String.fromCharCode(...jakartaBytes));
+  const accidentalsB64 = btoa(String.fromCharCode(...accidentalsBytes));
+  // 'Music Accidentals' is a tiny DejaVu Sans subset (♭ ♮ ♯) used only for
+  // U+266D–266F. Without it, Android falls back to a symbol font with
+  // glyphs that sit below the baseline.
   return `@font-face {
+  font-family: 'Music Accidentals';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+266D-266F;
+  src: url(data:font/woff2;base64,${accidentalsB64}) format('woff2');
+}
+@font-face {
   font-family: 'Gabarito';
   font-style: normal;
   font-weight: 400 700;
