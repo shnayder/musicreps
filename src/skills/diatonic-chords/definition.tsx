@@ -173,6 +173,10 @@ export const DIATONIC_CHORDS_DEF: SkillDefinition<Question> = {
     rev: { kind: 'degree' },
   },
 
+  // Fwd asks for note + chord quality = 2 taps. Rev is a single degree tap.
+  getExpectedResponseCount: (itemId) =>
+    getQuestion(itemId).dir === 'fwd' ? 2 : 1,
+
   scope: {
     kind: 'levels',
     levels: MODE_LEVELS,

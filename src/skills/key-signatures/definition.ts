@@ -64,6 +64,14 @@ export const KEY_SIGNATURES_DEF: SkillDefinition<Question> = {
     rev: { kind: 'note' },
   },
 
+  // Fwd asks for a key signature: number + ♯/♭ = 2 taps, except "0" which
+  // auto-submits in 1 tap (C major, A minor). Rev is a single note tap.
+  getExpectedResponseCount: (itemId) => {
+    const q = getQuestion(itemId);
+    if (q.dir === 'rev') return 1;
+    return q.sigLabel === '0' ? 1 : 2;
+  },
+
   scope: {
     kind: 'levels',
     levels: ALL_KEY_LEVELS,
