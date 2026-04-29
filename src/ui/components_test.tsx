@@ -16,7 +16,7 @@ import {
   SplitNoteButtons,
   SplitNoteQualityButtons,
 } from './buttons.tsx';
-import { setUseSolfege } from '../music-data.ts';
+import { getUseSolfege, setUseSolfege } from '../music-data.ts';
 import { SequentialSlots } from './sequential-slots.tsx';
 import type { StatsSelector } from './stats.tsx';
 import { StatsGrid } from './stats.tsx';
@@ -229,11 +229,12 @@ describe('NumeralButtons', () => {
 // ---------------------------------------------------------------------------
 
 function withSolfege(fn: () => void) {
+  const prev = getUseSolfege();
   setUseSolfege(true);
   try {
     fn();
   } finally {
-    setUseSolfege(false);
+    setUseSolfege(prev);
   }
 }
 
