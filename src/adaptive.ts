@@ -524,17 +524,20 @@ export function computeLevelStats(
 }
 
 /**
- * Check if all items have speed score ≥ 0.9 (automatic).
+ * Check if essentially all items are automatic — i.e. the 10th-percentile
+ * speed is ≥ 0.9. Delegating to `computeLevelPercentile` keeps this in exact
+ * lockstep with the home-screen recommendation pipeline: both ignore the
+ * slowest `ceil(n * 0.1) - 1` items, so a single straggler on a 24-item
+ * skill no longer blocks the "this skill is done" verdict. For small item
+ * counts (≤ 9) the gate stays strict (0 stragglers), which is also what the
+ * home pipeline does.
  */
 export function checkAllItemsAutomatic(
   getSpeedScore: (id: string) => number | null,
   items: string[],
 ): boolean {
-  for (const id of items) {
-    const speed = getSpeedScore(id);
-    if (speed === null || speed < 0.9) return false;
-  }
-  return items.length > 0;
+  if (items.length === 0) return false;
+  return computeLevelPercentile(getSpeedScore, items, 0.1).level >= 0.9;
 }
 
 /**

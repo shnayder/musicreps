@@ -3,6 +3,7 @@
 // IdlePracticeView that composes them.
 
 import type { AdaptiveSelector, SuggestionLine } from '../types.ts';
+import type { SkillEffortSnapshot } from '../effort.ts';
 
 import type { useLearnerModel } from '../hooks/use-learner-model.ts';
 import type { useLevelScope } from '../hooks/use-level-scope.ts';
@@ -47,7 +48,10 @@ export function singleLevelSuggestion(
     return { verb: 'Review', levels: [] };
   }
   if (selector.checkAllAutomatic(allItems)) {
-    return { verb: 'All items automatic! Practice something else', levels: [] };
+    return {
+      verb: 'Practice another skill — this one is automatic',
+      levels: [],
+    };
   }
   return { verb: 'Practice', levels: [] };
 }
@@ -237,6 +241,7 @@ export function IdlePracticeView<Q>(
     levelScopeResult,
     ps,
     progressSegments,
+    effortStats,
     onCalibrate,
   }: {
     def: SkillDefinition<Q>;
@@ -246,6 +251,7 @@ export function IdlePracticeView<Q>(
     levelScopeResult: ReturnType<typeof useLevelScope> | null;
     ps: ReturnType<typeof usePracticeSummary>;
     progressSegments: ProgressSegment[];
+    effortStats: SkillEffortSnapshot;
     onCalibrate?: () => void;
   },
 ) {
@@ -262,6 +268,7 @@ export function IdlePracticeView<Q>(
       progressSegments={progressSegments}
       progressKind={hasGroups ? 'multi-level' : 'single-level'}
       progressBaseline={learner.motorBaseline}
+      effortStats={effortStats}
       description={def.description}
       scopeValid={!levelScopeResult || levelScopeResult.enabledLevels.size > 0}
       validationMessage='Select at least one level'

@@ -15,6 +15,8 @@ import {
 } from './home-screen.tsx';
 import { Pill } from './pill.tsx';
 import { cssVar, PreviewGrid, Section } from './preview-shared.tsx';
+import { SlideOverlay } from './slide-overlay.tsx';
+import { UpdateBanner } from './update-banner.tsx';
 
 // ---------------------------------------------------------------------------
 // File-local sub-section components
@@ -206,6 +208,66 @@ function TabsSection({ tabId }: { tabId: string }) {
                 content: <div>About content</div>,
               },
             ]}
+          />
+        </Section>
+      </PreviewGrid>
+    </>
+  );
+}
+
+function SlideOverlaySection({ tabId }: { tabId: string }) {
+  const [topOpen, setTopOpen] = useState(false);
+  const [bottomOpen, setBottomOpen] = useState(false);
+  const [bannerOpen, setBannerOpen] = useState(false);
+  return (
+    <>
+      <h2>Slide Overlay</h2>
+      <PreviewGrid>
+        <Section title='SlideOverlay — top' tabId={tabId}>
+          <ActionButton variant='primary' onClick={() => setTopOpen(true)}>
+            Open from top
+          </ActionButton>
+          <SlideOverlay
+            open={topOpen}
+            onClose={() => setTopOpen(false)}
+            origin='top'
+            ariaLabel='Demo overlay (top)'
+          >
+            <div style='padding:var(--pad-region);background:var(--color-overlay-surface)'>
+              <Text role='heading-section' as='h2'>Slide from top</Text>
+              <p style='margin-top:var(--gap-group)'>
+                This overlay slides in from the top edge. Tap backdrop or press
+                Escape to dismiss.
+              </p>
+            </div>
+          </SlideOverlay>
+        </Section>
+        <Section title='SlideOverlay — bottom' tabId={tabId}>
+          <ActionButton variant='primary' onClick={() => setBottomOpen(true)}>
+            Open from bottom
+          </ActionButton>
+          <SlideOverlay
+            open={bottomOpen}
+            onClose={() => setBottomOpen(false)}
+            origin='bottom'
+            ariaLabel='Demo overlay (bottom)'
+          >
+            <div style='padding:var(--pad-region);background:var(--color-overlay-surface)'>
+              <Text role='heading-section' as='h2'>Slide from bottom</Text>
+              <p style='margin-top:var(--gap-group)'>
+                This overlay slides in from the bottom edge. Tap backdrop or
+                press Escape to dismiss.
+              </p>
+            </div>
+          </SlideOverlay>
+        </Section>
+        <Section title='UpdateBanner' tabId={tabId}>
+          <ActionButton variant='primary' onClick={() => setBannerOpen(true)}>
+            Show update banner
+          </ActionButton>
+          <UpdateBanner
+            visible={bannerOpen}
+            onDismiss={() => setBannerOpen(false)}
           />
         </Section>
       </PreviewGrid>
@@ -1059,6 +1121,7 @@ export function DesignSystemTab({ tabId }: { tabId: string }) {
       <SegmentedControlSection tabId={tabId} />
       <TabsSection tabId={tabId} />
       <SettingsPanelSection tabId={tabId} />
+      <SlideOverlaySection tabId={tabId} />
       <ActionButtonsSection tabId={tabId} />
       <TypographyRoleReference tabId={tabId} />
       <TypeScaleSection tabId={tabId} />

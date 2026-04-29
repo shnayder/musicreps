@@ -1066,6 +1066,68 @@ describe('createAdaptiveSelector', () => {
     );
   });
 
+  it('checkAllAutomatic tolerates a lone straggler in a 24-item set', () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // 24 items: 23 fast (1200ms → speed ≈ 0.93), 1 slow (3000ms → speed = 0.5).
+    // P10 index = ceil(2.4) - 1 = 2, so the slowest 2 are ignored — passes.
+    const ids = Array.from({ length: 24 }, (_, i) => `i${i}`);
+    for (let i = 0; i < 23; i++) selector.recordResponse(ids[i], 1200);
+    selector.recordResponse(ids[23], 3000);
+
+    assert.equal(selector.checkAllAutomatic(ids), true);
+  });
+
+  it('checkAllAutomatic still fails when too many items are slow', () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // 10 items: 7 fast, 3 slow. P10 index for n=10 is ceil(1) - 1 = 0, so the
+    // minimum speed determines the verdict — the slowest item is < 0.9 → false.
+    const ids = Array.from({ length: 10 }, (_, i) => `i${i}`);
+    for (let i = 0; i < 7; i++) selector.recordResponse(ids[i], 1200);
+    for (let i = 7; i < 10; i++) selector.recordResponse(ids[i], 3000);
+
+    assert.equal(selector.checkAllAutomatic(ids), false);
+  });
+
+  it('checkAllAutomatic passes with exactly P10-many stragglers (24 items)', () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // 24 items: 22 fast, 2 slow. P10 index = 2, so the 2 slowest are ignored
+    // and sorted[2] is fast → passes at the P10 tolerance boundary.
+    const ids = Array.from({ length: 24 }, (_, i) => `i${i}`);
+    for (let i = 0; i < 22; i++) selector.recordResponse(ids[i], 1200);
+    for (let i = 22; i < 24; i++) selector.recordResponse(ids[i], 3000);
+
+    assert.equal(selector.checkAllAutomatic(ids), true);
+  });
+
+  it('checkAllAutomatic fails one past the P10 tolerance (24 items)', () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // 24 items: 21 fast, 3 slow. P10 index = 2 → sorted[2] is the slowest of
+    // the 3 slow items → < 0.9 → false.
+    const ids = Array.from({ length: 24 }, (_, i) => `i${i}`);
+    for (let i = 0; i < 21; i++) selector.recordResponse(ids[i], 1200);
+    for (let i = 21; i < 24; i++) selector.recordResponse(ids[i], 3000);
+
+    assert.equal(selector.checkAllAutomatic(ids), false);
+  });
+
+  it('checkAllAutomatic is strict for small item counts (n=10)', () => {
+    const storage = createMemoryStorage();
+    const selector = createAdaptiveSelector(storage);
+    // 10 items: 9 fast, 1 slow. P10 index for n=10 is ceil(1) - 1 = 0 — the
+    // minimum — so a single slow item is enough to fail the gate. This
+    // mirrors what the home-screen recommendation pipeline does and prevents
+    // silent drift between the two surfaces.
+    const ids = Array.from({ length: 10 }, (_, i) => `i${i}`);
+    for (let i = 0; i < 9; i++) selector.recordResponse(ids[i], 1200);
+    selector.recordResponse(ids[9], 3000);
+
+    assert.equal(selector.checkAllAutomatic(ids), false);
+  });
+
   it('checkNeedsReview returns true when all items were fast but freshness decayed', () => {
     const storage = createMemoryStorage();
     const selector = createAdaptiveSelector(storage);

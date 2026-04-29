@@ -282,6 +282,7 @@
      bypassing all stacking contexts. These tokens are for
      elements within the normal layout flow. */
   --z-raised: 1;
+  --z-overlay: 50;
   --z-modal: 100;
 
   /* Font weights */
@@ -400,6 +401,14 @@
   --type-metric-effort-weight: var(--font-semibold);
   --type-metric-effort-leading: var(--leading-none);
   --type-metric-effort-color: var(--color-tertiary);
+
+  /* Body-level metric — used in MetricCard (Progress tab Overall section).
+     Same color as metric-header so card values and the header rep count
+     read as the same kind of stat. */
+  --type-metric-card-size: var(--text-xl);
+  --type-metric-card-weight: var(--font-bold);
+  --type-metric-card-leading: var(--leading-none);
+  --type-metric-card-color: var(--color-tertiary);
 
   /* Headline metric — used in screen headers (home stats bar, quiz round
      counter). Matches heading-page weight/size so metric numbers carry the
@@ -707,6 +716,28 @@ body {
   border-left: 3px solid var(--color-notice);
 }
 
+/* --- MetricCard: body-level stat display (large value, label below) --- */
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-related);
+  padding: var(--gap-group) var(--pad-component);
+  text-align: center;
+}
+.metric-card-label {
+  font-size: var(--type-status-size);
+  color: var(--type-status-color);
+}
+.metrics-bar {
+  display: flex;
+  gap: var(--gap-group);
+}
+.metrics-bar > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 /* --- Section: heading + content with consistent gap --- */
 .section-block {
   display: flex;
@@ -783,13 +814,13 @@ body.native-app .brand-strip {
 .brand-strip-tagline {
   margin: var(--gap-related) 0 0;
 }
-/* --- Stats bar (home header) --- */
-.home-stats-bar {
+/* --- Effort stats bar ("N today · N total · N day(s)") --- */
+.effort-stats-bar {
   justify-content: center;
   font-size: var(--type-status-size);
   color: var(--type-status-color);
 }
-.home-stat-sep {
+.effort-stat-sep {
   color: var(--color-text-muted);
 }
 /* --- Tabs --- */
@@ -1270,6 +1301,7 @@ body.native-app .brand-strip {
 .tab-panel.active {
   display: block;
   padding-top: var(--pad-component);
+  padding-bottom: var(--pad-component);
 }
 
 /* --- About tab --- */
@@ -2136,6 +2168,13 @@ button {
   color: var(--type-metric-effort-color);
   font-variant-numeric: tabular-nums;
 }
+.text-metric-card {
+  font-size: var(--type-metric-card-size);
+  font-weight: var(--type-metric-card-weight);
+  line-height: var(--type-metric-card-leading);
+  color: var(--type-metric-card-color);
+  font-variant-numeric: tabular-nums;
+}
 .text-metric-header {
   font-size: var(--type-metric-header-size);
   font-weight: var(--type-metric-header-weight);
@@ -2482,6 +2521,40 @@ button {
   box-sizing: border-box;
 }
 
+/* --- Stats mode tabs (modal diatonic chords) --- */
+.stats-mode-tabs {
+  display: flex;
+  gap: var(--space-1);
+  justify-content: center;
+  margin-bottom: var(--space-2);
+}
+.stats-mode-tab {
+  font-size: var(--type-control-size);
+  line-height: var(--type-control-leading);
+  color: var(--type-control-color);
+  background: none;
+  border: none;
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: color var(--duration-base) ease;
+}
+.stats-mode-tab:hover {
+  color: var(--color-text);
+}
+.stats-mode-tab:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+.stats-mode-tab:active {
+  opacity: 0.8;
+}
+.stats-mode-tab.active {
+  color: var(--color-brand-text);
+  font-weight: var(--font-semibold);
+  background: var(--color-brand-bg);
+}
+
 /* --- Stats grids (math modes) --- */
 .stats-grid-wrapper {
   overflow-x: auto;
@@ -2751,7 +2824,55 @@ button:where(.progress-bar-tappable) {
 }
 
 /* ==========================================================================
-   19. REDUCED MOTION
+   19. SLIDE OVERLAY
+   ========================================================================== */
+.slide-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  z-index: var(--z-overlay);
+}
+.slide-overlay-surface {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: var(--z-overlay);
+  box-shadow: var(--shadow-lg);
+  transition: transform var(--duration-slow) ease-out;
+}
+.slide-overlay-surface[data-origin='top'] {
+  top: 0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+.slide-overlay-surface[data-origin='bottom'] {
+  bottom: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.slide-overlay-surface[data-state='entering'][data-origin='top'],
+.slide-overlay-surface[data-state='exiting'][data-origin='top'] {
+  transform: translateY(-100%);
+}
+.slide-overlay-surface[data-state='entering'][data-origin='bottom'],
+.slide-overlay-surface[data-state='exiting'][data-origin='bottom'] {
+  transform: translateY(100%);
+}
+.slide-overlay-surface[data-state='open'] {
+  transform: translateY(0);
+}
+/* --- Update banner --- */
+.update-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-group);
+  padding: var(--pad-component);
+  padding-top: calc(env(safe-area-inset-top, 0px) + var(--pad-component));
+  background: var(--color-brand);
+  color: var(--color-on-brand);
+}
+
+/* ==========================================================================
+   20. REDUCED MOTION
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

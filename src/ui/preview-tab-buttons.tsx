@@ -8,6 +8,7 @@ import {
   NumeralButtons,
   SplitKeysigButtons,
   SplitNoteButtons,
+  SplitNoteQualityButtons,
 } from './buttons.tsx';
 import { ActionButton } from './action-button.tsx';
 import { PreviewGrid, Section } from './preview-shared.tsx';
@@ -173,6 +174,12 @@ export function ButtonsTab({ tabId }: { tabId: string }) {
         </Section>
         <Section title='Split Key Signature Buttons' tabId={tabId}>
           <SplitKeysigButtons />
+        </Section>
+        <Section
+          title='Split Note+Quality Buttons (Diatonic Chords)'
+          tabId={tabId}
+        >
+          <SplitNoteQualityButtons onAnswer={() => {}} />
         </Section>
         <Section title='Degree Buttons' tabId={tabId}>
           <DegreeButtons />

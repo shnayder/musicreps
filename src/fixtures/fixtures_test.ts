@@ -68,7 +68,8 @@ const modeQuestionFns: Record<string, (itemId: string) => unknown> = {
   scaleDegrees: getSDQuestion,
   diatonicChords: getDCQuestion,
   chordSpelling: parseCSItem,
-  speedTap: (id) => ({ positions: getPositionsForNote(id) }),
+  speedTap: (id) => ({ positions: getPositionsForNote(GUITAR, id) }),
+  ukuleleSpeedTap: (id) => ({ positions: getPositionsForNote(UKULELE, id) }),
   guitarChordShapes: (id) => parseChordShapesItem('guitar', id),
   ukuleleChordShapes: (id) => parseChordShapesItem('ukulele', id),
 };
@@ -101,7 +102,7 @@ describe('fixture item ID validity', () => {
         assert.equal(typeof fb.currentString, 'number');
         assert.equal(typeof fb.currentFret, 'number');
         assert.equal(typeof fb.currentNote, 'string');
-      } else if (skillId === 'speedTap') {
+      } else if (skillId === 'speedTap' || skillId === 'ukuleleSpeedTap') {
         const st = q as { positions: { string: number; fret: number }[] };
         assert.ok(st.positions.length > 0, 'Speed tap should have positions');
       } else if (skillId === 'chordSpelling') {
@@ -273,6 +274,7 @@ describe('fixture manifest completeness', () => {
     'diatonicChords',
     'chordSpelling',
     'speedTap',
+    'ukuleleSpeedTap',
     'guitarChordShapes',
     'ukuleleChordShapes',
   ];

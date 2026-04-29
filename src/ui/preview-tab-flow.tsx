@@ -60,7 +60,7 @@ function FlowIdleSection(
         <SkillHeader
           skillId='semitoneMath'
           title='Semitone Math'
-          totalReps={42}
+          repsToday={42}
           onBack={() => {}}
         />
         <Tabs
