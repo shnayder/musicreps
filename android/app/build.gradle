@@ -3,7 +3,12 @@ apply plugin: 'com.android.application'
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
 if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+    ['storeFile', 'storePassword', 'keyAlias', 'keyPassword'].each { key ->
+        if (!keystoreProperties[key]) {
+            throw new GradleException("keystore.properties is missing required key: ${key}")
+        }
+    }
 }
 
 android {
