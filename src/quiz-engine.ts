@@ -2,7 +2,7 @@
 // calibration helpers. Used by Preact mode components and the
 // useQuizEngine hook.
 
-import { displayNote, getUseSolfege, NOTE_NAMES, NOTES } from './music-data.ts';
+import { getUseSolfege, NOTE_NAMES, NOTES } from './music-data.ts';
 import { SPEED_LEVELS } from './speed-levels.ts';
 import type { NoteKeyHandler } from './types.ts';
 
@@ -317,19 +317,6 @@ export function createAdaptiveKeyHandler(
         : letterHandler.getPendingNote();
     },
   };
-}
-
-// ---------------------------------------------------------------------------
-// Note button label refresh
-// ---------------------------------------------------------------------------
-
-export function refreshNoteButtonLabels(container: HTMLElement): void {
-  container.querySelectorAll<HTMLButtonElement>('[data-note]').forEach(
-    function (btn) {
-      const noteName = btn.dataset.note;
-      if (noteName) btn.textContent = displayNote(noteName);
-    },
-  );
 }
 
 // ---------------------------------------------------------------------------

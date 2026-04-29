@@ -27,6 +27,11 @@
 
 ### Bug fixes
 
+- **Solfège labels in Chord Spelling and other split-button modes** — answer
+  buttons in Chord Spelling kept showing letter names (C, D, E…) even after
+  toggling Solfège on, because the labels were precomputed once when the page
+  loaded. The whole skill view now re-renders on notation change, so all note
+  labels (button rows, prompts, stats) update everywhere
 - **Two-tap timing for Key Signatures and Diatonic Chords** — forward-direction
   items in these skills require two button taps (number + ♯/♭ or note +
   quality), but the learner model was scoring them against single-tap timing

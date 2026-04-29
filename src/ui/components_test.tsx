@@ -13,7 +13,10 @@ import {
   NumberButtons,
   NumeralButtons,
   SplitKeysigButtons,
+  SplitNoteButtons,
+  SplitNoteQualityButtons,
 } from './buttons.tsx';
+import { getUseSolfege, setUseSolfege } from '../music-data.ts';
 import { SequentialSlots } from './sequential-slots.tsx';
 import type { StatsSelector } from './stats.tsx';
 import { StatsGrid } from './stats.tsx';
@@ -215,6 +218,120 @@ describe('NumeralButtons', () => {
     const html = render(<NumeralButtons />);
     // vii° has the degree symbol
     assert.ok(html.includes('vii\u00B0'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Solfège labels — every component that renders note names must respect the
+// notation toggle. Each mode has its own button kind, and historically a
+// single missed render path (e.g. chord-spelling SplitNoteButtons) silently
+// falls back to letter labels. Lock down all of them.
+// ---------------------------------------------------------------------------
+
+function withSolfege(fn: () => void) {
+  const prev = getUseSolfege();
+  setUseSolfege(true);
+  try {
+    fn();
+  } finally {
+    setUseSolfege(prev);
+  }
+}
+
+describe('Note button labels respect solfège setting', () => {
+  it('NoteButtons renders solfège syllables', () => {
+    withSolfege(() => {
+      const html = render(<NoteButtons />);
+      assert.ok(html.includes('>Do<'), 'expected Do label');
+      assert.ok(html.includes('>Re<'), 'expected Re label');
+      assert.ok(html.includes('>Mi<'), 'expected Mi label');
+      assert.ok(html.includes('>Fa<'), 'expected Fa label');
+      assert.ok(html.includes('>Sol<'), 'expected Sol label');
+      assert.ok(html.includes('>La<'), 'expected La label');
+      assert.ok(html.includes('>Si<'), 'expected Si label');
+      // Sanity: letter labels should not appear as standalone button text.
+      assert.ok(
+        !html.includes('>C<'),
+        'C letter should not render in solfège',
+      );
+      assert.ok(
+        !html.includes('>D<'),
+        'D letter should not render in solfège',
+      );
+    });
+  });
+
+  it('NoteButtons with useFlats renders solfège accidentals', () => {
+    withSolfege(() => {
+      const html = render(<NoteButtons useFlats />);
+      // Eb -> Mi flat in solfège
+      assert.ok(
+        html.includes('Mi♭'),
+        'expected Mi flat when useFlats is true',
+      );
+    });
+  });
+
+  it('SplitNoteButtons renders solfège syllables (chord spelling)', () => {
+    // Original regression: NOTE_ITEMS was a module-level constant computed
+    // once at module load with whatever solfège value was set then, so the
+    // labels never updated when the user toggled.
+    withSolfege(() => {
+      const html = render(<SplitNoteButtons onAnswer={() => {}} />);
+      assert.ok(html.includes('>Do<'), 'chord-spelling should render Do');
+      assert.ok(html.includes('>Sol<'), 'chord-spelling should render Sol');
+      assert.ok(html.includes('>Si<'), 'chord-spelling should render Si');
+      assert.ok(
+        !html.includes('>C<'),
+        'chord-spelling should not render letter C in solfège',
+      );
+    });
+  });
+
+  it('SplitNoteQualityButtons renders solfège syllables (diatonic chords)', () => {
+    withSolfege(() => {
+      const html = render(<SplitNoteQualityButtons onAnswer={() => {}} />);
+      assert.ok(html.includes('>Do<'), 'diatonic-chords should render Do');
+      assert.ok(html.includes('>Sol<'), 'diatonic-chords should render Sol');
+    });
+  });
+
+  it('SplitNoteQualityButtons with useFlats renders solfège syllables', () => {
+    withSolfege(() => {
+      const html = render(
+        <SplitNoteQualityButtons onAnswer={() => {}} useFlats />,
+      );
+      assert.ok(html.includes('>Do<'), 'expected Do label');
+      // E flat -> Mi flat in solfège mode with flats
+      assert.ok(
+        html.includes('Mi♭'),
+        'expected Mi flat when useFlats is true',
+      );
+    });
+  });
+
+  it('non-note button kinds are unchanged by solfège', () => {
+    withSolfege(() => {
+      const numbers = render(<NumberButtons start={0} end={11} />);
+      assert.ok(numbers.includes('>0<'));
+      assert.ok(numbers.includes('>11<'));
+
+      const intervals = render(<IntervalButtons />);
+      assert.ok(intervals.includes('>m2<'));
+      assert.ok(intervals.includes('>P5<'));
+
+      const numerals = render(<NumeralButtons />);
+      assert.ok(numerals.includes('>I<'));
+      assert.ok(numerals.includes('vii°'));
+
+      const degrees = render(<DegreeButtons />);
+      assert.ok(degrees.includes('>2nd<'));
+      assert.ok(degrees.includes('>7th<'));
+
+      const keysig = render(<SplitKeysigButtons />);
+      assert.ok(keysig.includes('>0<'));
+      assert.ok(keysig.includes('answer-grid-stack'));
+    });
   });
 });
 

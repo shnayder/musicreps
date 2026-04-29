@@ -15,6 +15,7 @@ import type { SkillHandle } from '../types.ts';
 
 import { useLearnerModel } from '../hooks/use-learner-model.ts';
 import { useLevelScope } from '../hooks/use-level-scope.ts';
+import { useNotationVersion } from '../hooks/use-notation-version.ts';
 import {
   computeSkillEffortSnapshot,
   getSkillDailyReps,
@@ -169,6 +170,11 @@ export function GenericSkill<Q>(
     onMount: (handle: SkillHandle) => void;
   },
 ) {
+  // Re-render the entire skill subtree on solfège ↔ letter toggle so all
+  // displayNote() calls (in buttons, prompts, stats, level labels, etc.)
+  // recompute. Without this, components frozen since last render keep stale
+  // labels when the user toggles notation on the home settings tab.
+  useNotationVersion();
   const learner = useLearnerModel(
     def.namespace,
     def.allItems,

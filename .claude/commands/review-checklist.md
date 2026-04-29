@@ -89,6 +89,24 @@ N/A. Do not skip items — mark N/A explicitly if a category does not apply.
       define `getCalibrationTrialConfig()` (search prompt, no highlight); only
       speed tap uses the highlight fallback
 
+## Solfège / notation rendering
+
+Every UI element that displays a note name must respect the global solfège
+toggle. This has regressed multiple times — reviewers must verify it.
+
+- [ ] Every note label goes through `displayNote()` (or `displayNotePair()`)
+      from `src/music-data.ts`. No raw letter names rendered to UI.
+- [ ] No `displayNote(...)` call lives at module top-level — labels frozen at
+      import time will not update when the user toggles solfège. Compute inside
+      the component body, a render-time function, or a `useMemo` that depends on
+      `useNotationVersion()`.
+- [ ] New button kinds added to `src/ui/buttons.tsx` have a corresponding
+      "renders solfège syllables" test in `src/ui/components_test.tsx` under the
+      "Note button labels respect solfège setting" describe block.
+- [ ] Components that subscribe to notation outside the `GenericSkill` tree
+      (e.g. preview pages, home cards) call `useNotationVersion()` directly so
+      they re-render on toggle.
+
 ## Code quality
 
 <!-- Full explanation: guides/coding-style.md -->

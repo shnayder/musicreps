@@ -272,10 +272,6 @@ function SplitButtons(
 // SplitNoteButtons — note + accidental (chord spelling)
 // ---------------------------------------------------------------------------
 
-const NOTE_ITEMS: SplitButtonItem[] = NATURAL_NOTES.map((n) => ({
-  label: displayNote(n),
-  value: n,
-}));
 const ACCIDENTAL_ITEMS: SplitButtonItem[] = [
   { label: '\u266D', value: 'b' }, // ♭
   { label: '\u266E', value: '' }, // ♮ (natural)
@@ -291,9 +287,14 @@ export function SplitNoteButtons(
     flushRef?: SplitButtonsFlushRef;
   },
 ) {
+  // Computed at render time so labels react to solfège toggle.
+  const noteItems: SplitButtonItem[] = NATURAL_NOTES.map((n) => ({
+    label: displayNote(n),
+    value: n,
+  }));
   return (
     <SplitButtons
-      primaryItems={NOTE_ITEMS}
+      primaryItems={noteItems}
       secondaryItems={ACCIDENTAL_ITEMS}
       combine={combineNote}
       answered={answered}
