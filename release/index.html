@@ -3011,7 +3011,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1550"></div>
+  <div class="home-screen" id="home-screen" data-version="#1552"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -7579,6 +7579,13 @@ body.native-sim #app {
       fwd: { kind: "split-keysig" },
       rev: { kind: "note" }
     },
+    // Fwd asks for a key signature: number + ♯/♭ = 2 taps, except "0" which
+    // auto-submits in 1 tap (C major, A minor). Rev is a single note tap.
+    getExpectedResponseCount: (itemId2) => {
+      const q4 = getQuestion6(itemId2);
+      if (q4.dir === "rev") return 1;
+      return q4.sigLabel === "0" ? 1 : 2;
+    },
     scope: {
       kind: "levels",
       levels: ALL_KEY_LEVELS,
@@ -7971,6 +7978,8 @@ body.native-sim #app {
       fwd: { kind: "split-note-quality" },
       rev: { kind: "degree" }
     },
+    // Fwd asks for note + chord quality = 2 taps. Rev is a single degree tap.
+    getExpectedResponseCount: (itemId2) => getQuestion8(itemId2).dir === "fwd" ? 2 : 1,
     scope: {
       kind: "levels",
       levels: MODE_LEVELS,
