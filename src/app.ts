@@ -11,7 +11,6 @@ import { h, render } from 'preact';
 import { loadNotationPreference } from './music-data.ts';
 import { createNavigation } from './navigation.ts';
 import { createSettingsController } from './settings.ts';
-import { refreshNoteButtonLabels } from './quiz-engine.ts';
 import type { SkillHandle } from './types.ts';
 import { BrandStrip } from './ui/brand-strip.tsx';
 import { cleanupLegacyKeys, HomeScreen } from './ui/home-screen.tsx';
@@ -98,16 +97,9 @@ async function boot() {
 
   nav.init();
 
-  // Settings state controller — re-render on notation change
-  const settings = createSettingsController({
-    onNotationChange(): void {
-      document.querySelectorAll('.skill-screen.skill-active').forEach(
-        (el: Element) => {
-          refreshNoteButtonLabels(el as HTMLElement);
-        },
-      );
-    },
-  });
+  // Settings state controller. Notation changes propagate through Preact via
+  // useNotationVersion (subscribed by GenericSkill + level-scope).
+  const settings = createSettingsController({});
 
   // ?native URL param simulates native mode in a desktop browser for testing.
   const simulateNative = new URLSearchParams(globalThis.location?.search ?? '')
