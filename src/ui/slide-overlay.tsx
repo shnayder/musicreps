@@ -20,14 +20,20 @@ function useSlideAnimation(open: boolean) {
   const [mounted, setMounted] = useState(false);
   const surfaceRef = useRef<HTMLDivElement>(null);
 
+  // Use a ref so the effect closure always sees the latest value without
+  // re-running when mounted changes (which would reset state to 'entering'
+  // and cancel the rAF that flips to 'open').
+  const mountedRef = useRef(false);
+  mountedRef.current = mounted;
+
   useEffect(() => {
     if (open) {
       setMounted(true);
       setState('entering');
-    } else if (mounted) {
+    } else if (mountedRef.current) {
       setState('exiting');
     }
-  }, [open, mounted]);
+  }, [open]);
 
   // Trigger enter animation on next frame after mount
   useEffect(() => {
