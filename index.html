@@ -3011,7 +3011,7 @@ body.native-sim #app {
 <body>
   <div id="app">
   <div class="brand-strip" id="brand-strip"></div>
-  <div class="home-screen" id="home-screen" data-version="#1548"></div>
+  <div class="home-screen" id="home-screen" data-version="#1550"></div>
   <div class="skill-screen phase-idle" id="skill-fretboard"></div>
   <div class="skill-screen phase-idle" id="skill-speedTap"></div>
   <div class="skill-screen phase-idle" id="skill-guitarChordShapes"></div>
@@ -10656,14 +10656,16 @@ Build: ${version}
     const [state, setState] = d2("entering");
     const [mounted, setMounted] = d2(false);
     const surfaceRef = A2(null);
+    const mountedRef = A2(false);
+    mountedRef.current = mounted;
     y2(() => {
       if (open) {
         setMounted(true);
         setState("entering");
-      } else if (mounted) {
+      } else if (mountedRef.current) {
         setState("exiting");
       }
-    }, [open, mounted]);
+    }, [open]);
     y2(() => {
       if (state !== "entering") return;
       const id = requestAnimationFrame(() => setState("open"));
