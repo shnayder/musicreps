@@ -106,7 +106,7 @@ async function fontFaceCSS(): Promise<string> {
   return `@font-face {
   font-family: 'Music Accidentals';
   font-style: normal;
-  font-weight: 100 900;
+  font-weight: normal;
   font-display: swap;
   unicode-range: U+266D-266F;
   src: url(data:font/woff2;base64,${accidentalsB64}) format('woff2');
