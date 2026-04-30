@@ -217,7 +217,10 @@
      baseline alignment across Android, where the default fallback font's
      accidental glyphs sit below the baseline. */
   --font-body:
-    'Music Accidentals', 'Plus Jakarta Sans', system-ui, -apple-system,
+    'Music Accidentals',
+    'Plus Jakarta Sans',
+    system-ui,
+    -apple-system,
     sans-serif;
   --font-display: 'Music Accidentals', 'Gabarito', system-ui, sans-serif;
 
