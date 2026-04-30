@@ -212,9 +212,17 @@
   --leading-normal: 1.5;
   --leading-spacy: 1.7;
 
-  /* Font families */
-  --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-  --font-display: 'Gabarito', system-ui, sans-serif;
+  /* Font families. 'Music Accidentals' is unicode-range-scoped to U+266D–266F
+     (♭ ♮ ♯); it has no effect on other characters but ensures consistent
+     baseline alignment across Android, where the default fallback font's
+     accidental glyphs sit below the baseline. */
+  --font-body:
+    'Music Accidentals',
+    'Plus Jakarta Sans',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  --font-display: 'Music Accidentals', 'Gabarito', system-ui, sans-serif;
 
   /* Spacing scale (Layer 1: palette) */
   --space-1: 0.125rem;

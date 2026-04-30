@@ -39,6 +39,9 @@
 - **Skill tab spacing** — added breathing room below tab panel content so the
   last line (e.g. "Start practicing on the … tab below" on the Info tab) no
   longer sits flush against the bottom tab bar
+- **Sharp/flat baseline alignment on Android** — bundled a tiny DejaVu Sans
+  subset (♭ ♮ ♯) so accidentals sit on the baseline alongside surrounding
+  text instead of dropping below it via the Android symbol-font fallback
 
 ## v1.1 (build 4) — 2026-04-22
 
